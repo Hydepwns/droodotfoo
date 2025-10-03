@@ -1,0 +1,97 @@
+/* Optimized Font Loading Strategy */
+
+/* 1. Use font-display: swap for faster text rendering */
+@font-face {
+  font-family: 'Monaspace Argon';
+  src: url('/fonts/monaspace-argon.woff2') format('woff2'),
+       url('/fonts/monaspace-argon.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap; /* Show fallback immediately, swap when loaded */
+  unicode-range: U+0020-007F, U+00A0-00FF; /* Latin characters only */
+}
+
+/* 2. Preload critical font subset */
+@font-face {
+  font-family: 'Monaspace Argon Subset';
+  src: url('/fonts/monaspace-argon-subset.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block; /* Block for 3s max for critical subset */
+  unicode-range: U+0020-007F; /* ASCII only for terminal */
+}
+
+/* 3. System font stack fallback */
+:root {
+  --font-mono-fallback:
+    'Monaspace Argon',
+    'Monaspace Argon Subset',
+    'SF Mono',
+    'Monaco',
+    'Inconsolata',
+    'Fira Code',
+    'Cascadia Code',
+    'Roboto Mono',
+    'Menlo',
+    'DejaVu Sans Mono',
+    'Consolas',
+    'Courier New',
+    monospace;
+}
+
+/* 4. Font loading optimization classes */
+.font-loading {
+  /* Use system fonts while custom fonts load */
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace !important;
+}
+
+.font-loaded {
+  /* Switch to custom font when loaded */
+  font-family: var(--font-mono-fallback) !important;
+}
+
+/* 5. Reduce font file size with subsetting */
+@font-face {
+  font-family: 'Monaspace Argon Variable';
+  src: url('/fonts/monaspace-argon-var.woff2') format('woff2-variations');
+  font-weight: 300 700;
+  font-stretch: 75% 125%;
+  font-display: optional; /* Don't swap if takes too long */
+}
+
+/* 6. Critical CSS for terminal */
+.terminal-critical {
+  /* Inline critical styles to avoid FOUC */
+  font-family: monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+/* 7. Progressive enhancement for variable fonts */
+@supports (font-variation-settings: normal) {
+  .terminal-text {
+    font-family: 'Monaspace Argon Variable', var(--font-mono-fallback);
+    font-variation-settings: 'wght' 400, 'wdth' 100;
+  }
+}
+
+/* 8. Optimize for different network conditions */
+@media (prefers-reduced-data: reduce) {
+  /* Skip custom fonts on slow connections */
+  * {
+    font-family: monospace !important;
+  }
+}
+
+/* 9. Font metrics override to prevent layout shift */
+@font-face {
+  font-family: 'Monaspace Argon';
+  src: url('/fonts/monaspace-argon.woff2') format('woff2');
+  font-display: swap;
+  /* Prevent layout shift with size-adjust and metrics */
+  size-adjust: 105%;
+  ascent-override: 95%;
+  descent-override: 25%;
+  line-gap-override: 0%;
+}

@@ -1,0 +1,390 @@
+defmodule Droodotfoo.Terminal.CommandParser do
+  @moduledoc """
+  Parses and executes terminal commands, providing a real Unix-like experience.
+  """
+
+  alias Droodotfoo.Terminal.{FileSystem, Commands}
+
+  @doc """
+  Parse and execute a command string.
+  Returns {:ok, output} or {:error, message}
+  """
+  def parse_and_execute(input, state) do
+    input
+    |> String.trim()
+    |> tokenize()
+    |> execute_command(state)
+  end
+
+  @doc """
+  Tokenize input into command and arguments.
+  Handles quotes, pipes, and redirects.
+  """
+  def tokenize(input) do
+    # Handle empty input
+    if input == "" do
+      {:empty}
+    else
+      # Simple tokenization for now - can be enhanced
+      case parse_command_line(input) do
+        {:ok, tokens} -> {:command, tokens}
+        {:error, reason} -> {:error, reason}
+      end
+    end
+  end
+
+  defp parse_command_line(input) do
+    # Handle quoted strings and special characters
+    tokens =
+      input
+      |> parse_with_quotes()
+      |> handle_pipes()
+      |> handle_redirects()
+
+    {:ok, tokens}
+  rescue
+    _ -> {:error, "Invalid command syntax"}
+  end
+
+  defp parse_with_quotes(input) do
+    # Regex to match quoted strings and regular tokens
+    ~r/(?:[^\s"']+|"[^"]*"|'[^']*')+/
+    |> Regex.scan(input)
+    |> List.flatten()
+    |> Enum.map(&strip_quotes/1)
+  end
+
+  defp strip_quotes(str) do
+    str
+    |> String.replace(~r/^["']/, "")
+    |> String.replace(~r/["']$/, "")
+  end
+
+  defp handle_pipes(tokens) do
+    # Split on pipe character for command chaining
+    # For now, return as-is (enhancement for later)
+    tokens
+  end
+
+  defp handle_redirects(tokens) do
+    # Handle > >> < redirects
+    # For now, return as-is (enhancement for later)
+    tokens
+  end
+
+  @doc """
+  Execute a parsed command.
+  """
+  def execute_command({:empty}, _state) do
+    {:ok, ""}
+  end
+
+  def execute_command({:error, reason}, _state) do
+    {:error, reason}
+  end
+
+  def execute_command({:command, []}, _state) do
+    {:ok, ""}
+  end
+
+  def execute_command({:command, [cmd | args]}, state) do
+    result =
+      case cmd do
+        # Navigation commands
+        "ls" ->
+          Commands.ls(args, state)
+
+        "cd" ->
+          Commands.cd(args, state)
+
+        "pwd" ->
+          Commands.pwd(state)
+
+        # File operations
+        "cat" ->
+          Commands.cat(args, state)
+
+        "head" ->
+          Commands.head(args, state)
+
+        "tail" ->
+          Commands.tail(args, state)
+
+        "grep" ->
+          Commands.grep(args, state)
+
+        "find" ->
+          Commands.find(args, state)
+
+        # System info
+        "whoami" ->
+          Commands.whoami(state)
+
+        "date" ->
+          Commands.date(state)
+
+        "uptime" ->
+          Commands.uptime(state)
+
+        "uname" ->
+          Commands.uname(args, state)
+
+        # Custom commands
+        "help" ->
+          Commands.help(args, state)
+
+        "man" ->
+          Commands.man(args, state)
+
+        "clear" ->
+          Commands.clear(state)
+
+        "history" ->
+          Commands.history(state)
+
+        "echo" ->
+          Commands.echo(args, state)
+
+        # Fun commands
+        "fortune" ->
+          Commands.fortune(state)
+
+        "cowsay" ->
+          Commands.cowsay(args, state)
+
+        "sl" ->
+          Commands.sl(state)
+
+        "matrix" ->
+          Commands.matrix([], state)
+
+        # droo.foo specific
+        "projects" ->
+          Commands.projects(args, state)
+
+        "skills" ->
+          Commands.skills(args, state)
+
+        "contact" ->
+          Commands.contact(args, state)
+
+        "resume" ->
+          Commands.resume(args, state)
+
+        "download" ->
+          Commands.download(args, state)
+
+        "api" ->
+          Commands.api(args, state)
+
+        # Git commands
+        "git" ->
+          Commands.git(args, state)
+
+        # Package managers
+        "npm" ->
+          Commands.npm(args, state)
+
+        "pip" ->
+          Commands.pip(args, state)
+
+        # Network
+        "curl" ->
+          Commands.curl(args, state)
+
+        "wget" ->
+          Commands.wget(args, state)
+
+        "ping" ->
+          Commands.ping(args, state)
+
+        # Easter eggs
+        "sudo" ->
+          Commands.sudo([cmd | args], state)
+
+        "rm" ->
+          Commands.rm(args, state)
+
+        "vim" ->
+          Commands.vim(args, state)
+
+        "emacs" ->
+          Commands.emacs(args, state)
+
+        "exit" ->
+          Commands.exit(state)
+
+        # Unknown command
+        _ ->
+          suggestions = suggest_command(cmd)
+          error_msg = "bash: #{cmd}: command not found"
+
+          if suggestions != [] do
+            {:error, "#{error_msg}\n\nDid you mean:\n#{format_suggestions(suggestions)}"}
+          else
+            {:error, error_msg}
+          end
+      end
+
+    # Normalize return values to ensure consistent format
+    case result do
+      {:ok, output, new_state} -> {:ok, output, new_state}
+      {:ok, output} -> {:ok, output}
+      {:error, msg} -> {:error, msg}
+      {:exit, msg} -> {:exit, msg}
+    end
+  end
+
+  @doc """
+  Suggest similar commands based on input.
+  Uses Levenshtein distance for fuzzy matching.
+  """
+  def suggest_command(input) do
+    all_commands = [
+      "ls",
+      "cd",
+      "pwd",
+      "cat",
+      "head",
+      "tail",
+      "grep",
+      "find",
+      "whoami",
+      "date",
+      "uptime",
+      "uname",
+      "help",
+      "man",
+      "clear",
+      "history",
+      "echo",
+      "fortune",
+      "cowsay",
+      "sl",
+      "matrix",
+      "projects",
+      "skills",
+      "contact",
+      "resume",
+      "download",
+      "api",
+      "git",
+      "npm",
+      "pip",
+      "curl",
+      "wget",
+      "ping",
+      "sudo",
+      "rm",
+      "vim",
+      "emacs",
+      "exit"
+    ]
+
+    all_commands
+    |> Enum.map(fn cmd -> {cmd, String.jaro_distance(input, cmd)} end)
+    |> Enum.filter(fn {_cmd, score} -> score > 0.7 end)
+    |> Enum.sort_by(fn {_cmd, score} -> score end, :desc)
+    |> Enum.take(3)
+    |> Enum.map(fn {cmd, _score} -> cmd end)
+  end
+
+  defp format_suggestions(suggestions) do
+    suggestions
+    |> Enum.map(fn cmd -> "  #{cmd}" end)
+    |> Enum.join("\n")
+  end
+
+  @doc """
+  Get command completion suggestions.
+  """
+  def get_completions(partial_input, state) do
+    all_commands = get_all_commands()
+
+    if String.contains?(partial_input, " ") do
+      # Complete arguments for specific command
+      [cmd | args] = String.split(partial_input, " ")
+      get_argument_completions(cmd, Enum.join(args, " "), state)
+    else
+      # Complete command name
+      all_commands
+      |> Enum.filter(&String.starts_with?(&1, partial_input))
+      |> Enum.sort()
+    end
+  end
+
+  defp get_all_commands do
+    [
+      "ls",
+      "cd",
+      "pwd",
+      "cat",
+      "head",
+      "tail",
+      "grep",
+      "find",
+      "whoami",
+      "date",
+      "uptime",
+      "uname",
+      "help",
+      "man",
+      "clear",
+      "history",
+      "echo",
+      "fortune",
+      "cowsay",
+      "sl",
+      "matrix",
+      "projects",
+      "skills",
+      "contact",
+      "resume",
+      "download",
+      "api",
+      "git",
+      "npm",
+      "pip",
+      "curl",
+      "wget",
+      "ping",
+      "sudo",
+      "rm",
+      "vim",
+      "emacs",
+      "exit"
+    ]
+  end
+
+  defp get_argument_completions("cd", partial_path, state) do
+    FileSystem.get_directory_completions(partial_path, state)
+  end
+
+  defp get_argument_completions("cat", partial_path, state) do
+    FileSystem.get_file_completions(partial_path, state)
+  end
+
+  defp get_argument_completions("git", partial_arg, _state) do
+    git_commands = [
+      "status",
+      "log",
+      "diff",
+      "add",
+      "commit",
+      "push",
+      "pull",
+      "branch",
+      "checkout",
+      "merge",
+      "rebase",
+      "clone"
+    ]
+
+    git_commands
+    |> Enum.filter(&String.starts_with?(&1, partial_arg))
+  end
+
+  defp get_argument_completions(_cmd, _partial_arg, _state) do
+    []
+  end
+end

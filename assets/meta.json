@@ -1,0 +1,227 @@
+{
+  "inputs": {
+    "../deps/phoenix_html/priv/static/phoenix_html.js": {
+      "bytes": 2643,
+      "imports": []
+    },
+    "../deps/phoenix/priv/static/phoenix.mjs": {
+      "bytes": 45934,
+      "imports": [],
+      "format": "esm"
+    },
+    "../deps/phoenix_live_view/priv/static/phoenix_live_view.esm.js": {
+      "bytes": 207477,
+      "imports": [],
+      "format": "esm"
+    },
+    "vendor/topbar.js": {
+      "bytes": 4391,
+      "imports": [],
+      "format": "cjs"
+    },
+    "js/modules/CellMeasurement.ts": {
+      "bytes": 2113,
+      "imports": [
+        {
+          "path": "../types",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "js/modules/GridAlignment.ts": {
+      "bytes": 3225,
+      "imports": [
+        {
+          "path": "../types",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "js/modules/EventManager.ts": {
+      "bytes": 4189,
+      "imports": [
+        {
+          "path": "../types",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "js/terminal_grid.ts": {
+      "bytes": 6436,
+      "imports": [
+        {
+          "path": "./types",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "js/modules/CellMeasurement.ts",
+          "kind": "import-statement",
+          "original": "./modules/CellMeasurement"
+        },
+        {
+          "path": "js/modules/GridAlignment.ts",
+          "kind": "import-statement",
+          "original": "./modules/GridAlignment"
+        },
+        {
+          "path": "js/modules/EventManager.ts",
+          "kind": "import-statement",
+          "original": "./modules/EventManager"
+        }
+      ],
+      "format": "esm"
+    },
+    "js/modules/TouchGestures.ts": {
+      "bytes": 8708,
+      "imports": [],
+      "format": "esm"
+    },
+    "js/modules/VirtualKeyboard.ts": {
+      "bytes": 11887,
+      "imports": [],
+      "format": "esm"
+    },
+    "js/modules/MobileTerminal.ts": {
+      "bytes": 9455,
+      "imports": [
+        {
+          "path": "js/modules/TouchGestures.ts",
+          "kind": "import-statement",
+          "original": "./TouchGestures"
+        },
+        {
+          "path": "js/modules/VirtualKeyboard.ts",
+          "kind": "import-statement",
+          "original": "./VirtualKeyboard"
+        }
+      ],
+      "format": "esm"
+    },
+    "js/modules/TerminalInput.ts": {
+      "bytes": 5536,
+      "imports": [],
+      "format": "esm"
+    },
+    "js/hooks.ts": {
+      "bytes": 7858,
+      "imports": [
+        {
+          "path": "js/terminal_grid.ts",
+          "kind": "import-statement",
+          "original": "./terminal_grid"
+        },
+        {
+          "path": "./types/hooks",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "js/modules/MobileTerminal.ts",
+          "kind": "import-statement",
+          "original": "./modules/MobileTerminal"
+        },
+        {
+          "path": "js/modules/TouchGestures.ts",
+          "kind": "import-statement",
+          "original": "./modules/TouchGestures"
+        },
+        {
+          "path": "js/modules/TerminalInput.ts",
+          "kind": "import-statement",
+          "original": "./modules/TerminalInput"
+        }
+      ],
+      "format": "esm"
+    },
+    "js/app.js": {
+      "bytes": 3081,
+      "imports": [
+        {
+          "path": "../deps/phoenix_html/priv/static/phoenix_html.js",
+          "kind": "import-statement",
+          "original": "phoenix_html"
+        },
+        {
+          "path": "../deps/phoenix/priv/static/phoenix.mjs",
+          "kind": "import-statement",
+          "original": "phoenix"
+        },
+        {
+          "path": "../deps/phoenix_live_view/priv/static/phoenix_live_view.esm.js",
+          "kind": "import-statement",
+          "original": "phoenix_live_view"
+        },
+        {
+          "path": "vendor/topbar.js",
+          "kind": "import-statement",
+          "original": "../vendor/topbar"
+        },
+        {
+          "path": "js/hooks.ts",
+          "kind": "import-statement",
+          "original": "./hooks"
+        }
+      ],
+      "format": "esm"
+    }
+  },
+  "outputs": {
+    "../priv/static/assets/js/app.js": {
+      "imports": [],
+      "exports": [],
+      "entryPoint": "js/app.js",
+      "inputs": {
+        "vendor/topbar.js": {
+          "bytesInOutput": 2021
+        },
+        "../deps/phoenix_html/priv/static/phoenix_html.js": {
+          "bytesInOutput": 1418
+        },
+        "../deps/phoenix/priv/static/phoenix.mjs": {
+          "bytesInOutput": 20263
+        },
+        "../deps/phoenix_live_view/priv/static/phoenix_live_view.esm.js": {
+          "bytesInOutput": 98859
+        },
+        "js/app.js": {
+          "bytesInOutput": 430
+        },
+        "js/modules/CellMeasurement.ts": {
+          "bytesInOutput": 799
+        },
+        "js/modules/GridAlignment.ts": {
+          "bytesInOutput": 1158
+        },
+        "js/modules/EventManager.ts": {
+          "bytesInOutput": 1204
+        },
+        "js/terminal_grid.ts": {
+          "bytesInOutput": 2506
+        },
+        "js/modules/TouchGestures.ts": {
+          "bytesInOutput": 3930
+        },
+        "js/modules/VirtualKeyboard.ts": {
+          "bytesInOutput": 7057
+        },
+        "js/modules/MobileTerminal.ts": {
+          "bytesInOutput": 5110
+        },
+        "js/modules/TerminalInput.ts": {
+          "bytesInOutput": 2161
+        },
+        "js/hooks.ts": {
+          "bytesInOutput": 2772
+        }
+      },
+      "bytes": 150251
+    }
+  }
+}

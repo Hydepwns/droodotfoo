@@ -1,0 +1,289 @@
+defmodule Droodotfoo.Spotify.AsciiArt do
+  @moduledoc """
+  ASCII art generation for Spotify content.
+  Creates terminal-friendly visualizations for tracks, albums, and playback state.
+  """
+
+  @doc """
+  Renders the Spotify logo in ASCII art.
+  """
+  def spotify_logo do
+    [
+      "   ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄",
+      "  ▐                             ▌",
+      "  ▐  ●●●●   ●●●●  ●●●●●●●●●●●  ▌",
+      "  ▐  ●   ●  ●   ● ●   ●   ●   ● ▌",
+      "  ▐  ●●●●   ●●●●  ●   ●   ●   ● ▌",
+      "  ▐       ●      ● ●   ●   ●   ● ▌",
+      "  ▐  ●●●●   ●●●●  ●   ●   ●   ● ▌",
+      "  ▐                             ▌",
+      "   ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀"
+    ]
+  end
+
+  @doc """
+  Renders a track info display with ASCII art formatting.
+  """
+  def render_track_display(track, options \\ []) do
+    width = Keyword.get(options, :width, 78)
+
+    if track do
+      render_playing_track(track, width)
+    else
+      render_no_track(width)
+    end
+  end
+
+  @doc """
+  Renders a progress bar for track playback.
+  """
+  def render_progress_bar(progress_ms, duration_ms, width \\ 50) do
+    if progress_ms && duration_ms && duration_ms > 0 do
+      progress_ratio = progress_ms / duration_ms
+      filled_width = round(progress_ratio * width)
+      empty_width = width - filled_width
+
+      progress_time = format_duration(progress_ms)
+      total_time = format_duration(duration_ms)
+
+      bar = String.duplicate("█", filled_width) <> String.duplicate("░", empty_width)
+
+      [
+        "#{progress_time} [#{bar}] #{total_time}"
+      ]
+    else
+      empty_bar = String.duplicate("░", width)
+      ["--:-- [#{empty_bar}] --:--"]
+    end
+  end
+
+  @doc """
+  Renders playback controls with ASCII art.
+  """
+  def render_playback_controls(is_playing \\ false) do
+    play_pause_icon = if is_playing, do: "⏸ ", else: "▶ "
+
+    [
+      "┌─ Controls ──────────────────────────────┐",
+      "│  ⏮  #{play_pause_icon}  ⏭     [P]lay/Pause   │",
+      "│                      [N]ext Track     │",
+      "│                      [B]ack Track     │",
+      "└─────────────────────────────────────────┘"
+    ]
+  end
+
+  @doc """
+  Renders a playlist display with ASCII art.
+  """
+  def render_playlist_list(playlists, options \\ []) do
+    max_items = Keyword.get(options, :max_items, 10)
+    width = Keyword.get(options, :width, 78)
+
+    header = [
+      "┌─ Your Playlists " <> String.duplicate("─", width - 18) <> "┐"
+    ]
+
+    content =
+      if Enum.empty?(playlists) do
+        ["│  No playlists found" <> String.duplicate(" ", width - 22) <> "│"]
+      else
+        playlists
+        |> Enum.take(max_items)
+        |> Enum.with_index(1)
+        |> Enum.map(fn {playlist, index} ->
+          name = truncate_text(playlist.name, width - 10)
+          track_count = playlist.tracks.total
+
+          padding =
+            String.duplicate(
+              " ",
+              width - String.length("│ #{index}. #{name} (#{track_count} tracks)") - 1
+            )
+
+          "│ #{index}. #{name} (#{track_count} tracks)#{padding}│"
+        end)
+      end
+
+    footer = [
+      "└" <> String.duplicate("─", width - 2) <> "┘"
+    ]
+
+    header ++ content ++ footer
+  end
+
+  @doc """
+  Renders a device list with ASCII art.
+  """
+  def render_device_list(devices, options \\ []) do
+    width = Keyword.get(options, :width, 78)
+
+    header = [
+      "┌─ Available Devices " <> String.duplicate("─", width - 21) <> "┐"
+    ]
+
+    content =
+      if Enum.empty?(devices) do
+        ["│  No devices found" <> String.duplicate(" ", width - 20) <> "│"]
+      else
+        devices
+        |> Enum.with_index(1)
+        |> Enum.map(fn {device, index} ->
+          status = if device.is_active, do: "●", else: "○"
+          name = truncate_text(device.name, width - 15)
+          type = device.type
+          volume = if device.volume_percent, do: " #{device.volume_percent}%", else: ""
+
+          text = "#{status} #{index}. #{name} (#{type})#{volume}"
+          padding = String.duplicate(" ", width - String.length("│ #{text}") - 1)
+          "│ #{text}#{padding}│"
+        end)
+      end
+
+    footer = [
+      "└" <> String.duplicate("─", width - 2) <> "┘"
+    ]
+
+    header ++ content ++ footer
+  end
+
+  @doc """
+  Renders a search results display.
+  """
+  def render_search_results(results, query, type \\ "track", options \\ []) do
+    max_items = Keyword.get(options, :max_items, 10)
+    width = Keyword.get(options, :width, 78)
+
+    header = [
+      "┌─ Search Results: \"#{truncate_text(query, 20)}\" " <>
+        String.duplicate("─", max(0, width - 30 - String.length(query))) <> "┐"
+    ]
+
+    content =
+      if Enum.empty?(results) do
+        ["│  No results found" <> String.duplicate(" ", width - 20) <> "│"]
+      else
+        results
+        |> Enum.take(max_items)
+        |> Enum.with_index(1)
+        |> Enum.map(fn {item, index} ->
+          render_search_result_item(item, index, type, width)
+        end)
+      end
+
+    footer = [
+      "└" <> String.duplicate("─", width - 2) <> "┘"
+    ]
+
+    header ++ content ++ footer
+  end
+
+  @doc """
+  Renders a volume control display.
+  """
+  def render_volume_control(volume, options \\ []) do
+    width = Keyword.get(options, :width, 40)
+    bar_width = width - 10
+
+    volume_ratio = volume / 100
+    filled_width = round(volume_ratio * bar_width)
+    empty_width = bar_width - filled_width
+
+    volume_bar = String.duplicate("█", filled_width) <> String.duplicate("░", empty_width)
+
+    [
+      "┌─ Volume ──────────────────────────────┐",
+      "│ #{String.pad_leading("#{volume}%", 3)} [#{volume_bar}] │",
+      "└───────────────────────────────────────┘"
+    ]
+  end
+
+  # Private Functions
+
+  defp render_playing_track(track, width) do
+    title_line = truncate_text(track.name, width - 4)
+
+    artist_line =
+      track.artists
+      |> Enum.map(& &1.name)
+      |> Enum.join(", ")
+      |> truncate_text(width - 4)
+
+    album_line = truncate_text(track.album.name, width - 4)
+
+    border_line = String.duplicate("═", width - 2)
+
+    [
+      "┌" <> border_line <> "┐",
+      "│ ♫ #{String.pad_trailing(title_line, width - 5)}│",
+      "│   #{String.pad_trailing("by #{artist_line}", width - 5)}│",
+      "│   #{String.pad_trailing("from #{album_line}", width - 5)}│",
+      "└" <> border_line <> "┘"
+    ]
+  end
+
+  defp render_no_track(width) do
+    border_line = String.duplicate("═", width - 2)
+    empty_line = String.duplicate(" ", width - 4)
+
+    [
+      "┌" <> border_line <> "┐",
+      "│ #{String.pad_trailing("No track playing", width - 3)}│",
+      "│ #{empty_line} │",
+      "│ #{String.pad_trailing("Start playing music on Spotify", width - 3)}│",
+      "└" <> border_line <> "┘"
+    ]
+  end
+
+  defp render_search_result_item(item, index, type, width) do
+    text =
+      case type do
+        "track" ->
+          artists = item.artists |> Enum.map(& &1.name) |> Enum.join(", ")
+          "#{item.name} - #{artists}"
+
+        "artist" ->
+          follower_count = format_number(item.followers)
+          "#{item.name} (#{follower_count} followers)"
+
+        "album" ->
+          artists = item.artists |> Enum.map(& &1.name) |> Enum.join(", ")
+          "#{item.name} by #{artists}"
+
+        "playlist" ->
+          "#{item.name} (#{item.tracks.total} tracks)"
+
+        _ ->
+          to_string(item)
+      end
+
+    truncated = truncate_text(text, width - 8)
+    padding = String.duplicate(" ", width - String.length("│ #{index}. #{truncated}") - 1)
+    "│ #{index}. #{truncated}#{padding}│"
+  end
+
+  defp format_duration(ms) when is_integer(ms) do
+    total_seconds = div(ms, 1000)
+    minutes = div(total_seconds, 60)
+    seconds = rem(total_seconds, 60)
+    "#{minutes}:#{String.pad_leading(Integer.to_string(seconds), 2, "0")}"
+  end
+
+  defp format_duration(_), do: "--:--"
+
+  defp format_number(nil), do: "0"
+  defp format_number(num) when num < 1_000, do: Integer.to_string(num)
+
+  defp format_number(num) when num < 1_000_000 do
+    "#{Float.round(num / 1_000, 1)}K"
+  end
+
+  defp format_number(num) do
+    "#{Float.round(num / 1_000_000, 1)}M"
+  end
+
+  defp truncate_text(text, max_length) when byte_size(text) <= max_length, do: text
+
+  defp truncate_text(text, max_length) do
+    String.slice(text, 0, max_length - 3) <> "..."
+  end
+end

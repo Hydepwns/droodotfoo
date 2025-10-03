@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(MIX_ENV=test elixir -e \"result = Application.ensure_all_started(:droodotfoo); IO.inspect(result)\")",
+      "Bash(MIX_ENV=test mix compile)",
+      "Bash(MIX_ENV=test mix test test/droodotfoo/load_test.exs:8)",
+      "Bash(cat:*)",
+      "Bash(timeout 10 mix test:*)",
+      "Bash(timeout 15 mix test test/droodotfoo_web/live/droodotfoo_live_test.exs:21 --include excluded)",
+      "Bash(mix test:*)",
+      "Bash(MIX_ENV=test iex -S mix -e \":timer.sleep(1000); IO.inspect(Process.whereis(Droodotfoo.PerformanceMonitor), label: \"\"PerformanceMonitor\"\"); IO.inspect(Process.whereis(Droodotfoo.RaxolApp), label: \"\"RaxolApp\"\"); IO.inspect(Process.whereis(Droodotfoo.PluginSystem.Manager), label: \"\"PluginManager\"\")\")",
+      "Bash(MIX_ENV=test mix run -e 'result = Application.ensure_all_started(:droodotfoo); IO.inspect(result, label: \"\"Application start result\"\"); if elem(result, 0) == :ok, do: (Process.sleep(100); IO.inspect(Process.whereis(Droodotfoo.PerformanceMonitor), label: \"\"PerformanceMonitor\"\"))')",
+      "Bash(mix compile:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

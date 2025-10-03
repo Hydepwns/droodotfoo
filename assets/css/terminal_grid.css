@@ -1,0 +1,252 @@
+/* Terminal Grid System CSS */
+/* Critical for Raxol-to-HTML grid alignment */
+
+/* Terminal wrapper to fill available space */
+.terminal-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 0;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+
+/* Each cell MUST be exactly 1ch wide for grid alignment */
+.terminal-container {
+  font-family: var(--font-family);
+  font-size: 16px;
+  line-height: var(--line-height);
+
+  /* Fixed 80 character width */
+  width: 80ch;
+  max-width: 100%;
+
+  /* Prevent any sub-pixel rendering that breaks the grid */
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+  text-rendering: optimizeLegibility;
+
+  /* Grid debugging - shows character boundaries */
+  position: relative;
+
+  /* Allow content to be visible */
+  overflow-x: hidden;
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+.terminal-line {
+  display: block;
+  height: 1.2em;
+  line-height: 1.2;
+  white-space: pre;
+  margin: 0;
+  padding: 0;
+
+  /* Ensure lines don't overflow horizontally but are visible vertically */
+  overflow-x: hidden;
+  overflow-y: visible;
+  max-width: 80ch;
+}
+
+.cell {
+  display: inline-block;
+  width: 1ch;
+  height: 1.2em;
+  line-height: 1.2;
+  vertical-align: top;
+  text-align: center;
+
+  /* Ensure no overflow breaks grid */
+  overflow: hidden;
+
+  /* Monaspace-specific adjustments */
+  font-variant-ligatures: contextual; /* Allow ligatures within cells */
+}
+
+/* Style mappings from Raxol to CSS */
+.cell.bold {
+  font-weight: var(--font-weight-bold);
+  font-variation-settings: 'wght' 800;
+}
+
+.cell.italic {
+  font-style: italic;
+}
+
+.cell.underline {
+  text-decoration: underline;
+}
+
+/* Color mappings - Terminal 16 colors */
+.cell.fg-black { color: #000000; }
+.cell.fg-red { color: #cc0000; }
+.cell.fg-green { color: #4e9a06; }
+.cell.fg-yellow { color: #c4a000; }
+.cell.fg-blue { color: #3465a4; }
+.cell.fg-magenta { color: #75507b; }
+.cell.fg-cyan { color: #06989a; }
+.cell.fg-white { color: #d3d7cf; }
+
+/* Bright variants */
+.cell.fg-bright-black { color: #555753; }
+.cell.fg-bright-red { color: #ef2929; }
+.cell.fg-bright-green { color: #8ae234; }
+.cell.fg-bright-yellow { color: #fce94f; }
+.cell.fg-bright-blue { color: #729fcf; }
+.cell.fg-bright-magenta { color: #ad7fa8; }
+.cell.fg-bright-cyan { color: #34e2e2; }
+.cell.fg-bright-white { color: #eeeeec; }
+
+/* Background colors */
+.cell.bg-black { background-color: #2e3436; }
+.cell.bg-red { background-color: #cc0000; }
+.cell.bg-green { background-color: #4e9a06; }
+.cell.bg-yellow { background-color: #c4a000; }
+.cell.bg-blue { background-color: #3465a4; }
+.cell.bg-magenta { background-color: #75507b; }
+.cell.bg-cyan { background-color: #06989a; }
+.cell.bg-white { background-color: #d3d7cf; }
+
+/* Bright background variants */
+.cell.bg-bright-black { background-color: #555753; }
+.cell.bg-bright-red { background-color: #ef2929; }
+.cell.bg-bright-green { background-color: #8ae234; }
+.cell.bg-bright-yellow { background-color: #fce94f; }
+.cell.bg-bright-blue { background-color: #729fcf; }
+.cell.bg-bright-magenta { background-color: #ad7fa8; }
+.cell.bg-bright-cyan { background-color: #34e2e2; }
+.cell.bg-bright-white { background-color: #eeeeec; }
+
+/* Terminal wrapper */
+.terminal-wrapper {
+  background-color: var(--background-color);
+  border: var(--border-thickness) solid var(--border-color);
+  padding: 1rem;
+  margin: 1rem 0;
+
+  /* Compact terminal display */
+  width: fit-content;
+  max-width: 100%;
+  min-height: auto;
+  height: auto;
+
+  /* Allow vertical scroll if needed, no horizontal scroll */
+  overflow-x: hidden;
+  overflow-y: auto;
+  max-height: 85vh;
+
+  /* Contain the content */
+  position: relative;
+}
+
+/* Cursor simulation */
+.cell.cursor {
+  background-color: var(--text-color);
+  color: var(--background-color);
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0.3; }
+}
+
+/* Debug mode - shows grid */
+.terminal-container.debug-grid {
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 0, 0, 0.1) 0,
+      rgba(255, 0, 0, 0.1) 1ch,
+      transparent 1ch,
+      transparent calc(1ch + 1px)
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 0, 0, 0.1) 0,
+      rgba(255, 0, 0, 0.1) var(--line-height),
+      transparent var(--line-height),
+      transparent calc(var(--line-height) + 1px)
+    );
+}
+
+/* Misaligned cells (for debugging) */
+.cell.misaligned {
+  background-color: rgba(255, 0, 0, 0.3) !important;
+  outline: 1px solid red;
+}
+
+/* Header table (monospace-web style) */
+table.header {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--line-height);
+  font-family: var(--font-family);
+}
+
+table.header th,
+table.header td {
+  padding: calc(var(--line-height) / 2) var(--grid-gap);
+  text-align: left;
+  border: 1px solid var(--border-color);
+}
+
+table.header th {
+  font-weight: var(--font-weight-bold);
+  background-color: var(--background-color-alt);
+  text-transform: uppercase;
+}
+
+table.header .title {
+  font-size: 1.25rem;
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+}
+
+table.header .subtitle {
+  font-size: 0.875rem;
+  color: var(--text-color-alt);
+}
+
+table.header .width-min {
+  width: 1%;
+  white-space: nowrap;
+}
+
+table.header .width-auto {
+  width: auto;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 1200px) {
+  .terminal-container {
+    font-size: 15px;
+    /* Ensure we still align to character grid at new size */
+    width: calc(round(down, 100%, 1ch));
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .terminal-container {
+    font-size: 14px;
+    /* Reduce columns but maintain grid */
+    max-width: calc(round(down, 60ch, 1ch));
+  }
+
+  .terminal-wrapper {
+    max-height: 60vh;
+  }
+}
+
+/* Monaspace-specific responsive adjustments */
+@supports (font-variation-settings: normal) {
+  /* Use variable font weight for better readability at small sizes */
+  @media screen and (max-width: 768px) {
+    .cell {
+      font-variation-settings: 'wght' 550; /* Slightly heavier for small screens */
+    }
+  }
+}

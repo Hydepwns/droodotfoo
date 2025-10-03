@@ -1,0 +1,288 @@
+/* Monospace Web Aesthetic CSS */
+/* Based on the-monospace-web principles */
+
+/* Font Face Declarations */
+@font-face {
+  font-family: 'Monaspace Argon';
+  src: url('/fonts/MonaspaceArgon-Regular.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-variation-settings: 'wght' 500;
+}
+
+@font-face {
+  font-family: 'Monaspace Argon';
+  src: url('/fonts/MonaspaceArgon-Bold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-variation-settings: 'wght' 800;
+}
+
+/* CSS Variables */
+:root {
+  /* Typography */
+  --font-family: 'Monaspace Argon', monospace;
+  --font-weight-normal: 500;
+  --font-weight-medium: 600;
+  --font-weight-bold: 800;
+  --font-size-base: 16px;
+  --line-height: 1.2em;
+
+  /* Grid */
+  --grid-unit: 1ch;
+  --grid-gap: 2ch;
+
+  /* Colors */
+  --text-color: #000;
+  --text-color-alt: #666;
+  --background-color: #fff;
+  --background-color-alt: #f5f5f5;
+  --border-color: #000;
+
+  /* Borders */
+  --border-thickness: 2px;
+  --border-style: solid;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-color: #e0e0e0;
+    --text-color-alt: #999;
+    --background-color: #0a0a0a;
+    --background-color-alt: #1a1a1a;
+    --border-color: #e0e0e0;
+  }
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: var(--font-size-base);
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+}
+
+body {
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-normal);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'calt' 1, 'liga' 1, 'ss01' 1; /* Enable ligatures */
+  font-optical-sizing: auto;
+  line-height: var(--line-height);
+  color: var(--text-color);
+  background-color: var(--background-color);
+}
+
+/* Container with Character Grid Alignment */
+.monospace-container {
+  max-width: calc(round(down, 80ch, 1ch));
+  margin: 0 auto;
+  padding: calc(var(--line-height) * 0.5) var(--grid-gap);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Grid System */
+.monospace-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20ch, 1fr));
+  gap: var(--grid-gap);
+  width: calc(round(down, 100%, 1ch));
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  margin-bottom: var(--line-height);
+}
+
+h1 { font-size: 1.5rem; }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1.125rem; }
+h4, h5, h6 { font-size: 1rem; }
+
+p, pre, ul, ol {
+  margin-bottom: var(--line-height);
+}
+
+/* Box Drawing Components */
+.box-single {
+  border: 1px solid var(--border-color);
+  padding: calc(var(--line-height) * 0.5) var(--grid-gap);
+}
+
+.box-double {
+  border: 3px double var(--border-color);
+  padding: var(--line-height) var(--grid-gap);
+}
+
+.box-thick {
+  border: var(--border-thickness) solid var(--border-color);
+  padding: var(--line-height) var(--grid-gap);
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--line-height);
+}
+
+th, td {
+  padding: calc(var(--line-height) / 2) var(--grid-unit);
+  text-align: left;
+  border: 1px solid var(--border-color);
+}
+
+th {
+  font-weight: var(--font-weight-bold);
+  background-color: var(--background-color-alt);
+}
+
+/* Code Blocks */
+pre, code {
+  font-family: var(--font-family);
+}
+
+pre {
+  background-color: var(--background-color-alt);
+  border: 1px solid var(--border-color);
+  padding: var(--line-height) var(--grid-gap);
+  overflow-x: auto;
+}
+
+code {
+  background-color: var(--background-color-alt);
+  padding: 0.125rem 0.25rem;
+}
+
+pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+/* Forms */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  padding: calc(var(--line-height) / 2) var(--grid-unit);
+  border: 1px solid var(--border-color);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  width: calc(round(down, 100%, 1ch));
+}
+
+button,
+input[type="submit"],
+input[type="button"] {
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-medium);
+  padding: calc(var(--line-height) / 2) calc(var(--grid-gap));
+  border: var(--border-thickness) solid var(--border-color);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover {
+  background-color: var(--text-color);
+  color: var(--background-color);
+}
+
+/* ASCII Art Container */
+.ascii-art {
+  white-space: pre;
+  line-height: 1;
+  font-size: 0.875rem;
+  display: inline-block;
+}
+
+/* Terminal-like Elements */
+.terminal-prompt::before {
+  content: "$ ";
+  color: var(--text-color-alt);
+}
+
+.terminal-output {
+  background-color: var(--background-color-alt);
+  border: 1px solid var(--border-color);
+  padding: var(--line-height) var(--grid-gap);
+  font-size: 0.875rem;
+  overflow-x: auto;
+}
+
+/* Navigation */
+nav ul {
+  list-style: none;
+  padding: 0;
+}
+
+nav li {
+  display: inline-block;
+  margin-right: var(--grid-gap);
+}
+
+nav a {
+  color: var(--text-color);
+  text-decoration: none;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid transparent;
+}
+
+nav a:hover {
+  border-color: var(--border-color);
+}
+
+/* Instructions Box */
+.instructions-box {
+  text-align: center;
+  padding: 0.25rem 0.5rem;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.75rem;
+  margin-top: auto;
+}
+
+/* Utility Classes */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-uppercase { text-transform: uppercase; }
+.text-muted { color: var(--text-color-alt); }
+
+.mt-1 { margin-top: var(--line-height); }
+.mt-2 { margin-top: calc(var(--line-height) * 2); }
+.mb-1 { margin-bottom: var(--line-height); }
+.mb-2 { margin-bottom: calc(var(--line-height) * 2); }
+
+.p-1 { padding: var(--line-height); }
+.p-2 { padding: calc(var(--line-height) * 2); }
+
+/* Responsive */
+@media screen and (max-width: 768px) {
+  :root {
+    --font-size-base: 14px;
+  }
+
+  .monospace-container {
+    max-width: calc(round(down, 100%, 1ch));
+    padding: var(--line-height) var(--grid-unit);
+  }
+
+  .monospace-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,123 @@
+defmodule Droodotfoo.Raxol.State do
+  @moduledoc """
+  State management and reducer pattern for the terminal UI.
+  """
+
+  alias Droodotfoo.Raxol.{Navigation, Command}
+  alias Droodotfoo.Terminal.FileSystem
+  alias Droodotfoo.CursorTrail
+  alias Droodotfoo.AdvancedSearch
+
+  defstruct [
+    :buffer,
+    :current_section,
+    :cursor_y,
+    :cursor_x,
+    :navigation_items,
+    :command_mode,
+    :command_buffer,
+    :command_history,
+    :history_index,
+    :terminal_state,
+    :terminal_output,
+    :prompt,
+    :cursor_trail,
+    :trail_enabled,
+    :search_state
+  ]
+
+  @doc """
+  Creates initial state for the application
+  """
+  def initial(width, height) do
+    %__MODULE__{
+      buffer: Droodotfoo.TerminalBridge.create_blank_buffer(width, height),
+      current_section: :home,
+      cursor_y: 2,
+      cursor_x: 0,
+      navigation_items: [:home, :projects, :skills, :experience, :contact],
+      command_mode: false,
+      command_buffer: "",
+      command_history: [],
+      history_index: -1,
+      terminal_state: FileSystem.init(),
+      terminal_output: "Welcome to droo.foo terminal\nType 'help' for available commands\n",
+      prompt: "[drew@droo.foo ~]$ ",
+      cursor_trail: CursorTrail.new(),
+      trail_enabled: true,
+      search_state: AdvancedSearch.new()
+    }
+  end
+
+  @doc """
+  Main reducer function that handles state updates based on input.
+  Acts as the central dispatch for all state changes.
+  """
+  def reduce(state, {:input, key}) do
+    cond do
+      # Mode changes take priority
+      is_mode_change?(state, key) ->
+        handle_mode_change(state, key)
+
+      # Then handle input based on current mode
+      state.command_mode ->
+        handle_command_mode(state, key)
+
+      true ->
+        Navigation.handle_input(key, state)
+    end
+  end
+
+  # Check if input triggers a mode change
+  defp is_mode_change?(%{command_mode: false}, "/"), do: true
+  defp is_mode_change?(%{command_mode: false}, ":"), do: true
+  defp is_mode_change?(%{command_mode: true}, "Escape"), do: true
+  defp is_mode_change?(_, _), do: false
+
+  # Handle mode transitions
+  defp handle_mode_change(%{command_mode: false} = state, "/") do
+    # Enter search mode
+    %{state | command_mode: true, command_buffer: "search "}
+  end
+
+  defp handle_mode_change(%{command_mode: false} = state, ":") do
+    # Enter command mode
+    %{state | command_mode: true, command_buffer: "", history_index: -1}
+  end
+
+  defp handle_mode_change(%{command_mode: true} = state, "Escape") do
+    # Exit command mode
+    %{state | command_mode: false, command_buffer: "", history_index: -1}
+  end
+
+  defp handle_mode_change(state, _key), do: state
+
+  # Handle command mode input
+  defp handle_command_mode(state, "Enter") do
+    # Execute command using our new terminal system
+    result = Command.execute_terminal_command(state.command_buffer, state)
+    after_command_execution(state, result)
+  end
+
+  defp handle_command_mode(state, key) do
+    # Regular command mode input handling
+    Command.handle_input(key, state)
+  end
+
+  @doc """
+  Updates state after command execution
+  """
+  def after_command_execution(state, command_result) do
+    new_history =
+      if state.command_buffer != "",
+        do: [state.command_buffer | state.command_history] |> Enum.take(50),
+        else: state.command_history
+
+    state
+    |> Map.merge(command_result)
+    |> Map.put(:command_mode, false)
+    |> Map.put(:command_buffer, "")
+    |> Map.put(:command_history, new_history)
+    |> Map.put(:history_index, -1)
+  end
+end
