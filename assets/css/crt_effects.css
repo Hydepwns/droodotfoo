@@ -1,0 +1,161 @@
+/* CRT Effects - Retro Terminal Aesthetic */
+
+/* Apply CRT effects when .crt-mode class is present on terminal-wrapper */
+
+/* Main CRT container effects */
+.terminal-wrapper.crt-mode {
+  /* Subtle screen curvature */
+  border-radius: 8px;
+
+  /* No 3D transforms - keep everything flat */
+  position: relative;
+
+  /* Add glow around edges */
+  box-shadow:
+    0 0 20px rgba(100, 200, 255, 0.15),
+    inset 0 0 60px rgba(0, 0, 0, 0.3);
+}
+
+/* Scanlines overlay */
+.terminal-wrapper.crt-mode::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1000;
+
+  /* Horizontal scanlines */
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 1px,
+    rgba(0, 0, 0, 0.15) 1px,
+    rgba(0, 0, 0, 0.15) 2px
+  );
+
+  /* Subtle flicker animation */
+  animation: scanline-flicker 0.15s infinite alternate;
+}
+
+/* Phosphor glow overlay */
+.terminal-wrapper.crt-mode::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 999;
+
+  /* Vignette effect - darker at edges */
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0) 50%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+}
+
+/* Enhanced text glow in CRT mode */
+.terminal-wrapper.crt-mode .terminal-container {
+  /* Phosphor glow on text - subtle */
+  text-shadow:
+    0 0 1px currentColor,
+    0 0 2px rgba(100, 200, 255, 0.2);
+
+  /* Very subtle blur for CRT effect */
+  filter: blur(0.15px);
+}
+
+/* Stronger glow on cursor in CRT mode */
+.terminal-wrapper.crt-mode .cell.cursor {
+  text-shadow:
+    0 0 4px currentColor,
+    0 0 8px currentColor,
+    0 0 12px rgba(100, 200, 255, 0.6);
+  animation: cursor-glow 1s ease-in-out infinite alternate;
+}
+
+/* Scanline flicker animation */
+@keyframes scanline-flicker {
+  0% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Cursor glow pulse */
+@keyframes cursor-glow {
+  0% {
+    filter: brightness(1);
+  }
+  100% {
+    filter: brightness(1.2);
+  }
+}
+
+/* Screen refresh effect (subtle rolling scan) */
+.terminal-wrapper.crt-mode .terminal-container::before {
+  content: "";
+  position: absolute;
+  top: -100%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  animation: screen-refresh 8s linear infinite;
+  pointer-events: none;
+  z-index: 998;
+}
+
+@keyframes screen-refresh {
+  0% {
+    top: -100%;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
+/* No distortion - keep text sharp and aligned */
+.terminal-wrapper.crt-mode .terminal-container {
+  /* No transform applied - CRT effects are purely visual overlays */
+  transform: none;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .terminal-wrapper.crt-mode::before {
+    animation: none;
+  }
+
+  .terminal-wrapper.crt-mode .cell.cursor {
+    animation: blink 1s step-end infinite; /* Keep cursor blink only */
+  }
+
+  .terminal-wrapper.crt-mode .terminal-container::before {
+    animation: none;
+    display: none;
+  }
+}
+
+/* Performance optimization - GPU acceleration */
+.terminal-wrapper.crt-mode,
+.terminal-wrapper.crt-mode::before,
+.terminal-wrapper.crt-mode::after,
+.terminal-wrapper.crt-mode .terminal-container {
+  will-change: auto;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
