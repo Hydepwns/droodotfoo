@@ -36,9 +36,19 @@ if config_env() == :prod do
   host = System.get_env("PHX_HOST") || "example.com"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
+  # CDN configuration for Cloudflare Pages
+  # If CDN_HOST is set, static assets will be served from there
+  cdn_host = System.get_env("CDN_HOST")
+
   config :droodotfoo, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
-  config :droodotfoo, DroodotfooWeb.Endpoint,
+  # Spotify API configuration
+  config :droodotfoo, :spotify,
+    client_id: System.get_env("SPOTIFY_CLIENT_ID"),
+    client_secret: System.get_env("SPOTIFY_CLIENT_SECRET"),
+    redirect_uri: System.get_env("SPOTIFY_REDIRECT_URI") || "https://#{host}/auth/spotify/callback"
+
+  endpoint_config = [
     url: [host: host, port: 443, scheme: "https"],
     http: [
       # Enable IPv6 and bind on all interfaces.
@@ -49,6 +59,17 @@ if config_env() == :prod do
       port: port
     ],
     secret_key_base: secret_key_base
+  ]
+
+  # Add static_url config if CDN is configured
+  endpoint_config =
+    if cdn_host do
+      Keyword.put(endpoint_config, :static_url, [host: cdn_host, scheme: "https"])
+    else
+      endpoint_config
+    end
+
+  config :droodotfoo, DroodotfooWeb.Endpoint, endpoint_config
 
   # ## SSL Support
   #
