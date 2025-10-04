@@ -9,71 +9,192 @@ defmodule Droodotfoo.Raxol.Navigation do
   Handles navigation-related input when not in command mode.
   Returns updated state with new cursor position.
   """
+
+  # Arrow key navigation (primary for normal users)
+  def handle_input("ArrowDown", state), do: move_down(state)
+  def handle_input("ArrowUp", state), do: move_up(state)
+  def handle_input("ArrowRight", state), do: move_down(state)
+  def handle_input("ArrowLeft", state), do: move_up(state)
+
+  # Vim navigation (requires vim_mode enabled)
+  # Special handling for STL viewer controls
   def handle_input("j", state) do
-    # Move cursor down
-    max_y = length(state.navigation_items) - 1
-    new_y = min(state.cursor_y + 1, max_y)
+    cond do
+      state.current_section == :stl_viewer ->
+        # Mark for STL viewer rotation (handled by LiveView)
+        Map.put(state, :stl_viewer_action, {:rotate, :down})
 
-    # Update trail if enabled
-    trail =
-      if state.trail_enabled do
-        calculate_cursor_position(state, new_y)
-        |> then(&CursorTrail.add_position(state.cursor_trail, &1))
-      else
-        state.cursor_trail
-      end
+      Map.get(state, :vim_mode, false) ->
+        move_down(state)
 
-    %{state | cursor_y: new_y, cursor_trail: trail}
+      true ->
+        state
+    end
   end
 
   def handle_input("k", state) do
-    # Move cursor up
-    new_y = max(state.cursor_y - 1, 0)
+    cond do
+      state.current_section == :stl_viewer ->
+        Map.put(state, :stl_viewer_action, {:rotate, :up})
 
-    # Update trail if enabled
-    trail =
-      if state.trail_enabled do
-        calculate_cursor_position(state, new_y)
-        |> then(&CursorTrail.add_position(state.cursor_trail, &1))
-      else
-        state.cursor_trail
-      end
+      Map.get(state, :vim_mode, false) ->
+        move_up(state)
 
-    %{state | cursor_y: new_y, cursor_trail: trail}
+      true ->
+        state
+    end
   end
 
   def handle_input("h", state) do
-    # Move to previous section (same as up)
-    new_y = max(state.cursor_y - 1, 0)
-    trail = update_trail_if_enabled(state, new_y)
-    %{state | cursor_y: new_y, cursor_trail: trail}
+    cond do
+      state.current_section == :stl_viewer ->
+        Map.put(state, :stl_viewer_action, {:zoom, :out})
+
+      Map.get(state, :vim_mode, false) ->
+        move_up(state)
+
+      true ->
+        state
+    end
   end
 
   def handle_input("l", state) do
-    # Move to next section (same as down)
-    max_y = length(state.navigation_items) - 1
-    new_y = min(state.cursor_y + 1, max_y)
-    trail = update_trail_if_enabled(state, new_y)
-    %{state | cursor_y: new_y, cursor_trail: trail}
+    cond do
+      state.current_section == :stl_viewer ->
+        Map.put(state, :stl_viewer_action, {:zoom, :in})
+
+      Map.get(state, :vim_mode, false) ->
+        move_down(state)
+
+      true ->
+        state
+    end
+  end
+
+  # STL Viewer specific controls
+  def handle_input("r", state) do
+    if state.current_section == :stl_viewer do
+      Map.put(state, :stl_viewer_action, {:reset, nil})
+    else
+      state
+    end
+  end
+
+  def handle_input("m", state) do
+    if state.current_section == :stl_viewer do
+      Map.put(state, :stl_viewer_action, {:cycle_mode, nil})
+    else
+      state
+    end
+  end
+
+  def handle_input("q", state) do
+    if state.current_section == :stl_viewer do
+      # Exit viewer, return to home
+      %{state | current_section: :home}
+    else
+      state
+    end
   end
 
   def handle_input("g", state) do
-    # Go to top
-    trail = update_trail_if_enabled(state, 0)
-    %{state | cursor_y: 0, cursor_trail: trail}
+    if Map.get(state, :vim_mode, false) do
+      # Go to top
+      trail = update_trail_if_enabled(state, 0)
+      %{state | cursor_y: 0, cursor_trail: trail}
+    else
+      state
+    end
   end
 
   def handle_input("G", state) do
-    # Go to bottom
-    max_y = length(state.navigation_items) - 1
-    trail = update_trail_if_enabled(state, max_y)
-    %{state | cursor_y: max_y, cursor_trail: trail}
+    if Map.get(state, :vim_mode, false) do
+      # Go to bottom
+      max_y = length(state.navigation_items) - 1
+      trail = update_trail_if_enabled(state, max_y)
+      %{state | cursor_y: max_y, cursor_trail: trail}
+    else
+      state
+    end
   end
 
   def handle_input("Enter", state) do
     # Select current item
     selected = Enum.at(state.navigation_items, state.cursor_y)
     %{state | current_section: selected}
+  end
+
+  # Handle direct cursor positioning (for mouse clicks)
+  def handle_input("cursor_set:" <> idx_str, state) do
+    case Integer.parse(idx_str) do
+      {idx, ""} when idx >= 0 and idx < length(state.navigation_items) ->
+        trail = update_trail_if_enabled(state, idx)
+        %{state | cursor_y: idx, cursor_trail: trail}
+
+      _ ->
+        state
+    end
+  end
+
+  # Number key shortcuts (1-5) - jump to menu item and select
+  def handle_input("1", state), do: jump_to_and_select(state, 0)
+  def handle_input("2", state), do: jump_to_and_select(state, 1)
+  def handle_input("3", state), do: jump_to_and_select(state, 2)
+  def handle_input("4", state), do: jump_to_and_select(state, 3)
+  def handle_input("5", state), do: jump_to_and_select(state, 4)
+
+  # Toggle vim mode with 'v' key
+  def handle_input("v", state) do
+    %{state | vim_mode: !state.vim_mode}
+  end
+
+  def handle_input("V", state) do
+    # Same as 'v' - toggle vim mode
+    %{state | vim_mode: !state.vim_mode}
+  end
+
+  # Set vim mode directly (for persistence from localStorage)
+  def handle_input("set_vim_on", state) do
+    %{state | vim_mode: true}
+  end
+
+  def handle_input("set_vim_off", state) do
+    %{state | vim_mode: false}
+  end
+
+  # Restore section from localStorage
+  def handle_input("restore_section:" <> section_str, state) do
+    try do
+      section_atom = String.to_existing_atom(section_str)
+
+      if section_atom in state.navigation_items or section_atom in [:terminal, :search_results, :performance, :matrix, :ssh, :analytics, :help] do
+        %{state | current_section: section_atom}
+      else
+        state
+      end
+    rescue
+      _ -> state
+    end
+  end
+
+  # Search navigation - next match with 'n'
+  def handle_input("n", state) do
+    if state.current_section == :search_results do
+      updated_search = Droodotfoo.AdvancedSearch.next_match(state.search_state)
+      %{state | search_state: updated_search}
+    else
+      state
+    end
+  end
+
+  # Search navigation - previous match with 'N'
+  def handle_input("N", state) do
+    if state.current_section == :search_results do
+      updated_search = Droodotfoo.AdvancedSearch.previous_match(state.search_state)
+      %{state | search_state: updated_search}
+    else
+      state
+    end
   end
 
   # Toggle trail with 't' key
@@ -97,6 +218,30 @@ defmodule Droodotfoo.Raxol.Navigation do
 
   # Private helpers
 
+  defp jump_to_and_select(state, idx) do
+    if idx >= 0 and idx < length(state.navigation_items) do
+      selected = Enum.at(state.navigation_items, idx)
+      trail = update_trail_if_enabled(state, idx)
+      %{state | cursor_y: idx, current_section: selected, cursor_trail: trail}
+    else
+      state
+    end
+  end
+
+  # Movement helper functions
+  defp move_down(state) do
+    max_y = length(state.navigation_items) - 1
+    new_y = min(state.cursor_y + 1, max_y)
+    trail = update_trail_if_enabled(state, new_y)
+    %{state | cursor_y: new_y, cursor_trail: trail}
+  end
+
+  defp move_up(state) do
+    new_y = max(state.cursor_y - 1, 0)
+    trail = update_trail_if_enabled(state, new_y)
+    %{state | cursor_y: new_y, cursor_trail: trail}
+  end
+
   defp update_trail_if_enabled(state, new_y) do
     if state.trail_enabled do
       calculate_cursor_position(state, new_y)
@@ -108,12 +253,12 @@ defmodule Droodotfoo.Raxol.Navigation do
 
   defp calculate_cursor_position(_state, cursor_y) do
     # Calculate the actual terminal position for the cursor
-    # Navigation items start at row 10 in the terminal
-    base_row = 10
-    # 2 rows between items
-    row = base_row + cursor_y * 2
-    # Fixed column for navigation cursor
-    col = 5
+    # Navigation box starts at row 13, items start at row 15 (13 + 2)
+    base_row = 15
+    # 1 row between items (they're consecutive now)
+    row = base_row + cursor_y
+    # Fixed column for navigation cursor (column 2 is where cursor displays)
+    col = 2
     {row, col}
   end
 end

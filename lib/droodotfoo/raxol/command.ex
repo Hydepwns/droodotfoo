@@ -4,6 +4,7 @@ defmodule Droodotfoo.Raxol.Command do
   """
 
   alias Droodotfoo.Terminal.CommandParser
+  alias Droodotfoo.Terminal.Commands.Stl, as: StlCommands
 
   @doc """
   Handles input when in command mode
@@ -14,24 +15,52 @@ defmodule Droodotfoo.Raxol.Command do
   end
 
   def handle_input("ArrowUp", state) do
-    # Navigate command history up
-    if state.history_index < length(state.command_history) - 1 do
-      new_index = state.history_index + 1
-      new_buffer = Enum.at(state.command_history, new_index, "")
-      %{state | history_index: new_index, command_buffer: new_buffer}
+    # Check if we're in search mode
+    if String.starts_with?(state.command_buffer, "search ") do
+      # Use search history
+      search_history = state.search_state.history
+
+      if state.history_index < length(search_history) - 1 do
+        new_index = state.history_index + 1
+        new_query = Enum.at(search_history, new_index, "")
+        %{state | history_index: new_index, command_buffer: "search " <> new_query}
+      else
+        state
+      end
     else
-      state
+      # Navigate command history up
+      if state.history_index < length(state.command_history) - 1 do
+        new_index = state.history_index + 1
+        new_buffer = Enum.at(state.command_history, new_index, "")
+        %{state | history_index: new_index, command_buffer: new_buffer}
+      else
+        state
+      end
     end
   end
 
   def handle_input("ArrowDown", state) do
-    # Navigate command history down
-    if state.history_index > -1 do
-      new_index = state.history_index - 1
-      new_buffer = if new_index == -1, do: "", else: Enum.at(state.command_history, new_index, "")
-      %{state | history_index: new_index, command_buffer: new_buffer}
+    # Check if we're in search mode
+    if String.starts_with?(state.command_buffer, "search ") do
+      # Use search history
+      search_history = state.search_state.history
+
+      if state.history_index > -1 do
+        new_index = state.history_index - 1
+        new_query = if new_index == -1, do: "", else: Enum.at(search_history, new_index, "")
+        %{state | history_index: new_index, command_buffer: "search " <> new_query}
+      else
+        state
+      end
     else
-      state
+      # Navigate command history down
+      if state.history_index > -1 do
+        new_index = state.history_index - 1
+        new_buffer = if new_index == -1, do: "", else: Enum.at(state.command_history, new_index, "")
+        %{state | history_index: new_index, command_buffer: new_buffer}
+      else
+        state
+      end
     end
   end
 
@@ -67,14 +96,26 @@ defmodule Droodotfoo.Raxol.Command do
         # Command changed the terminal state (like cd)
         new_output = append_to_output(state.terminal_output, output)
 
-        %{
+        # Check for theme changes and section changes, move to main state
+        {theme_change, temp_state} = Map.pop(new_terminal_state, :theme_change)
+        {section_change, cleaned_terminal_state} = Map.pop(temp_state, :section_change)
+
+        base_state = %{
           state
           | terminal_output: new_output,
-            terminal_state: new_terminal_state,
-            current_section: :terminal
+            terminal_state: cleaned_terminal_state,
+            current_section: section_change || :terminal
         }
 
+        # Add theme_change to main state if present
+        if theme_change do
+          Map.put(base_state, :theme_change, theme_change)
+        else
+          base_state
+        end
+
       {:error, error_msg} ->
+        # Error messages from CommandParser are already formatted
         new_output = append_to_output(state.terminal_output, error_msg)
         %{state | terminal_output: new_output, current_section: :terminal}
 
@@ -82,6 +123,12 @@ defmodule Droodotfoo.Raxol.Command do
         # Handle exit command
         new_output = append_to_output(state.terminal_output, msg)
         %{state | terminal_output: new_output, current_section: :home}
+
+      {:plugin, plugin_name, output} ->
+        # Handle plugin activation
+        new_output = append_to_output(state.terminal_output, output)
+        section = String.to_atom(plugin_name)
+        %{state | terminal_output: new_output, current_section: section}
     end
   end
 
@@ -121,6 +168,60 @@ defmodule Droodotfoo.Raxol.Command do
   defp run_command({"ssh", _}, state), do: %{state | current_section: :ssh}
   defp run_command({"analytics", _}, state), do: %{state | current_section: :analytics}
   defp run_command({"split", _}, state), do: %{state | current_section: :multiplexer}
+
+  defp run_command({"stl", args_str}, state) do
+    # Parse STL command arguments
+    args = if args_str, do: String.split(args_str, " "), else: []
+
+    case StlCommands.execute(args, state) do
+      {:ok, _output} -> state
+      {:ok, _output, new_state} -> new_state
+      {:error, _msg} -> state
+    end
+  end
+
+  defp run_command({"spotify", args_str}, state) do
+    # Handle Spotify command mode shortcuts
+    case args_str do
+      "auth" ->
+        # Trigger auth flow by redirecting to auth endpoint
+        # For now, just show a message in terminal output
+        output = "Visit http://localhost:4000/auth/spotify to authenticate"
+        new_output = append_to_output(state.terminal_output, output)
+        %{state | terminal_output: new_output, current_section: :terminal}
+
+      "now-playing" ->
+        # Open Spotify plugin in now-playing mode
+        %{state | current_section: :spotify}
+
+      _ ->
+        # Default: open Spotify plugin
+        %{state | current_section: :spotify}
+    end
+  end
+
+  defp run_command({"music", args_str}, state) do
+    # Alias for spotify command
+    run_command({"spotify", args_str}, state)
+  end
+
+  defp run_command({"github", args_str}, state) do
+    # Handle GitHub command mode shortcuts
+    case args_str do
+      "trending" ->
+        # Open GitHub plugin in trending mode
+        %{state | current_section: :github}
+
+      _ ->
+        # Default: open GitHub plugin
+        %{state | current_section: :github}
+    end
+  end
+
+  defp run_command({"gh", args_str}, state) do
+    # Alias for github command
+    run_command({"github", args_str}, state)
+  end
 
   defp run_command({"cat", section}, state) when not is_nil(section) do
     atom_section =

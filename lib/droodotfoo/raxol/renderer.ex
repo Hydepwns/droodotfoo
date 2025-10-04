@@ -6,8 +6,8 @@ defmodule Droodotfoo.Raxol.Renderer do
   alias Droodotfoo.TerminalBridge
   alias Droodotfoo.CursorTrail
 
-  @width 80
-  @height 24
+  @width 110
+  @height 35
 
   @doc """
   Main render function that orchestrates all drawing operations
@@ -17,62 +17,77 @@ defmodule Droodotfoo.Raxol.Renderer do
 
     buffer
     |> draw_ascii_logo()
-    |> draw_navigation(state.cursor_y)
+    |> draw_breadcrumb(state)
+    |> draw_navigation(state)
     |> draw_cursor_trail(state)
     |> draw_content(state.current_section, state)
+    |> draw_status_bar(state)
     |> draw_command_line(state)
+    |> draw_help_modal(state)
+  end
+
+  # Helper function to reduce repetition in drawing boxes
+  defp draw_box_at(buffer, lines, x, y) do
+    lines
+    |> Enum.with_index()
+    |> Enum.reduce(buffer, fn {line, idx}, buf ->
+      TerminalBridge.write_at(buf, x, y + idx, line)
+    end)
   end
 
   defp draw_ascii_logo(buffer) do
     logo_lines = [
-      "╭────────────────────────────────────────────────────────────╮",
-      "│                                                            │",
-      "│           ██████╗ ██████╗  ██████╗  ██████╗                │",
-      "│           ██╔══██╗██╔══██╗██╔═══██╗██╔═══██╗               │",
-      "│           ██║  ██║██████╔╝██║   ██║██║   ██║               │",
-      "│           ██║  ██║██╔══██╗██║   ██║██║   ██║               │",
-      "│           ██████╔╝██║  ██║╚██████╔╝╚██████╔╝               │",
-      "│           ╚═════╝ ╚═╝  ╚═╝ ╚═════╝  ╚═════╝                │",
-      "│                                                            │",
-      "╰────────────────────────────────────────────────────────────╯"
+      "╭────────────────────────────────────────────────────────────────────────────────────────────────────────╮",
+      "│                                                                                                        │",
+      "│                     ██████╗ ██████╗  ██████╗  ██████╗                                                  │",
+      "│                     ██╔══██╗██╔══██╗██╔═══██╗██╔═══██╗                                                 │",
+      "│                     ██║  ██║██████╔╝██║   ██║██║   ██║                                                 │",
+      "│                     ██║  ██║██╔══██╗██║   ██║██║   ██║                                                 │",
+      "│                     ██████╔╝██║  ██║╚██████╔╝╚██████╔╝                                                 │",
+      "│                     ╚═════╝ ╚═╝  ╚═╝ ╚═════╝  ╚═════╝                                                  │",
+      "│                                                                                                        │",
+      "╰────────────────────────────────────────────────────────────────────────────────────────────────────────╯"
     ]
 
-    logo_lines
-    |> Enum.with_index()
-    |> Enum.reduce(buffer, fn {line, y}, buf ->
-      TerminalBridge.write_at(buf, 0, y, line)
-    end)
+    draw_box_at(buffer, logo_lines, 0, 0)
   end
 
-  defp draw_navigation(buffer, cursor_y) do
+  defp draw_breadcrumb(buffer, state) do
+    breadcrumb = format_breadcrumb(state.current_section)
+    # Draw breadcrumb at row 11, centered
+    TerminalBridge.write_at(buffer, 2, 11, breadcrumb)
+  end
+
+  defp format_breadcrumb(:home), do: "Home"
+  defp format_breadcrumb(:terminal), do: "Home > Terminal"
+
+  defp format_breadcrumb(section) do
+    section_name = section |> Atom.to_string() |> String.capitalize()
+    "Home > #{section_name}"
+  end
+
+  defp draw_navigation(buffer, state) do
     nav_y = 13
+    cursor_y = state.cursor_y
 
     nav_items = [
       {" Home                    ", :home, 0},
       {" Projects                ", :projects, 1},
       {" Skills                  ", :skills, 2},
       {" Experience              ", :experience, 3},
-      {" Contact                 ", :contact, 4}
+      {" Contact                 ", :contact, 4},
+      {" STL Viewer              ", :stl_viewer, 5}
     ]
 
-    buffer = TerminalBridge.draw_box(buffer, 0, nav_y, 30, 12, :single)
+    buffer = TerminalBridge.draw_box(buffer, 0, nav_y, 30, 9, :single)
     buffer = TerminalBridge.write_at(buffer, 2, nav_y, "─ Navigation ──────────────")
 
     nav_items
     |> Enum.reduce(buffer, fn {text, _key, idx}, buf ->
       y_pos = nav_y + 2 + idx
-      cursor = if idx == cursor_y, do: "▶", else: "▷"
+      cursor = if idx == cursor_y, do: ">", else: " "
       TerminalBridge.write_at(buf, 2, y_pos, cursor <> text)
     end)
-    |> draw_navigation_help(nav_y + 8)
-  end
-
-  defp draw_navigation_help(buffer, y) do
-    buffer
-    |> TerminalBridge.write_at(2, y, " Commands:")
-    |> TerminalBridge.write_at(2, y + 1, " j/k - Navigate")
-    |> TerminalBridge.write_at(2, y + 2, " Enter - Select")
-    |> TerminalBridge.write_at(2, y + 3, " t/T - Trail on/clear")
   end
 
   defp draw_cursor_trail(buffer, state) do
@@ -117,8 +132,12 @@ defmodule Droodotfoo.Raxol.Renderer do
           trail_cell = %{
             char: trail_pos.char,
             style: %{
-              color: trail_pos.style[:color] || "white",
-              background: nil
+              fg_color: trail_pos.style[:color] || :white,
+              bg_color: nil,
+              bold: false,
+              italic: false,
+              underline: false,
+              reverse: false
             }
           }
 
@@ -138,6 +157,64 @@ defmodule Droodotfoo.Raxol.Renderer do
     end
   end
 
+  defp draw_status_bar(buffer, state) do
+    y_pos = @height - 2
+
+    # Left side: current section breadcrumb
+    section_name = format_section_name(state.current_section)
+    breadcrumb = " #{section_name}"
+
+    # Middle: vim mode and command mode indicators
+    vim_indicator = if Map.get(state, :vim_mode, false), do: " VIM", else: ""
+    cmd_indicator = if state.command_mode, do: " CMD", else: ""
+    search_indicator = if state.command_mode && String.starts_with?(state.command_buffer, "search "), do: " SEARCH", else: ""
+
+    # Right side: time and connection status
+    {:ok, now} = DateTime.now("Etc/UTC")
+    time_str = Calendar.strftime(now, "%H:%M:%S")
+    right_side = "#{time_str} | LIVE "
+
+    # Calculate spacing
+    middle_content = vim_indicator <> cmd_indicator <> search_indicator
+    left_section = breadcrumb
+    right_section = right_side
+
+    # Build status bar with proper spacing (total width is 110)
+    total_width = @width
+    used_width = String.length(left_section) + String.length(middle_content) + String.length(right_section)
+    spacing = max(0, total_width - used_width)
+
+    # Distribute spacing: middle gets centered
+    left_spacing = div(spacing, 2)
+    right_spacing = spacing - left_spacing
+
+    status_line =
+      left_section <>
+      String.duplicate(" ", left_spacing) <>
+      middle_content <>
+      String.duplicate(" ", right_spacing) <>
+      right_section
+
+    # Ensure exactly the right width
+    status_line = String.pad_trailing(String.slice(status_line, 0, total_width), total_width)
+
+    TerminalBridge.write_at(buffer, 0, y_pos, status_line)
+  end
+
+  defp format_section_name(:home), do: "Home"
+  defp format_section_name(:terminal), do: "Terminal"
+  defp format_section_name(:performance), do: "Performance"
+  defp format_section_name(:stl_viewer), do: "STL Viewer"
+  defp format_section_name(:search_results), do: "Search Results"
+
+  defp format_section_name(section) do
+    section
+    |> Atom.to_string()
+    |> String.split("_")
+    |> Enum.map(&String.capitalize/1)
+    |> Enum.join(" ")
+  end
+
   defp draw_command_line(buffer, %{command_mode: true} = state) do
     # Draw command input line at bottom
     y_pos = @height - 1
@@ -148,157 +225,130 @@ defmodule Droodotfoo.Raxol.Renderer do
   defp draw_command_line(buffer, _state) do
     # Show hint when not in command mode
     y_pos = @height - 1
-    hint = "Press ':' for commands, '/' for search, 'hjkl' to navigate"
+    hint = "? help • : cmd • / search"
     TerminalBridge.write_at(buffer, 0, y_pos, hint)
   end
 
   # Content drawing functions
   defp draw_content(buffer, :home, _state) do
     about_lines = [
-      "┌─ About ───────────────────────────┐",
-      "│                                   │",
-      "│ Multi Disciplinary Engineer       │",
-      "│ expertise in distributed systems  │",
-      "│ and real-time apps.               │",
-      "│                                   │",
-      "│ • 5+ years building scalable      │",
-      "│ • Elixir, Phoenix, LiveView       │",
-      "│ • Terminal UI and CLI enthusiast  │",
-      "│                                   │",
-      "└───────────────────────────────────┘"
+      "┌─ About ─────────────────────────────────────────────────────────────┐",
+      "│                                                                     │",
+      "│  Multi Disciplinary Engineer                                        │",
+      "│  expertise in distributed systems and real-time apps.               │",
+      "│                                                                     │",
+      "│  • 5+ years building scalable distributed systems                   │",
+      "│  • Elixir, Phoenix, LiveView expert                                 │",
+      "│  • Terminal UI and CLI enthusiast                                   │",
+      "│                                                                     │",
+      "└─────────────────────────────────────────────────────────────────────┘"
     ]
 
     recent_lines = [
       "",
-      "┌─ Recent Activity ─────────────────┐",
-      "│                                   │",
-      "│ 2025-09  Terminal droo.foo        │",
-      "│ 2025-08  Data pipeline            │",
-      "│ 2025-07  Elixir telemetry         │",
-      "│                                   │",
-      "└───────────────────────────────────┘"
+      "┌─ Recent Activity ───────────────────────────────────────────────────┐",
+      "│                                                                     │",
+      "│  2025-09  Terminal droo.foo System                                  │",
+      "│  2025-08  Data pipeline infrastructure                              │",
+      "│  2025-07  Elixir telemetry monitoring                               │",
+      "│                                                                     │",
+      "└─────────────────────────────────────────────────────────────────────┘"
     ]
 
-    # Draw About section
-    buffer =
-      about_lines
-      |> Enum.with_index()
-      |> Enum.reduce(buffer, fn {line, idx}, buf ->
-        TerminalBridge.write_at(buf, 32, 2 + idx, line)
-      end)
-
-    # Draw Recent Activity section (fits within 24 rows)
-    recent_lines
-    |> Enum.with_index()
-    |> Enum.reduce(buffer, fn {line, idx}, buf ->
-      TerminalBridge.write_at(buf, 32, 2 + length(about_lines) + idx, line)
-    end)
+    buffer
+    |> draw_box_at(about_lines, 35, 13)
+    |> draw_box_at(recent_lines, 35, 13 + length(about_lines))
   end
 
   defp draw_content(buffer, :projects, _state) do
     project_lines = [
-      "┌─ Projects ───────────────────────────────────┐",
-      "│                                              │",
-      "│ ▪ Terminal droo.foo System                   │",
-      "│   This droo.foo! Built with Raxol            │",
-      "│   [Elixir] [Phoenix] [LiveView] [60fps]      │",
-      "│                                              │",
-      "│ ▪ Real-time Collaboration Platform           │",
-      "│   WebRTC-based pair programming tool         │",
-      "│   [Elixir] [Phoenix Channels] [WebRTC]       │",
-      "│                                              │",
-      "│ ▪ Distributed Event Processing               │",
-      "│   High-throughput event stream processor     │",
-      "│   [Elixir] [Broadway] [Kafka] [ClickHouse]   │",
-      "│                                              │",
-      "└──────────────────────────────────────────────┘"
+      "┌─ Projects ──────────────────────────────────────────────────────────┐",
+      "│                                                                     │",
+      "│  ▪ Terminal droo.foo System                                         │",
+      "│    This droo.foo! Built with Raxol terminal framework               │",
+      "│    [Elixir] [Phoenix] [LiveView] [60fps]                            │",
+      "│                                                                     │",
+      "│  ▪ Real-time Collaboration Platform                                 │",
+      "│    WebRTC-based pair programming tool with live code sharing        │",
+      "│    [Elixir] [Phoenix Channels] [WebRTC]                             │",
+      "│                                                                     │",
+      "│  ▪ Distributed Event Processing                                     │",
+      "│    High-throughput event stream processor handling millions/day     │",
+      "│    [Elixir] [Broadway] [Kafka] [ClickHouse]                         │",
+      "│                                                                     │",
+      "└─────────────────────────────────────────────────────────────────────┘"
     ]
 
-    project_lines
-    |> Enum.with_index()
-    |> Enum.reduce(buffer, fn {line, idx}, buf ->
-      TerminalBridge.write_at(buf, 32, 13 + idx, line)
-    end)
+    draw_box_at(buffer, project_lines, 35, 13)
   end
 
   defp draw_content(buffer, :skills, _state) do
     skills_lines = [
-      "┌─ Technical Skills ────────────────────────────┐",
-      "│                                               │",
-      "│ Languages:                                    │",
-      "│ ██████████████████████████░░  Elixir    90%   │",
-      "│ ████████████████████████░░░░  Phoenix   85%   │",
-      "│ ████████████████████░░░░░░░░  JavaScript 75%  │",
-      "│ ██████████████████░░░░░░░░░░  TypeScript 70%  │",
-      "│                                               │",
-      "│ Frameworks & Libraries:                       │",
-      "│ • Phoenix, LiveView, Ecto, Broadway           │",
-      "│ • React, Vue.js, Node.js, Express             │",
-      "│ • GraphQL, REST APIs, WebSockets              │",
-      "│                                               │",
-      "│ Infrastructure: Docker, K8s, AWS, Fly.io      │",
-      "│                                               │",
-      "└───────────────────────────────────────────────┘"
+      "┌─ Technical Skills ──────────────────────────────────────────────────┐",
+      "│                                                                     │",
+      "│  Languages:                                                         │",
+      "│  ██████████████████████████████████████░░░░  Elixir          90%    │",
+      "│  ████████████████████████████████████░░░░░░  Phoenix         85%    │",
+      "│  ██████████████████████████████░░░░░░░░░░░░  JavaScript      75%    │",
+      "│  ████████████████████████████░░░░░░░░░░░░░░  TypeScript      70%    │",
+      "│                                                                     │",
+      "│  Frameworks & Libraries:                                            │",
+      "│  • Phoenix, LiveView, Ecto, Broadway                                │",
+      "│  • React, Vue.js, Node.js, Express                                  │",
+      "│  • GraphQL, REST APIs, WebSockets                                   │",
+      "│                                                                     │",
+      "│  Infrastructure: Docker, K8s, AWS, Fly.io, PostgreSQL, Redis        │",
+      "│                                                                     │",
+      "└─────────────────────────────────────────────────────────────────────┘"
     ]
 
-    skills_lines
-    |> Enum.with_index()
-    |> Enum.reduce(buffer, fn {line, idx}, buf ->
-      TerminalBridge.write_at(buf, 32, 13 + idx, line)
-    end)
+    draw_box_at(buffer, skills_lines, 35, 13)
   end
 
   defp draw_content(buffer, :experience, _state) do
     exp_lines = [
-      "┌─ Experience ──────────────────────────────────┐",
-      "│                                               │",
-      "│ ▪ Senior Backend Engineer                     │",
-      "│   axol.io | 2023 - Present                    │",
-      "│   • Built event-driven microservices          │",
-      "│   • Reduced API response time by 70%          │",
-      "│                                               │",
-      "│ ▪ Elixir Developer                            │",
-      "│   FinTech Startup | 2019 - 2021               │",
-      "│   • Designed real-time payment processing     │",
-      "│   • Handled 1M+ transactions daily            │",
-      "│                                               │",
-      "│ ▪ Full Stack Developer                        │",
-      "│   Digital Agency | 2017 - 2019                │",
-      "│                                               │",
-      "└───────────────────────────────────────────────┘"
+      "┌─ Experience ─────────────────────────────────────────────────┐",
+      "│                                                              │",
+      "│  ▪ Senior Backend Engineer                                   │",
+      "│    axol.io | 2023 - Present                                  │",
+      "│    • Built event-driven microservices architecture           │",
+      "│    • Reduced API response time by 70% through optimization   │",
+      "│                                                              │",
+      "│  ▪ Elixir Developer                                          │",
+      "│    FinTech Startup | 2019 - 2021                             │",
+      "│    • Designed and implemented real-time payment processing   │",
+      "│    • Handled 1M+ transactions daily with 99.9% uptime        │",
+      "│                                                              │",
+      "│  ▪ Full Stack Developer                                      │",
+      "│    Digital Agency | 2017 - 2019                              │",
+      "│    • Built web applications for diverse clients              │",
+      "│                                                              │",
+      "└──────────────────────────────────────────────────────────────┘"
     ]
 
-    exp_lines
-    |> Enum.with_index()
-    |> Enum.reduce(buffer, fn {line, idx}, buf ->
-      TerminalBridge.write_at(buf, 32, 13 + idx, line)
-    end)
+    draw_box_at(buffer, exp_lines, 35, 13)
   end
 
   defp draw_content(buffer, :contact, _state) do
     contact_lines = [
-      "┌─ Contact ───────────────────────────────────┐",
-      "│                                             │",
-      "│ Let's connect:                              │",
-      "│                                             │",
-      "│ ▪ Email: drew@axol.io                       │",
-      "│ ▪ GitHub: github.com/hydepwns               │",
-      "│ ▪ LinkedIn: linkedin.com/in/drew-hiro       │",
-      "│ ▪ X/Twitter: @MF_DROO                       │",
-      "│                                             │",
-      "│ ┌─────────────────────────────────────────┐ │",
-      "│ │  Available for consulting on Elixir,    │ │",
-      "│ │  Phoenix, and distributed systems       │ │",
-      "│ └─────────────────────────────────────────┘ │",
-      "│                                             │",
-      "└─────────────────────────────────────────────┘"
+      "┌─ Contact ───────────────────────────────────────────────────────────┐",
+      "│                                                                     │",
+      "│  Let's connect:                                                     │",
+      "│                                                                     │",
+      "│  ▪ Email:     drew@axol.io                                          │",
+      "│  ▪ GitHub:    github.com/hydepwns                                   │",
+      "│  ▪ LinkedIn:  linkedin.com/in/drew-hiro                             │",
+      "│  ▪ X/Twitter: @MF_DROO                                              │",
+      "│                                                                     │",
+      "│  ┌──────────────────────────────────────────────────────────────┐   │",
+      "│  │  Available for consulting on Elixir, Phoenix, LiveView, and  │   │",
+      "│  │  distributed systems architecture                            │   │",
+      "│  └──────────────────────────────────────────────────────────────┘   │",
+      "│                                                                     │",
+      "└─────────────────────────────────────────────────────────────────────┘"
     ]
 
-    contact_lines
-    |> Enum.with_index()
-    |> Enum.reduce(buffer, fn {line, idx}, buf ->
-      TerminalBridge.write_at(buf, 32, 13 + idx, line)
-    end)
+    draw_box_at(buffer, contact_lines, 35, 13)
   end
 
   defp draw_content(buffer, :matrix, _state) do
@@ -320,11 +370,7 @@ defmodule Droodotfoo.Raxol.Renderer do
       "└─────────────────────────────────────────────┘"
     ]
 
-    matrix_lines
-    |> Enum.with_index()
-    |> Enum.reduce(buffer, fn {line, idx}, buf ->
-      TerminalBridge.write_at(buf, 32, 13 + idx, line)
-    end)
+    draw_box_at(buffer, matrix_lines, 35, 13)
   end
 
   defp draw_content(buffer, :ssh, _state) do
@@ -345,11 +391,41 @@ defmodule Droodotfoo.Raxol.Renderer do
       "└───────────────────────────────────────────────┘"
     ]
 
-    ssh_lines
-    |> Enum.with_index()
-    |> Enum.reduce(buffer, fn {line, idx}, buf ->
-      TerminalBridge.write_at(buf, 32, 13 + idx, line)
-    end)
+    draw_box_at(buffer, ssh_lines, 35, 13)
+  end
+
+  defp draw_content(buffer, :stl_viewer, state) do
+    viewer_state = state.stl_viewer_state || Droodotfoo.StlViewerState.new()
+    info_lines = Droodotfoo.StlViewerState.format_model_info(viewer_state)
+    status = Droodotfoo.StlViewerState.status_message(viewer_state)
+
+    # Build the viewer HUD overlay
+    viewer_lines = [
+      "┌─ STL Viewer ──────────────────────────────────────────────────┐",
+      "│                                                               │",
+      "│  #{String.pad_trailing(status, 60)} │"
+    ] ++
+    Enum.map(info_lines, fn line ->
+      "│  #{String.pad_trailing(line, 60)} │"
+    end) ++
+    [
+      "│                                                               │",
+      "│  Controls: j/k rotate • h/l zoom • r reset • m mode • q quit │",
+      "│                                                               │",
+      "│  ┌─ 3D Viewport ───────────────────────────────────────────┐ │",
+      "│  │                                                          │ │",
+      "│  │                                                          │ │",
+      "│  │                                                          │ │",
+      "│  │            [WebGL Canvas Renders Here]                   │ │",
+      "│  │                                                          │ │",
+      "│  │                                                          │ │",
+      "│  │                                                          │ │",
+      "│  └──────────────────────────────────────────────────────────┘ │",
+      "│                                                               │",
+      "└───────────────────────────────────────────────────────────────┘"
+    ]
+
+    draw_box_at(buffer, viewer_lines, 35, 13)
   end
 
   defp draw_content(buffer, :export_markdown, _state) do
@@ -369,11 +445,7 @@ defmodule Droodotfoo.Raxol.Renderer do
       "└───────────────────────────────────────────────┘"
     ]
 
-    export_lines
-    |> Enum.with_index()
-    |> Enum.reduce(buffer, fn {line, idx}, buf ->
-      TerminalBridge.write_at(buf, 32, 13 + idx, line)
-    end)
+    draw_box_at(buffer, export_lines, 35, 13)
   end
 
   defp draw_content(buffer, :analytics, _state) do
@@ -394,21 +466,18 @@ defmodule Droodotfoo.Raxol.Renderer do
       "└───────────────────────────────────────────────┘"
     ]
 
-    analytics_lines
-    |> Enum.with_index()
-    |> Enum.reduce(buffer, fn {line, idx}, buf ->
-      TerminalBridge.write_at(buf, 32, 13 + idx, line)
-    end)
+    draw_box_at(buffer, analytics_lines, 35, 13)
   end
 
   defp draw_content(buffer, :search_results, state) do
     search_state = state.search_state
+    match_counter = Droodotfoo.AdvancedSearch.match_counter(search_state)
 
     # Build search results display
     header = [
       "┌─ Search Results ──────────────────────────────┐",
-      "│ Query: #{String.slice(search_state.query, 0, 38)} │",
-      "│ Mode: #{search_state.mode} | Results: #{length(search_state.results)} found  │",
+      "│ Query: #{String.pad_trailing(String.slice(search_state.query, 0, 38), 38)} │",
+      "│ Mode: #{search_state.mode} | #{String.pad_trailing(match_counter, 24)} │",
       "├───────────────────────────────────────────────┤"
     ]
 
@@ -417,11 +486,22 @@ defmodule Droodotfoo.Raxol.Renderer do
       if length(search_state.results) > 0 do
         search_state.results
         |> Enum.take(8)
-        |> Enum.map(fn result ->
+        |> Enum.with_index()
+        |> Enum.map(fn {result, idx} ->
           section = result.section |> Atom.to_string() |> String.upcase()
-          line = String.slice(result.line, 0, 35)
-          score = :erlang.float_to_binary(result.score, decimals: 2)
-          "│ [#{section}] #{line}... (#{score}) │"
+
+          # Highlight matched positions in the line (but strip ANSI for now due to rendering complexity)
+          # highlighted_line = Droodotfoo.AdvancedSearch.highlight_line(
+          #   result.line,
+          #   result.match_positions,
+          #   search_state.highlight_color
+          # )
+          line = String.slice(result.line, 0, 30)
+
+          # Mark current match with arrow
+          marker = if idx == search_state.current_match_index, do: ">", else: " "
+
+          "│#{marker}[#{String.pad_trailing(section, 10)}] #{String.pad_trailing(line, 30)}│"
         end)
       else
         ["│ No results found                             │"]
@@ -429,7 +509,7 @@ defmodule Droodotfoo.Raxol.Renderer do
 
     footer = [
       "├───────────────────────────────────────────────┤",
-      "│ Commands: --fuzzy --exact --regex            │",
+      "│ n/N: next/prev  --fuzzy --exact --regex      │",
       "│ Press ESC to exit search                     │",
       "└───────────────────────────────────────────────┘"
     ]
@@ -473,53 +553,51 @@ defmodule Droodotfoo.Raxol.Renderer do
       "└──────────────────────────────────────────────┘"
     ]
 
-    help_lines
-    |> Enum.with_index()
-    |> Enum.reduce(buffer, fn {line, idx}, buf ->
-      TerminalBridge.write_at(buf, 32, 13 + idx, line)
-    end)
+    draw_box_at(buffer, help_lines, 35, 13)
   end
 
   defp draw_content(buffer, :performance, _state) do
-    # Get performance metrics
-    metrics = Droodotfoo.PerformanceMonitor.get_summary()
+    # Get both summary and raw metrics for charts
+    summary = Droodotfoo.PerformanceMonitor.get_summary()
+    raw_metrics = Droodotfoo.PerformanceMonitor.get_metrics()
+
+    # Generate sparklines from raw data
+    render_sparkline = Droodotfoo.AsciiChart.sparkline(raw_metrics.render_times, width: 20)
+    memory_sparkline = Droodotfoo.AsciiChart.sparkline(raw_metrics.memory_usage, width: 20)
+
+    # Format values
+    uptime_str = "#{summary.uptime_hours}h"
+    req_rate = "#{summary.requests_per_minute}/min"
 
     content_lines = [
-      "┌─ Performance Metrics ─────────────────────────┐",
-      "│                                               │",
-      "│  System Health Monitor                        │",
-      "│  ────────────────────                         │",
-      "│                                               │",
-      "│  Uptime:         #{String.pad_trailing(to_string(metrics.uptime_hours) <> " hours", 20)}     │",
-      "│  Requests:       #{String.pad_trailing(to_string(metrics.total_requests), 20)}     │",
-      "│  Req/min:        #{String.pad_trailing(to_string(metrics.requests_per_minute), 20)}     │",
-      "│  Errors:         #{String.pad_trailing(to_string(metrics.total_errors) <> " (" <> to_string(metrics.error_rate) <> "%)", 20)}     │",
-      "│                                               │",
-      "│  Render Performance                           │",
-      "│  ─────────────────                            │",
-      "│  Average:        #{String.pad_trailing(to_string(metrics.avg_render_time) <> "ms", 20)}     │",
-      "│  Min:            #{String.pad_trailing(to_string(metrics.min_render_time) <> "ms", 20)}     │",
-      "│  Max:            #{String.pad_trailing(to_string(metrics.max_render_time) <> "ms", 20)}     │",
-      "│  95th %tile:     #{String.pad_trailing(to_string(metrics.p95_render_time) <> "ms", 20)}     │",
-      "│                                               │",
-      "│  System Resources                             │",
-      "│  ───────────────                              │",
-      "│  Memory:         #{String.pad_trailing(to_string(metrics.current_memory) <> "MB", 20)}     │",
-      "│  Avg Memory:     #{String.pad_trailing(to_string(metrics.avg_memory) <> "MB", 20)}     │",
-      "│  Processes:      #{String.pad_trailing(to_string(metrics.current_processes), 20)}     │",
-      "│  Avg Processes:  #{String.pad_trailing(to_string(metrics.avg_processes), 20)}     │",
-      "│                                               │",
-      "│  [Auto-refreshes every 5 seconds]             │",
-      "│                                               │",
-      "└───────────────────────────────────────────────┘"
+      "╔══════════════════════════════════════════════════════════════════════════════╗",
+      "║ PERFORMANCE DASHBOARD                                    [Updated: now]      ║",
+      "╠══════════════════════════════════════════════════════════════════════════════╣",
+      "║                                                                              ║",
+      "║  Render Time (ms)              Memory (MB)              Request Rate         ║",
+      "║  ┌─────────────────┐          ┌──────────────┐         ┌─────────────────┐  ║",
+      "║  │ #{String.pad_trailing(render_sparkline, 15)} │          │ #{String.pad_trailing(memory_sparkline, 12)} │         │    #{String.pad_trailing(req_rate, 13)}│  ║",
+      "║  └─────────────────┘          └──────────────┘         └─────────────────┘  ║",
+      "║    Avg: #{String.pad_trailing("#{summary.avg_render_time}ms", 18)}   Cur: #{String.pad_trailing("#{summary.current_memory}MB", 18)}   Total: #{String.pad_trailing("#{summary.total_requests}", 10)}    ║",
+      "║                                                                              ║",
+      "║  System Status                                                               ║",
+      "║  ──────────────────────────────────────────────────────────────────────────  ║",
+      "║                                                                              ║",
+      "║  Uptime:         #{String.pad_trailing(uptime_str, 15)}  Errors:       #{String.pad_trailing("#{summary.total_errors} (#{summary.error_rate}%)", 20)}  ║",
+      "║  Processes:      #{String.pad_trailing("#{summary.current_processes}", 15)}  Avg Memory:  #{String.pad_trailing("#{summary.avg_memory}MB", 20)}  ║",
+      "║  P95 Render:     #{String.pad_trailing("#{summary.p95_render_time}ms", 15)}  Max Render:  #{String.pad_trailing("#{summary.max_render_time}ms", 20)}  ║",
+      "║                                                                              ║",
+      "║  Performance Indicators:                                                     ║",
+      "║                                                                              ║",
+      "║  #{Droodotfoo.AsciiChart.percent_bar("Render", min(summary.avg_render_time * 10, 100), width: 30, label_width: 10)}                    ║",
+      "║  #{Droodotfoo.AsciiChart.percent_bar("Memory", min(summary.current_memory * 2, 100), width: 30, label_width: 10)}                    ║",
+      "║                                                                              ║",
+      "╚══════════════════════════════════════════════════════════════════════════════╝"
     ]
 
     content_lines
-    |> Enum.with_index()
-    |> Enum.take(min(length(content_lines), 22))  # Ensure it fits
-    |> Enum.reduce(buffer, fn {line, idx}, acc ->
-      TerminalBridge.write_at(acc, 32, 2 + idx, line)
-    end)
+    |> Enum.take(min(length(content_lines), 22))
+    |> then(&draw_box_at(buffer, &1, 0, 1))
   end
 
   defp draw_content(buffer, :ls, _state) do
@@ -538,11 +616,7 @@ defmodule Droodotfoo.Raxol.Renderer do
       "└──────────────────────────────────────────────┘"
     ]
 
-    ls_lines
-    |> Enum.with_index()
-    |> Enum.reduce(buffer, fn {line, idx}, buf ->
-      TerminalBridge.write_at(buf, 32, 13 + idx, line)
-    end)
+    draw_box_at(buffer, ls_lines, 35, 13)
   end
 
   defp draw_content(buffer, :terminal, state) do
@@ -571,6 +645,7 @@ defmodule Droodotfoo.Raxol.Renderer do
       end)
 
     prompt_with_cursor = Map.get(state, :prompt, "") <> "_"
+
     footer_lines = [
       "│ " <> String.pad_trailing(prompt_with_cursor, 45) <> " │",
       "│                                               │",
@@ -580,11 +655,8 @@ defmodule Droodotfoo.Raxol.Renderer do
     all_lines = terminal_lines ++ middle_lines ++ footer_lines
 
     all_lines
-    |> Enum.with_index()
-    |> Enum.take(min(length(all_lines), 24 - 2))  # Ensure it fits in buffer
-    |> Enum.reduce(buffer, fn {line, idx}, buf ->
-      TerminalBridge.write_at(buf, 32, 2 + idx, line)
-    end)
+    |> Enum.take(min(length(all_lines), 35 - 13))
+    |> then(&draw_box_at(buffer, &1, 35, 13))
   end
 
   defp draw_content(buffer, _, _state), do: buffer
@@ -592,5 +664,54 @@ defmodule Droodotfoo.Raxol.Renderer do
   defp format_terminal_line(line) do
     # Truncate long lines to fit
     String.slice(line, 0..44)
+  end
+
+  defp draw_help_modal(buffer, state) do
+    if state.help_modal_open do
+      draw_help_overlay(buffer, state)
+    else
+      buffer
+    end
+  end
+
+  defp draw_help_overlay(buffer, state) do
+    vim_mode = Map.get(state, :vim_mode, false)
+    vim_status = if vim_mode, do: "ON", else: "OFF"
+
+    help_lines = [
+      "╔═══════════════════════════════════════════════════════════════════════════╗",
+      "║                          KEYBOARD SHORTCUTS HELP                          ║",
+      "╠═══════════════════════════════════════════════════════════════════════════╣",
+      "║                                                                           ║",
+      "║  NAVIGATION                                                               ║",
+      "║  ↑ ↓ ← →           Navigate menu items (arrow keys)                       ║",
+      "║  Enter             Select current menu item                               ║",
+      "║  1-5               Jump to menu item by number                            ║",
+      "║  Click             Click any menu item to select                          ║",
+      "║                                                                           ║",
+      "║  VIM MODE (currently: #{String.pad_trailing(vim_status, 3)})                                                ║",
+      "║  v                 Toggle vim mode on/off                                 ║",
+      if(vim_mode,
+        do: "║  h j k l           Navigate (left/down/up/right) when vim mode is on       ║",
+        else: "║  h j k l           (Disabled - enable vim mode with 'v')                  ║"
+      ),
+      if(vim_mode,
+        do: "║  g / G             Jump to top / bottom when vim mode is on               ║",
+        else: "║  g / G             (Disabled - enable vim mode with 'v')                  ║"
+      ),
+      "║                                                                           ║",
+      "║  COMMANDS                                                                 ║",
+      "║  :                 Enter command mode                                     ║",
+      "║  /                 Enter search mode                                      ║",
+      "║  Esc               Exit command/search mode                               ║",
+      "║                                                                           ║",
+      "║  HELP                                                                     ║",
+      "║  ?                 Toggle this help modal                                 ║",
+      "║                                                                           ║",
+      "╚═══════════════════════════════════════════════════════════════════════════╝"
+    ]
+
+    # Center the modal (start at column 2, row 0)
+    draw_box_at(buffer, help_lines, 2, 0)
   end
 end

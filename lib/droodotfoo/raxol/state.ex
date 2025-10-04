@@ -23,7 +23,10 @@ defmodule Droodotfoo.Raxol.State do
     :prompt,
     :cursor_trail,
     :trail_enabled,
-    :search_state
+    :search_state,
+    :vim_mode,
+    :help_modal_open,
+    :stl_viewer_state
   ]
 
   @doc """
@@ -35,7 +38,7 @@ defmodule Droodotfoo.Raxol.State do
       current_section: :home,
       cursor_y: 2,
       cursor_x: 0,
-      navigation_items: [:home, :projects, :skills, :experience, :contact],
+      navigation_items: [:home, :projects, :skills, :experience, :contact, :stl_viewer],
       command_mode: false,
       command_buffer: "",
       command_history: [],
@@ -44,8 +47,11 @@ defmodule Droodotfoo.Raxol.State do
       terminal_output: "Welcome to droo.foo terminal\nType 'help' for available commands\n",
       prompt: "[drew@droo.foo ~]$ ",
       cursor_trail: CursorTrail.new(),
-      trail_enabled: true,
-      search_state: AdvancedSearch.new()
+      trail_enabled: false,
+      search_state: AdvancedSearch.new(),
+      vim_mode: false,
+      help_modal_open: false,
+      stl_viewer_state: Droodotfoo.StlViewerState.new()
     }
   end
 
@@ -55,6 +61,14 @@ defmodule Droodotfoo.Raxol.State do
   """
   def reduce(state, {:input, key}) do
     cond do
+      # Help modal takes priority - can be opened from anywhere except command mode
+      is_help_toggle?(state, key) ->
+        handle_help_toggle(state, key)
+
+      # Help modal is open - only Escape and ? close it, ignore other keys
+      state.help_modal_open ->
+        state
+
       # Mode changes take priority
       is_mode_change?(state, key) ->
         handle_mode_change(state, key)
@@ -66,6 +80,17 @@ defmodule Droodotfoo.Raxol.State do
       true ->
         Navigation.handle_input(key, state)
     end
+  end
+
+  # Check if input triggers help modal toggle
+  defp is_help_toggle?(%{command_mode: false, help_modal_open: false}, "?"), do: true
+  defp is_help_toggle?(%{help_modal_open: true}, "?"), do: true
+  defp is_help_toggle?(%{help_modal_open: true}, "Escape"), do: true
+  defp is_help_toggle?(_, _), do: false
+
+  # Handle help modal toggle
+  defp handle_help_toggle(state, _key) do
+    %{state | help_modal_open: !state.help_modal_open}
   end
 
   # Check if input triggers a mode change
