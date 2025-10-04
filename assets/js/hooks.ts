@@ -33,7 +33,7 @@ export const TerminalHook: Partial<TerminalHookInstance> = {
     verifyAlignment: true
   },
   keyboardConfig: {
-    terminalKeys: ['j', 'k', 'h', 'l', '/', 'Enter', 'Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'],
+    terminalKeys: ['/', 'Enter', 'Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'],
     preventDefault: true,
     stopPropagation: false
   },
@@ -44,13 +44,13 @@ export const TerminalHook: Partial<TerminalHookInstance> = {
       this.terminal = this.el.querySelector('.terminal-container');
 
       if (!this.terminal) {
-        console.error('Terminal container not found');
-        return;
+        console.log('Terminal container not found yet (boot sequence), will initialize on update');
+        // Don't return - continue to set up other hooks
+      } else {
+        // Initialize the monospace grid
+        this.grid = new MonospaceGrid(this.terminal);
+        console.log('Terminal grid initialized');
       }
-
-      // Initialize the monospace grid
-      this.grid = new MonospaceGrid(this.terminal);
-      console.log('Terminal grid initialized');
 
       // Initialize mobile terminal support if on mobile device
       if (isMobileDevice()) {
@@ -265,6 +265,18 @@ export const TerminalHook: Partial<TerminalHookInstance> = {
       });
     });
     this.eventListeners.clear();
+  },
+
+  updated() {
+    // Initialize grid if terminal container appeared after boot sequence
+    if (!this.terminal || !this.grid) {
+      const container = this.el.querySelector('.terminal-container');
+      if (container instanceof HTMLElement) {
+        this.terminal = container;
+        this.grid = new MonospaceGrid(this.terminal);
+        console.log('Terminal grid initialized on update');
+      }
+    }
   },
 
   destroyed() {

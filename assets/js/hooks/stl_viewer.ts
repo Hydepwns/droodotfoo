@@ -30,15 +30,16 @@ export const STLViewerHook: Partial<STLViewerHook> = {
     if (!canvas) {
       canvas = document.createElement('canvas');
       canvas.id = 'stl-canvas';
-      canvas.style.width = '100%';
-      canvas.style.height = '400px';
-      canvas.style.display = 'block';
       this.el.appendChild(canvas);
     }
 
+    // Position canvas relative to terminal wrapper
+    this.positionCanvas();
+
     // Initialize Three.js scene
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x0a0a0a);
+    // Transparent background to show ASCII art underneath
+    this.scene.background = null;
 
     // Set up camera
     const aspect = canvas.clientWidth / canvas.clientHeight;
@@ -51,6 +52,7 @@ export const STLViewerHook: Partial<STLViewerHook> = {
       antialias: true,
       alpha: true
     });
+    this.renderer.setClearColor(0x000000, 0); // Transparent background
     this.renderer.setSize(canvas.clientWidth, canvas.clientHeight);
     this.renderer.setPixelRatio(window.devicePixelRatio);
 
@@ -76,6 +78,8 @@ export const STLViewerHook: Partial<STLViewerHook> = {
     // Handle window resize
     const handleResize = () => {
       if (!this.camera || !this.renderer || !canvas) return;
+
+      this.positionCanvas();
 
       const width = canvas.clientWidth;
       const height = canvas.clientHeight;
@@ -289,6 +293,71 @@ export const STLViewerHook: Partial<STLViewerHook> = {
       // Points -> Solid
       this.setRenderMode('solid');
     }
+  },
+
+  positionCanvas() {
+    const canvas = this.el.querySelector('canvas') as HTMLCanvasElement;
+    if (!canvas) return;
+
+    // Find terminal wrapper to calculate position
+    const terminalWrapper = document.getElementById('terminal-wrapper');
+    if (!terminalWrapper) return;
+
+    // Get terminal wrapper's actual position
+    const wrapperRect = terminalWrapper.getBoundingClientRect();
+
+    // Dynamic calculation: Find the "3D Viewport" text in the terminal
+    const terminalLines = terminalWrapper.querySelectorAll('.terminal-line');
+
+    // Find the line containing "3D Viewport" border
+    let viewportLine: HTMLElement | null = null;
+    let viewportRow = -1;
+    terminalLines.forEach((line, index) => {
+      if (line.textContent && line.textContent.includes('3D Viewport')) {
+        viewportLine = line as HTMLElement;
+        viewportRow = index;
+      }
+    });
+
+    if (viewportRow === -1 || !viewportLine) {
+      console.warn('Could not find 3D Viewport in terminal');
+      return;
+    }
+
+    // Get the actual position of the viewport line
+    const viewportRect = viewportLine.getBoundingClientRect();
+
+    // Constants
+    const lineHeight = 1.2; // em units (matches CSS)
+
+    // Calculate pixel-based positioning
+    // The viewport box border is at viewportRect.top
+    // Content starts 1 line below the top border
+    const contentTopPx = viewportRect.top + viewportRect.height; // 1 line down from border
+
+    // Column positioning: viewport inner content starts at col 38
+    const contentStartCol = 38;
+    const contentWidth = 60;
+
+    const contentHeight = 7; // lines
+
+    // Position using pixels for top (more accurate), ch for left
+    this.el.style.top = `${contentTopPx}px`;
+    this.el.style.left = `${contentStartCol}ch`;
+
+    // Set canvas size
+    canvas.style.width = `${contentWidth}ch`;
+    canvas.style.height = `${contentHeight * lineHeight}em`;
+
+    console.log('Canvas positioned at:', {
+      viewportRow,
+      viewportLineTop: viewportRect.top,
+      calculatedTop: contentTopPx,
+      top: `${contentTopPx}px`,
+      left: `${contentStartCol}ch`,
+      width: `${contentWidth}ch`,
+      height: `${contentHeight * lineHeight}em`
+    });
   },
 
   destroyed() {
