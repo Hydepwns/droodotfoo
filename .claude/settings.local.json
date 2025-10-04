@@ -11,7 +11,20 @@
       "Bash(MIX_ENV=test iex -S mix -e \":timer.sleep(1000); IO.inspect(Process.whereis(Droodotfoo.PerformanceMonitor), label: \"\"PerformanceMonitor\"\"); IO.inspect(Process.whereis(Droodotfoo.RaxolApp), label: \"\"RaxolApp\"\"); IO.inspect(Process.whereis(Droodotfoo.PluginSystem.Manager), label: \"\"PluginManager\"\")\")",
       "Bash(MIX_ENV=test mix run -e 'result = Application.ensure_all_started(:droodotfoo); IO.inspect(result, label: \"\"Application start result\"\"); if elem(result, 0) == :ok, do: (Process.sleep(100); IO.inspect(Process.whereis(Droodotfoo.PerformanceMonitor), label: \"\"PerformanceMonitor\"\"))')",
       "Bash(mix compile:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(chmod:*)",
+      "Bash(mix assets.build:*)",
+      "Bash(iex:*)",
+      "Bash(mix run:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(mix phx.server:*)",
+      "Read(//Users/droo/Desktop/**)",
+      "Bash(awk:*)",
+      "Bash(pkill:*)",
+      "Bash(mix phx.routes:*)",
+      "Bash(git commit:*)",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "ask": []
