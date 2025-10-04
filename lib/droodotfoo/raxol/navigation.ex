@@ -4,6 +4,7 @@ defmodule Droodotfoo.Raxol.Navigation do
   """
 
   alias Droodotfoo.CursorTrail
+  alias Droodotfoo.Raxol.State
 
   @doc """
   Handles navigation-related input when not in command mode.
@@ -24,7 +25,7 @@ defmodule Droodotfoo.Raxol.Navigation do
         # Mark for STL viewer rotation (handled by LiveView)
         Map.put(state, :stl_viewer_action, {:rotate, :down})
 
-      Map.get(state, :vim_mode, false) ->
+      State.vim_mode?(state) ->
         move_down(state)
 
       true ->
@@ -37,7 +38,7 @@ defmodule Droodotfoo.Raxol.Navigation do
       state.current_section == :stl_viewer ->
         Map.put(state, :stl_viewer_action, {:rotate, :up})
 
-      Map.get(state, :vim_mode, false) ->
+      State.vim_mode?(state) ->
         move_up(state)
 
       true ->
@@ -50,7 +51,7 @@ defmodule Droodotfoo.Raxol.Navigation do
       state.current_section == :stl_viewer ->
         Map.put(state, :stl_viewer_action, {:zoom, :out})
 
-      Map.get(state, :vim_mode, false) ->
+      State.vim_mode?(state) ->
         move_up(state)
 
       true ->
@@ -63,7 +64,7 @@ defmodule Droodotfoo.Raxol.Navigation do
       state.current_section == :stl_viewer ->
         Map.put(state, :stl_viewer_action, {:zoom, :in})
 
-      Map.get(state, :vim_mode, false) ->
+      State.vim_mode?(state) ->
         move_down(state)
 
       true ->
@@ -98,7 +99,7 @@ defmodule Droodotfoo.Raxol.Navigation do
   end
 
   def handle_input("g", state) do
-    if Map.get(state, :vim_mode, false) do
+    if State.vim_mode?(state) do
       # Go to top
       trail = update_trail_if_enabled(state, 0)
       %{state | cursor_y: 0, cursor_trail: trail}
@@ -108,7 +109,7 @@ defmodule Droodotfoo.Raxol.Navigation do
   end
 
   def handle_input("G", state) do
-    if Map.get(state, :vim_mode, false) do
+    if State.vim_mode?(state) do
       # Go to bottom
       max_y = length(state.navigation_items) - 1
       trail = update_trail_if_enabled(state, max_y)

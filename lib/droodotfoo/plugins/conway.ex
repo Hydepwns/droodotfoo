@@ -18,6 +18,7 @@ defmodule Droodotfoo.Plugins.Conway do
   """
 
   @behaviour Droodotfoo.PluginSystem.Plugin
+  alias Droodotfoo.Plugins.GameUI
 
   defstruct [
     :grid,
@@ -152,27 +153,30 @@ defmodule Droodotfoo.Plugins.Conway do
 
   @impl true
   def render(state, _terminal_state) do
+    status = if state.running, do: "RUNNING", else: "PAUSED"
+    width = 64
+
     lines = [
-      "╔═══════════════════════════════════════════════════════════════╗",
-      "║ CONWAY'S GAME OF LIFE                                         ║",
-      "╠═══════════════════════════════════════════════════════════════╣",
-      "║                                                               ║",
-      "║  Generation: #{String.pad_trailing("#{state.generation}", 10)} Pattern: #{String.pad_trailing(state.pattern_name, 15)} ║",
-      "║  Status: #{String.pad_trailing(if(state.running, do: "RUNNING", else: "PAUSED"), 10)} Speed: #{state.speed}ms              ║",
-      "║                                                               ║",
+      GameUI.top_border(width),
+      GameUI.title_line("CONWAY'S GAME OF LIFE", width),
+      GameUI.divider(width),
+      GameUI.empty_line(width),
+      GameUI.content_line("Generation: #{String.pad_trailing("#{state.generation}", 10)} Pattern: #{String.pad_trailing(state.pattern_name, 15)}", width),
+      GameUI.content_line("Status: #{String.pad_trailing(status, 10)} Speed: #{state.speed}ms", width),
+      GameUI.empty_line(width),
       "║  ┌───────────────────────────────────────────────────────┐   ║"
     ] ++
       render_grid(state.grid, state.width, state.height) ++
       [
         "║  └───────────────────────────────────────────────────────┘   ║",
-        "║                                                               ║",
-        "║  Controls:                                                    ║",
-        "║  SPACE: Play/Pause  s: Step  c: Clear  r: Random             ║",
-        "║  +/-: Speed  1-5: Patterns  q: Quit                           ║",
-        "║                                                               ║",
-        "║  Patterns: 1=Glider 2=Blinker 3=Toad 4=Beacon 5=Pulsar       ║",
-        "║                                                               ║",
-        "╚═══════════════════════════════════════════════════════════════╝"
+        GameUI.empty_line(width),
+        GameUI.content_line("Controls:", width),
+        GameUI.content_line("SPACE: Play/Pause  s: Step  c: Clear  r: Random", width),
+        GameUI.content_line("+/-: Speed  1-5: Patterns  q: Quit", width),
+        GameUI.empty_line(width),
+        GameUI.content_line("Patterns: 1=Glider 2=Blinker 3=Toad 4=Beacon 5=Pulsar", width),
+        GameUI.empty_line(width),
+        GameUI.bottom_border(width)
       ]
 
     lines
