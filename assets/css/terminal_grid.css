@@ -6,11 +6,11 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   min-height: 0;
   overflow: hidden;
-  margin: 1rem 0;
+  margin: 0;
 }
 
 /* Each cell MUST be exactly 1ch wide for grid alignment */
@@ -19,9 +19,11 @@
   font-size: 16px;
   line-height: var(--line-height);
 
-  /* Fixed 80 character width */
-  width: 80ch;
+  /* Wider terminal for better use of space */
+  width: 110ch;
   max-width: 100%;
+  margin: 0;
+  padding: 0;
 
   /* Prevent any sub-pixel rendering that breaks the grid */
   -webkit-font-smoothing: auto;
@@ -48,7 +50,7 @@
   /* Ensure lines don't overflow horizontally but are visible vertically */
   overflow-x: hidden;
   overflow-y: visible;
-  max-width: 80ch;
+  max-width: 110ch;
 }
 
 .cell {
@@ -123,23 +125,29 @@
 /* Terminal wrapper */
 .terminal-wrapper {
   background-color: var(--background-color);
-  border: var(--border-thickness) solid var(--border-color);
-  padding: 1rem;
-  margin: 1rem 0;
+  border: 1px solid var(--border-color);
+  padding: 0.1rem;
+  margin: 0;
 
-  /* Compact terminal display */
-  width: fit-content;
-  max-width: 100%;
+  /* Less constrained terminal display */
+  width: 95vw;
+  max-width: 1400px;
   min-height: auto;
   height: auto;
 
   /* Allow vertical scroll if needed, no horizontal scroll */
   overflow-x: hidden;
   overflow-y: auto;
-  max-height: 85vh;
+  max-height: 80vh;
 
   /* Contain the content */
   position: relative;
+}
+
+/* Terminal container inherits theme colors */
+.terminal-wrapper .terminal-container {
+  color: var(--text-color);
+  background-color: var(--background-color);
 }
 
 /* Cursor simulation */
@@ -183,13 +191,14 @@
 table.header {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: var(--line-height);
+  margin-bottom: 0.5rem;
+  margin-top: 0;
   font-family: var(--font-family);
 }
 
 table.header th,
 table.header td {
-  padding: calc(var(--line-height) / 2) var(--grid-gap);
+  padding: 0.25rem 0.5rem;
   text-align: left;
   border: 1px solid var(--border-color);
 }
@@ -198,17 +207,21 @@ table.header th {
   font-weight: var(--font-weight-bold);
   background-color: var(--background-color-alt);
   text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
 }
 
 table.header .title {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: var(--font-weight-bold);
   margin: 0;
+  letter-spacing: 0.1em;
 }
 
 table.header .subtitle {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: var(--text-color-alt);
+  margin-top: 0.2rem;
 }
 
 table.header .width-min {
@@ -249,4 +262,55 @@ table.header .width-auto {
       font-variation-settings: 'wght' 550; /* Slightly heavier for small screens */
     }
   }
+}
+
+/* Interactive elements - hover states */
+.terminal-wrapper {
+  cursor: default;
+  user-select: none; /* Prevent text selection during clicking */
+}
+
+/* Add hover effect to make clickable areas discoverable */
+.terminal-line {
+  transition: background-color 0.15s ease-in-out;
+}
+
+/* Hover state for navigation menu area (rows 15-19, approximately) */
+.terminal-wrapper:hover .terminal-line:nth-child(n+16):nth-child(-n+20) {
+  cursor: pointer;
+}
+
+.terminal-wrapper .terminal-line:nth-child(n+16):nth-child(-n+20):hover {
+  background-color: rgba(100, 150, 255, 0.08);
+  transition: background-color 0.1s ease-in-out;
+}
+
+/* Active state (when clicking) */
+.terminal-wrapper .terminal-line:nth-child(n+16):nth-child(-n+20):active {
+  background-color: rgba(100, 150, 255, 0.15);
+  transition: background-color 0.05s ease-in-out;
+}
+
+/* Visual feedback for focused terminal */
+.terminal-wrapper:focus {
+  outline: 2px solid rgba(100, 150, 255, 0.3);
+  outline-offset: 2px;
+}
+
+.terminal-wrapper:focus-visible {
+  outline: 2px solid rgba(100, 150, 255, 0.5);
+  outline-offset: 2px;
+}
+
+/* Status bar styling - line 34 (row 33 in 0-indexed, @height - 2) */
+.terminal-line:nth-child(34) {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 500;
+}
+
+/* Highlight status bar mode indicators */
+.terminal-line:nth-child(34) .cell {
+  opacity: 0.9;
 }

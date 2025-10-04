@@ -1,0 +1,111 @@
+/* Breadcrumb navigation */
+.breadcrumb-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-left: 3px solid var(--color-primary);
+  margin: 0.5rem 0;
+  font-family: var(--font-family);
+  font-size: 0.875rem;
+  color: var(--text-color);
+}
+
+.breadcrumb-icon {
+  font-size: 1rem;
+  opacity: 0.7;
+}
+
+.breadcrumb-item {
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.breadcrumb-item:last-child {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.breadcrumb-separator {
+  color: var(--text-color-alt);
+  opacity: 0.5;
+  user-select: none;
+}
+
+/* Loading indicator */
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background-color: rgba(100, 150, 255, 0.1);
+  border: 1px solid rgba(100, 150, 255, 0.3);
+  border-radius: 0.25rem;
+  margin: 0.5rem 0;
+  font-family: var(--font-family);
+  font-size: 0.875rem;
+  color: var(--color-primary);
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(100, 150, 255, 0.2);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .breadcrumb-nav {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .loading-indicator {
+    background-color: rgba(100, 150, 255, 0.15);
+    border-color: rgba(100, 150, 255, 0.4);
+  }
+}
+
+/* Mobile adjustments */
+@media screen and (max-width: 768px) {
+  .breadcrumb-nav {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+  }
+
+  .breadcrumb-icon {
+    font-size: 0.875rem;
+  }
+
+  .loading-indicator {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .loading-spinner {
+    width: 14px;
+    height: 14px;
+  }
+}

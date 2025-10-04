@@ -1,0 +1,125 @@
+/* Layout improvements for droo.foo */
+
+.monospace-web-container {
+  max-width: 100%;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Header table styling - now inside terminal wrapper */
+table.header {
+  width: 100%;
+}
+
+/* Theme selector removed - use terminal commands instead:
+   - Type 'themes' to list available themes
+   - Type 'theme <name>' to switch themes
+*/
+
+/* Breadcrumb navigation now rendered inside terminal */
+
+/* Connection status */
+.connection-status {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  padding: 0.5rem 1rem;
+  border: 1px solid;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-family: var(--font-family);
+  z-index: 1000;
+}
+
+.connection-status.connected {
+  background-color: rgba(0, 255, 0, 0.1);
+  border-color: #00ff00;
+  color: #00ff00;
+}
+
+.connection-status.disconnected {
+  background-color: rgba(255, 0, 0, 0.1);
+  border-color: #ff0000;
+  color: #ff0000;
+}
+
+.connection-status.reconnecting {
+  background-color: rgba(255, 165, 0, 0.1);
+  border-color: #ffa500;
+  color: #ffa500;
+}
+
+/* Loading indicator */
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--background-color-alt);
+  font-family: var(--font-family);
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-color);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spinner 0.6s linear infinite;
+}
+
+@keyframes spinner {
+  to { transform: rotate(360deg); }
+}
+
+/* Terminal wrapper spacing */
+.terminal-wrapper {
+  margin: 0 auto;
+}
+
+/* Instructions box - fixed at bottom */
+.instructions-box {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.4rem 1rem;
+  text-align: center;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--background-color);
+  font-size: 0.65rem;
+  width: 100%;
+  z-index: 100;
+  opacity: 0.9;
+}
+
+/* Compact layout for smaller screens */
+@media screen and (max-width: 768px) {
+  .monospace-web-container {
+    padding: 1rem;
+  }
+
+  table.header {
+    font-size: 0.875rem;
+    margin-bottom: 2rem;
+  }
+
+
+  .terminal-wrapper {
+    margin-bottom: 2rem;
+  }
+
+  .instructions-box {
+    font-size: 0.55rem;
+    padding: 0.3rem 0.5rem;
+  }
+}

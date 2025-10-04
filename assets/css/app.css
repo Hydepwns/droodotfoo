@@ -108,6 +108,8 @@
 @import "./monospace.css";
 @import "./terminal_grid.css";
 @import "./themes.css";
+@import "./layout.css";
 @import "./connection_status.css";
+@import "./navigation.css";
 @import "./pwa.css";
 @import "./mobile.css";

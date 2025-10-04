@@ -60,6 +60,180 @@
   --cursor-color: #00ddff;
 }
 
+/* Synthwave84 - Retro 80s neon aesthetic */
+.theme-synthwave84 {
+  /* Base colors */
+  --text-color: #ffffff;
+  --text-color-alt: #848bbd;
+  --background-color: #241b2f;
+  --background-color-alt: #262335;
+  --border-color: #ff7edb;
+  --cursor-color: #f97e72;
+
+  /* Synthwave accent colors */
+  --sw-pink: #ff7edb;
+  --sw-cyan: #36f9f6;
+  --sw-green: #72f1b8;
+  --sw-yellow: #fede5d;
+  --sw-red: #fe4450;
+  --sw-orange: #ff8b39;
+  --sw-purple: #848bbd;
+
+  /* Text glow effect (optional, for enhanced neon look) */
+  --glow-intensity: 0.5;
+}
+
+/* Synthwave84 Soft - Lower contrast variant */
+.theme-synthwave84-soft {
+  --text-color: #e0e0e0;
+  --text-color-alt: #848bbd;
+  --background-color: #2a2139;
+  --background-color-alt: #2d2541;
+  --border-color: #d96ac8;
+  --cursor-color: #e06a5e;
+
+  --sw-pink: #d96ac8;
+  --sw-cyan: #2dd4d1;
+  --sw-green: #5dd49f;
+  --sw-yellow: #d9c54a;
+  --sw-red: #d93a46;
+  --sw-orange: #d9762f;
+  --sw-purple: #7078a8;
+}
+
+/* Synthwave84 High Contrast - Enhanced visibility */
+.theme-synthwave84-high {
+  --text-color: #ffffff;
+  --text-color-alt: #a0a8d9;
+  --background-color: #1a1425;
+  --background-color-alt: #1e1729;
+  --border-color: #ff99e6;
+  --cursor-color: #ff5544;
+
+  --sw-pink: #ff99e6;
+  --sw-cyan: #44fffc;
+  --sw-green: #88ffcc;
+  --sw-yellow: #ffee77;
+  --sw-red: #ff5566;
+  --sw-orange: #ff9955;
+  --sw-purple: #9999dd;
+}
+
+/* Synthwave84 terminal color overrides */
+.theme-synthwave84 .cell.fg-red,
+.theme-synthwave84-soft .cell.fg-red,
+.theme-synthwave84-high .cell.fg-red { color: var(--sw-red); }
+
+.theme-synthwave84 .cell.fg-green,
+.theme-synthwave84-soft .cell.fg-green,
+.theme-synthwave84-high .cell.fg-green { color: var(--sw-green); }
+
+.theme-synthwave84 .cell.fg-yellow,
+.theme-synthwave84-soft .cell.fg-yellow,
+.theme-synthwave84-high .cell.fg-yellow { color: var(--sw-yellow); }
+
+.theme-synthwave84 .cell.fg-cyan,
+.theme-synthwave84-soft .cell.fg-cyan,
+.theme-synthwave84-high .cell.fg-cyan { color: var(--sw-cyan); }
+
+.theme-synthwave84 .cell.fg-magenta,
+.theme-synthwave84-soft .cell.fg-magenta,
+.theme-synthwave84-high .cell.fg-magenta { color: var(--sw-pink); }
+
+.theme-synthwave84 .cell.fg-white,
+.theme-synthwave84-soft .cell.fg-white,
+.theme-synthwave84-high .cell.fg-white { color: var(--text-color); }
+
+/* Bright variants with enhanced glow */
+.theme-synthwave84 .cell.fg-bright-red,
+.theme-synthwave84-soft .cell.fg-bright-red,
+.theme-synthwave84-high .cell.fg-bright-red {
+  color: var(--sw-red);
+  text-shadow: 0 0 8px var(--sw-red);
+}
+
+.theme-synthwave84 .cell.fg-bright-green,
+.theme-synthwave84-soft .cell.fg-bright-green,
+.theme-synthwave84-high .cell.fg-bright-green {
+  color: var(--sw-green);
+  text-shadow: 0 0 8px var(--sw-green);
+}
+
+.theme-synthwave84 .cell.fg-bright-yellow,
+.theme-synthwave84-soft .cell.fg-bright-yellow,
+.theme-synthwave84-high .cell.fg-bright-yellow {
+  color: var(--sw-yellow);
+  text-shadow: 0 0 8px var(--sw-yellow);
+}
+
+.theme-synthwave84 .cell.fg-bright-cyan,
+.theme-synthwave84-soft .cell.fg-bright-cyan,
+.theme-synthwave84-high .cell.fg-bright-cyan {
+  color: var(--sw-cyan);
+  text-shadow: 0 0 10px var(--sw-cyan);
+}
+
+.theme-synthwave84 .cell.fg-bright-magenta,
+.theme-synthwave84-soft .cell.fg-bright-magenta,
+.theme-synthwave84-high .cell.fg-bright-magenta {
+  color: var(--sw-pink);
+  text-shadow: 0 0 10px var(--sw-pink);
+}
+
+.theme-synthwave84 .cell.fg-bright-white,
+.theme-synthwave84-soft .cell.fg-bright-white,
+.theme-synthwave84-high .cell.fg-bright-white {
+  color: var(--text-color);
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+}
+
+/* Background colors for Synthwave84 */
+.theme-synthwave84 .cell.bg-red,
+.theme-synthwave84-soft .cell.bg-red,
+.theme-synthwave84-high .cell.bg-red { background-color: var(--sw-red); }
+
+.theme-synthwave84 .cell.bg-green,
+.theme-synthwave84-soft .cell.bg-green,
+.theme-synthwave84-high .cell.bg-green { background-color: var(--sw-green); }
+
+.theme-synthwave84 .cell.bg-magenta,
+.theme-synthwave84-soft .cell.bg-magenta,
+.theme-synthwave84-high .cell.bg-magenta { background-color: var(--sw-pink); }
+
+.theme-synthwave84 .cell.bg-cyan,
+.theme-synthwave84-soft .cell.bg-cyan,
+.theme-synthwave84-high .cell.bg-cyan { background-color: var(--sw-cyan); }
+
+/* Neon glow effect for borders */
+.theme-synthwave84 .terminal-wrapper,
+.theme-synthwave84-soft .terminal-wrapper,
+.theme-synthwave84-high .terminal-wrapper {
+  box-shadow:
+    0 0 8px rgba(255, 126, 219, 0.4),
+    0 0 16px rgba(255, 126, 219, 0.2),
+    inset 0 0 2px rgba(255, 126, 219, 0.1);
+}
+
+/* Enhanced cursor with glow */
+.theme-synthwave84 .cell.cursor,
+.theme-synthwave84-soft .cell.cursor,
+.theme-synthwave84-high .cell.cursor {
+  background-color: var(--cursor-color);
+  box-shadow: 0 0 12px var(--cursor-color);
+  animation: neon-blink 1s ease-in-out infinite;
+}
+
+@keyframes neon-blink {
+  0%, 49% {
+    opacity: 1;
+    box-shadow: 0 0 12px var(--cursor-color);
+  }
+  50%, 100% {
+    opacity: 0.7;
+    box-shadow: 0 0 6px var(--cursor-color);
+  }
+}
+
 /* Theme transition animation */
 .terminal-container {
   transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
@@ -69,32 +243,9 @@
   transition: color 0.2s ease, background-color 0.2s ease;
 }
 
-/* Theme selector UI */
-.theme-selector {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  z-index: 1000;
-  background: var(--background-color-alt);
-  border: 1px solid var(--border-color);
-  padding: 0.5rem;
-  font-family: var(--font-family);
-}
-
-.theme-option {
-  cursor: pointer;
-  padding: 0.25rem 0.5rem;
-  margin: 0.25rem 0;
-  border: 1px solid transparent;
-  transition: all 0.2s;
-}
-
-.theme-option:hover {
-  border-color: var(--border-color);
-  background: var(--background-color);
-}
-
-.theme-option.active {
-  border-color: var(--text-color);
-  color: var(--text-color);
+/* Synthwave header title glow */
+.theme-synthwave84 table.header .title,
+.theme-synthwave84-soft table.header .title,
+.theme-synthwave84-high table.header .title {
+  text-shadow: 0 0 10px var(--sw-pink), 0 0 20px rgba(255, 126, 219, 0.3);
 }
