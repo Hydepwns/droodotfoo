@@ -1,0 +1,36 @@
+#!/bin/bash
+# Local development script with 1Password CLI secret management
+#
+# Usage: ./bin/dev
+#
+# Prerequisites:
+# - 1Password CLI installed: brew install --cask 1password-cli
+# - Signed into 1Password: op signin
+# - Secrets stored in 1Password item: droodotfoo-dev
+
+set -e
+
+# Check if 1Password CLI is available
+if ! command -v op &> /dev/null; then
+    echo "Error: 1Password CLI not found. Install with: brew install --cask 1password-cli"
+    exit 1
+fi
+
+# Load secrets from 1Password
+echo "Loading secrets from 1Password..."
+
+export SPOTIFY_CLIENT_ID=$(op read "op://Private/droodotfoo-dev/SPOTIFY_CLIENT_ID" 2>/dev/null || echo "")
+export SPOTIFY_CLIENT_SECRET=$(op read "op://Private/droodotfoo-dev/SPOTIFY_CLIENT_SECRET" 2>/dev/null || echo "")
+export PHX_HOST="localhost"
+
+# Verify critical secrets are loaded
+if [ -z "$SPOTIFY_CLIENT_ID" ]; then
+    echo "Warning: SPOTIFY_CLIENT_ID not found in 1Password"
+fi
+
+if [ -z "$SPOTIFY_CLIENT_SECRET" ]; then
+    echo "Warning: SPOTIFY_CLIENT_SECRET not found in 1Password"
+fi
+
+echo "Starting Phoenix server..."
+exec mix phx.server
