@@ -242,7 +242,10 @@ defmodule Droodotfoo.PluginSystem.Manager do
       Droodotfoo.Plugins.Spotify,
       Droodotfoo.Plugins.Conway,
       Droodotfoo.Plugins.TypingTest,
-      Droodotfoo.Plugins.GitHub
+      Droodotfoo.Plugins.GitHub,
+      Droodotfoo.Plugins.Tetris,
+      Droodotfoo.Plugins.TwentyFortyEight,
+      Droodotfoo.Plugins.Wordle
     ]
 
     new_state =

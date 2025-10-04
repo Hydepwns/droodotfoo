@@ -1,7 +1,7 @@
 defmodule DroodotfooWeb.DroodotfooLive do
   use DroodotfooWeb, :live_view
   alias Droodotfoo.TerminalBridge
-  alias Droodotfoo.{RaxolApp, AdaptiveRefresh, InputDebouncer, InputRateLimiter}
+  alias Droodotfoo.{RaxolApp, AdaptiveRefresh, InputDebouncer, InputRateLimiter, BootSequence}
   alias DroodotfooWeb.Live.ConnectionRecovery
 
   @impl true
@@ -17,44 +17,84 @@ defmodule DroodotfooWeb.DroodotfooLive do
     input_debouncer = InputDebouncer.new(InputDebouncer.config_for_mode(:navigation))
     rate_limiter = InputRateLimiter.new()
 
-    # Get initial buffer from RaxolApp
-    initial_buffer = RaxolApp.get_buffer(raxol_pid)
-    initial_html = TerminalBridge.terminal_to_html(initial_buffer)
-    initial_buffer_hash = :erlang.phash2(initial_buffer)
-
-    # Start with adaptive refresh rate
+    # Start boot sequence on connected socket
     if connected?(socket) do
-      schedule_next_tick(adaptive_refresh)
-    end
+      # Schedule first boot step
+      delay = BootSequence.delay_for_step(1)
+      Process.send_after(self(), :boot_next_step, delay)
 
-    {:ok,
-     socket
-     |> assign(:raxol_pid, raxol_pid)
-     |> assign(:terminal_html, initial_html)
-     |> assign(:current_section, :home)
-     |> assign(:last_render_time, System.monotonic_time(:millisecond))
-     |> assign(:connection_recovery, ConnectionRecovery.new())
-     |> assign(:adaptive_refresh, adaptive_refresh)
-     |> assign(:input_debouncer, input_debouncer)
-     |> assign(:rate_limiter, rate_limiter)
-     |> assign(:last_buffer_hash, initial_buffer_hash)
-     |> assign(:performance_mode, :normal)
-     |> assign(:tick_timer, nil)
-     |> assign(:vim_mode, false)
-     |> assign(:loading, false)
-     |> assign(:breadcrumb_path, ["Home"])
-     |> assign(:current_theme, "theme-synthwave84")}
+      # Generate initial boot display
+      boot_html = render_boot_sequence(0)
+
+      {:ok,
+       socket
+       |> assign(:raxol_pid, raxol_pid)
+       |> assign(:terminal_html, boot_html)
+       |> assign(:boot_in_progress, true)
+       |> assign(:boot_step, 0)
+       |> assign(:current_section, :home)
+       |> assign(:last_render_time, System.monotonic_time(:millisecond))
+       |> assign(:connection_recovery, ConnectionRecovery.new())
+       |> assign(:adaptive_refresh, adaptive_refresh)
+       |> assign(:input_debouncer, input_debouncer)
+       |> assign(:rate_limiter, rate_limiter)
+       |> assign(:last_buffer_hash, 0)
+       |> assign(:performance_mode, :normal)
+       |> assign(:tick_timer, nil)
+       |> assign(:vim_mode, false)
+       |> assign(:loading, false)
+       |> assign(:breadcrumb_path, ["Home"])
+       |> assign(:current_theme, "theme-synthwave84")
+       |> assign(:crt_mode, false)
+       |> assign(:high_contrast_mode, false)
+       |> assign(:screen_reader_message, "Welcome to droo.foo terminal")}
+    else
+      # Not connected yet, show blank screen
+      {:ok,
+       socket
+       |> assign(:raxol_pid, raxol_pid)
+       |> assign(:terminal_html, "")
+       |> assign(:boot_in_progress, false)
+       |> assign(:boot_step, 0)
+       |> assign(:current_section, :home)
+       |> assign(:last_render_time, System.monotonic_time(:millisecond))
+       |> assign(:connection_recovery, ConnectionRecovery.new())
+       |> assign(:adaptive_refresh, adaptive_refresh)
+       |> assign(:input_debouncer, input_debouncer)
+       |> assign(:rate_limiter, rate_limiter)
+       |> assign(:last_buffer_hash, 0)
+       |> assign(:performance_mode, :normal)
+       |> assign(:tick_timer, nil)
+       |> assign(:vim_mode, false)
+       |> assign(:loading, false)
+       |> assign(:breadcrumb_path, ["Home"])
+       |> assign(:current_theme, "theme-synthwave84")
+       |> assign(:crt_mode, false)
+       |> assign(:high_contrast_mode, false)
+       |> assign(:screen_reader_message, "Welcome to droo.foo terminal")}
+    end
   end
 
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="monospace-web-container monospace-container">
-    <!-- Connection status indicator -->
+    <div class="monospace-web-container monospace-container" role="main">
+      <!-- Screen reader announcements -->
+      <div
+        id="screen-reader-announcements"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        class="sr-only"
+      >
+        {assigns[:screen_reader_message] || ""}
+      </div>
+
+      <!-- Connection status indicator -->
       <%= if assigns[:connection_recovery] do %>
         <% status_info = ConnectionRecovery.get_status_display(@connection_recovery) %>
         <%= if status_info.show do %>
-          <div class={"connection-status #{status_info.class}"}>
+          <div class={"connection-status #{status_info.class}"} role="status" aria-live="polite">
             {status_info.status}
           </div>
         <% end %>
@@ -62,16 +102,18 @@ defmodule DroodotfooWeb.DroodotfooLive do
 
     <!-- Loading indicator -->
       <%= if @loading do %>
-        <div class="loading-indicator">
-          <div class="loading-spinner"></div>
+        <div class="loading-indicator" role="status" aria-live="polite">
+          <div class="loading-spinner" aria-hidden="true"></div>
           <span>Loading...</span>
         </div>
       <% end %>
 
     <!-- Terminal container with monospace grid -->
       <div
-        class={"terminal-wrapper #{@current_theme}"}
+        class={"terminal-wrapper #{@current_theme} #{if @crt_mode, do: "crt-mode", else: ""} #{if @high_contrast_mode, do: "high-contrast", else: ""}"}
         id="terminal-wrapper"
+        role="application"
+        aria-label="Interactive terminal interface"
         phx-hook="TerminalHook"
         phx-window-keydown="key_press"
         tabindex="0"
@@ -93,14 +135,14 @@ defmodule DroodotfooWeb.DroodotfooLive do
         </table>
 
         {raw(@terminal_html)}
-
-    <!-- STL Viewer Canvas (conditional) -->
+        
+    <!-- STL Viewer Canvas (conditional, inside terminal-wrapper) -->
         <%= if @current_section == :stl_viewer do %>
-          <div id="stl-viewer-container" phx-hook="STLViewerHook" style="position: absolute; top: 220px; left: 420px; width: 600px; height: 400px;">
-            <canvas id="stl-canvas" style="width: 100%; height: 100%; border: 1px solid #00ffaa;"></canvas>
+          <div id="stl-viewer-container" phx-hook="STLViewerHook" phx-update="ignore">
+            <canvas id="stl-canvas"></canvas>
           </div>
         <% end %>
-
+        
     <!-- Hidden input for keyboard capture inside the hook element -->
         <input
           id="terminal-input"
@@ -112,12 +154,45 @@ defmodule DroodotfooWeb.DroodotfooLive do
         />
       </div>
       
-    <!-- Instructions -->
+    <!-- Footer -->
       <div class="instructions-box">
-        <strong>↑↓</strong> navigate • <strong>Enter</strong> select • <strong>?</strong> help • <strong>:</strong> cmd • <strong>themes</strong> to change
+        Disable adblockers for best experience • I don't collect any data or use analytics here
       </div>
     </div>
     """
+  end
+
+  @impl true
+  def handle_info(:boot_next_step, socket) do
+    next_step = socket.assigns.boot_step + 1
+
+    if BootSequence.complete?(next_step) do
+      # Boot sequence complete, transition to normal terminal
+      initial_buffer = RaxolApp.get_buffer(socket.assigns.raxol_pid)
+      initial_html = TerminalBridge.terminal_to_html(initial_buffer)
+      initial_buffer_hash = :erlang.phash2(initial_buffer)
+
+      # Start normal tick cycle
+      schedule_next_tick(socket.assigns.adaptive_refresh)
+
+      {:noreply,
+       socket
+       |> assign(:boot_in_progress, false)
+       |> assign(:terminal_html, initial_html)
+       |> assign(:last_buffer_hash, initial_buffer_hash)}
+    else
+      # Advance to next boot step
+      boot_html = render_boot_sequence(next_step)
+
+      # Schedule next step
+      next_delay = BootSequence.delay_for_step(next_step + 1)
+      Process.send_after(self(), :boot_next_step, next_delay)
+
+      {:noreply,
+       socket
+       |> assign(:boot_step, next_step)
+       |> assign(:terminal_html, boot_html)}
+    end
   end
 
   @impl true
@@ -129,96 +204,123 @@ defmodule DroodotfooWeb.DroodotfooLive do
 
   @impl true
   def handle_info(:tick, socket) do
-    adaptive = socket.assigns.adaptive_refresh
-
-    # Check if we should render based on adaptive refresh rate
-    if AdaptiveRefresh.should_render?(adaptive) do
-      start_time = System.monotonic_time(:millisecond)
-
-      # Get current terminal buffer from Raxol
-      buffer = RaxolApp.get_buffer(socket.assigns.raxol_pid)
-
-      # Calculate buffer hash for dirty checking
-      buffer_hash = :erlang.phash2(buffer)
-
-      # Only render if buffer has changed
-      {html, should_update} =
-        if buffer_hash != socket.assigns.last_buffer_hash do
-          # Use terminal bridge for HTML generation
-          rendered_html = TerminalBridge.terminal_to_html(buffer)
-          {rendered_html, true}
-        else
-          {socket.assigns.terminal_html, false}
-        end
-
-      # Calculate render time
-      render_time = System.monotonic_time(:millisecond) - start_time
-
-      # Record render in adaptive refresh
-      adaptive = AdaptiveRefresh.record_render(adaptive, render_time)
-
-      # Check for section changes
-      current_section = RaxolApp.get_current_section(socket.assigns.raxol_pid)
-      section_changed = current_section != socket.assigns.current_section
-
-      socket =
-        if section_changed do
-          breadcrumb = section_to_breadcrumb(current_section)
-
-          socket
-          |> assign(:current_section, current_section)
-          |> assign(:breadcrumb_path, breadcrumb)
-          |> assign(:loading, false)
-          |> push_event("section_changed", %{section: Atom.to_string(current_section)})
-        else
-          socket
-        end
-
-      # Check for theme changes
-      theme_change = RaxolApp.get_theme_change(socket.assigns.raxol_pid)
-
-      socket =
-        if theme_change do
-          socket
-          |> assign(:current_theme, theme_change)
-          |> push_event("theme_changed", %{theme: theme_change})
-        else
-          socket
-        end
-
-      # Check for STL viewer actions
-      stl_action = RaxolApp.get_stl_viewer_action(socket.assigns.raxol_pid)
-
-      socket =
-        if stl_action do
-          handle_stl_viewer_action(socket, stl_action)
-        else
-          socket
-        end
-
-      # Only record metrics for actual renders
-      if should_update do
-        Droodotfoo.PerformanceMonitor.record_render_time(render_time)
-        # Push event to JS to verify grid alignment
-        push_event(socket, "terminal_updated", %{})
-      end
-
-      # Schedule next tick based on adaptive refresh rate
-      schedule_next_tick(adaptive)
-
-      {:noreply,
-       socket
-       |> assign(:terminal_html, html)
-       |> assign(:last_render_time, render_time)
-       |> assign(:adaptive_refresh, adaptive)
-       |> assign(
-         :last_buffer_hash,
-         if(should_update, do: buffer_hash, else: socket.assigns.last_buffer_hash)
-       )}
-    else
-      # Skip this tick, schedule next one
-      schedule_next_tick(adaptive)
+    # Skip tick processing during boot sequence
+    if socket.assigns.boot_in_progress do
       {:noreply, socket}
+    else
+      adaptive = socket.assigns.adaptive_refresh
+
+      # Check if we should render based on adaptive refresh rate
+      if AdaptiveRefresh.should_render?(adaptive) do
+        start_time = System.monotonic_time(:millisecond)
+
+        # Get current terminal buffer from Raxol
+        buffer = RaxolApp.get_buffer(socket.assigns.raxol_pid)
+
+        # Calculate buffer hash for dirty checking
+        buffer_hash = :erlang.phash2(buffer)
+
+        # Only render if buffer has changed
+        {html, should_update} =
+          if buffer_hash != socket.assigns.last_buffer_hash do
+            # Use terminal bridge for HTML generation
+            rendered_html = TerminalBridge.terminal_to_html(buffer)
+            {rendered_html, true}
+          else
+            {socket.assigns.terminal_html, false}
+          end
+
+        # Calculate render time
+        render_time = System.monotonic_time(:millisecond) - start_time
+
+        # Record render in adaptive refresh
+        adaptive = AdaptiveRefresh.record_render(adaptive, render_time)
+
+        # Check for section changes
+        current_section = RaxolApp.get_current_section(socket.assigns.raxol_pid)
+        section_changed = current_section != socket.assigns.current_section
+
+        socket =
+          if section_changed do
+            breadcrumb = section_to_breadcrumb(current_section)
+            sr_message = announce_section_change(current_section)
+
+            socket
+            |> assign(:current_section, current_section)
+            |> assign(:breadcrumb_path, breadcrumb)
+            |> assign(:loading, false)
+            |> assign(:screen_reader_message, sr_message)
+            |> push_event("section_changed", %{section: Atom.to_string(current_section)})
+          else
+            socket
+          end
+
+        # Check for theme changes
+        theme_change = RaxolApp.get_theme_change(socket.assigns.raxol_pid)
+
+        socket =
+          if theme_change do
+            socket
+            |> assign(:current_theme, theme_change)
+            |> push_event("theme_changed", %{theme: theme_change})
+          else
+            socket
+          end
+
+        # Check for STL viewer actions
+        stl_action = RaxolApp.get_stl_viewer_action(socket.assigns.raxol_pid)
+
+        socket =
+          if stl_action do
+            handle_stl_viewer_action(socket, stl_action)
+          else
+            socket
+          end
+
+        # Check for CRT mode changes
+        crt_mode = RaxolApp.get_crt_mode(socket.assigns.raxol_pid)
+
+        socket =
+          if crt_mode != socket.assigns[:crt_mode] do
+            assign(socket, :crt_mode, crt_mode)
+          else
+            socket
+          end
+
+        # Check for high contrast mode changes
+        high_contrast_mode = RaxolApp.get_high_contrast_mode(socket.assigns.raxol_pid)
+
+        socket =
+          if high_contrast_mode != socket.assigns[:high_contrast_mode] do
+            assign(socket, :high_contrast_mode, high_contrast_mode)
+          else
+            socket
+          end
+
+        # Only record metrics for actual renders
+        if should_update do
+          Droodotfoo.PerformanceMonitor.record_render_time(render_time)
+          # Push event to JS to verify grid alignment
+          push_event(socket, "terminal_updated", %{})
+        end
+
+        # Schedule next tick based on adaptive refresh rate
+        schedule_next_tick(adaptive)
+
+        {:noreply,
+         socket
+         |> assign(:terminal_html, html)
+         |> assign(:last_render_time, render_time)
+         |> assign(:adaptive_refresh, adaptive)
+         |> assign(
+           :last_buffer_hash,
+           if(should_update, do: buffer_hash, else: socket.assigns.last_buffer_hash)
+         )}
+      else
+        # Skip this tick, schedule next one
+        schedule_next_tick(adaptive)
+        {:noreply, socket}
+      end
     end
   end
 
@@ -275,13 +377,18 @@ defmodule DroodotfooWeb.DroodotfooLive do
     if Mix.env() != :prod do
       IO.inspect(msg, label: "Unexpected message in DroodotfooLive")
     end
+
     {:noreply, socket}
   end
 
   @impl true
   def handle_event("set_vim_mode", %{"enabled" => enabled}, socket) do
     # Set vim mode from client (loaded from localStorage)
-    RaxolApp.send_input(socket.assigns.raxol_pid, if(enabled, do: "set_vim_on", else: "set_vim_off"))
+    RaxolApp.send_input(
+      socket.assigns.raxol_pid,
+      if(enabled, do: "set_vim_on", else: "set_vim_off")
+    )
+
     {:noreply, assign(socket, :vim_mode, enabled)}
   end
 
@@ -321,21 +428,26 @@ defmodule DroodotfooWeb.DroodotfooLive do
 
   @impl true
   def handle_event("key_press", %{"key" => key}, socket) do
-    # Check rate limiting first
-    {allowed?, rate_limiter} = InputRateLimiter.allow_event?(socket.assigns.rate_limiter)
-    socket = assign(socket, :rate_limiter, rate_limiter)
-
-    if not allowed? do
-      # Event blocked by rate limiter
+    # Block input during boot sequence
+    if socket.assigns.boot_in_progress do
       {:noreply, socket}
     else
-      # Validate input key
-      if not valid_input_key?(key) do
+      # Check rate limiting first
+      {allowed?, rate_limiter} = InputRateLimiter.allow_event?(socket.assigns.rate_limiter)
+      socket = assign(socket, :rate_limiter, rate_limiter)
+
+      if not allowed? do
+        # Event blocked by rate limiter
         {:noreply, socket}
       else
-        # Record activity in adaptive refresh
-        adaptive = AdaptiveRefresh.record_activity(socket.assigns.adaptive_refresh)
-        process_valid_input(key, socket, adaptive)
+        # Validate input key
+        if not valid_input_key?(key) do
+          {:noreply, socket}
+        else
+          # Record activity in adaptive refresh
+          adaptive = AdaptiveRefresh.record_activity(socket.assigns.adaptive_refresh)
+          process_valid_input(key, socket, adaptive)
+        end
       end
     end
   end
@@ -344,20 +456,21 @@ defmodule DroodotfooWeb.DroodotfooLive do
     # Debug logging
     IO.inspect({:cell_click, row, col}, label: "Cell clicked")
 
-    # Handle cell click - navigation menu is at rows 15-19, cols 0-29
+    # Handle cell click - navigation menu is at rows 15-20, cols 0-29
     # Row 15 = Home (idx 0)
     # Row 16 = Projects (idx 1)
     # Row 17 = Skills (idx 2)
     # Row 18 = Experience (idx 3)
     # Row 19 = Contact (idx 4)
+    # Row 20 = STL Viewer (idx 5)
 
     nav_start_row = 15
-    nav_end_row = 19
+    nav_end_row = 20
     nav_start_col = 0
     nav_end_col = 29
 
     if row >= nav_start_row and row <= nav_end_row and
-       col >= nav_start_col and col <= nav_end_col do
+         col >= nav_start_col and col <= nav_end_col do
       IO.puts("Navigation clicked! menu_idx: #{row - nav_start_row}")
       # Calculate which menu item was clicked
       menu_idx = row - nav_start_row
@@ -388,7 +501,11 @@ defmodule DroodotfooWeb.DroodotfooLive do
   end
 
   # STL Viewer event handlers
-  def handle_event("stl_model_loaded", %{"triangles" => triangles, "vertices" => vertices, "bounds" => _bounds}, socket) do
+  def handle_event(
+        "stl_model_loaded",
+        %{"triangles" => triangles, "vertices" => vertices, "bounds" => _bounds},
+        socket
+      ) do
     # For now, just acknowledge the load
     IO.puts("STL model loaded: #{triangles} triangles, #{vertices} vertices")
     {:noreply, socket}
@@ -544,23 +661,41 @@ defmodule DroodotfooWeb.DroodotfooLive do
   defp section_to_breadcrumb(:stl_viewer), do: ["Home", "STL Viewer"]
   defp section_to_breadcrumb(_), do: ["Home"]
 
+  # Screen reader announcements for section changes
+  defp announce_section_change(:home), do: "Navigated to Home section"
+  defp announce_section_change(:projects), do: "Navigated to Projects section. Browse my portfolio projects."
+  defp announce_section_change(:skills), do: "Navigated to Skills section. View my technical expertise."
+  defp announce_section_change(:experience), do: "Navigated to Experience section. Review my work history."
+  defp announce_section_change(:contact), do: "Navigated to Contact section. Get in touch with me."
+  defp announce_section_change(:terminal), do: "Navigated to Terminal mode. Interactive command line interface."
+  defp announce_section_change(:search_results), do: "Showing search results"
+  defp announce_section_change(:performance), do: "Navigated to Performance Dashboard. Real-time metrics and charts."
+  defp announce_section_change(:matrix), do: "Navigated to Matrix plugin. Digital rain effect."
+  defp announce_section_change(:help), do: "Navigated to Help section. Available commands and keyboard shortcuts."
+  defp announce_section_change(:stl_viewer), do: "Navigated to STL 3D Viewer. Interactive 3D model viewer."
+  defp announce_section_change(_), do: "Section changed"
+
   # Handle STL viewer actions from keyboard
   defp handle_stl_viewer_action(socket, {:rotate, direction}) do
-    angle = case direction do
-      :up -> -0.1
-      :down -> 0.1
-      _ -> 0.1
-    end
+    angle =
+      case direction do
+        :up -> -0.1
+        :down -> 0.1
+        _ -> 0.1
+      end
+
     push_event(socket, "stl_rotate", %{axis: "y", angle: angle})
   end
 
   defp handle_stl_viewer_action(socket, {:zoom, direction}) do
     # Simulate zoom by moving camera
-    distance = case direction do
-      :in -> -0.5
-      :out -> 0.5
-      _ -> 0.5
-    end
+    distance =
+      case direction do
+        :in -> -0.5
+        :out -> 0.5
+        _ -> 0.5
+      end
+
     push_event(socket, "stl_zoom", %{distance: distance})
   end
 
@@ -573,6 +708,19 @@ defmodule DroodotfooWeb.DroodotfooLive do
   end
 
   defp handle_stl_viewer_action(socket, _), do: socket
+
+  # Render boot sequence to HTML
+  defp render_boot_sequence(step) do
+    lines = BootSequence.render(step)
+
+    # Convert lines to simple HTML with monospace styling
+    lines
+    |> Enum.map(fn line ->
+      # Escape HTML and preserve spaces
+      "<div class=\"terminal-line\">#{Phoenix.HTML.html_escape(line) |> Phoenix.HTML.safe_to_string()}</div>"
+    end)
+    |> Enum.join("\n")
+  end
 
   # Configuration function for switching between terminal bridges
 end

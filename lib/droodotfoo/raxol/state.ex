@@ -26,8 +26,24 @@ defmodule Droodotfoo.Raxol.State do
     :search_state,
     :vim_mode,
     :help_modal_open,
-    :stl_viewer_state
+    :stl_viewer_state,
+    :crt_mode,
+    :autocomplete_suggestions,
+    :autocomplete_index,
+    :high_contrast_mode
   ]
+
+  @doc """
+  Checks if vim mode is enabled
+  """
+  def vim_mode?(state), do: Map.get(state, :vim_mode, false)
+
+  @doc """
+  Changes the current section with validation
+  """
+  def change_section(state, new_section) when is_atom(new_section) do
+    %{state | current_section: new_section}
+  end
 
   @doc """
   Creates initial state for the application
@@ -51,7 +67,11 @@ defmodule Droodotfoo.Raxol.State do
       search_state: AdvancedSearch.new(),
       vim_mode: false,
       help_modal_open: false,
-      stl_viewer_state: Droodotfoo.StlViewerState.new()
+      stl_viewer_state: Droodotfoo.StlViewerState.new(),
+      crt_mode: false,
+      autocomplete_suggestions: [],
+      autocomplete_index: -1,
+      high_contrast_mode: false
     }
   end
 
