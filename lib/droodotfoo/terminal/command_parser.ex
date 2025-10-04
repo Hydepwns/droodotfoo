@@ -232,6 +232,10 @@ defmodule Droodotfoo.Terminal.CommandParser do
         "metrics" ->
           Commands.metrics(args, state)
 
+        # Visual Effects
+        "crt" ->
+          Commands.crt(args, state)
+
         # Music/Entertainment
         "spotify" ->
           Commands.spotify(args, state)
@@ -245,6 +249,10 @@ defmodule Droodotfoo.Terminal.CommandParser do
 
         "gh" ->
           Commands.gh(args, state)
+
+        # Search
+        "search" ->
+          Commands.search(args, state)
 
         # Unknown command
         _ ->
@@ -260,6 +268,7 @@ defmodule Droodotfoo.Terminal.CommandParser do
       {:error, msg} -> {:error, msg}
       {:exit, msg} -> {:exit, msg}
       {:plugin, plugin_name, output} -> {:plugin, plugin_name, output}
+      {:search, query} -> {:search, query}
     end
   end
 
@@ -313,10 +322,12 @@ defmodule Droodotfoo.Terminal.CommandParser do
       "perf",
       "dashboard",
       "metrics",
+      "crt",
       "spotify",
       "music",
       "github",
-      "gh"
+      "gh",
+      "search"
     ]
 
     all_commands
@@ -392,6 +403,7 @@ defmodule Droodotfoo.Terminal.CommandParser do
       "perf",
       "dashboard",
       "metrics",
+      "crt",
       "spotify",
       "music",
       "github",

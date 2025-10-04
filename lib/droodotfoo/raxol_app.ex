@@ -57,6 +57,24 @@ defmodule Droodotfoo.RaxolApp do
     end
   end
 
+  def get_crt_mode(pid \\ __MODULE__) do
+    try do
+      GenServer.call(pid, :get_crt_mode, 1000)
+    catch
+      :exit, _ ->
+        false
+    end
+  end
+
+  def get_high_contrast_mode(pid \\ __MODULE__) do
+    try do
+      GenServer.call(pid, :get_high_contrast_mode, 1000)
+    catch
+      :exit, _ ->
+        false
+    end
+  end
+
   defp create_empty_buffer do
     # Create a fallback empty buffer
     for _ <- 1..@height do
@@ -96,6 +114,18 @@ defmodule Droodotfoo.RaxolApp do
     # Clear the theme_change after reading it
     new_state = Map.delete(state, :theme_change)
     {:reply, theme_change, new_state}
+  end
+
+  def handle_call(:get_crt_mode, _from, state) do
+    # Get CRT mode from terminal_state (doesn't clear it, it's persistent)
+    crt_mode = Map.get(state.terminal_state || %{}, :crt_mode, false)
+    {:reply, crt_mode, state}
+  end
+
+  def handle_call(:get_high_contrast_mode, _from, state) do
+    # Get high contrast mode from terminal_state (doesn't clear it, it's persistent)
+    high_contrast_mode = Map.get(state.terminal_state || %{}, :high_contrast_mode, false)
+    {:reply, high_contrast_mode, state}
   end
 
   def handle_call(:get_stl_viewer_action, _from, state) do

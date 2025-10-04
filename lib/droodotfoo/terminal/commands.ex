@@ -340,7 +340,7 @@ defmodule Droodotfoo.Terminal.Commands do
   end
 
   def man([], _state) do
-    {:error, "What manual page do you want?"}
+    {:error, "man: missing operand"}
   end
 
   def man([cmd], state) do
@@ -722,40 +722,26 @@ defmodule Droodotfoo.Terminal.Commands do
 
   def rain(args, state), do: matrix(args, state)
 
-  def spotify([], state) do
-    case Droodotfoo.PluginSystem.Manager.start_plugin("spotify", state) do
-      {:ok, output} -> {:plugin, "spotify", output}
-      {:error, reason} -> {:error, reason}
-    end
-  end
-
+  # Plugin launch commands (consolidated pattern)
+  def spotify([], state), do: launch_plugin("spotify", state)
   def music(args, state), do: spotify(args, state)
 
-  def github([], state) do
-    case Droodotfoo.PluginSystem.Manager.start_plugin("github", state) do
-      {:ok, output} -> {:plugin, "github", output}
-      {:error, reason} -> {:error, reason}
-    end
-  end
-
+  def github([], state), do: launch_plugin("github", state)
   def gh(args, state), do: github(args, state)
 
-  def conway([], state) do
-    case Droodotfoo.PluginSystem.Manager.start_plugin("conway", state) do
-      {:ok, output} -> {:plugin, "conway", output}
-      {:error, reason} -> {:error, reason}
-    end
-  end
-
+  def conway([], state), do: launch_plugin("conway", state)
   def life(args, state), do: conway(args, state)
 
-  def typing([], state) do
-    case Droodotfoo.PluginSystem.Manager.start_plugin("typing_test", state) do
-      {:ok, output} -> {:plugin, "typing_test", output}
-      {:error, reason} -> {:error, reason}
-    end
-  end
+  def tetris([], state), do: launch_plugin("tetris", state)
+  def t(args, state), do: tetris(args, state)
 
+  def twenty48([], state), do: launch_plugin("2048", state)
+  def game48(args, state), do: twenty48(args, state)
+
+  def wordle([], state), do: launch_plugin("wordle", state)
+  def word(args, state), do: wordle(args, state)
+
+  def typing([], state), do: launch_plugin("typing_test", state)
   def type(args, state), do: typing(args, state)
   def wpm(args, state), do: typing(args, state)
 
@@ -797,7 +783,28 @@ defmodule Droodotfoo.Terminal.Commands do
     {:ok, "curl: #{Enum.join(args, " ")}: Could not resolve host"}
   end
 
+  # Search command
+  def search(args, _state) do
+    query = Enum.join(args, " ") |> String.trim()
+
+    if query == "" do
+      {:error, "search: empty query"}
+    else
+      # Return special search tuple with query and mode flags
+      # This will be handled in Command.execute_terminal_command
+      {:search, query}
+    end
+  end
+
   # Helper functions
+
+  # Plugin launch helper (consolidates repetitive pattern)
+  defp launch_plugin(plugin_name, state) do
+    case Droodotfoo.PluginSystem.Manager.start_plugin(plugin_name, state) do
+      {:ok, output} -> {:plugin, plugin_name, output}
+      {:error, reason} -> {:error, reason}
+    end
+  end
 
   defp parse_ls_args(args) do
     {opts, paths} = Enum.split_while(args, &String.starts_with?(&1, "-"))
@@ -926,4 +933,57 @@ defmodule Droodotfoo.Terminal.Commands do
 
   def dashboard(_args, state), do: perf([], state)
   def metrics(_args, state), do: perf([], state)
+
+  # CRT Effects Command
+
+  def crt([], state) do
+    # Toggle CRT mode
+    current_mode = Map.get(state, :crt_mode, false)
+    new_mode = !current_mode
+    new_state = Map.put(state, :crt_mode, new_mode)
+    status = if new_mode, do: "enabled", else: "disabled"
+    {:ok, "CRT effects #{status}", new_state}
+  end
+
+  def crt(["on"], state) do
+    new_state = Map.put(state, :crt_mode, true)
+    {:ok, "CRT effects enabled", new_state}
+  end
+
+  def crt(["off"], state) do
+    new_state = Map.put(state, :crt_mode, false)
+    {:ok, "CRT effects disabled", new_state}
+  end
+
+  def crt(_args, _state) do
+    {:error, "Usage: crt [on|off]\nToggle retro CRT screen effects"}
+  end
+
+  # High Contrast Mode Command
+
+  def contrast([], state) do
+    # Toggle high contrast mode
+    current_mode = Map.get(state, :high_contrast_mode, false)
+    new_mode = !current_mode
+    new_state = Map.put(state, :high_contrast_mode, new_mode)
+    status = if new_mode, do: "enabled", else: "disabled"
+    {:ok, "High contrast mode #{status}", new_state}
+  end
+
+  def contrast(["on"], state) do
+    new_state = Map.put(state, :high_contrast_mode, true)
+    {:ok, "High contrast mode enabled", new_state}
+  end
+
+  def contrast(["off"], state) do
+    new_state = Map.put(state, :high_contrast_mode, false)
+    {:ok, "High contrast mode disabled", new_state}
+  end
+
+  def contrast(_args, _state) do
+    {:error, "Usage: contrast [on|off]\nToggle high contrast accessibility mode"}
+  end
+
+  # Accessibility alias
+  def a11y(args, state), do: contrast(args, state)
 end
