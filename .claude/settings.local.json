@@ -29,7 +29,14 @@
       "Bash(git push:*)",
       "Bash(lsof:*)",
       "Bash(xargs kill:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(timeout 30 mix test test/droodotfoo/plugins/tetris_test.exs)",
+      "Bash(for file in lib/droodotfoo/plugins/{tetris,twenty_forty_eight,wordle,conway}.ex)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(grep:*)",
+      "Bash(done)",
+      "Bash(find:*)",
+      "Bash(./bin/dev)"
     ],
     "deny": [],
     "ask": []
