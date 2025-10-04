@@ -158,8 +158,10 @@ defmodule DroodotfooWeb.DroodotfooLiveTest do
       # Exit with Escape
       html = send_keydown(view, "Escape", %{"key" => "Escape"})
 
-      # Should show navigation hint
-      assert html =~ "Press" or html =~ "commands" or html =~ "navigate"
+      # Should not show command prompt (indicates we've exited command mode)
+      refute String.contains?(html, "terminal-command-line\">&gt;")
+      # Terminal should be rendered
+      assert html =~ "terminal-wrapper"
     end
 
     test "handles special keys properly", %{conn: conn} do

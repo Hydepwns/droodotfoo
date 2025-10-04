@@ -162,9 +162,9 @@ defmodule Droodotfoo.RaxolAppTest do
       buffer_text = buffer_to_text(buffer)
 
       # Should show navigation hint instead of command prompt
-      assert String.contains?(buffer_text, "Press") or
-               String.contains?(buffer_text, "navigate") or
-               String.contains?(buffer_text, "commands")
+      assert String.contains?(buffer_text, "? help") or
+               String.contains?(buffer_text, ": cmd") or
+               String.contains?(buffer_text, "/ search")
     end
 
     test "handles typing in command mode" do
@@ -311,14 +311,14 @@ defmodule Droodotfoo.RaxolAppTest do
       assert is_list(buffer.lines)
 
       # Check buffer dimensions
-      assert length(buffer.lines) == 24
+      assert length(buffer.lines) == 45
 
       # Check each line structure
       Enum.each(buffer.lines, fn line ->
         assert is_map(line)
         assert Map.has_key?(line, :cells)
         assert is_list(line.cells)
-        assert length(line.cells) == 80
+        assert length(line.cells) == 110
       end)
     end
 

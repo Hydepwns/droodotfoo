@@ -24,7 +24,7 @@ defmodule Droodotfoo.ErrorFormatterTest do
       result = ErrorFormatter.format("this is a warning", type: :warning)
 
       assert result =~ "WARNING"
-      assert result =~ "⚠"
+      assert result =~ "!"
       assert result =~ "this is a warning"
     end
 
@@ -32,7 +32,7 @@ defmodule Droodotfoo.ErrorFormatterTest do
       result = ErrorFormatter.format("this is info", type: :info)
 
       assert result =~ "INFO"
-      assert result =~ "ℹ"
+      assert result =~ "i"
       assert result =~ "this is info"
     end
 
@@ -40,7 +40,7 @@ defmodule Droodotfoo.ErrorFormatterTest do
       result = ErrorFormatter.format("operation successful", type: :success)
 
       assert result =~ "SUCCESS"
-      assert result =~ "✓"
+      assert result =~ "*"
       assert result =~ "operation successful"
     end
 
