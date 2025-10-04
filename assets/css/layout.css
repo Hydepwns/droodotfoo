@@ -3,10 +3,12 @@
 .monospace-web-container {
   max-width: 100%;
   margin: 0;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1rem 0 1rem; /* No bottom padding - footer is fixed */
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-height: calc(100vh - 2.5rem); /* Account for fixed footer */
+  height: calc(100vh - 2.5rem);
 }
 
 /* Header table styling - now inside terminal wrapper */
@@ -21,65 +23,9 @@ table.header {
 
 /* Breadcrumb navigation now rendered inside terminal */
 
-/* Connection status */
-.connection-status {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  padding: 0.5rem 1rem;
-  border: 1px solid;
-  border-radius: 4px;
-  font-size: 0.875rem;
-  font-family: var(--font-family);
-  z-index: 1000;
-}
+/* Connection status - moved to connection_status.css */
 
-.connection-status.connected {
-  background-color: rgba(0, 255, 0, 0.1);
-  border-color: #00ff00;
-  color: #00ff00;
-}
-
-.connection-status.disconnected {
-  background-color: rgba(255, 0, 0, 0.1);
-  border-color: #ff0000;
-  color: #ff0000;
-}
-
-.connection-status.reconnecting {
-  background-color: rgba(255, 165, 0, 0.1);
-  border-color: #ffa500;
-  color: #ffa500;
-}
-
-/* Loading indicator */
-.loading-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  margin-bottom: 2rem;
-  border: 1px solid var(--border-color);
-  background-color: var(--background-color-alt);
-  font-family: var(--font-family);
-  width: fit-content;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.loading-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--border-color);
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: spinner 0.6s linear infinite;
-}
-
-@keyframes spinner {
-  to { transform: rotate(360deg); }
-}
+/* Loading indicator - defined in navigation.css */
 
 /* Terminal wrapper spacing */
 .terminal-wrapper {
@@ -99,7 +45,11 @@ table.header {
   font-size: 0.65rem;
   width: 100%;
   z-index: 100;
-  opacity: 0.9;
+  opacity: 0.95;
+  height: 2.5rem; /* Fixed height for calculation */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Compact layout for smaller screens */

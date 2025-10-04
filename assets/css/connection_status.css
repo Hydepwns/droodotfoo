@@ -8,7 +8,7 @@
   font-family: var(--mono-font);
   font-size: 0.875rem;
   font-weight: 500;
-  z-index: 1000;
+  z-index: 500; /* Z-index scale: 500 for status indicators */
   min-width: 120px;
   text-align: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
