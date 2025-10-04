@@ -318,7 +318,9 @@ defmodule Droodotfoo.TerminalBridge do
     Enum.join(classes, " ")
   end
 
-  defp color_name(color) when is_atom(color), do: color
+  defp color_name(color) when is_atom(color) do
+    color |> Atom.to_string() |> String.replace("_", "-")
+  end
 
   defp color_name(color) when is_tuple(color) do
     case color do

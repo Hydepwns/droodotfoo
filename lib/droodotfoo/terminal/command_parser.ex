@@ -4,6 +4,7 @@ defmodule Droodotfoo.Terminal.CommandParser do
   """
 
   alias Droodotfoo.Terminal.{FileSystem, Commands}
+  alias Droodotfoo.ErrorFormatter
 
   @doc """
   Parse and execute a command string.
@@ -214,16 +215,42 @@ defmodule Droodotfoo.Terminal.CommandParser do
         "exit" ->
           Commands.exit(state)
 
+        # Theme commands
+        "theme" ->
+          Commands.theme(args, state)
+
+        "themes" ->
+          Commands.themes(state)
+
+        # Performance commands
+        "perf" ->
+          Commands.perf(args, state)
+
+        "dashboard" ->
+          Commands.dashboard(args, state)
+
+        "metrics" ->
+          Commands.metrics(args, state)
+
+        # Music/Entertainment
+        "spotify" ->
+          Commands.spotify(args, state)
+
+        "music" ->
+          Commands.music(args, state)
+
+        # Development/Social
+        "github" ->
+          Commands.github(args, state)
+
+        "gh" ->
+          Commands.gh(args, state)
+
         # Unknown command
         _ ->
           suggestions = suggest_command(cmd)
-          error_msg = "bash: #{cmd}: command not found"
-
-          if suggestions != [] do
-            {:error, "#{error_msg}\n\nDid you mean:\n#{format_suggestions(suggestions)}"}
-          else
-            {:error, error_msg}
-          end
+          formatted_error = ErrorFormatter.command_not_found(cmd, suggestions)
+          {:error, formatted_error}
       end
 
     # Normalize return values to ensure consistent format
@@ -232,6 +259,7 @@ defmodule Droodotfoo.Terminal.CommandParser do
       {:ok, output} -> {:ok, output}
       {:error, msg} -> {:error, msg}
       {:exit, msg} -> {:exit, msg}
+      {:plugin, plugin_name, output} -> {:plugin, plugin_name, output}
     end
   end
 
@@ -278,7 +306,17 @@ defmodule Droodotfoo.Terminal.CommandParser do
       "rm",
       "vim",
       "emacs",
-      "exit"
+      "exit",
+      "stl",
+      "theme",
+      "themes",
+      "perf",
+      "dashboard",
+      "metrics",
+      "spotify",
+      "music",
+      "github",
+      "gh"
     ]
 
     all_commands
@@ -289,11 +327,6 @@ defmodule Droodotfoo.Terminal.CommandParser do
     |> Enum.map(fn {cmd, _score} -> cmd end)
   end
 
-  defp format_suggestions(suggestions) do
-    suggestions
-    |> Enum.map(fn cmd -> "  #{cmd}" end)
-    |> Enum.join("\n")
-  end
 
   @doc """
   Get command completion suggestions.
@@ -352,7 +385,17 @@ defmodule Droodotfoo.Terminal.CommandParser do
       "rm",
       "vim",
       "emacs",
-      "exit"
+      "exit",
+      "stl",
+      "theme",
+      "themes",
+      "perf",
+      "dashboard",
+      "metrics",
+      "spotify",
+      "music",
+      "github",
+      "gh"
     ]
   end
 
@@ -381,6 +424,21 @@ defmodule Droodotfoo.Terminal.CommandParser do
     ]
 
     git_commands
+    |> Enum.filter(&String.starts_with?(&1, partial_arg))
+  end
+
+  defp get_argument_completions("stl", partial_arg, _state) do
+    stl_commands = [
+      "load",
+      "info",
+      "mode",
+      "rotate",
+      "reset",
+      "ascii",
+      "help"
+    ]
+
+    stl_commands
     |> Enum.filter(&String.starts_with?(&1, partial_arg))
   end
 

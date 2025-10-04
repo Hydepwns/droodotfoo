@@ -5,6 +5,7 @@ defmodule Droodotfoo.Terminal.Commands do
   """
 
   alias Droodotfoo.Terminal.FileSystem
+  alias Droodotfoo.Github.Client, as: GithubClient
 
   # Navigation Commands
 
@@ -279,6 +280,9 @@ defmodule Droodotfoo.Terminal.Commands do
        cowsay <text>   Cow says something
        sl              Steam locomotive
        matrix          Enter the matrix
+       conway          Conway's Game of Life
+       typing          Typing speed test (WPM)
+       snake           Play Snake game
 
      Other:
        clear           Clear the terminal
@@ -426,19 +430,14 @@ defmodule Droodotfoo.Terminal.Commands do
   # droo.foo Specific Commands
 
   def projects([], _state) do
-    {:ok,
-     """
-     My Projects
-     ===========
+    # Fetch pinned repos from GitHub (hydepwns profile)
+    result =
+      case GithubClient.fetch_pinned_repos("hydepwns") do
+        {:ok, repos} -> GithubClient.format_repos(repos)
+        {:error, _reason} = error -> GithubClient.format_repos(error)
+      end
 
-     droo.foo            - This terminal portfolio (Elixir/Phoenix)
-     axol-framework      - High-performance web framework (Rust)
-     terminal-ui         - Raxol terminal UI library (Elixir)
-     distributed-system  - Distributed cache implementation (Go)
-
-     Use 'cd projects/<name>' to explore each project.
-     Use 'cat projects/<name>/README.md' for details.
-     """}
+    {:ok, result}
   end
 
   def skills([], _state) do
@@ -732,6 +731,34 @@ defmodule Droodotfoo.Terminal.Commands do
 
   def music(args, state), do: spotify(args, state)
 
+  def github([], state) do
+    case Droodotfoo.PluginSystem.Manager.start_plugin("github", state) do
+      {:ok, output} -> {:plugin, "github", output}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def gh(args, state), do: github(args, state)
+
+  def conway([], state) do
+    case Droodotfoo.PluginSystem.Manager.start_plugin("conway", state) do
+      {:ok, output} -> {:plugin, "conway", output}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def life(args, state), do: conway(args, state)
+
+  def typing([], state) do
+    case Droodotfoo.PluginSystem.Manager.start_plugin("typing_test", state) do
+      {:ok, output} -> {:plugin, "typing_test", output}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def type(args, state), do: typing(args, state)
+  def wpm(args, state), do: typing(args, state)
+
   # API commands
 
   def api(["status"], _state) do
@@ -832,4 +859,71 @@ defmodule Droodotfoo.Terminal.Commands do
         {default_n, args}
     end
   end
+
+  # Theme Commands
+
+  @available_themes %{
+    "synthwave84" => "theme-synthwave84",
+    "synthwave84-soft" => "theme-synthwave84-soft",
+    "synthwave84-high" => "theme-synthwave84-high",
+    "green" => "theme-green",
+    "amber" => "theme-amber",
+    "matrix" => "theme-matrix",
+    "phosphor" => "theme-phosphor",
+    "cyberpunk" => "theme-cyberpunk"
+  }
+
+  def themes(_state) do
+    output = """
+    Available themes:
+
+      synthwave84         Retro 80s neon aesthetic (default)
+      synthwave84-soft    Lower contrast variant
+      synthwave84-high    High contrast variant
+      green               Classic green terminal
+      amber               Vintage amber monochrome
+      matrix              Green matrix rain
+      phosphor            Phosphor blue CRT
+      cyberpunk           Pink/cyan neon
+
+    Usage: theme <name>
+    Example: theme matrix
+    """
+
+    {:ok, String.trim(output)}
+  end
+
+  def theme([], _state) do
+    {:error, "Usage: theme <name>\nRun 'themes' to see available themes"}
+  end
+
+  def theme([theme_name], state) do
+    theme_key = String.downcase(theme_name)
+
+    case Map.get(@available_themes, theme_key) do
+      nil ->
+        {:error, "Unknown theme: #{theme_name}\nRun 'themes' to see available themes"}
+
+      theme_class ->
+        # Return a special tuple that LiveView can intercept
+        output = "Theme changed to: #{theme_name}"
+        new_state = Map.put(state, :theme_change, theme_class)
+        {:ok, output, new_state}
+    end
+  end
+
+  def theme(_args, _state) do
+    {:error, "Usage: theme <name>\nRun 'themes' to see available themes"}
+  end
+
+  # Performance & Monitoring Commands
+
+  def perf(_args, state) do
+    # Switch to performance dashboard view
+    new_state = Map.put(state, :section_change, :performance)
+    {:ok, "Opening performance dashboard...", new_state}
+  end
+
+  def dashboard(_args, state), do: perf([], state)
+  def metrics(_args, state), do: perf([], state)
 end
