@@ -18,6 +18,11 @@ defmodule DroodotfooWeb.Router do
     pipe_through :browser
 
     live "/", DroodotfooLive
+
+    # Spotify OAuth routes
+    get "/auth/spotify", SpotifyAuthController, :authorize
+    get "/auth/spotify/callback", SpotifyAuthController, :callback
+    get "/auth/spotify/logout", SpotifyAuthController, :logout
   end
 
   # Other scopes may use custom stacks.
