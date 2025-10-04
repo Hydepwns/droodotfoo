@@ -22,8 +22,7 @@ interface TerminalHookInstance extends PhoenixLiveViewHook {
   removeAllEventListeners: () => void;
 }
 
-export const TerminalHook: TerminalHookInstance = {
-  el: document.createElement('div') as PhoenixHookElement,
+export const TerminalHook: Partial<TerminalHookInstance> = {
   terminal: null,
   grid: null,
   mobileTerminal: null,
@@ -123,6 +122,52 @@ export const TerminalHook: TerminalHookInstance = {
           console.log('Font loaded, grid updated');
         });
       }
+
+      // Add click handler for cell selection
+      this.addEventListener(this.el, 'click', (e: Event) => {
+        if (!(e instanceof MouseEvent)) return;
+
+        const lines = this.el.querySelectorAll('.terminal-line');
+        if (lines.length === 0) {
+          console.log('No terminal lines found for click');
+          return;
+        }
+
+        // Calculate which row was clicked
+        let clickedRow = -1;
+        lines.forEach((line, index) => {
+          const rect = line.getBoundingClientRect();
+          if (e.clientY >= rect.top && e.clientY <= rect.bottom) {
+            clickedRow = index;
+          }
+        });
+
+        if (clickedRow === -1) return;
+
+        // Calculate character width
+        const firstLine = lines[0] as HTMLElement;
+        const style = window.getComputedStyle(firstLine);
+        const temp = document.createElement('span');
+        temp.style.font = style.font;
+        temp.style.fontSize = style.fontSize;
+        temp.style.fontFamily = style.fontFamily;
+        temp.style.visibility = 'hidden';
+        temp.style.position = 'absolute';
+        temp.textContent = '0';
+        document.body.appendChild(temp);
+        const charWidth = temp.getBoundingClientRect().width;
+        document.body.removeChild(temp);
+
+        const clickedLine = lines[clickedRow] as HTMLElement;
+        const lineRect = clickedLine.getBoundingClientRect();
+        const col = Math.floor((e.clientX - lineRect.left) / charWidth);
+
+        console.log('Cell clicked:', { row: clickedRow, col, charWidth });
+
+        if (this.pushEvent) {
+          this.pushEvent('cell_click', { row: clickedRow, col });
+        }
+      });
     } catch (error) {
       console.error('Failed to mount TerminalHook:', error);
     }
@@ -273,7 +318,10 @@ export const TerminalHook: TerminalHookInstance = {
   }
 };
 
+import { STLViewerHook } from './hooks/stl_viewer';
+
 // Export all hooks
 export default {
-  TerminalHook
+  TerminalHook,
+  STLViewerHook
 };
