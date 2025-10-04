@@ -262,7 +262,7 @@ defmodule Droodotfoo.PluginIntegrationTest do
       assert {:error, error_msg} =
                CommandParser.parse_and_execute("unknowncommand", terminal_state)
 
-      assert String.contains?(error_msg, "command not found")
+      assert String.contains?(error_msg, "Command 'unknowncommand' not found")
     end
   end
 
@@ -279,7 +279,7 @@ defmodule Droodotfoo.PluginIntegrationTest do
       result = RaxolCommand.execute_terminal_command("invalidcommand", raxol_state)
 
       assert result.current_section == :terminal
-      assert String.contains?(result.terminal_output, "command not found")
+      assert String.contains?(result.terminal_output, "Command 'invalidcommand' not found")
     end
 
     test "raxol handles exit command", %{raxol_state: raxol_state} do

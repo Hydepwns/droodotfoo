@@ -277,6 +277,112 @@ defmodule Droodotfoo.AdvancedSearchTest do
     end
   end
 
+  describe "match navigation" do
+    test "next_match cycles through results" do
+      search = AdvancedSearch.new()
+      search = AdvancedSearch.search(search, "elixir", @sample_content)
+
+      total_results = length(search.results)
+      assert search.current_match_index == 0
+
+      # Go to next match
+      search = AdvancedSearch.next_match(search)
+      assert search.current_match_index == 1
+
+      # Continue navigating
+      search = AdvancedSearch.next_match(search)
+      assert search.current_match_index == 2
+
+      # Wrap around to beginning - call next_match enough times to cycle back
+      # From index 2, we need (total_results - 2) more calls to get back to 0
+      remaining_steps = total_results - 2
+      search = Enum.reduce(1..remaining_steps, search, fn _, s -> AdvancedSearch.next_match(s) end)
+      assert search.current_match_index == 0
+    end
+
+    test "previous_match cycles backward through results" do
+      search = AdvancedSearch.new()
+      search = AdvancedSearch.search(search, "elixir", @sample_content)
+
+      assert search.current_match_index == 0
+
+      # Go to previous match (should wrap to end)
+      search = AdvancedSearch.previous_match(search)
+      assert search.current_match_index == length(search.results) - 1
+
+      # Continue backward
+      search = AdvancedSearch.previous_match(search)
+      assert search.current_match_index == length(search.results) - 2
+    end
+
+    test "current_match returns the current result" do
+      search = AdvancedSearch.new()
+      search = AdvancedSearch.search(search, "elixir", @sample_content)
+
+      first_match = AdvancedSearch.current_match(search)
+      assert first_match != nil
+      assert first_match == Enum.at(search.results, 0)
+
+      search = AdvancedSearch.next_match(search)
+      second_match = AdvancedSearch.current_match(search)
+      assert second_match == Enum.at(search.results, 1)
+    end
+
+    test "current_match returns nil when no results" do
+      search = AdvancedSearch.new()
+      search = AdvancedSearch.search(search, "nonexistent", @sample_content)
+
+      assert AdvancedSearch.current_match(search) == nil
+    end
+  end
+
+  describe "match_counter/1" do
+    test "displays correct match counter" do
+      search = AdvancedSearch.new()
+      search = AdvancedSearch.search(search, "elixir", @sample_content)
+
+      total = length(search.results)
+      assert AdvancedSearch.match_counter(search) == "1/#{total} matches"
+
+      search = AdvancedSearch.next_match(search)
+      assert AdvancedSearch.match_counter(search) == "2/#{total} matches"
+    end
+
+    test "shows 'No matches' when no results" do
+      search = AdvancedSearch.new()
+      search = AdvancedSearch.search(search, "nonexistent", @sample_content)
+
+      assert AdvancedSearch.match_counter(search) == "No matches"
+    end
+  end
+
+  describe "search state management" do
+    test "search resets current_match_index" do
+      search = AdvancedSearch.new()
+      search = AdvancedSearch.search(search, "elixir", @sample_content)
+
+      # Navigate to a different match
+      search = AdvancedSearch.next_match(search)
+      search = AdvancedSearch.next_match(search)
+      assert search.current_match_index == 2
+
+      # New search should reset to 0
+      search = AdvancedSearch.search(search, "programming", @sample_content)
+      assert search.current_match_index == 0
+    end
+
+    test "clear resets current_match_index" do
+      search = AdvancedSearch.new()
+      search = AdvancedSearch.search(search, "elixir", @sample_content)
+      search = AdvancedSearch.next_match(search)
+
+      assert search.current_match_index > 0
+
+      search = AdvancedSearch.clear(search)
+      assert search.current_match_index == 0
+    end
+  end
+
   describe "integration" do
     test "complete search workflow" do
       # Initialize search
@@ -309,6 +415,28 @@ defmodule Droodotfoo.AdvancedSearchTest do
       search = AdvancedSearch.clear(search)
       assert search.results == []
       assert search.query == ""
+    end
+
+    test "complete navigation workflow" do
+      search = AdvancedSearch.new()
+      search = AdvancedSearch.search(search, "elixir", @sample_content)
+
+      # Navigate forward
+      initial_counter = AdvancedSearch.match_counter(search)
+      assert String.starts_with?(initial_counter, "1/")
+
+      search = AdvancedSearch.next_match(search)
+      second_counter = AdvancedSearch.match_counter(search)
+      assert String.starts_with?(second_counter, "2/")
+
+      # Navigate backward
+      search = AdvancedSearch.previous_match(search)
+      assert AdvancedSearch.match_counter(search) == initial_counter
+
+      # Get current match
+      current = AdvancedSearch.current_match(search)
+      assert current != nil
+      assert current.section in [:projects, :skills, :experience]
     end
   end
 end

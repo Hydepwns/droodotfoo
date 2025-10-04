@@ -14,7 +14,8 @@ defmodule Droodotfoo.Raxol.RendererTest do
         trail_enabled: false,
         cursor_trail: nil,
         terminal_output: "",
-        prompt: ""
+        prompt: "",
+        help_modal_open: false
       }
 
       buffer = Renderer.render(state)
@@ -50,7 +51,8 @@ defmodule Droodotfoo.Raxol.RendererTest do
         trail_enabled: false,
         cursor_trail: nil,
         terminal_output: "",
-        prompt: ""
+        prompt: "",
+        help_modal_open: false
       }
 
       buffer = Renderer.render(state)
@@ -73,7 +75,8 @@ defmodule Droodotfoo.Raxol.RendererTest do
         trail_enabled: false,
         cursor_trail: nil,
         terminal_output: "",
-        prompt: ""
+        prompt: "",
+        help_modal_open: false
       }
 
       buffer = Renderer.render(state)
@@ -95,7 +98,8 @@ defmodule Droodotfoo.Raxol.RendererTest do
         trail_enabled: false,
         cursor_trail: nil,
         terminal_output: "",
-        prompt: ""
+        prompt: "",
+        help_modal_open: false
       }
 
       buffer = Renderer.render(state)
@@ -115,7 +119,8 @@ defmodule Droodotfoo.Raxol.RendererTest do
         trail_enabled: false,
         cursor_trail: nil,
         terminal_output: "",
-        prompt: ""
+        prompt: "",
+        help_modal_open: false
       }
 
       buffer = Renderer.render(state)
@@ -143,7 +148,8 @@ defmodule Droodotfoo.Raxol.RendererTest do
         trail_enabled: true,
         cursor_trail: trail,
         terminal_output: "",
-        prompt: ""
+        prompt: "",
+        help_modal_open: false
       }
 
       buffer = Renderer.render(state)
@@ -164,7 +170,8 @@ defmodule Droodotfoo.Raxol.RendererTest do
         trail_enabled: true,
         cursor_trail: nil,
         terminal_output: "",
-        prompt: ""
+        prompt: "",
+        help_modal_open: false
       }
 
       # Should not crash
@@ -186,7 +193,8 @@ defmodule Droodotfoo.Raxol.RendererTest do
         trail_enabled: false,
         cursor_trail: trail,
         terminal_output: "",
-        prompt: ""
+        prompt: "",
+        help_modal_open: false
       }
 
       buffer = Renderer.render(state)
@@ -220,7 +228,8 @@ defmodule Droodotfoo.Raxol.RendererTest do
         trail_enabled: true,
         cursor_trail: trail,
         terminal_output: "",
-        prompt: ""
+        prompt: "",
+        help_modal_open: false
       }
 
       # Create another trail with out-of-bounds positions
@@ -355,7 +364,8 @@ defmodule Droodotfoo.Raxol.RendererTest do
         trail_enabled: false,
         cursor_trail: nil,
         terminal_output: "$ ls\nfile1.txt\nfile2.txt\n$ pwd\n/home/droo",
-        prompt: "[droo@droo ~]$ "
+        prompt: "[droo@droo ~]$ ",
+        help_modal_open: false
       }
 
       buffer = Renderer.render(state)
@@ -379,7 +389,8 @@ defmodule Droodotfoo.Raxol.RendererTest do
       # Missing required fields
       state = %{
         cursor_y: 0,
-        current_section: :home
+        current_section: :home,
+        help_modal_open: false
         # Missing other fields
       }
 
@@ -397,7 +408,8 @@ defmodule Droodotfoo.Raxol.RendererTest do
         trail_enabled: nil,
         cursor_trail: nil,
         terminal_output: nil,
-        prompt: nil
+        prompt: nil,
+        help_modal_open: false
       }
 
       # Should not crash
@@ -416,7 +428,8 @@ defmodule Droodotfoo.Raxol.RendererTest do
         trail_enabled: false,
         cursor_trail: nil,
         terminal_output: "",
-        prompt: ""
+        prompt: "",
+        help_modal_open: false
       }
 
       buffer = Renderer.render(state)
@@ -438,7 +451,8 @@ defmodule Droodotfoo.Raxol.RendererTest do
         trail_enabled: false,
         cursor_trail: nil,
         terminal_output: long_output,
-        prompt: "[droo@droo ~]$ "
+        prompt: "[droo@droo ~]$ ",
+        help_modal_open: false
       }
 
       buffer = Renderer.render(state)
@@ -460,7 +474,8 @@ defmodule Droodotfoo.Raxol.RendererTest do
           trail_enabled: false,
           cursor_trail: nil,
           terminal_output: "",
-          prompt: ""
+          prompt: "",
+          help_modal_open: false
         }
 
         # Should not crash
@@ -481,7 +496,8 @@ defmodule Droodotfoo.Raxol.RendererTest do
       trail_enabled: false,
       cursor_trail: nil,
       terminal_output: "",
-      prompt: if(section == :terminal, do: "[droo@droo ~]$", else: "")
+      prompt: if(section == :terminal, do: "[droo@droo ~]$", else: ""),
+      help_modal_open: false
     }
 
     # Add search_state for search_results section

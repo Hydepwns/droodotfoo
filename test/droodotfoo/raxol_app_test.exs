@@ -38,6 +38,9 @@ defmodule Droodotfoo.RaxolAppTest do
 
   describe "handle_input/1 - navigation mode" do
     test "handles 'j' key to move cursor down" do
+      # Enable vim mode first
+      RaxolApp.send_input("v")
+
       initial_buffer = RaxolApp.get_buffer()
       RaxolApp.send_input("j")
       new_buffer = RaxolApp.get_buffer()
@@ -47,6 +50,9 @@ defmodule Droodotfoo.RaxolAppTest do
     end
 
     test "handles 'k' key to move cursor up" do
+      # Enable vim mode first
+      RaxolApp.send_input("v")
+
       # First move down a few times
       RaxolApp.send_input("j")
       RaxolApp.send_input("j")
@@ -318,7 +324,8 @@ defmodule Droodotfoo.RaxolAppTest do
 
     test "buffer updates after input" do
       buffer1 = RaxolApp.get_buffer()
-      RaxolApp.send_input("j")
+      # Use arrow key which always works (doesn't require vim mode)
+      RaxolApp.send_input("ArrowDown")
       buffer2 = RaxolApp.get_buffer()
 
       # Buffers should be different after navigation
