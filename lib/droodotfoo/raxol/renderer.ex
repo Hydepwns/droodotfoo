@@ -5,15 +5,13 @@ defmodule Droodotfoo.Raxol.Renderer do
 
   alias Droodotfoo.TerminalBridge
   alias Droodotfoo.CursorTrail
-
-  @width 110
-  @height 35
+  alias Droodotfoo.Raxol.{State, Config}
 
   @doc """
   Main render function that orchestrates all drawing operations
   """
   def render(state) do
-    buffer = TerminalBridge.create_blank_buffer(@width, @height)
+    buffer = TerminalBridge.create_blank_buffer(Config.width(), Config.height())
 
     buffer
     |> draw_ascii_logo()
@@ -101,8 +99,8 @@ defmodule Droodotfoo.Raxol.Renderer do
       # Apply each trail position to the buffer
       Enum.reduce(trail_overlay, buffer, fn trail_pos, buf ->
         # Only draw if within bounds
-        if trail_pos.row >= 0 and trail_pos.row < @height and
-             trail_pos.col >= 0 and trail_pos.col < @width do
+        if trail_pos.row >= 0 and trail_pos.row < Config.height() and
+             trail_pos.col >= 0 and trail_pos.col < Config.width() do
           # Write the trail character with styling
           write_trail_char(buf, trail_pos)
         else
@@ -158,16 +156,20 @@ defmodule Droodotfoo.Raxol.Renderer do
   end
 
   defp draw_status_bar(buffer, state) do
-    y_pos = @height - 2
+    y_pos = Config.status_bar_y()
 
     # Left side: current section breadcrumb
     section_name = format_section_name(state.current_section)
     breadcrumb = " #{section_name}"
 
     # Middle: vim mode and command mode indicators
-    vim_indicator = if Map.get(state, :vim_mode, false), do: " VIM", else: ""
+    vim_indicator = if State.vim_mode?(state), do: " VIM", else: ""
     cmd_indicator = if state.command_mode, do: " CMD", else: ""
-    search_indicator = if state.command_mode && String.starts_with?(state.command_buffer, "search "), do: " SEARCH", else: ""
+
+    search_indicator =
+      if state.command_mode && String.starts_with?(state.command_buffer, "search "),
+        do: " SEARCH",
+        else: ""
 
     # Right side: time and connection status
     {:ok, now} = DateTime.now("Etc/UTC")
@@ -179,9 +181,12 @@ defmodule Droodotfoo.Raxol.Renderer do
     left_section = breadcrumb
     right_section = right_side
 
-    # Build status bar with proper spacing (total width is 110)
-    total_width = @width
-    used_width = String.length(left_section) + String.length(middle_content) + String.length(right_section)
+    # Build status bar with proper spacing
+    total_width = Config.width()
+
+    used_width =
+      String.length(left_section) + String.length(middle_content) + String.length(right_section)
+
     spacing = max(0, total_width - used_width)
 
     # Distribute spacing: middle gets centered
@@ -190,10 +195,10 @@ defmodule Droodotfoo.Raxol.Renderer do
 
     status_line =
       left_section <>
-      String.duplicate(" ", left_spacing) <>
-      middle_content <>
-      String.duplicate(" ", right_spacing) <>
-      right_section
+        String.duplicate(" ", left_spacing) <>
+        middle_content <>
+        String.duplicate(" ", right_spacing) <>
+        right_section
 
     # Ensure exactly the right width
     status_line = String.pad_trailing(String.slice(status_line, 0, total_width), total_width)
@@ -217,16 +222,62 @@ defmodule Droodotfoo.Raxol.Renderer do
 
   defp draw_command_line(buffer, %{command_mode: true} = state) do
     # Draw command input line at bottom
-    y_pos = @height - 1
+    y_pos = Config.command_line_y()
     prompt = ":" <> state.command_buffer <> "_"
-    TerminalBridge.write_at(buffer, 0, y_pos, prompt)
+    buffer = TerminalBridge.write_at(buffer, 0, y_pos, prompt)
+
+    # Draw autocomplete dropdown if suggestions exist
+    suggestions = Map.get(state, :autocomplete_suggestions, [])
+    if suggestions != [] do
+      draw_autocomplete_dropdown(buffer, state)
+    else
+      buffer
+    end
   end
 
   defp draw_command_line(buffer, _state) do
     # Show hint when not in command mode
-    y_pos = @height - 1
+    y_pos = Config.command_line_y()
     hint = "? help • : cmd • / search"
     TerminalBridge.write_at(buffer, 0, y_pos, hint)
+  end
+
+  defp draw_autocomplete_dropdown(buffer, state) do
+    # Draw autocomplete suggestions above the command line
+    command_y = Config.command_line_y()
+    max_suggestions = 8
+    suggestions = Enum.take(state.autocomplete_suggestions, max_suggestions)
+
+    # Calculate dropdown position (above command line, above status bar)
+    dropdown_y = command_y - length(suggestions) - 3
+
+    # Draw dropdown box
+    buffer =
+      suggestions
+      |> Enum.with_index()
+      |> Enum.reduce(buffer, fn {suggestion, idx}, buf ->
+        y = dropdown_y + idx + 1
+        selected = idx == state.autocomplete_index
+
+        # Format suggestion line with selection indicator
+        line =
+          if selected do
+            "> #{suggestion}"
+          else
+            "  #{suggestion}"
+          end
+
+        TerminalBridge.write_at(buf, 2, y, String.pad_trailing(line, 40))
+      end)
+
+    # Draw top border
+    buffer = TerminalBridge.write_at(buffer, 2, dropdown_y, "┌─ Suggestions " <> String.duplicate("─", 25) <> "┐")
+
+    # Draw bottom border
+    bottom_y = dropdown_y + length(suggestions) + 1
+    buffer = TerminalBridge.write_at(buffer, 2, bottom_y, "└" <> String.duplicate("─", 40) <> "┘")
+
+    buffer
   end
 
   # Content drawing functions
@@ -400,30 +451,31 @@ defmodule Droodotfoo.Raxol.Renderer do
     status = Droodotfoo.StlViewerState.status_message(viewer_state)
 
     # Build the viewer HUD overlay
-    viewer_lines = [
-      "┌─ STL Viewer ──────────────────────────────────────────────────┐",
-      "│                                                               │",
-      "│  #{String.pad_trailing(status, 60)} │"
-    ] ++
-    Enum.map(info_lines, fn line ->
-      "│  #{String.pad_trailing(line, 60)} │"
-    end) ++
-    [
-      "│                                                               │",
-      "│  Controls: j/k rotate • h/l zoom • r reset • m mode • q quit │",
-      "│                                                               │",
-      "│  ┌─ 3D Viewport ───────────────────────────────────────────┐ │",
-      "│  │                                                          │ │",
-      "│  │                                                          │ │",
-      "│  │                                                          │ │",
-      "│  │            [WebGL Canvas Renders Here]                   │ │",
-      "│  │                                                          │ │",
-      "│  │                                                          │ │",
-      "│  │                                                          │ │",
-      "│  └──────────────────────────────────────────────────────────┘ │",
-      "│                                                               │",
-      "└───────────────────────────────────────────────────────────────┘"
-    ]
+    viewer_lines =
+      [
+        "┌─ STL Viewer ──────────────────────────────────────────────────┐",
+        "│                                                               │",
+        "│  #{String.pad_trailing(status, 60)} │"
+      ] ++
+        Enum.map(info_lines, fn line ->
+          "│  #{String.pad_trailing(line, 60)} │"
+        end) ++
+        [
+          "│                                                               │",
+          "│  Controls: j/k rotate • h/l zoom • r reset • m mode • q quit  │",
+          "│                                                               │",
+          "│  ┌─ 3D Viewport ────────────────────────────────────────────┐ │",
+          "│  │                                                          │ │",
+          "│  │                                                          │ │",
+          "│  │                                                          │ │",
+          "│  │                   [DROO.FOO]                             │ │",
+          "│  │                                                          │ │",
+          "│  │                                                          │ │",
+          "│  │                                                          │ │",
+          "│  └──────────────────────────────────────────────────────────┘ │",
+          "│                                                               │",
+          "└───────────────────────────────────────────────────────────────┘"
+        ]
 
     draw_box_at(buffer, viewer_lines, 35, 13)
   end
@@ -432,7 +484,7 @@ defmodule Droodotfoo.Raxol.Renderer do
     export_lines = [
       "┌─ Export: Markdown ────────────────────────────┐",
       "│                                               │",
-      "│ # Droo - Senior Software Engineer             │",
+      "│ # Droo - Multidisciplinary Engineer           │",
       "│                                               │",
       "│ **Email:** drew@axol.io                       │",
       "│ **GitHub:** github.com/hydepwns               │",
@@ -501,7 +553,7 @@ defmodule Droodotfoo.Raxol.Renderer do
           # Mark current match with arrow
           marker = if idx == search_state.current_match_index, do: ">", else: " "
 
-          "│#{marker}[#{String.pad_trailing(section, 10)}] #{String.pad_trailing(line, 30)}│"
+          "│ #{marker}[#{String.pad_trailing(section, 10)}] #{String.pad_trailing(line, 30)} │"
         end)
       else
         ["│ No results found                             │"]
@@ -509,8 +561,8 @@ defmodule Droodotfoo.Raxol.Renderer do
 
     footer = [
       "├───────────────────────────────────────────────┤",
-      "│ n/N: next/prev  --fuzzy --exact --regex      │",
-      "│ Press ESC to exit search                     │",
+      "│ n/N: next/prev  --fuzzy --exact --regex       │",
+      "│ Press ESC to exit search                      │",
       "└───────────────────────────────────────────────┘"
     ]
 
@@ -575,9 +627,9 @@ defmodule Droodotfoo.Raxol.Renderer do
       "╠══════════════════════════════════════════════════════════════════════════════╣",
       "║                                                                              ║",
       "║  Render Time (ms)              Memory (MB)              Request Rate         ║",
-      "║  ┌─────────────────┐          ┌──────────────┐         ┌─────────────────┐  ║",
+      "║  ┌─────────────────┐          ┌──────────────┐         ┌─────────────────┐   ║",
       "║  │ #{String.pad_trailing(render_sparkline, 15)} │          │ #{String.pad_trailing(memory_sparkline, 12)} │         │    #{String.pad_trailing(req_rate, 13)}│  ║",
-      "║  └─────────────────┘          └──────────────┘         └─────────────────┘  ║",
+      "║  └─────────────────┘          └──────────────┘         └─────────────────┘   ║",
       "║    Avg: #{String.pad_trailing("#{summary.avg_render_time}ms", 18)}   Cur: #{String.pad_trailing("#{summary.current_memory}MB", 18)}   Total: #{String.pad_trailing("#{summary.total_requests}", 10)}    ║",
       "║                                                                              ║",
       "║  System Status                                                               ║",
@@ -675,7 +727,7 @@ defmodule Droodotfoo.Raxol.Renderer do
   end
 
   defp draw_help_overlay(buffer, state) do
-    vim_mode = Map.get(state, :vim_mode, false)
+    vim_mode = State.vim_mode?(state)
     vim_status = if vim_mode, do: "ON", else: "OFF"
 
     help_lines = [
