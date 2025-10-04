@@ -269,7 +269,28 @@ Phase 1 is complete! Moving to Phase 2 with real-time features.
 
 ---
 
-### 8. More Terminal Games
+### 9. GitHub Activity Feed (High Priority) - COMPLETED ✓
+**Credentials needed:** None (uses public API)
+
+- [x] User profile and stats display
+- [x] Repository browsing and details
+- [x] Recent activity feed (commits, PRs, issues, stars, forks)
+- [x] Trending repositories (last 7 days)
+- [x] Repository search with filters
+- [x] Commit history viewing
+- [x] Issues and pull requests display
+- [x] Commands: `:github`, `:gh`, `github`, `gh`
+
+**Files:**
+- ✓ `lib/droodotfoo/github/api.ex` - Public API client with Req
+- ✓ `lib/droodotfoo/github/ascii_art.ex` - ASCII rendering utilities
+- ✓ `lib/droodotfoo/plugins/github.ex` - Full interactive plugin with 10 modes
+- ✓ Commands and shortcuts added
+- ✓ Plugin registered
+
+---
+
+### 10. More Terminal Games
 
 - [x] **Conway's Game of Life** - Cellular automaton (COMPLETED)
 - [ ] **Tetris** - Classic block puzzle
