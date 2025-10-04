@@ -10,13 +10,22 @@ defmodule Droodotfoo.Raxol.Command do
   Handles input when in command mode
   """
   def handle_input("Backspace", state) do
-    # Remove last character from command
-    %{state | command_buffer: String.slice(state.command_buffer, 0..-2//1)}
+    # Remove last character from command and clear autocomplete
+    state = %{state | command_buffer: String.slice(state.command_buffer, 0..-2//1)}
+    clear_autocomplete(state)
   end
 
   def handle_input("ArrowUp", state) do
+    # Check if autocomplete is active
+    suggestions = Map.get(state, :autocomplete_suggestions, [])
+    if suggestions != [] do
+      # Navigate autocomplete up (decrease index, wrapping around)
+      max_index = length(suggestions) - 1
+      index = Map.get(state, :autocomplete_index, 0)
+      new_index = if index <= 0, do: max_index, else: index - 1
+      %{state | autocomplete_index: new_index}
     # Check if we're in search mode
-    if String.starts_with?(state.command_buffer, "search ") do
+    else if String.starts_with?(state.command_buffer, "search ") do
       # Use search history
       search_history = state.search_state.history
 
@@ -37,11 +46,20 @@ defmodule Droodotfoo.Raxol.Command do
         state
       end
     end
+    end
   end
 
   def handle_input("ArrowDown", state) do
+    # Check if autocomplete is active
+    suggestions = Map.get(state, :autocomplete_suggestions, [])
+    if suggestions != [] do
+      # Navigate autocomplete down (increase index, wrapping around)
+      max_index = length(suggestions) - 1
+      index = Map.get(state, :autocomplete_index, 0)
+      new_index = if index >= max_index, do: 0, else: index + 1
+      %{state | autocomplete_index: new_index}
     # Check if we're in search mode
-    if String.starts_with?(state.command_buffer, "search ") do
+    else if String.starts_with?(state.command_buffer, "search ") do
       # Use search history
       search_history = state.search_state.history
 
@@ -56,27 +74,54 @@ defmodule Droodotfoo.Raxol.Command do
       # Navigate command history down
       if state.history_index > -1 do
         new_index = state.history_index - 1
-        new_buffer = if new_index == -1, do: "", else: Enum.at(state.command_history, new_index, "")
+
+        new_buffer =
+          if new_index == -1, do: "", else: Enum.at(state.command_history, new_index, "")
+
         %{state | history_index: new_index, command_buffer: new_buffer}
       else
         state
       end
     end
+    end
   end
 
   def handle_input("Tab", state) do
-    # Tab completion using our new system
-    completions = CommandParser.get_completions(state.command_buffer, state.terminal_state)
+    # If autocomplete is already showing, select current suggestion
+    suggestions = Map.get(state, :autocomplete_suggestions, [])
+    index = Map.get(state, :autocomplete_index, -1)
 
-    case completions do
-      [single_completion] -> %{state | command_buffer: single_completion}
-      _ -> state
+    if suggestions != [] && index >= 0 do
+      selected = Enum.at(suggestions, index)
+      state
+      |> Map.put(:command_buffer, selected)
+      |> clear_autocomplete()
+    else
+      # Tab completion using our new system
+      completions = CommandParser.get_completions(state.command_buffer, state.terminal_state)
+
+      case completions do
+        [] ->
+          state
+        [single_completion] ->
+          state
+          |> Map.put(:command_buffer, single_completion)
+          |> clear_autocomplete()
+        multiple_completions when length(multiple_completions) > 1 ->
+          if Map.has_key?(state, :autocomplete_suggestions) do
+            %{state | autocomplete_suggestions: multiple_completions, autocomplete_index: 0}
+          else
+            state
+          end
+      end
     end
   end
 
   def handle_input(key, state) when byte_size(key) == 1 do
-    # Add character to command buffer
-    %{state | command_buffer: state.command_buffer <> key}
+    # Add character to command buffer and clear autocomplete
+    state
+    |> Map.put(:command_buffer, state.command_buffer <> key)
+    |> clear_autocomplete()
   end
 
   def handle_input(_key, state), do: state
@@ -129,6 +174,10 @@ defmodule Droodotfoo.Raxol.Command do
         new_output = append_to_output(state.terminal_output, output)
         section = String.to_atom(plugin_name)
         %{state | terminal_output: new_output, current_section: section}
+
+      {:search, query} ->
+        # Handle search command by calling legacy search logic
+        run_command({"search", query}, state)
     end
   end
 
@@ -242,25 +291,34 @@ defmodule Droodotfoo.Raxol.Command do
     # Parse search command for mode switches
     {mode, clean_query} = parse_search_mode(query)
 
-    # Get content to search through
-    content_map = get_searchable_content(state)
+    # Trim whitespace from query
+    clean_query = String.trim(clean_query)
 
-    # Update search state with mode if specified
-    search_state =
-      if mode do
-        Droodotfoo.AdvancedSearch.set_mode(state.search_state, mode)
-      else
-        state.search_state
-      end
+    # Don't search if query is empty
+    if clean_query == "" do
+      state
+    else
+      # Get content to search through
+      content_map = get_searchable_content(state)
 
-    # Perform the search
-    updated_search = Droodotfoo.AdvancedSearch.search(search_state, clean_query, content_map)
+      # Update search state with mode if specified
+      search_state =
+        if mode do
+          Droodotfoo.AdvancedSearch.set_mode(state.search_state, mode)
+        else
+          state.search_state
+        end
 
-    %{state |
-      current_section: :search_results,
-      search_state: updated_search,
-      command_buffer: query
-    }
+      # Perform the search
+      updated_search = Droodotfoo.AdvancedSearch.search(search_state, clean_query, content_map)
+
+      %{
+        state
+        | current_section: :search_results,
+          search_state: updated_search,
+          command_buffer: query
+      }
+    end
   end
 
   defp run_command({"export", format}, state) when not is_nil(format) do
@@ -283,10 +341,13 @@ defmodule Droodotfoo.Raxol.Command do
     cond do
       String.starts_with?(query, "--fuzzy ") ->
         {:fuzzy, String.replace_prefix(query, "--fuzzy ", "")}
+
       String.starts_with?(query, "--exact ") ->
         {:exact, String.replace_prefix(query, "--exact ", "")}
+
       String.starts_with?(query, "--regex ") ->
         {:regex, String.replace_prefix(query, "--regex ", "")}
+
       true ->
         {nil, query}
     end
@@ -296,8 +357,39 @@ defmodule Droodotfoo.Raxol.Command do
     # Return a map of section => content for searching
     # This would normally pull from your actual content sources
     %{
+      help: """
+      Available Commands:
+      :help - Show this help menu
+      :ls - List available sections
+      :cat <sec> - Display section content
+      :clear - Clear screen
+      :matrix - Matrix rain effect
+      :perf - Performance metrics dashboard
+      :metrics - Alias for :perf
+      :theme <name> - Change color theme
+      :spotify - Spotify music player
+      :github - GitHub integration
+      :tetris - Classic Tetris game
+      :2048 - 2048 puzzle game
+      :wordle - Wordle word game
+      :conway - Conway's Game of Life
+      /query - Search for content
+      :ssh - SSH simulation
+      :export fmt - Export resume (md/json/txt)
+      :analytics - View analytics dashboard
+      :stl load <url> - Load STL 3D model
+      Navigation:
+      hjkl - Vim-style navigation
+      Arrow keys - Alternative navigation
+      g/G - Jump to top/bottom
+      Tab - Command completion
+      Enter - Select item
+      Escape - Exit mode
+      n/N - Next/previous search result
+      ? - Toggle help modal
+      """,
       home: """
-      Drew Olsen - Software Engineer
+      Drew DROO Amor - Software Engineer
       Welcome to droo.foo
       Interactive terminal portfolio
       Navigate with vim keys or use commands
@@ -321,11 +413,20 @@ defmodule Droodotfoo.Raxol.Command do
       Open source maintainer
       """,
       contact: """
-      Email: drew@droo.foo
-      GitHub: github.com/droo
-      LinkedIn: linkedin.com/in/drewolsen
-      Twitter: @droo
+      Email: drew@axol.io
+      GitHub: github.com/hydepwns
+      LinkedIn: linkedin.com/in/drew-hiro
+      Twitter: @MF_DROO
       """
     }
+  end
+
+  # Helper to safely clear autocomplete (handles states without autocomplete fields)
+  defp clear_autocomplete(state) do
+    if Map.has_key?(state, :autocomplete_suggestions) do
+      %{state | autocomplete_suggestions: [], autocomplete_index: -1}
+    else
+      state
+    end
   end
 end
