@@ -239,7 +239,10 @@ defmodule Droodotfoo.PluginSystem.Manager do
       Droodotfoo.Plugins.SnakeGame,
       Droodotfoo.Plugins.Calculator,
       Droodotfoo.Plugins.MatrixRain,
-      Droodotfoo.Plugins.Spotify
+      Droodotfoo.Plugins.Spotify,
+      Droodotfoo.Plugins.Conway,
+      Droodotfoo.Plugins.TypingTest,
+      Droodotfoo.Plugins.GitHub
     ]
 
     new_state =

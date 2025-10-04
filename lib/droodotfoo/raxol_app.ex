@@ -30,6 +30,33 @@ defmodule Droodotfoo.RaxolApp do
     end
   end
 
+  def get_current_section(pid \\ __MODULE__) do
+    try do
+      GenServer.call(pid, :get_current_section, 1000)
+    catch
+      :exit, _ ->
+        :home
+    end
+  end
+
+  def get_theme_change(pid \\ __MODULE__) do
+    try do
+      GenServer.call(pid, :get_theme_change, 1000)
+    catch
+      :exit, _ ->
+        nil
+    end
+  end
+
+  def get_stl_viewer_action(pid \\ __MODULE__) do
+    try do
+      GenServer.call(pid, :get_stl_viewer_action, 1000)
+    catch
+      :exit, _ ->
+        nil
+    end
+  end
+
   defp create_empty_buffer do
     # Create a fallback empty buffer
     for _ <- 1..@height do
@@ -58,6 +85,24 @@ defmodule Droodotfoo.RaxolApp do
   @impl true
   def handle_call(:get_buffer, _from, state) do
     {:reply, state.buffer, state}
+  end
+
+  def handle_call(:get_current_section, _from, state) do
+    {:reply, state.current_section, state}
+  end
+
+  def handle_call(:get_theme_change, _from, state) do
+    theme_change = Map.get(state, :theme_change)
+    # Clear the theme_change after reading it
+    new_state = Map.delete(state, :theme_change)
+    {:reply, theme_change, new_state}
+  end
+
+  def handle_call(:get_stl_viewer_action, _from, state) do
+    action = Map.get(state, :stl_viewer_action)
+    # Clear the action after reading it
+    new_state = Map.delete(state, :stl_viewer_action)
+    {:reply, action, new_state}
   end
 
   def handle_call(:ping, _from, state) do

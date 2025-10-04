@@ -10,7 +10,8 @@ defmodule Droodotfoo.AdvancedSearch do
     :history,
     :max_history,
     :highlight_color,
-    :case_sensitive
+    :case_sensitive,
+    :current_match_index
   ]
 
   @type search_mode :: :fuzzy | :exact | :regex
@@ -33,7 +34,8 @@ defmodule Droodotfoo.AdvancedSearch do
       history: [],
       max_history: Keyword.get(opts, :max_history, 50),
       highlight_color: Keyword.get(opts, :highlight_color, :yellow),
-      case_sensitive: Keyword.get(opts, :case_sensitive, false)
+      case_sensitive: Keyword.get(opts, :case_sensitive, false),
+      current_match_index: 0
     }
   end
 
@@ -53,7 +55,8 @@ defmodule Droodotfoo.AdvancedSearch do
     %{state |
       query: query,
       results: results |> Enum.sort_by(&(-&1.score)),
-      history: new_history
+      history: new_history,
+      current_match_index: 0
     }
   end
 
@@ -192,7 +195,55 @@ defmodule Droodotfoo.AdvancedSearch do
   Clears search results
   """
   def clear(state) do
-    %{state | query: "", results: []}
+    %{state | query: "", results: [], current_match_index: 0}
+  end
+
+  @doc """
+  Navigates to the next match (n key)
+  """
+  def next_match(state) do
+    if length(state.results) == 0 do
+      state
+    else
+      new_index = rem(state.current_match_index + 1, length(state.results))
+      %{state | current_match_index: new_index}
+    end
+  end
+
+  @doc """
+  Navigates to the previous match (N key)
+  """
+  def previous_match(state) do
+    if length(state.results) == 0 do
+      state
+    else
+      new_index = rem(state.current_match_index - 1 + length(state.results), length(state.results))
+      %{state | current_match_index: new_index}
+    end
+  end
+
+  @doc """
+  Gets the current match
+  """
+  def current_match(state) do
+    if length(state.results) > 0 and state.current_match_index < length(state.results) do
+      Enum.at(state.results, state.current_match_index)
+    else
+      nil
+    end
+  end
+
+  @doc """
+  Gets match counter display string (e.g., "3/12 matches")
+  """
+  def match_counter(state) do
+    total = length(state.results)
+    if total == 0 do
+      "No matches"
+    else
+      current = state.current_match_index + 1
+      "#{current}/#{total} matches"
+    end
   end
 
   # Private helper functions

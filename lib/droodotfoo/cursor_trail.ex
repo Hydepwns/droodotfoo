@@ -127,11 +127,11 @@ defmodule Droodotfoo.CursorTrail do
 
   # Private helpers
 
-  defp calculate_trail_color(opacity) when opacity > 0.8, do: "#00ff00"
-  defp calculate_trail_color(opacity) when opacity > 0.6, do: "#00dd00"
-  defp calculate_trail_color(opacity) when opacity > 0.4, do: "#00bb00"
-  defp calculate_trail_color(opacity) when opacity > 0.2, do: "#009900"
-  defp calculate_trail_color(_), do: "#007700"
+  defp calculate_trail_color(opacity) when opacity > 0.8, do: :bright_cyan
+  defp calculate_trail_color(opacity) when opacity > 0.6, do: :cyan
+  defp calculate_trail_color(opacity) when opacity > 0.4, do: :cyan
+  defp calculate_trail_color(opacity) when opacity > 0.2, do: :bright_magenta
+  defp calculate_trail_color(_), do: :magenta
 
   @doc """
   Create a trail animation frame for testing
