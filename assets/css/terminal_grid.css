@@ -1,27 +1,18 @@
 /* Terminal Grid System CSS */
 /* Critical for Raxol-to-HTML grid alignment */
 
-/* Terminal wrapper to fill available space */
-.terminal-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  min-height: 0;
-  overflow: hidden;
-  margin: 0;
-}
-
 /* Each cell MUST be exactly 1ch wide for grid alignment */
 .terminal-container {
   font-family: var(--font-family);
   font-size: 16px;
   line-height: var(--line-height);
 
-  /* Wider terminal for better use of space */
+  /* Fill available width */
   width: 110ch;
   max-width: 100%;
+  min-height: 100%; /* Fill parent height */
+  flex: 1; /* Grow to fill space */
+
   margin: 0;
   padding: 0;
 
@@ -32,11 +23,11 @@
 
   /* Grid debugging - shows character boundaries */
   position: relative;
+  z-index: 1; /* Lower than STL viewer container */
 
   /* Allow content to be visible */
   overflow-x: hidden;
-  overflow-y: auto;
-  max-height: 100%;
+  overflow-y: visible;
 }
 
 .terminal-line {
@@ -71,7 +62,7 @@
 /* Style mappings from Raxol to CSS */
 .cell.bold {
   font-weight: var(--font-weight-bold);
-  font-variation-settings: 'wght' 800;
+  font-variation-settings: "wght" 800;
 }
 
 .cell.italic {
@@ -83,64 +74,136 @@
 }
 
 /* Color mappings - Terminal 16 colors */
-.cell.fg-black { color: #000000; }
-.cell.fg-red { color: #cc0000; }
-.cell.fg-green { color: #4e9a06; }
-.cell.fg-yellow { color: #c4a000; }
-.cell.fg-blue { color: #3465a4; }
-.cell.fg-magenta { color: #75507b; }
-.cell.fg-cyan { color: #06989a; }
-.cell.fg-white { color: #d3d7cf; }
+.cell.fg-black {
+  color: #000000;
+}
+.cell.fg-red {
+  color: #cc0000;
+}
+.cell.fg-green {
+  color: #4e9a06;
+}
+.cell.fg-yellow {
+  color: #c4a000;
+}
+.cell.fg-blue {
+  color: #3465a4;
+}
+.cell.fg-magenta {
+  color: #75507b;
+}
+.cell.fg-cyan {
+  color: #06989a;
+}
+.cell.fg-white {
+  color: #d3d7cf;
+}
 
 /* Bright variants */
-.cell.fg-bright-black { color: #555753; }
-.cell.fg-bright-red { color: #ef2929; }
-.cell.fg-bright-green { color: #8ae234; }
-.cell.fg-bright-yellow { color: #fce94f; }
-.cell.fg-bright-blue { color: #729fcf; }
-.cell.fg-bright-magenta { color: #ad7fa8; }
-.cell.fg-bright-cyan { color: #34e2e2; }
-.cell.fg-bright-white { color: #eeeeec; }
+.cell.fg-bright-black {
+  color: #555753;
+}
+.cell.fg-bright-red {
+  color: #ef2929;
+}
+.cell.fg-bright-green {
+  color: #8ae234;
+}
+.cell.fg-bright-yellow {
+  color: #fce94f;
+}
+.cell.fg-bright-blue {
+  color: #729fcf;
+}
+.cell.fg-bright-magenta {
+  color: #ad7fa8;
+}
+.cell.fg-bright-cyan {
+  color: #34e2e2;
+}
+.cell.fg-bright-white {
+  color: #eeeeec;
+}
 
 /* Background colors */
-.cell.bg-black { background-color: #2e3436; }
-.cell.bg-red { background-color: #cc0000; }
-.cell.bg-green { background-color: #4e9a06; }
-.cell.bg-yellow { background-color: #c4a000; }
-.cell.bg-blue { background-color: #3465a4; }
-.cell.bg-magenta { background-color: #75507b; }
-.cell.bg-cyan { background-color: #06989a; }
-.cell.bg-white { background-color: #d3d7cf; }
+.cell.bg-black {
+  background-color: #2e3436;
+}
+.cell.bg-red {
+  background-color: #cc0000;
+}
+.cell.bg-green {
+  background-color: #4e9a06;
+}
+.cell.bg-yellow {
+  background-color: #c4a000;
+}
+.cell.bg-blue {
+  background-color: #3465a4;
+}
+.cell.bg-magenta {
+  background-color: #75507b;
+}
+.cell.bg-cyan {
+  background-color: #06989a;
+}
+.cell.bg-white {
+  background-color: #d3d7cf;
+}
 
 /* Bright background variants */
-.cell.bg-bright-black { background-color: #555753; }
-.cell.bg-bright-red { background-color: #ef2929; }
-.cell.bg-bright-green { background-color: #8ae234; }
-.cell.bg-bright-yellow { background-color: #fce94f; }
-.cell.bg-bright-blue { background-color: #729fcf; }
-.cell.bg-bright-magenta { background-color: #ad7fa8; }
-.cell.bg-bright-cyan { background-color: #34e2e2; }
-.cell.bg-bright-white { background-color: #eeeeec; }
+.cell.bg-bright-black {
+  background-color: #555753;
+}
+.cell.bg-bright-red {
+  background-color: #ef2929;
+}
+.cell.bg-bright-green {
+  background-color: #8ae234;
+}
+.cell.bg-bright-yellow {
+  background-color: #fce94f;
+}
+.cell.bg-bright-blue {
+  background-color: #729fcf;
+}
+.cell.bg-bright-magenta {
+  background-color: #ad7fa8;
+}
+.cell.bg-bright-cyan {
+  background-color: #34e2e2;
+}
+.cell.bg-bright-white {
+  background-color: #eeeeec;
+}
 
-/* Terminal wrapper */
+/* Terminal wrapper - single canonical definition */
 .terminal-wrapper {
-  background-color: var(--background-color);
-  border: 1px solid var(--border-color);
-  padding: 0.1rem;
-  margin: 0;
+  /* Layout */
+  flex: 1 1 auto; /* Grow and shrink to fill space */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
 
-  /* Less constrained terminal display */
+  /* Sizing */
   width: 95vw;
   max-width: 1400px;
-  min-height: auto;
-  height: auto;
+  min-height: 0; /* Allow flexbox shrinking */
 
-  /* Allow vertical scroll if needed, no horizontal scroll */
+  /* Spacing */
+  margin: 0;
+  padding: 0.1rem;
+
+  /* Appearance */
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+
+  /* Scroll behavior */
   overflow-x: hidden;
   overflow-y: auto;
-  max-height: 80vh;
 
-  /* Contain the content */
+  /* Positioning context for absolute children */
   position: relative;
 }
 
@@ -158,8 +221,14 @@
 }
 
 @keyframes blink {
-  0%, 50% { opacity: 1; }
-  50.01%, 100% { opacity: 0.3; }
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0.3;
+  }
 }
 
 /* Debug mode - shows grid */
@@ -233,36 +302,7 @@ table.header .width-auto {
   width: auto;
 }
 
-/* Responsive adjustments */
-@media screen and (max-width: 1200px) {
-  .terminal-container {
-    font-size: 15px;
-    /* Ensure we still align to character grid at new size */
-    width: calc(round(down, 100%, 1ch));
-  }
-}
-
-@media screen and (max-width: 768px) {
-  .terminal-container {
-    font-size: 14px;
-    /* Reduce columns but maintain grid */
-    max-width: calc(round(down, 60ch, 1ch));
-  }
-
-  .terminal-wrapper {
-    max-height: 60vh;
-  }
-}
-
-/* Monaspace-specific responsive adjustments */
-@supports (font-variation-settings: normal) {
-  /* Use variable font weight for better readability at small sizes */
-  @media screen and (max-width: 768px) {
-    .cell {
-      font-variation-settings: 'wght' 550; /* Slightly heavier for small screens */
-    }
-  }
-}
+/* Responsive adjustments moved to mobile.css for better organization */
 
 /* Interactive elements - hover states */
 .terminal-wrapper {
@@ -275,18 +315,18 @@ table.header .width-auto {
   transition: background-color 0.15s ease-in-out;
 }
 
-/* Hover state for navigation menu area (rows 15-19, approximately) */
-.terminal-wrapper:hover .terminal-line:nth-child(n+16):nth-child(-n+20) {
+/* Hover state for navigation menu area (rows 15-20, approximately) */
+.terminal-wrapper:hover .terminal-line:nth-child(n + 16):nth-child(-n + 21) {
   cursor: pointer;
 }
 
-.terminal-wrapper .terminal-line:nth-child(n+16):nth-child(-n+20):hover {
+.terminal-wrapper .terminal-line:nth-child(n + 16):nth-child(-n + 21):hover {
   background-color: rgba(100, 150, 255, 0.08);
   transition: background-color 0.1s ease-in-out;
 }
 
 /* Active state (when clicking) */
-.terminal-wrapper .terminal-line:nth-child(n+16):nth-child(-n+20):active {
+.terminal-wrapper .terminal-line:nth-child(n + 16):nth-child(-n + 21):active {
   background-color: rgba(100, 150, 255, 0.15);
   transition: background-color 0.05s ease-in-out;
 }
@@ -313,4 +353,22 @@ table.header .width-auto {
 /* Highlight status bar mode indicators */
 .terminal-line:nth-child(34) .cell {
   opacity: 0.9;
+}
+/* STL Viewer Canvas - positioned inside terminal-wrapper */
+#stl-viewer-container {
+  position: absolute;
+  pointer-events: none;
+  z-index: 500; /* Z-index scale: 500 for overlays */
+  isolation: isolate; /* Create new stacking context */
+}
+
+#stl-canvas {
+  background: transparent !important;
+  display: block;
+  pointer-events: auto !important;
+  cursor: grab;
+  position: absolute; /* Use absolute instead of relative */
+  top: 0;
+  left: 0;
+  /* Position and size calculated by JS hook */
 }

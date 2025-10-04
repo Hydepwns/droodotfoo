@@ -14,7 +14,7 @@
   font-size: 0.875rem;
   font-weight: bold;
   cursor: pointer;
-  z-index: 1000;
+  z-index: 5000; /* Z-index scale: 5000 for PWA install button */
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 255, 0, 0.3);
 }
@@ -45,7 +45,7 @@
   font-family: 'Monaspace Argon', monospace;
   font-size: 0.875rem;
   border-top: 1px solid #00ff00;
-  z-index: 9999;
+  z-index: 5000; /* Z-index scale: 5000 for PWA banners */
   animation: slideUp 0.3s ease;
 }
 
@@ -124,7 +124,7 @@
   font-family: 'Monaspace Argon', monospace;
   font-size: 0.875rem;
   border-radius: 0 0 0.25rem 0.25rem;
-  z-index: 10000;
+  z-index: 9999; /* Z-index scale: 9999 for critical alerts */
   animation: slideDown 0.3s ease;
 }
 
