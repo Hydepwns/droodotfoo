@@ -14,6 +14,7 @@ Phoenix LiveView droodotfoo application with Raxol terminal UI framework. The pr
 ```bash
 # Setup and run
 mix setup              # Install dependencies and build assets
+./bin/dev              # Start server with 1Password secrets (recommended)
 mix phx.server         # Start Phoenix server (port 4000)
 iex -S mix phx.server  # Start with interactive shell
 
@@ -29,6 +30,42 @@ mix precommit          # Compile with warnings as errors, check unused deps, for
 # Assets
 mix assets.build       # Build CSS and JS
 mix assets.deploy      # Build minified production assets
+```
+
+## Secret Management
+
+### Local Development (1Password CLI)
+
+Secrets are managed via 1Password CLI for secure local development:
+
+```bash
+# Install 1Password CLI
+brew install --cask 1password-cli
+
+# Sign in
+op signin
+
+# Create secrets item
+op item create --category=login --title="droodotfoo-dev" \
+  SPOTIFY_CLIENT_ID="your_value" \
+  SPOTIFY_CLIENT_SECRET="your_value"
+
+# Run with secrets loaded
+./bin/dev
+```
+
+The `bin/dev` script automatically loads secrets from `op://Private/droodotfoo-dev/`.
+
+### Production (Fly.io Secrets)
+
+Production secrets are managed via Fly.io:
+
+```bash
+fly secrets set SECRET_KEY_BASE=$(mix phx.gen.secret)
+fly secrets set PHX_HOST="your-app.fly.dev"
+fly secrets set SPOTIFY_CLIENT_ID="prod_value"
+fly secrets set SPOTIFY_CLIENT_SECRET="prod_value"
+fly secrets set CDN_HOST="your-project.pages.dev"  # Optional CDN
 ```
 
 ## Architecture
@@ -97,3 +134,34 @@ Main dependencies managed in `mix.exs`:
 - Terminal size fixed at 80x24 characters
 - Font files should be in `/priv/static/fonts/`
 - Responsive design snaps to character widths
+
+## Deployment
+
+### Fly.io Configuration
+
+The app is configured to deploy to Fly.io with the following features:
+
+- **Secrets Management**: All sensitive values stored in Fly.io secrets
+- **CDN Support**: Optional Cloudflare Pages integration via `CDN_HOST` env var
+- **Static Assets**: Can be offloaded to CDN or served from Fly.io
+- **Environment Variables**: Loaded at runtime via `config/runtime.exs`
+
+### Required Environment Variables
+
+Production requires these environment variables (set via `fly secrets set`):
+
+- `SECRET_KEY_BASE` - Phoenix session encryption key
+- `PHX_HOST` - Production domain name
+- `SPOTIFY_CLIENT_ID` - Spotify API credentials (optional)
+- `SPOTIFY_CLIENT_SECRET` - Spotify API credentials (optional)
+- `CDN_HOST` - Cloudflare Pages domain (optional)
+
+### Static Asset CDN (Cloudflare Pages)
+
+When `CDN_HOST` is set, the endpoint's `static_url` is configured to serve assets from the CDN:
+
+```elixir
+static_url: [host: cdn_host, scheme: "https"]
+```
+
+This offloads static file delivery to Cloudflare's edge network for improved performance.

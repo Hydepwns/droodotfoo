@@ -13,10 +13,30 @@ Interactive terminal portfolio built with Phoenix LiveView and Raxol terminal UI
 
 ## Quick Start
 
+### Local Development with 1Password CLI
+
 ```bash
 # Install dependencies
 mix setup
 
+# Install 1Password CLI
+brew install --cask 1password-cli
+
+# Sign in to 1Password
+op signin
+
+# Create secrets in 1Password (optional for Spotify)
+op item create --category=login --title="droodotfoo-dev" \
+  SPOTIFY_CLIENT_ID="your_client_id" \
+  SPOTIFY_CLIENT_SECRET="your_client_secret"
+
+# Start server with secrets loaded from 1Password
+./bin/dev
+```
+
+### Alternative: Manual Environment Variables
+
+```bash
 # Set Spotify credentials (optional)
 export SPOTIFY_CLIENT_ID="your_client_id"
 export SPOTIFY_CLIENT_SECRET="your_client_secret"
@@ -63,8 +83,49 @@ mix compile --warning-as-errors
 mix precommit
 ```
 
+## Deployment
+
+### Fly.io Production Deployment
+
+```bash
+# Install Fly CLI
+brew install flyctl
+
+# Login to Fly.io
+fly auth login
+
+# Set production secrets
+fly secrets set \
+  SECRET_KEY_BASE=$(mix phx.gen.secret) \
+  SPOTIFY_CLIENT_ID="prod_client_id" \
+  SPOTIFY_CLIENT_SECRET="prod_client_secret" \
+  SPOTIFY_REDIRECT_URI="https://your-app.fly.dev/auth/spotify/callback" \
+  PHX_HOST="your-app.fly.dev"
+
+# Optional: Configure Cloudflare Pages CDN for static assets
+fly secrets set CDN_HOST="your-project.pages.dev"
+
+# Deploy
+fly deploy
+```
+
+### Environment Variables
+
+**Required for production:**
+- `SECRET_KEY_BASE` - Phoenix secret key (generate with `mix phx.gen.secret`)
+- `PHX_HOST` - Your production domain
+
+**Optional:**
+- `SPOTIFY_CLIENT_ID` - Spotify API client ID
+- `SPOTIFY_CLIENT_SECRET` - Spotify API client secret
+- `SPOTIFY_REDIRECT_URI` - OAuth callback URL
+- `CDN_HOST` - Cloudflare Pages domain for static asset CDN
+- `PORT` - Server port (default: 4000)
+
 ## Documentation
 
-- [Spotify Architecture](docs/SPOTIFY_ARCHITECTURE.md)
-- [TODO List](TODO.md)
-- [Claude Instructions](CLAUDE.md)
+- **[TODO.md](TODO.md)** - Current work and next steps
+- **[DEVELOPMENT.md](docs/DEVELOPMENT.md)** - Technical documentation, architecture, integrations
+- **[FEATURES.md](docs/FEATURES.md)** - Feature roadmap (29 features, 5-phase plan)
+- **[CLAUDE.md](CLAUDE.md)** - AI assistant instructions
+- **[AGENTS.md](AGENTS.md)** - Phoenix/Elixir guidelines
