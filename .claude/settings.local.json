@@ -36,7 +36,18 @@
       "Bash(grep:*)",
       "Bash(done)",
       "Bash(find:*)",
-      "Bash(./bin/dev)"
+      "Bash(./bin/dev)",
+      "WebFetch(domain:hex.pm)",
+      "WebFetch(domain:hexdocs.pm)",
+      "WebSearch",
+      "Bash(mix deps.get:*)",
+      "Bash(curl:*)",
+      "Bash(MIX_ENV=test mix test --only raxol_web)",
+      "Bash(MIX_ENV=test mix test test/raxol_web/themes_test.exs --trace)",
+      "Bash(MIX_ENV=test mix test test/raxol_web/themes_test.exs)",
+      "Bash(MIX_ENV=test mix test test/raxol_web/renderer_test.exs)",
+      "Bash(MIX_ENV=test mix test test/raxol_web/liveview/terminal_component_test.exs)",
+      "WebFetch(domain:api.github.com)"
     ],
     "deny": [],
     "ask": []
