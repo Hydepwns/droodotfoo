@@ -11,7 +11,7 @@ defmodule Droodotfoo.Plugins.Tetris do
   - q: Quit
   """
 
-  @behaviour Droodotfoo.PluginSystem.Plugin
+  use Droodotfoo.Plugins.GameBase
   alias Droodotfoo.Plugins.GameUI
 
   defstruct [
@@ -81,7 +81,7 @@ defmodule Droodotfoo.Plugins.Tetris do
 
   @impl true
   def handle_input("ArrowLeft", state, _terminal_state) do
-    if state.game_over or state.paused do
+    if game_blocked?(state) do
       {:continue, state, render(state, %{})}
     else
       new_state = move_piece(state, -1, 0)
@@ -90,7 +90,7 @@ defmodule Droodotfoo.Plugins.Tetris do
   end
 
   def handle_input("ArrowRight", state, _terminal_state) do
-    if state.game_over or state.paused do
+    if game_blocked?(state) do
       {:continue, state, render(state, %{})}
     else
       new_state = move_piece(state, 1, 0)
@@ -99,7 +99,7 @@ defmodule Droodotfoo.Plugins.Tetris do
   end
 
   def handle_input("ArrowUp", state, _terminal_state) do
-    if state.game_over or state.paused do
+    if game_blocked?(state) do
       {:continue, state, render(state, %{})}
     else
       new_state = rotate_piece(state)
@@ -108,7 +108,7 @@ defmodule Droodotfoo.Plugins.Tetris do
   end
 
   def handle_input("ArrowDown", state, _terminal_state) do
-    if state.game_over or state.paused do
+    if game_blocked?(state) do
       {:continue, state, render(state, %{})}
     else
       new_state = move_piece(state, 0, 1)
@@ -124,7 +124,7 @@ defmodule Droodotfoo.Plugins.Tetris do
   end
 
   def handle_input(" ", state, _terminal_state) do
-    if state.game_over or state.paused do
+    if game_blocked?(state) do
       {:continue, state, render(state, %{})}
     else
       new_state = hard_drop(state)

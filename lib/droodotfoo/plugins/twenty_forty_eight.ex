@@ -12,7 +12,7 @@ defmodule Droodotfoo.Plugins.TwentyFortyEight do
   - q: Quit
   """
 
-  @behaviour Droodotfoo.PluginSystem.Plugin
+  use Droodotfoo.Plugins.GameBase
   alias Droodotfoo.Plugins.GameUI
 
   defstruct [
@@ -62,7 +62,7 @@ defmodule Droodotfoo.Plugins.TwentyFortyEight do
 
   @impl true
   def handle_input("ArrowUp", state, _terminal_state) do
-    if state.game_over do
+    if game_blocked?(state) do
       {:continue, state, render(state, %{})}
     else
       new_state = make_move(state, :up)
@@ -71,7 +71,7 @@ defmodule Droodotfoo.Plugins.TwentyFortyEight do
   end
 
   def handle_input("ArrowDown", state, _terminal_state) do
-    if state.game_over do
+    if game_blocked?(state) do
       {:continue, state, render(state, %{})}
     else
       new_state = make_move(state, :down)
@@ -80,7 +80,7 @@ defmodule Droodotfoo.Plugins.TwentyFortyEight do
   end
 
   def handle_input("ArrowLeft", state, _terminal_state) do
-    if state.game_over do
+    if game_blocked?(state) do
       {:continue, state, render(state, %{})}
     else
       new_state = make_move(state, :left)
@@ -89,7 +89,7 @@ defmodule Droodotfoo.Plugins.TwentyFortyEight do
   end
 
   def handle_input("ArrowRight", state, _terminal_state) do
-    if state.game_over do
+    if game_blocked?(state) do
       {:continue, state, render(state, %{})}
     else
       new_state = make_move(state, :right)
@@ -98,12 +98,7 @@ defmodule Droodotfoo.Plugins.TwentyFortyEight do
   end
 
   def handle_input("r", _state, terminal_state) do
-    # Restart game
-    init(terminal_state)
-    |> case do
-      {:ok, new_state} -> {:continue, new_state, render(new_state, %{})}
-      error -> error
-    end
+    handle_restart(__MODULE__, terminal_state)
   end
 
   def handle_input("u", state, _terminal_state) do
@@ -175,9 +170,7 @@ defmodule Droodotfoo.Plugins.TwentyFortyEight do
   # Private helper functions
 
   defp create_empty_grid do
-    for _row <- 1..@grid_size do
-      for _col <- 1..@grid_size, do: nil
-    end
+    create_grid(@grid_size, @grid_size, nil)
   end
 
   defp add_random_tile(grid) do

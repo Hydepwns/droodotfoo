@@ -17,7 +17,7 @@ defmodule Droodotfoo.Plugins.Conway do
   - q: Quit
   """
 
-  @behaviour Droodotfoo.PluginSystem.Plugin
+  use Droodotfoo.Plugins.GameBase
   alias Droodotfoo.Plugins.GameUI
 
   defstruct [
@@ -190,9 +190,7 @@ defmodule Droodotfoo.Plugins.Conway do
   # Private helper functions
 
   defp create_empty_grid(width, height) do
-    for _y <- 1..height do
-      for _x <- 1..width, do: false
-    end
+    create_grid(width, height, false)
   end
 
   defp create_random_grid(width, height, density) do

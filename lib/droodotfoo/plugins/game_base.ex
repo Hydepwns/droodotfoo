@@ -19,7 +19,7 @@ defmodule Droodotfoo.Plugins.GameBase do
   def handle_restart(module, terminal_state) do
     case module.init(terminal_state) do
       {:ok, new_state} ->
-        {:continue, new_state, module.render(new_state, %{})}
+        {:continue, new_state, module.render(new_state, terminal_state)}
 
       error ->
         error
