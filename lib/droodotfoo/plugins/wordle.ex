@@ -15,7 +15,7 @@ defmodule Droodotfoo.Plugins.Wordle do
   - q: Quit
   """
 
-  @behaviour Droodotfoo.PluginSystem.Plugin
+  use Droodotfoo.Plugins.GameBase
   alias Droodotfoo.Plugins.GameUI
 
   defstruct [
@@ -128,7 +128,7 @@ defmodule Droodotfoo.Plugins.Wordle do
 
   @impl true
   def handle_input("Enter", state, _terminal_state) do
-    if state.game_over do
+    if game_blocked?(state) do
       {:continue, state, render(state, %{})}
     else
       if String.length(state.current_guess) == @word_length do
@@ -146,7 +146,7 @@ defmodule Droodotfoo.Plugins.Wordle do
   end
 
   def handle_input("Backspace", state, _terminal_state) do
-    if state.game_over do
+    if game_blocked?(state) do
       {:continue, state, render(state, %{})}
     else
       new_guess = String.slice(state.current_guess, 0..-2//1)
@@ -156,12 +156,7 @@ defmodule Droodotfoo.Plugins.Wordle do
   end
 
   def handle_input("r", _state, terminal_state) do
-    # New word
-    init(terminal_state)
-    |> case do
-      {:ok, new_state} -> {:continue, new_state, render(new_state, %{})}
-      error -> error
-    end
+    handle_restart(__MODULE__, terminal_state)
   end
 
   def handle_input("q", _state, _terminal_state) do
@@ -169,7 +164,7 @@ defmodule Droodotfoo.Plugins.Wordle do
   end
 
   def handle_input(key, state, _terminal_state) do
-    if state.game_over do
+    if game_blocked?(state) do
       {:continue, state, render(state, %{})}
     else
       # Check if it's a letter
@@ -293,7 +288,7 @@ defmodule Droodotfoo.Plugins.Wordle do
   end
 
   defp render_current_guess(state) do
-    if state.game_over do
+    if game_blocked?(state) do
       "║                                                            ║"
     else
       guess_display = state.current_guess

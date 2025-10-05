@@ -3,7 +3,9 @@ defmodule Droodotfoo.Plugins.SnakeGame do
   Classic Snake game plugin for the terminal
   """
 
-  @behaviour Droodotfoo.PluginSystem.Plugin
+  use Droodotfoo.Plugins.GameBase
+
+  alias Droodotfoo.Plugins.GameUI
 
   defstruct [
     :snake,
@@ -54,10 +56,9 @@ defmodule Droodotfoo.Plugins.SnakeGame do
         {:exit, ["Thanks for playing Snake! Final score: #{state.score}"]}
 
       state.game_over and input in ["r", "R"] ->
-        {:ok, new_state} = init(terminal_state)
-        {:continue, new_state, render(new_state, terminal_state)}
+        handle_restart(__MODULE__, terminal_state)
 
-      state.game_over ->
+      game_blocked?(state) ->
         {:continue, state, render(state, terminal_state)}
 
       true ->
@@ -214,9 +215,9 @@ defmodule Droodotfoo.Plugins.SnakeGame do
         |> Enum.join()
       end
 
-    # Add borders
-    border_top = "+" <> String.duplicate("-", @width) <> "+"
-    border_bottom = "+" <> String.duplicate("-", @width) <> "+"
+    # Add borders using GameUI helper
+    border_top = GameUI.horizontal_border(@width + 2, "+", "-", "+")
+    border_bottom = GameUI.horizontal_border(@width + 2, "+", "-", "+")
 
     board_with_borders =
       Enum.map(board, fn line ->
