@@ -18,6 +18,7 @@ defmodule DroodotfooWeb.Router do
     pipe_through :browser
 
     live "/", DroodotfooLive
+    live "/posts/:slug", PostLive
 
     # Spotify OAuth routes
     get "/auth/spotify", SpotifyAuthController, :authorize
@@ -25,10 +26,12 @@ defmodule DroodotfooWeb.Router do
     get "/auth/spotify/logout", SpotifyAuthController, :logout
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", DroodotfooWeb do
-  #   pipe_through :api
-  # end
+  # API routes for Obsidian publishing
+  scope "/api", DroodotfooWeb do
+    pipe_through :api
+
+    post "/posts", PostController, :create
+  end
 
   # Enable LiveDashboard in development
   if Application.compile_env(:droodotfoo, :dev_routes) do
@@ -44,6 +47,8 @@ defmodule DroodotfooWeb.Router do
 
       live_dashboard "/dashboard", metrics: DroodotfooWeb.Telemetry
       live "/raxol-demo", DroodotfooWeb.RaxolDemoLive
+      live "/raxol-comparison", DroodotfooWeb.RaxolComparisonLive
+      live "/stl-viewer-demo", DroodotfooWeb.STLViewerDemoLive
     end
   end
 end
