@@ -228,12 +228,6 @@ defmodule DroodotfooWeb.DroodotfooLive do
                 </a>
               </li>
               <li style="margin-bottom: 0.6em;">
-                <a href="/dev/stl-viewer-demo" style="text-decoration: none;">→ STL Viewer Demo</a>
-              </li>
-              <li style="margin-bottom: 0.6em;">
-                <a href="/dev/raxol-demo" style="text-decoration: none;">→ RaxolWeb Demo</a>
-              </li>
-              <li style="margin-bottom: 0.6em;">
                 <a
                   href="https://github.com/hydepwns"
                   target="_blank"
