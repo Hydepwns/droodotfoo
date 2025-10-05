@@ -4,6 +4,8 @@ defmodule Droodotfoo.Spotify.AsciiArt do
   Creates terminal-friendly visualizations for tracks, albums, and playback state.
   """
 
+  alias Droodotfoo.{AsciiHelpers, AsciiChart}
+
   @doc """
   Renders the Spotify logo in ASCII art.
   """
@@ -40,19 +42,18 @@ defmodule Droodotfoo.Spotify.AsciiArt do
   def render_progress_bar(progress_ms, duration_ms, width \\ 50) do
     if progress_ms && duration_ms && duration_ms > 0 do
       progress_ratio = progress_ms / duration_ms
-      filled_width = round(progress_ratio * width)
-      empty_width = width - filled_width
+      percentage = progress_ratio * 100
 
-      progress_time = format_duration(progress_ms)
-      total_time = format_duration(duration_ms)
+      progress_time = AsciiHelpers.format_duration_ms(progress_ms)
+      total_time = AsciiHelpers.format_duration_ms(duration_ms)
 
-      bar = String.duplicate("█", filled_width) <> String.duplicate("░", empty_width)
+      bar = AsciiChart.bar_chart(percentage, max: 100, width: width)
 
       [
         "#{progress_time} [#{bar}] #{total_time}"
       ]
     else
-      empty_bar = String.duplicate("░", width)
+      empty_bar = AsciiChart.bar_chart(0, max: 100, width: width)
       ["--:-- [#{empty_bar}] --:--"]
     end
   end
@@ -91,7 +92,7 @@ defmodule Droodotfoo.Spotify.AsciiArt do
         |> Enum.take(max_items)
         |> Enum.with_index(1)
         |> Enum.map(fn {playlist, index} ->
-          name = truncate_text(playlist.name, width - 10)
+          name = AsciiHelpers.truncate_text(playlist.name, width - 10)
           track_count = playlist.tracks.total
 
           padding =
@@ -129,7 +130,7 @@ defmodule Droodotfoo.Spotify.AsciiArt do
         |> Enum.with_index(1)
         |> Enum.map(fn {device, index} ->
           status = if device.is_active, do: "●", else: "○"
-          name = truncate_text(device.name, width - 15)
+          name = AsciiHelpers.truncate_text(device.name, width - 15)
           type = device.type
           volume = if device.volume_percent, do: " #{device.volume_percent}%", else: ""
 
@@ -154,7 +155,7 @@ defmodule Droodotfoo.Spotify.AsciiArt do
     width = Keyword.get(options, :width, 78)
 
     header = [
-      "┌─ Search Results: \"#{truncate_text(query, 20)}\" " <>
+      "┌─ Search Results: \"#{AsciiHelpers.truncate_text(query, 20)}\" " <>
         String.duplicate("─", max(0, width - 30 - String.length(query))) <> "┐"
     ]
 
@@ -184,11 +185,7 @@ defmodule Droodotfoo.Spotify.AsciiArt do
     width = Keyword.get(options, :width, 40)
     bar_width = width - 10
 
-    volume_ratio = volume / 100
-    filled_width = round(volume_ratio * bar_width)
-    empty_width = bar_width - filled_width
-
-    volume_bar = String.duplicate("█", filled_width) <> String.duplicate("░", empty_width)
+    volume_bar = AsciiChart.bar_chart(volume, max: 100, width: bar_width)
 
     [
       "┌─ Volume ──────────────────────────────┐",
@@ -200,15 +197,15 @@ defmodule Droodotfoo.Spotify.AsciiArt do
   # Private Functions
 
   defp render_playing_track(track, width) do
-    title_line = truncate_text(track.name, width - 4)
+    title_line = AsciiHelpers.truncate_text(track.name, width - 4)
 
     artist_line =
       track.artists
       |> Enum.map(& &1.name)
       |> Enum.join(", ")
-      |> truncate_text(width - 4)
+      |> AsciiHelpers.truncate_text(width - 4)
 
-    album_line = truncate_text(track.album.name, width - 4)
+    album_line = AsciiHelpers.truncate_text(track.album.name, width - 4)
 
     border_line = String.duplicate("═", width - 2)
 
@@ -242,7 +239,7 @@ defmodule Droodotfoo.Spotify.AsciiArt do
           "#{item.name} - #{artists}"
 
         "artist" ->
-          follower_count = format_number(item.followers)
+          follower_count = AsciiHelpers.format_number(item.followers)
           "#{item.name} (#{follower_count} followers)"
 
         "album" ->
@@ -256,34 +253,9 @@ defmodule Droodotfoo.Spotify.AsciiArt do
           to_string(item)
       end
 
-    truncated = truncate_text(text, width - 8)
+    truncated = AsciiHelpers.truncate_text(text, width - 8)
     padding = String.duplicate(" ", width - String.length("│ #{index}. #{truncated}") - 1)
     "│ #{index}. #{truncated}#{padding}│"
   end
 
-  defp format_duration(ms) when is_integer(ms) do
-    total_seconds = div(ms, 1000)
-    minutes = div(total_seconds, 60)
-    seconds = rem(total_seconds, 60)
-    "#{minutes}:#{String.pad_leading(Integer.to_string(seconds), 2, "0")}"
-  end
-
-  defp format_duration(_), do: "--:--"
-
-  defp format_number(nil), do: "0"
-  defp format_number(num) when num < 1_000, do: Integer.to_string(num)
-
-  defp format_number(num) when num < 1_000_000 do
-    "#{Float.round(num / 1_000, 1)}K"
-  end
-
-  defp format_number(num) do
-    "#{Float.round(num / 1_000_000, 1)}M"
-  end
-
-  defp truncate_text(text, max_length) when byte_size(text) <= max_length, do: text
-
-  defp truncate_text(text, max_length) do
-    String.slice(text, 0, max_length - 3) <> "..."
-  end
 end

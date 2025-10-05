@@ -4,6 +4,8 @@ defmodule Droodotfoo.Github.AsciiArt do
   Creates terminal-friendly visualizations for repositories, commits, and activity.
   """
 
+  alias Droodotfoo.AsciiHelpers
+
   @doc """
   Renders GitHub logo in ASCII art.
   """
@@ -26,7 +28,7 @@ defmodule Droodotfoo.Github.AsciiArt do
     border = String.duplicate("=", width - 2)
 
     name_line = if user.name, do: user.name, else: user.login
-    bio_lines = if user.bio, do: wrap_text(user.bio, width - 6), else: []
+    bio_lines = if user.bio, do: AsciiHelpers.wrap_text(user.bio, width - 6), else: []
 
     location = if user.location, do: " Location: #{user.location}", else: ""
     company = if user.company, do: " Company: #{user.company}", else: ""
@@ -74,9 +76,9 @@ defmodule Droodotfoo.Github.AsciiArt do
         repos
         |> Enum.take(max_items)
         |> Enum.map(fn repo ->
-          name = truncate_text(repo.name, 28)
+          name = AsciiHelpers.truncate_text(repo.name, 28)
           stars = String.pad_leading("#{repo.stargazers_count}", 6)
-          lang = truncate_text(repo.language || "N/A", 13)
+          lang = AsciiHelpers.truncate_text(repo.language || "N/A", 13)
           updated = format_relative_time(repo.updated_at)
 
           "| #{String.pad_trailing(name, 30)} #{String.pad_trailing(stars, 8)} #{String.pad_trailing(lang, 15)} #{String.pad_trailing(updated, 18)}|"
@@ -97,12 +99,12 @@ defmodule Droodotfoo.Github.AsciiArt do
     width = Keyword.get(options, :width, 78)
     border = String.duplicate("=", width - 2)
 
-    desc_lines = if repo.description, do: wrap_text(repo.description, width - 6), else: ["No description"]
+    desc_lines = if repo.description, do: AsciiHelpers.wrap_text(repo.description, width - 6), else: ["No description"]
 
-    stars = format_number(repo.stargazers_count)
-    forks = format_number(repo.forks_count)
-    watchers = format_number(repo.watchers_count)
-    issues = format_number(repo.open_issues_count)
+    stars = AsciiHelpers.format_number(repo.stargazers_count)
+    forks = AsciiHelpers.format_number(repo.forks_count)
+    watchers = AsciiHelpers.format_number(repo.watchers_count)
+    issues = AsciiHelpers.format_number(repo.open_issues_count)
 
     [
       "+" <> border <> "+",
@@ -140,9 +142,9 @@ defmodule Droodotfoo.Github.AsciiArt do
         |> Enum.take(max_items)
         |> Enum.flat_map(fn commit ->
           sha_short = String.slice(commit.sha, 0..6)
-          author = truncate_text(commit.author.name, 20)
+          author = AsciiHelpers.truncate_text(commit.author.name, 20)
           date = format_relative_time(commit.author.date)
-          message_lines = wrap_text(commit.message, width - 8)
+          message_lines = AsciiHelpers.wrap_text(commit.message, width - 8)
 
           ["| #{sha_short} #{String.pad_trailing(author, 22)} #{String.pad_trailing(date, width - 36)}|"] ++
             Enum.map(message_lines, fn line ->
@@ -178,7 +180,7 @@ defmodule Droodotfoo.Github.AsciiArt do
         |> Enum.map(fn event ->
           icon = event_icon(event.type)
           action = event_action(event.type, event.payload)
-          repo = truncate_text(event.repo.name, 35)
+          repo = AsciiHelpers.truncate_text(event.repo.name, 35)
           time = format_relative_time(event.created_at)
 
           "| #{icon} #{String.pad_trailing(action, 15)} #{String.pad_trailing(repo, 37)} #{String.pad_trailing(time, 10)}|"
@@ -214,7 +216,7 @@ defmodule Droodotfoo.Github.AsciiArt do
         |> Enum.map(fn item ->
           num = "##{item.number}"
           state_icon = if item.state == "open", do: "○", else: "●"
-          title_text = truncate_text(item.title, width - 20)
+          title_text = AsciiHelpers.truncate_text(item.title, width - 20)
           author = "@#{item.user.login}"
 
           "| #{state_icon} #{String.pad_trailing(num, 6)} #{String.pad_trailing(title_text, width - 25)} #{String.pad_trailing(author, 12)}|"
@@ -284,7 +286,7 @@ defmodule Droodotfoo.Github.AsciiArt do
     case DateTime.from_iso8601(datetime_string) do
       {:ok, dt, _} ->
         diff = DateTime.diff(DateTime.utc_now(), dt)
-        format_duration(diff)
+        AsciiHelpers.format_relative_time(diff)
 
       _ ->
         "unknown"
@@ -292,42 +294,4 @@ defmodule Droodotfoo.Github.AsciiArt do
   end
 
   defp format_relative_time(_), do: "unknown"
-
-  defp format_duration(seconds) when seconds < 60, do: "#{seconds}s ago"
-  defp format_duration(seconds) when seconds < 3600, do: "#{div(seconds, 60)}m ago"
-  defp format_duration(seconds) when seconds < 86400, do: "#{div(seconds, 3600)}h ago"
-  defp format_duration(seconds), do: "#{div(seconds, 86400)}d ago"
-
-  defp format_number(nil), do: "0"
-  defp format_number(num) when num < 1_000, do: Integer.to_string(num)
-
-  defp format_number(num) when num < 1_000_000 do
-    "#{Float.round(num / 1_000, 1)}K"
-  end
-
-  defp format_number(num) do
-    "#{Float.round(num / 1_000_000, 1)}M"
-  end
-
-  defp truncate_text(nil, _max_length), do: ""
-  defp truncate_text(text, max_length) when byte_size(text) <= max_length, do: text
-
-  defp truncate_text(text, max_length) do
-    String.slice(text, 0, max_length - 3) <> "..."
-  end
-
-  defp wrap_text(text, max_width) do
-    text
-    |> String.split("\n")
-    |> Enum.flat_map(fn line ->
-      if String.length(line) <= max_width do
-        [line]
-      else
-        line
-        |> String.graphemes()
-        |> Enum.chunk_every(max_width)
-        |> Enum.map(&Enum.join/1)
-      end
-    end)
-  end
 end
