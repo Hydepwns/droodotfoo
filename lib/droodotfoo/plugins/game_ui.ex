@@ -166,4 +166,85 @@ defmodule Droodotfoo.Plugins.GameUI do
       String.duplicate(" ", right_pad) <>
       " ║"
   end
+
+  @doc """
+  Alias for frame/3. Creates a complete game frame with title and content.
+  This naming makes it clear the frame is for a game UI.
+  """
+  def game_frame(title, content_lines, width \\ @default_width) do
+    frame(title, content_lines, width)
+  end
+
+  @doc """
+  Creates a game frame with status and optional score.
+  Includes title, status line, and content in a bordered frame.
+
+  ## Examples
+
+      iex> GameUI.game_frame_with_status("TETRIS", :playing, 1000, ["Line 1", "Line 2"])
+      # Returns frame with title, status, score, and content
+  """
+  def game_frame_with_status(title, status, score, content_lines, width \\ @default_width) do
+    status_text = format_status(status)
+
+    header = [
+      top_border(width),
+      title_line(title, width),
+      divider(width),
+      content_line("Status: #{status_text}", width),
+      content_line("Score: #{score}", width),
+      divider(width)
+    ]
+
+    formatted_content =
+      Enum.map(content_lines, fn line ->
+        if String.starts_with?(line, "║") do
+          line
+        else
+          content_line(line, width)
+        end
+      end)
+
+    header ++ formatted_content ++ [bottom_border(width)]
+  end
+
+  @doc """
+  Formats a score line for consistent display.
+
+  ## Examples
+
+      iex> GameUI.score_line(1000)
+      "Score: 1,000"
+
+      iex> GameUI.score_line(1000000)
+      "Score: 1,000,000"
+  """
+  def score_line(score) when is_integer(score) do
+    formatted =
+      score
+      |> Integer.to_string()
+      |> String.graphemes()
+      |> Enum.reverse()
+      |> Enum.chunk_every(3)
+      |> Enum.map(&Enum.reverse/1)
+      |> Enum.map(&Enum.join/1)
+      |> Enum.reverse()
+      |> Enum.join(",")
+
+    "Score: #{formatted}"
+  end
+
+  @doc """
+  Creates an info panel with key-value pairs.
+
+  ## Examples
+
+      iex> GameUI.info_panel([{"Level", "5"}, {"Lines", "42"}])
+      ["Level: 5", "Lines: 42"]
+  """
+  def info_panel(info_pairs) do
+    Enum.map(info_pairs, fn {key, value} ->
+      "#{key}: #{value}"
+    end)
+  end
 end
