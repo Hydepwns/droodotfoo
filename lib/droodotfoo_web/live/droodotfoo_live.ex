@@ -3,6 +3,7 @@ defmodule DroodotfooWeb.DroodotfooLive do
   alias Droodotfoo.TerminalBridge
   alias Droodotfoo.{RaxolApp, AdaptiveRefresh, InputDebouncer, InputRateLimiter, BootSequence}
   alias DroodotfooWeb.Live.ConnectionRecovery
+  alias RaxolWeb.LiveView.STLViewerComponent
 
   @impl true
   def mount(_params, _session, socket) do
@@ -26,6 +27,14 @@ defmodule DroodotfooWeb.DroodotfooLive do
       # Generate initial boot display
       boot_html = render_boot_sequence(0)
 
+      # Load latest posts for homepage
+      latest_posts =
+        try do
+          Droodotfoo.Content.PostManager.list_posts() |> Enum.take(5)
+        rescue
+          _ -> []
+        end
+
       {:ok,
        socket
        |> assign(:raxol_pid, raxol_pid)
@@ -47,7 +56,9 @@ defmodule DroodotfooWeb.DroodotfooLive do
        |> assign(:current_theme, "theme-synthwave84")
        |> assign(:crt_mode, false)
        |> assign(:high_contrast_mode, false)
-       |> assign(:screen_reader_message, "Welcome to droo.foo terminal")}
+       |> assign(:screen_reader_message, "Welcome to droo.foo")
+       |> assign(:terminal_visible, false)
+       |> assign(:latest_posts, latest_posts)}
     else
       # Not connected yet, show blank screen
       {:ok,
@@ -71,15 +82,26 @@ defmodule DroodotfooWeb.DroodotfooLive do
        |> assign(:current_theme, "theme-synthwave84")
        |> assign(:crt_mode, false)
        |> assign(:high_contrast_mode, false)
-       |> assign(:screen_reader_message, "Welcome to droo.foo terminal")}
+       |> assign(:screen_reader_message, "Welcome to droo.foo")
+       |> assign(:terminal_visible, false)
+       |> assign(:latest_posts, [])}
     end
   end
 
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="monospace-web-container monospace-container" role="main">
-      <!-- Screen reader announcements -->
+    <div class="site-container" role="main">
+      <!-- Terminal Toggle Button (always visible) -->
+      <button
+        class="terminal-toggle"
+        phx-click="toggle_terminal"
+        title="Toggle Terminal (backtick key)"
+      >
+        {if @terminal_visible, do: "×", else: "`"}
+      </button>
+      
+    <!-- Screen reader announcements -->
       <div
         id="screen-reader-announcements"
         role="status"
@@ -89,8 +111,8 @@ defmodule DroodotfooWeb.DroodotfooLive do
       >
         {assigns[:screen_reader_message] || ""}
       </div>
-
-      <!-- Connection status indicator -->
+      
+    <!-- Connection status indicator -->
       <%= if assigns[:connection_recovery] do %>
         <% status_info = ConnectionRecovery.get_status_display(@connection_recovery) %>
         <%= if status_info.show do %>
@@ -99,7 +121,7 @@ defmodule DroodotfooWeb.DroodotfooLive do
           </div>
         <% end %>
       <% end %>
-
+      
     <!-- Loading indicator -->
       <%= if @loading do %>
         <div class="loading-indicator" role="status" aria-live="polite">
@@ -108,56 +130,127 @@ defmodule DroodotfooWeb.DroodotfooLive do
         </div>
       <% end %>
 
-    <!-- Terminal container with monospace grid -->
-      <div
-        class={"terminal-wrapper #{@current_theme} #{if @crt_mode, do: "crt-mode", else: ""} #{if @high_contrast_mode, do: "high-contrast", else: ""}"}
-        id="terminal-wrapper"
-        role="application"
-        aria-label="Interactive terminal interface"
-        phx-hook="TerminalHook"
-        phx-window-keydown="key_press"
-        tabindex="0"
-      >
-        <!-- Monospace-web style header inside terminal -->
-        <table class="header">
-          <tr>
-            <td colspan="2" rowspan="2" class="width-auto">
-              <h1 class="title">DROO.FOO</h1>
-              <span class="subtitle">Terminal-Powered Web Experience</span>
-            </td>
-            <th>Version</th>
-            <td class="width-min">v1.0.0</td>
-          </tr>
-          <tr>
-            <th>Updated</th>
-            <td class="width-min"><time>{Date.to_string(Date.utc_today())}</time></td>
-          </tr>
-        </table>
+      <%= if @terminal_visible do %>
+        <!-- Terminal Overlay -->
+        <div class={"terminal-overlay #{if @terminal_visible, do: "active", else: ""}"}>
+          <div
+            class={"terminal-wrapper #{if @crt_mode, do: "crt-mode", else: ""} #{if @high_contrast_mode, do: "high-contrast", else: ""}"}
+            id="terminal-wrapper"
+            role="application"
+            aria-label="Interactive terminal interface"
+            phx-hook="TerminalHook"
+            phx-window-keydown="key_press"
+            tabindex="0"
+          >
+            <!-- Monospace-web style header inside terminal -->
+            <table class="header">
+              <tr>
+                <td colspan="2" rowspan="2" class="width-auto">
+                  <h1 class="title">DROO.FOO</h1>
+                  <span class="subtitle">Terminal-Powered Web Experience</span>
+                </td>
+                <th>Version</th>
+                <td class="width-min">v1.0.0</td>
+              </tr>
+              <tr>
+                <th>Updated</th>
+                <td class="width-min"><time>{Date.to_string(Date.utc_today())}</time></td>
+              </tr>
+            </table>
 
-        {raw(@terminal_html)}
-        
-    <!-- STL Viewer Canvas (conditional, inside terminal-wrapper) -->
-        <%= if @current_section == :stl_viewer do %>
-          <div id="stl-viewer-container" phx-hook="STLViewerHook" phx-update="ignore">
-            <canvas id="stl-canvas"></canvas>
-          </div>
-        <% end %>
-        
+            <%= if @current_section == :stl_viewer do %>
+              <!-- STL Viewer Component (RaxolWeb) -->
+              <.live_component
+                module={STLViewerComponent}
+                id="main-stl-viewer"
+                model_url="/models/cube.stl"
+                width={65}
+                height={18}
+              />
+            <% else %>
+              <!-- Terminal buffer HTML -->
+              {raw(@terminal_html)}
+            <% end %>
+            
     <!-- Hidden input for keyboard capture inside the hook element -->
-        <input
-          id="terminal-input"
-          type="text"
-          phx-keydown="key_press"
-          phx-key="Enter"
-          style="position: absolute; left: -9999px; top: 0;"
-          autofocus
-        />
-      </div>
-      
-    <!-- Footer -->
-      <div class="instructions-box">
-        Disable adblockers for best experience • I don't collect any data or use analytics here
-      </div>
+            <input
+              id="terminal-input"
+              type="text"
+              phx-keydown="key_press"
+              phx-key="Enter"
+              style="position: absolute; left: -9999px; top: 0;"
+              autofocus
+            />
+          </div>
+        </div>
+      <% else %>
+        <!-- Homepage View -->
+        <div class="monospace-container">
+          <header class="box-thick" style="margin-bottom: 1.2em; padding: 1.2em;">
+            <h1 style="font-size: 2rem; margin-bottom: 0.6em;">DROO.FOO</h1>
+            <p style="color: var(--text-color-alt);">
+              Balatro Extraordinaire of axol.io :: Building blockchains and engines
+            </p>
+          </header>
+
+          <%= if length(@latest_posts) > 0 do %>
+            <section style="margin-bottom: 2.4em;">
+              <h2 style="border-bottom: 2px solid var(--border-color); padding-bottom: 0.3em; margin-bottom: 1.2em;">
+                LATEST POSTS
+              </h2>
+              <%= for post <- @latest_posts do %>
+                <article class="box-single" style="margin-bottom: 1.2em; padding: 1.2em;">
+                  <h3 style="margin-bottom: 0.6em;">
+                    <a
+                      href={"/posts/#{post.slug}"}
+                      style="text-decoration: none; color: var(--text-color);"
+                    >
+                      {post.title}
+                    </a>
+                  </h3>
+                  <p style="color: var(--text-color-alt); font-size: 0.875rem; margin-bottom: 0.6em;">
+                    {Date.to_string(post.date)} • {post.read_time} min read
+                  </p>
+                  <p>{post.description}</p>
+                </article>
+              <% end %>
+            </section>
+          <% end %>
+
+          <section style="margin-bottom: 2.4em;">
+            <h2 style="border-bottom: 2px solid var(--border-color); padding-bottom: 0.3em; margin-bottom: 1.2em;">
+              QUICK LINKS
+            </h2>
+            <ul style="list-style: none; padding: 0;">
+              <li style="margin-bottom: 0.6em;">
+                <a href="#" phx-click="toggle_terminal" style="text-decoration: none;">
+                  → Open Terminal (or press backtick)
+                </a>
+              </li>
+              <li style="margin-bottom: 0.6em;">
+                <a href="/dev/stl-viewer-demo" style="text-decoration: none;">→ STL Viewer Demo</a>
+              </li>
+              <li style="margin-bottom: 0.6em;">
+                <a href="/dev/raxol-demo" style="text-decoration: none;">→ RaxolWeb Demo</a>
+              </li>
+              <li style="margin-bottom: 0.6em;">
+                <a
+                  href="https://github.com/hydepwns"
+                  target="_blank"
+                  rel="noopener"
+                  style="text-decoration: none;"
+                >
+                  → GitHub Profile
+                </a>
+              </li>
+            </ul>
+          </section>
+
+          <footer class="instructions-box" style="margin-top: auto;">
+            No tracking • No analytics • Just code
+          </footer>
+        </div>
+      <% end %>
     </div>
     """
   end
@@ -200,6 +293,17 @@ defmodule DroodotfooWeb.DroodotfooLive do
     # Update connection recovery status
     recovery = %{socket.assigns.connection_recovery | status: status}
     {:noreply, assign(socket, :connection_recovery, recovery)}
+  end
+
+  def handle_info({:stl_viewer_quit, _viewer_id}, socket) do
+    # Navigate back to home when STL viewer quits
+    RaxolApp.send_input(socket.assigns.raxol_pid, "q")
+
+    {:noreply,
+     socket
+     |> assign(:current_section, :home)
+     |> assign(:breadcrumb_path, section_to_breadcrumb(:home))
+     |> assign(:screen_reader_message, announce_section_change(:home))}
   end
 
   @impl true
@@ -427,26 +531,57 @@ defmodule DroodotfooWeb.DroodotfooLive do
   end
 
   @impl true
-  def handle_event("key_press", %{"key" => key}, socket) do
-    # Block input during boot sequence
-    if socket.assigns.boot_in_progress do
-      {:noreply, socket}
-    else
-      # Check rate limiting first
-      {allowed?, rate_limiter} = InputRateLimiter.allow_event?(socket.assigns.rate_limiter)
-      socket = assign(socket, :rate_limiter, rate_limiter)
+  def handle_event("toggle_terminal", _params, socket) do
+    new_state = !socket.assigns.terminal_visible
 
-      if not allowed? do
-        # Event blocked by rate limiter
+    {:noreply,
+     socket
+     |> assign(:terminal_visible, new_state)
+     |> push_event("save_terminal_pref", %{visible: new_state})}
+  end
+
+  @impl true
+  def handle_event("set_terminal_visible", %{"visible" => visible}, socket) do
+    # Restore terminal visibility from localStorage
+    {:noreply, assign(socket, :terminal_visible, visible)}
+  end
+
+  @impl true
+  def handle_event("key_press", %{"key" => key}, socket) do
+    # Backtick always toggles terminal, even during boot
+    if key == "`" do
+      new_state = !socket.assigns.terminal_visible
+
+      {:noreply,
+       socket
+       |> assign(:terminal_visible, new_state)
+       |> push_event("save_terminal_pref", %{visible: new_state})}
+    else
+      # Only process other keys if terminal is visible
+      if not socket.assigns.terminal_visible do
         {:noreply, socket}
       else
-        # Validate input key
-        if not valid_input_key?(key) do
+        # Block input during boot sequence
+        if socket.assigns.boot_in_progress do
           {:noreply, socket}
         else
-          # Record activity in adaptive refresh
-          adaptive = AdaptiveRefresh.record_activity(socket.assigns.adaptive_refresh)
-          process_valid_input(key, socket, adaptive)
+          # Check rate limiting first
+          {allowed?, rate_limiter} = InputRateLimiter.allow_event?(socket.assigns.rate_limiter)
+          socket = assign(socket, :rate_limiter, rate_limiter)
+
+          if not allowed? do
+            # Event blocked by rate limiter
+            {:noreply, socket}
+          else
+            # Validate input key
+            if not valid_input_key?(key) do
+              {:noreply, socket}
+            else
+              # Record activity in adaptive refresh
+              adaptive = AdaptiveRefresh.record_activity(socket.assigns.adaptive_refresh)
+              process_valid_input(key, socket, adaptive)
+            end
+          end
         end
       end
     end
@@ -500,19 +635,18 @@ defmodule DroodotfooWeb.DroodotfooLive do
     {:noreply, push_event(socket, "update_grid", %{html: html_content})}
   end
 
-  # STL Viewer event handlers
+  # STL Viewer event handlers (from hook)
   def handle_event(
-        "stl_model_loaded",
-        %{"triangles" => triangles, "vertices" => vertices, "bounds" => _bounds},
+        "model_loaded",
+        %{"triangles" => _triangles, "vertices" => _vertices, "bounds" => _bounds},
         socket
       ) do
-    # For now, just acknowledge the load
-    IO.puts("STL model loaded: #{triangles} triangles, #{vertices} vertices")
+    # Event handled successfully - component manages its own state
     {:noreply, socket}
   end
 
-  def handle_event("stl_load_error", %{"error" => error}, socket) do
-    IO.puts("STL load error: #{error}")
+  def handle_event("model_error", %{"error" => _error}, socket) do
+    # Event handled successfully - component manages its own state
     {:noreply, socket}
   end
 
@@ -663,16 +797,35 @@ defmodule DroodotfooWeb.DroodotfooLive do
 
   # Screen reader announcements for section changes
   defp announce_section_change(:home), do: "Navigated to Home section"
-  defp announce_section_change(:projects), do: "Navigated to Projects section. Browse my portfolio projects."
-  defp announce_section_change(:skills), do: "Navigated to Skills section. View my technical expertise."
-  defp announce_section_change(:experience), do: "Navigated to Experience section. Review my work history."
-  defp announce_section_change(:contact), do: "Navigated to Contact section. Get in touch with me."
-  defp announce_section_change(:terminal), do: "Navigated to Terminal mode. Interactive command line interface."
+
+  defp announce_section_change(:projects),
+    do: "Navigated to Projects section. Browse my portfolio projects."
+
+  defp announce_section_change(:skills),
+    do: "Navigated to Skills section. View my technical expertise."
+
+  defp announce_section_change(:experience),
+    do: "Navigated to Experience section. Review my work history."
+
+  defp announce_section_change(:contact),
+    do: "Navigated to Contact section. Get in touch with me."
+
+  defp announce_section_change(:terminal),
+    do: "Navigated to Terminal mode. Interactive command line interface."
+
   defp announce_section_change(:search_results), do: "Showing search results"
-  defp announce_section_change(:performance), do: "Navigated to Performance Dashboard. Real-time metrics and charts."
+
+  defp announce_section_change(:performance),
+    do: "Navigated to Performance Dashboard. Real-time metrics and charts."
+
   defp announce_section_change(:matrix), do: "Navigated to Matrix plugin. Digital rain effect."
-  defp announce_section_change(:help), do: "Navigated to Help section. Available commands and keyboard shortcuts."
-  defp announce_section_change(:stl_viewer), do: "Navigated to STL 3D Viewer. Interactive 3D model viewer."
+
+  defp announce_section_change(:help),
+    do: "Navigated to Help section. Available commands and keyboard shortcuts."
+
+  defp announce_section_change(:stl_viewer),
+    do: "Navigated to STL 3D Viewer. Interactive 3D model viewer."
+
   defp announce_section_change(_), do: "Section changed"
 
   # Handle STL viewer actions from keyboard
