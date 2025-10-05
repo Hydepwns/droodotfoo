@@ -117,9 +117,9 @@ defmodule Droodotfoo.ErrorFormatter do
     padded = String.pad_trailing(content, width - 2)
 
     """
-    ╔#{"═" |> String.duplicate(width - 2)}╗
-    ║#{padded}║
-    ╠#{"═" |> String.duplicate(width - 2)}╣
+    ╭#{"─" |> String.duplicate(width - 2)}╮
+    │#{padded}│
+    ├#{"─" |> String.duplicate(width - 2)}┤
     """
     |> String.trim_trailing()
   end
@@ -131,7 +131,7 @@ defmodule Droodotfoo.ErrorFormatter do
       [""] ++
       Enum.map(lines, fn line ->
         padded = String.pad_trailing("  #{line}", width - 2)
-        "║#{padded}║"
+        "│#{padded}│"
       end) ++
       [""]
 
@@ -143,12 +143,12 @@ defmodule Droodotfoo.ErrorFormatter do
   defp build_context(context, width) do
     lines = wrap_text(context, width - 4)
 
-    separator = "╟#{String.duplicate("─", width - 2)}╢"
+    separator = "├#{String.duplicate("─", width - 2)}┤"
 
     content_lines =
       Enum.map(lines, fn line ->
         padded = String.pad_trailing("  #{line}", width - 2)
-        "║#{padded}║"
+        "│#{padded}│"
       end)
 
     ([separator] ++ content_lines ++ [""])
@@ -158,28 +158,28 @@ defmodule Droodotfoo.ErrorFormatter do
   defp build_suggestions([], _width), do: nil
 
   defp build_suggestions(suggestions, width) do
-    separator = "╟#{String.duplicate("─", width - 2)}╢"
+    separator = "├#{String.duplicate("─", width - 2)}┤"
     header = String.pad_trailing("  Did you mean:", width - 2)
 
     suggestion_lines =
       Enum.map(suggestions, fn suggestion ->
         content = "    • #{suggestion}"
         padded = String.pad_trailing(content, width - 2)
-        "║#{padded}║"
+        "│#{padded}│"
       end)
 
-    ([separator, "║#{header}║"] ++ suggestion_lines ++ [""])
+    ([separator, "│#{header}│"] ++ suggestion_lines ++ [""])
     |> Enum.join("\n")
   end
 
   defp build_footer(width) do
-    "╚#{"═" |> String.duplicate(width - 2)}╝"
+    "╰#{"─" |> String.duplicate(width - 2)}╯"
   end
 
-  defp get_type_info(:error), do: {"ERROR", "X"}
-  defp get_type_info(:warning), do: {"WARNING", "!"}
-  defp get_type_info(:info), do: {"INFO", "i"}
-  defp get_type_info(:success), do: {"SUCCESS", "*"}
+  defp get_type_info(:error), do: {"ERROR", "█"}
+  defp get_type_info(:warning), do: {"WARNING", "▓"}
+  defp get_type_info(:info), do: {"INFO", "░"}
+  defp get_type_info(:success), do: {"SUCCESS", "▓"}
 
   @doc """
   Wraps text to fit within a specified width.
