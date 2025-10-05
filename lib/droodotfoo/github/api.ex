@@ -5,6 +5,7 @@ defmodule Droodotfoo.Github.API do
   """
 
   require Logger
+  alias Droodotfoo.HttpClient
 
   @base_url "https://api.github.com"
   @user_agent "droodotfoo-terminal/1.0"
@@ -155,39 +156,19 @@ defmodule Droodotfoo.Github.API do
   # Private Functions
 
   defp client do
-    Req.new(
-      base_url: @base_url,
-      headers: [
+    HttpClient.new(
+      @base_url,
+      [
         {"user-agent", @user_agent},
         {"accept", "application/vnd.github+json"},
         {"x-github-api-version", "2022-11-28"}
-      ],
-      retry: :transient,
-      max_retries: 2
+      ]
     )
   end
 
   defp make_request(method, endpoint) do
-    req_client = client()
-
-    case Req.request(req_client, method: method, url: endpoint) do
-      {:ok, %{status: status} = response} when status in 200..299 ->
-        {:ok, response}
-
-      {:ok, %{status: 404}} ->
-        {:error, :not_found}
-
-      {:ok, %{status: 403}} ->
-        {:error, :rate_limited}
-
-      {:ok, %{status: status}} ->
-        Logger.error("GitHub API error: #{status}")
-        {:error, :api_error}
-
-      {:error, reason} ->
-        Logger.error("HTTP request failed: #{inspect(reason)}")
-        {:error, :request_failed}
-    end
+    http_client = client()
+    HttpClient.request(http_client, method: method, url: endpoint)
   end
 
   # Parsing Functions
