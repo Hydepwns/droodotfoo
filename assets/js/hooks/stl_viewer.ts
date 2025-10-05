@@ -25,15 +25,23 @@ export const STLViewerHook: Partial<STLViewerHook> = {
   mounted() {
     console.log('STL Viewer mounted');
 
-    // Find or create canvas element
-    let canvas = this.el.querySelector('canvas') as HTMLCanvasElement;
-    if (!canvas) {
-      canvas = document.createElement('canvas');
-      canvas.id = 'stl-canvas';
-      this.el.appendChild(canvas);
+    // Extract component ID from wrapper element
+    const wrapperId = this.el.id;
+    const componentId = wrapperId.replace('stl-viewer-wrapper-', '');
+
+    // Find canvas container
+    const canvasContainer = this.el.querySelector(`#stl-canvas-container-${componentId}`) as HTMLElement;
+    if (!canvasContainer) {
+      console.error('Canvas container not found');
+      return;
     }
 
-    // Position canvas relative to terminal wrapper
+    // Create canvas element
+    const canvas = document.createElement('canvas');
+    canvas.id = `stl-canvas-${componentId}`;
+    canvasContainer.appendChild(canvas);
+
+    // Position canvas using simpler grid-based approach
     this.positionCanvas();
 
     // Initialize Three.js scene
@@ -105,36 +113,31 @@ export const STLViewerHook: Partial<STLViewerHook> = {
     };
     animate();
 
-    // Listen for LiveView events
+    // Listen for LiveView events from component
     if (this.handleEvent) {
-      // Load model event
-      this.handleEvent('stl_load', (payload: { url: string }) => {
-        this.loadModel(payload.url);
-      });
+      // Unified command handler
+      this.handleEvent('stl_command', (payload: { command: { type: string; [key: string]: any } }) => {
+        const { command } = payload;
 
-      // Change render mode
-      this.handleEvent('stl_mode', (payload: { mode: string }) => {
-        this.setRenderMode(payload.mode);
-      });
-
-      // Rotate camera
-      this.handleEvent('stl_rotate', (payload: { axis?: string; angle?: number }) => {
-        this.rotateCamera(payload.axis, payload.angle);
-      });
-
-      // Reset camera
-      this.handleEvent('stl_reset', () => {
-        this.resetCamera();
-      });
-
-      // Zoom
-      this.handleEvent('stl_zoom', (payload: { distance: number }) => {
-        this.zoom(payload.distance);
-      });
-
-      // Cycle mode
-      this.handleEvent('stl_cycle_mode', () => {
-        this.cycleRenderMode();
+        switch (command.type) {
+          case 'load':
+            this.loadModel(command.url);
+            break;
+          case 'mode':
+            this.setRenderMode(command.mode);
+            break;
+          case 'rotate':
+            this.rotateCamera(command.axis, command.angle);
+            break;
+          case 'reset':
+            this.resetCamera();
+            break;
+          case 'zoom':
+            this.zoom(command.distance);
+            break;
+          default:
+            console.warn('Unknown STL command:', command.type);
+        }
       });
     }
 
@@ -186,9 +189,9 @@ export const STLViewerHook: Partial<STLViewerHook> = {
         const triangles = geometry.attributes.position.count / 3;
         const vertices = geometry.attributes.position.count;
 
-        // Send info back to LiveView
+        // Send info back to LiveView component
         if (this.pushEvent) {
-          this.pushEvent('stl_model_loaded', {
+          this.pushEvent('model_loaded', {
             triangles,
             vertices,
             bounds: {
@@ -207,7 +210,7 @@ export const STLViewerHook: Partial<STLViewerHook> = {
       (error) => {
         console.error('Error loading STL:', error);
         if (this.pushEvent) {
-          this.pushEvent('stl_load_error', { error: error.message });
+          this.pushEvent('model_error', { error: error.message });
         }
       }
     );
@@ -296,67 +299,52 @@ export const STLViewerHook: Partial<STLViewerHook> = {
   },
 
   positionCanvas() {
-    const canvas = this.el.querySelector('canvas') as HTMLCanvasElement;
-    if (!canvas) return;
+    // Extract component ID from wrapper
+    const wrapperId = this.el.id;
+    const componentId = wrapperId.replace('stl-viewer-wrapper-', '');
 
-    // Find terminal wrapper to calculate position
-    const terminalWrapper = document.getElementById('terminal-wrapper');
-    if (!terminalWrapper) return;
+    const canvasContainer = this.el.querySelector(`#stl-canvas-container-${componentId}`) as HTMLElement;
+    const canvas = canvasContainer?.querySelector('canvas') as HTMLCanvasElement;
 
-    // Get terminal wrapper's actual position
-    const wrapperRect = terminalWrapper.getBoundingClientRect();
+    if (!canvas || !canvasContainer) return;
 
-    // Dynamic calculation: Find the "3D Viewport" text in the terminal
-    const terminalLines = terminalWrapper.querySelectorAll('.terminal-line');
+    // Get computed styles for precise positioning
+    const wrapperStyles = window.getComputedStyle(this.el);
+    const fontSize = parseFloat(wrapperStyles.fontSize);
+    const lineHeightRatio = 1.2;
+    const lineHeight = fontSize * lineHeightRatio;
 
-    // Find the line containing "3D Viewport" border
-    let viewportLine: HTMLElement | null = null;
-    let viewportRow = -1;
-    terminalLines.forEach((line, index) => {
-      if (line.textContent && line.textContent.includes('3D Viewport')) {
-        viewportLine = line as HTMLElement;
-        viewportRow = index;
-      }
-    });
+    // 3D Viewport position in HUD grid
+    // Viewport border is at row 8 (0-indexed)
+    // Viewport content starts at row 9, column 4
+    const viewportStartRow = 9;
+    const viewportStartCol = 4;
+    const viewportWidth = 60; // Characters wide
+    const viewportHeight = 7; // Lines tall
 
-    if (viewportRow === -1 || !viewportLine) {
-      console.warn('Could not find 3D Viewport in terminal');
-      return;
-    }
+    // Calculate positions
+    const topPx = viewportStartRow * lineHeight;
+    const leftCh = viewportStartCol;
+    const widthCh = viewportWidth;
+    const heightEm = viewportHeight * lineHeightRatio;
 
-    // Get the actual position of the viewport line
-    const viewportRect = viewportLine.getBoundingClientRect();
+    // Apply positioning to container
+    canvasContainer.style.position = 'absolute';
+    canvasContainer.style.top = `${topPx}px`;
+    canvasContainer.style.left = `${leftCh}ch`;
+    canvasContainer.style.width = `${widthCh}ch`;
+    canvasContainer.style.height = `${heightEm}em`;
 
-    // Constants
-    const lineHeight = 1.2; // em units (matches CSS)
+    // Size the canvas to fill container
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
 
-    // Calculate pixel-based positioning
-    // The viewport box border is at viewportRect.top
-    // Content starts 1 line below the top border
-    const contentTopPx = viewportRect.top + viewportRect.height; // 1 line down from border
-
-    // Column positioning: viewport inner content starts at col 38
-    const contentStartCol = 38;
-    const contentWidth = 60;
-
-    const contentHeight = 7; // lines
-
-    // Position using pixels for top (more accurate), ch for left
-    this.el.style.top = `${contentTopPx}px`;
-    this.el.style.left = `${contentStartCol}ch`;
-
-    // Set canvas size
-    canvas.style.width = `${contentWidth}ch`;
-    canvas.style.height = `${contentHeight * lineHeight}em`;
-
-    console.log('Canvas positioned at:', {
-      viewportRow,
-      viewportLineTop: viewportRect.top,
-      calculatedTop: contentTopPx,
-      top: `${contentTopPx}px`,
-      left: `${contentStartCol}ch`,
-      width: `${contentWidth}ch`,
-      height: `${contentHeight * lineHeight}em`
+    console.log('STL Canvas positioned:', {
+      containerTop: `${topPx}px`,
+      containerLeft: `${leftCh}ch`,
+      canvasWidth: `${widthCh}ch`,
+      canvasHeight: `${heightEm}em`,
+      lineHeight: lineHeight
     });
   },
 
