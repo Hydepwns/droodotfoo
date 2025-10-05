@@ -20,6 +20,9 @@ if System.get_env("PHX_SERVER") do
   config :droodotfoo, DroodotfooWeb.Endpoint, server: true
 end
 
+# Blog API token for Obsidian publishing (all environments)
+config :droodotfoo, :blog_api_token, System.get_env("BLOG_API_TOKEN")
+
 if config_env() == :prod do
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you
