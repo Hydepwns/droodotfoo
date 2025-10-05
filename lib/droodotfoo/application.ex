@@ -22,6 +22,8 @@ defmodule Droodotfoo.Application do
       Droodotfoo.Spotify.Manager,
       # Start plugin system manager
       Droodotfoo.PluginSystem.Manager,
+      # Start blog post manager
+      Droodotfoo.Content.PostManager,
       # Start a worker by calling: Droodotfoo.Worker.start_link(arg)
       # {Droodotfoo.Worker, arg},
       # Start to serve requests, typically the last entry
