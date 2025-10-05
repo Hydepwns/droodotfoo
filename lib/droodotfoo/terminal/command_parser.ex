@@ -3,7 +3,7 @@ defmodule Droodotfoo.Terminal.CommandParser do
   Parses and executes terminal commands, providing a real Unix-like experience.
   """
 
-  alias Droodotfoo.Terminal.{FileSystem, Commands}
+  alias Droodotfoo.Terminal.{FileSystem, Commands, CommandRegistry}
   alias Droodotfoo.ErrorFormatter
 
   @doc """
@@ -160,9 +160,6 @@ defmodule Droodotfoo.Terminal.CommandParser do
           Commands.matrix([], state)
 
         # droo.foo specific
-        "projects" ->
-          Commands.projects(args, state)
-
         "skills" ->
           Commands.skills(args, state)
 
@@ -250,9 +247,20 @@ defmodule Droodotfoo.Terminal.CommandParser do
         "gh" ->
           Commands.gh(args, state)
 
+        # Portfolio
+        "project" ->
+          Commands.project(args, state)
+
+        "projects" ->
+          Commands.projects(state)
+
         # Search
         "search" ->
           Commands.search(args, state)
+
+        # Charts
+        "charts" ->
+          Commands.charts(state)
 
         # Unknown command
         _ ->
@@ -277,60 +285,7 @@ defmodule Droodotfoo.Terminal.CommandParser do
   Uses Levenshtein distance for fuzzy matching.
   """
   def suggest_command(input) do
-    all_commands = [
-      "ls",
-      "cd",
-      "pwd",
-      "cat",
-      "head",
-      "tail",
-      "grep",
-      "find",
-      "whoami",
-      "date",
-      "uptime",
-      "uname",
-      "help",
-      "man",
-      "clear",
-      "history",
-      "echo",
-      "fortune",
-      "cowsay",
-      "sl",
-      "matrix",
-      "projects",
-      "skills",
-      "contact",
-      "resume",
-      "download",
-      "api",
-      "git",
-      "npm",
-      "pip",
-      "curl",
-      "wget",
-      "ping",
-      "sudo",
-      "rm",
-      "vim",
-      "emacs",
-      "exit",
-      "stl",
-      "theme",
-      "themes",
-      "perf",
-      "dashboard",
-      "metrics",
-      "crt",
-      "spotify",
-      "music",
-      "github",
-      "gh",
-      "search"
-    ]
-
-    all_commands
+    CommandRegistry.all_command_names()
     |> Enum.map(fn cmd -> {cmd, String.jaro_distance(input, cmd)} end)
     |> Enum.filter(fn {_cmd, score} -> score > 0.7 end)
     |> Enum.sort_by(fn {_cmd, score} -> score end, :desc)
@@ -358,57 +313,7 @@ defmodule Droodotfoo.Terminal.CommandParser do
   end
 
   defp get_all_commands do
-    [
-      "ls",
-      "cd",
-      "pwd",
-      "cat",
-      "head",
-      "tail",
-      "grep",
-      "find",
-      "whoami",
-      "date",
-      "uptime",
-      "uname",
-      "help",
-      "man",
-      "clear",
-      "history",
-      "echo",
-      "fortune",
-      "cowsay",
-      "sl",
-      "matrix",
-      "projects",
-      "skills",
-      "contact",
-      "resume",
-      "download",
-      "api",
-      "git",
-      "npm",
-      "pip",
-      "curl",
-      "wget",
-      "ping",
-      "sudo",
-      "rm",
-      "vim",
-      "emacs",
-      "exit",
-      "stl",
-      "theme",
-      "themes",
-      "perf",
-      "dashboard",
-      "metrics",
-      "crt",
-      "spotify",
-      "music",
-      "github",
-      "gh"
-    ]
+    CommandRegistry.all_command_names()
   end
 
   defp get_argument_completions("cd", partial_path, state) do
