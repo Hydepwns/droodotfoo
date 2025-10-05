@@ -247,4 +247,36 @@ defmodule Droodotfoo.Plugins.GameUI do
       "#{key}: #{value}"
     end)
   end
+
+  @doc """
+  Creates a horizontal border with custom characters.
+  Useful for ASCII art boxes with different border styles.
+
+  ## Examples
+
+      iex> GameUI.horizontal_border(20, "+", "-", "+")
+      "+------------------+"
+
+      iex> GameUI.horizontal_border(15, "┌", "─", "┐")
+      "┌─────────────┐"
+  """
+  def horizontal_border(width, left_char, fill_char, right_char) do
+    left_char <> String.duplicate(fill_char, width - 2) <> right_char
+  end
+
+  @doc """
+  Creates a padded content line with custom border characters.
+
+  ## Examples
+
+      iex> GameUI.padded_line("Hello", 20, "│")
+      "│ Hello              │"
+
+      iex> GameUI.padded_line("Test", 15, "|")
+      "| Test            |"
+  """
+  def padded_line(content, width, border_char \\ "│") do
+    content_width = width - 4
+    "#{border_char} #{String.pad_trailing(content, content_width)} #{border_char}"
+  end
 end
