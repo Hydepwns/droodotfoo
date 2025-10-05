@@ -92,9 +92,9 @@ defmodule Droodotfoo.Raxol.Renderer do
           {buf, row_offset + 1}
 
         {text, _key, idx} ->
-          # Draw navigation item
+          # Draw navigation item with gradient for selected
           y_pos = nav_y + 2 + row_offset
-          cursor = if idx == cursor_y, do: ">", else: " "
+          cursor = if idx == cursor_y, do: "█", else: "░"
           buf = TerminalBridge.write_at(buf, 2, y_pos, cursor <> text)
           {buf, row_offset + 1}
       end
@@ -172,23 +172,23 @@ defmodule Droodotfoo.Raxol.Renderer do
   defp draw_status_bar(buffer, state) do
     y_pos = Config.status_bar_y()
 
-    # Left side: current section breadcrumb
+    # Left side: current section breadcrumb with gradient
     section_name = format_section_name(state.current_section)
-    breadcrumb = " #{section_name}"
+    breadcrumb = " █▓▒░ #{section_name}"
 
-    # Middle: vim mode and command mode indicators
-    vim_indicator = if State.vim_mode?(state), do: " VIM", else: ""
-    cmd_indicator = if state.command_mode, do: " CMD", else: ""
+    # Middle: vim mode and command mode indicators with gradient
+    vim_indicator = if State.vim_mode?(state), do: " ▓VIM", else: ""
+    cmd_indicator = if state.command_mode, do: " ▓CMD", else: ""
 
     search_indicator =
       if state.command_mode && String.starts_with?(state.command_buffer, "search "),
-        do: " SEARCH",
+        do: " ▓SEARCH",
         else: ""
 
-    # Right side: time and connection status
+    # Right side: time and connection status with gradient
     {:ok, now} = DateTime.now("Etc/UTC")
     time_str = Calendar.strftime(now, "%H:%M:%S")
-    right_side = "#{time_str} | LIVE "
+    right_side = "#{time_str} │ ░▒▓█ "
 
     # Calculate spacing
     middle_content = vim_indicator <> cmd_indicator <> search_indicator
@@ -325,59 +325,205 @@ defmodule Droodotfoo.Raxol.Renderer do
     |> draw_box_at(recent_lines, 35, 13 + length(about_lines))
   end
 
-  defp draw_content(buffer, :projects, _state) do
-    # Main projects content with three sections
-    project_lines = [
-      "┌─ Terminal droo.foo System ──────────────────────────────────────────┐",
+  defp draw_content(buffer, :projects, state) do
+    if Map.get(state, :project_detail_view, false) do
+      draw_project_detail(buffer, state)
+    else
+      draw_project_list(buffer, state)
+    end
+  end
+
+  # Draw the project list view with thumbnails
+  defp draw_project_list(buffer, state) do
+    projects = Droodotfoo.Projects.all()
+    selected_idx = Map.get(state, :selected_project_index, 0)
+
+    # Header
+    header_lines = [
+      "┌─ Project Showcase ──────────────────────────────────────────────────┐",
       "│                                                                     │",
-      "│  Projects                                                           │",
-      "│                                                                     │",
-      "│  > Real-time Collaboration Platform                                 │",
-      "│    Distributed systems with CRDT-based sync                        │",
-      "│    [Elixir] [Phoenix] [LiveView] [Distributed]                     │",
-      "│                                                                     │",
-      "│  > Terminal UI Framework                                            │",
-      "│    60fps terminal rendering with vim keybindings                   │",
-      "│    [Accessibility] [Virtual DOM] [Performance]                     │",
-      "│                                                                     │",
-      "│  > Blog Publishing System                                           │",
-      "│    Obsidian -> Phoenix publishing pipeline                         │",
-      "│    [Content Management] [Markdown] [API]                           │",
-      "│                                                                     │",
-      "└─────────────────────────────────────────────────────────────────────┘",
-      "┌─ Recent Activity ───────────────────────────────────────────────────┐",
-      "│                                                                     │",
-      "│  Coming soon: GitHub commits integration                            │",
-      "│                                                                     │",
-      "└─────────────────────────────────────────────────────────────────────┘",
-      "┌─ Top Repositories ──────────────────────────────────────────────────┐",
-      "│                                                                     │",
-      "│  Coming soon: GitHub starred repos                                  │",
+      "│  Use ↑↓ to navigate, Enter to view details, Backspace to return    │",
       "│                                                                     │",
       "└─────────────────────────────────────────────────────────────────────┘"
     ]
 
-    draw_box_at(buffer, project_lines, 35, 13)
+    buffer = draw_box_at(buffer, header_lines, 35, 13)
+
+    # Draw projects in a grid (2 columns)
+    y_offset = 13 + length(header_lines)
+
+    projects
+    |> Enum.with_index()
+    |> Enum.chunk_every(2)
+    |> Enum.with_index()
+    |> Enum.reduce(buffer, fn {row_projects, row_idx}, acc_buffer ->
+      draw_project_row(acc_buffer, row_projects, selected_idx, 35, y_offset + row_idx * 12)
+    end)
+  end
+
+  # Draw a row of projects (up to 2 projects side by side)
+  defp draw_project_row(buffer, row_projects, selected_idx, x_offset, y_offset) do
+    row_projects
+    |> Enum.with_index()
+    |> Enum.reduce(buffer, fn {{project, proj_idx}, col_idx}, acc_buffer ->
+      x = x_offset + col_idx * 37
+      draw_project_card(acc_buffer, project, proj_idx == selected_idx, x, y_offset)
+    end)
+  end
+
+  # Draw a single project card with thumbnail
+  defp draw_project_card(buffer, project, is_selected, x, y) do
+    indicator = if is_selected, do: ">", else: " "
+    border_char = if is_selected, do: "═", else: "─"
+    status_text = Droodotfoo.Projects.status_indicator(project.status)
+
+    # Build the card
+    card_lines = [
+      "┌#{String.duplicate(border_char, 33)}┐",
+      "│ #{indicator} #{String.pad_trailing(project.name, 29)} │",
+      "│   #{String.pad_trailing(status_text, 29)} │"
+    ]
+
+    # Add ASCII thumbnail
+    thumbnail_lines =
+      Enum.map(project.ascii_thumbnail, fn line ->
+        "│ #{String.pad_trailing(line, 31)} │"
+      end)
+
+    # Add tagline
+    tagline_lines = [
+      "│#{String.duplicate(" ", 33)}│",
+      "│ #{String.pad_trailing(project.tagline, 31)} │",
+      "└#{String.duplicate(border_char, 33)}┘"
+    ]
+
+    lines = card_lines ++ thumbnail_lines ++ tagline_lines
+
+    draw_box_at(buffer, lines, x, y)
+  end
+
+  # Draw the detailed project view
+  defp draw_project_detail(buffer, state) do
+    projects = Droodotfoo.Projects.all()
+    selected_idx = Map.get(state, :selected_project_index, 0)
+    project = Enum.at(projects, selected_idx)
+
+    if project do
+      detail_lines = build_project_detail_lines(project)
+      draw_box_at(buffer, detail_lines, 35, 13)
+    else
+      # Fallback if no project selected
+      draw_project_list(buffer, %{state | project_detail_view: false})
+    end
+  end
+
+  # Build the detailed view lines for a project
+  defp build_project_detail_lines(project) do
+    status_text = Droodotfoo.Projects.status_indicator(project.status)
+
+    [
+      "┌─ #{project.name} ────────────────────────────────────────────────────┐",
+      "│                                                                     │",
+      "│  #{String.pad_trailing(project.tagline, 67)}│",
+      "│  Status: #{String.pad_trailing(status_text, 58)}│",
+      "│                                                                     │"
+    ] ++
+      wrap_text(project.description, 67) ++
+      [
+        "│                                                                     │",
+        "│  Tech Stack:                                                        │"
+      ] ++
+      build_tech_stack_lines(project.tech_stack) ++
+      [
+        "│                                                                     │",
+        "│  Highlights:                                                        │"
+      ] ++
+      build_highlights_lines(project.highlights) ++
+      build_links_section(project) ++
+      [
+        "│                                                                     │",
+        "│  Press Backspace to return to project list                         │",
+        "└─────────────────────────────────────────────────────────────────────┘"
+      ]
+  end
+
+  defp wrap_text(text, width) do
+    text
+    |> String.split(" ")
+    |> Enum.reduce({[], ""}, fn word, {lines, current_line} ->
+      test_line = if current_line == "", do: word, else: current_line <> " " <> word
+
+      if String.length(test_line) <= width - 4 do
+        {lines, test_line}
+      else
+        {lines ++ ["│  #{String.pad_trailing(current_line, width)}│"], word}
+      end
+    end)
+    |> then(fn {lines, last_line} ->
+      if last_line != "" do
+        lines ++ ["│  #{String.pad_trailing(last_line, width)}│"]
+      else
+        lines
+      end
+    end)
+  end
+
+  defp build_tech_stack_lines(tech_stack) do
+    tech_text = Enum.join(tech_stack, ", ")
+    wrap_text("  " <> tech_text, 67)
+  end
+
+  defp build_highlights_lines(highlights) do
+    highlights
+    |> Enum.flat_map(fn highlight ->
+      ["│  • #{String.pad_trailing(highlight, 65)}│"]
+    end)
+  end
+
+  defp build_links_section(project) do
+    lines = ["│                                                                     │"]
+
+    lines =
+      if project.github_url do
+        lines ++ ["│  GitHub: #{String.pad_trailing(project.github_url, 58)}│"]
+      else
+        lines
+      end
+
+    lines =
+      if project.demo_url do
+        lines ++ ["│  Demo:   #{String.pad_trailing(project.demo_url, 58)}│"]
+      else
+        lines
+      end
+
+    if project.live_demo do
+      lines ++ ["│  ✓ Live demo available!                                             │"]
+    else
+      lines
+    end
   end
 
   defp draw_content(buffer, :skills, _state) do
     skills_lines = [
-      "┌─ Technical Skills ──────────────────────────────────────────────────┐",
+      "╭─ Technical Skills ──────────────────────────────────────────────────╮",
       "│                                                                     │",
       "│  Languages:                                                         │",
-      "│  ██████████████████████████████████████░░░░  Elixir          90%    │",
-      "│  ████████████████████████████████████░░░░░░  Phoenix         85%    │",
-      "│  ██████████████████████████████░░░░░░░░░░░░  JavaScript      75%    │",
-      "│  ████████████████████████████░░░░░░░░░░░░░░  TypeScript      70%    │",
+      "│  #{Droodotfoo.AsciiChart.percent_bar("Elixir", 90, width: 35, label_width: 12, gradient: true, style: :rounded)}        │",
+      "│  #{Droodotfoo.AsciiChart.percent_bar("Phoenix", 85, width: 35, label_width: 12, gradient: true, style: :rounded)}       │",
+      "│  #{Droodotfoo.AsciiChart.percent_bar("JavaScript", 75, width: 35, label_width: 12, gradient: true, style: :rounded)}    │",
+      "│  #{Droodotfoo.AsciiChart.percent_bar("TypeScript", 70, width: 35, label_width: 12, gradient: true, style: :rounded)}    │",
       "│                                                                     │",
       "│  Frameworks & Libraries:                                            │",
-      "│  • Phoenix, LiveView, Ecto, Broadway                                │",
-      "│  • React, Vue.js, Node.js, Express                                  │",
-      "│  • GraphQL, REST APIs, WebSockets                                   │",
+      "│  #{Droodotfoo.AsciiChart.percent_bar("LiveView", 95, width: 35, label_width: 12, gradient: true, style: :rounded)}      │",
+      "│  #{Droodotfoo.AsciiChart.percent_bar("React", 80, width: 35, label_width: 12, gradient: true, style: :rounded)}         │",
+      "│  #{Droodotfoo.AsciiChart.percent_bar("GraphQL", 75, width: 35, label_width: 12, gradient: true, style: :rounded)}       │",
       "│                                                                     │",
-      "│  Infrastructure: Docker, K8s, AWS, Fly.io, PostgreSQL, Redis        │",
+      "│  Infrastructure & Tools:                                            │",
+      "│  #{Droodotfoo.AsciiChart.percent_bar("Docker", 85, width: 35, label_width: 12, gradient: true, style: :rounded)}        │",
+      "│  #{Droodotfoo.AsciiChart.percent_bar("PostgreSQL", 90, width: 35, label_width: 12, gradient: true, style: :rounded)}    │",
       "│                                                                     │",
-      "└─────────────────────────────────────────────────────────────────────┘"
+      "╰─────────────────────────────────────────────────────────────────────╯"
     ]
 
     draw_box_at(buffer, skills_lines, 35, 13)
@@ -409,21 +555,32 @@ defmodule Droodotfoo.Raxol.Renderer do
 
   defp draw_content(buffer, :contact, _state) do
     contact_lines = [
-      "┌─ Contact ───────────────────────────────────────────────────────────┐",
+      "╭─ Contact ───────────────────────────────────────────────────────────╮",
       "│                                                                     │",
       "│  Let's connect:                                                     │",
       "│                                                                     │",
-      "│  ▪ Email:     drew@axol.io                                          │",
-      "│  ▪ GitHub:    github.com/hydepwns                                   │",
-      "│  ▪ LinkedIn:  linkedin.com/in/drew-hiro                             │",
-      "│  ▪ X/Twitter: @MF_DROO                                              │",
+      "│  ╭─ Email ─────────────────────────────────────────────────────╮   │",
+      "│  │ █▓▒░ drew@axol.io                                           │   │",
+      "│  ╰─────────────────────────────────────────────────────────────╯   │",
       "│                                                                     │",
-      "│  ┌──────────────────────────────────────────────────────────────┐   │",
-      "│  │  Available for consulting on Elixir, Phoenix, LiveView, and  │   │",
-      "│  │  distributed systems architecture                            │   │",
-      "│  └──────────────────────────────────────────────────────────────┘   │",
+      "│  ╭─ GitHub ────────────────────────────────────────────────────╮   │",
+      "│  │ █▓▒░ github.com/hydepwns                                    │   │",
+      "│  ╰─────────────────────────────────────────────────────────────╯   │",
       "│                                                                     │",
-      "└─────────────────────────────────────────────────────────────────────┘"
+      "│  ╭─ LinkedIn ──────────────────────────────────────────────────╮   │",
+      "│  │ █▓▒░ linkedin.com/in/drew-hiro                              │   │",
+      "│  ╰─────────────────────────────────────────────────────────────╯   │",
+      "│                                                                     │",
+      "│  ╭─ X/Twitter ─────────────────────────────────────────────────╮   │",
+      "│  │ █▓▒░ @MF_DROO                                               │   │",
+      "│  ╰─────────────────────────────────────────────────────────────╯   │",
+      "│                                                                     │",
+      "│  ╭─ Availability ──────────────────────────────────────────────╮   │",
+      "│  │ ░▒▓█ Available for consulting on Elixir, Phoenix, LiveView, │   │",
+      "│  │      and distributed systems architecture                   │   │",
+      "│  ╰─────────────────────────────────────────────────────────────╯   │",
+      "│                                                                     │",
+      "╰─────────────────────────────────────────────────────────────────────╯"
     ]
 
     draw_box_at(buffer, contact_lines, 35, 13)
@@ -633,8 +790,8 @@ defmodule Droodotfoo.Raxol.Renderer do
       "║                                                                              ║",
       "║  Performance Indicators:                                                     ║",
       "║                                                                              ║",
-      "║  #{Droodotfoo.AsciiChart.percent_bar("Render", min(summary.avg_render_time * 10, 100), width: 30, label_width: 10)}                    ║",
-      "║  #{Droodotfoo.AsciiChart.percent_bar("Memory", min(summary.current_memory * 2, 100), width: 30, label_width: 10)}                    ║",
+      "║  #{Droodotfoo.AsciiChart.percent_bar("Render", min(summary.avg_render_time * 10, 100), width: 30, label_width: 10, gradient: true, style: :rounded)}                    ║",
+      "║  #{Droodotfoo.AsciiChart.percent_bar("Memory", min(summary.current_memory * 2, 100), width: 30, label_width: 10, gradient: true, style: :rounded)}                    ║",
       "║                                                                              ║",
       "╚══════════════════════════════════════════════════════════════════════════════╝"
     ]

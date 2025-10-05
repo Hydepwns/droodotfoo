@@ -85,7 +85,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
       # nav_y + 2 + cursor_y
       nav_line = Enum.at(buffer.lines, 15 + 2)
       line_text = nav_line.cells |> Enum.map(& &1.char) |> Enum.join()
-      assert String.contains?(line_text, ">")
+      assert String.contains?(line_text, "█")
       assert String.contains?(line_text, "Skills")
     end
 
@@ -263,8 +263,8 @@ defmodule Droodotfoo.Raxol.RendererTest do
       buffer = Renderer.render(state)
 
       content_text = extract_content_area(buffer)
-      assert String.contains?(content_text, "Projects")
-      assert String.contains?(content_text, "Terminal droo.foo System")
+      assert String.contains?(content_text, "Project Showcase")
+      assert String.contains?(content_text, "droo.foo Terminal Portfolio")
       assert String.contains?(content_text, "Real-time Collaboration Platform")
     end
 

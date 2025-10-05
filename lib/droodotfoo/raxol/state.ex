@@ -29,7 +29,9 @@ defmodule Droodotfoo.Raxol.State do
     :crt_mode,
     :autocomplete_suggestions,
     :autocomplete_index,
-    :high_contrast_mode
+    :high_contrast_mode,
+    :selected_project_index,
+    :project_detail_view
   ]
 
   @doc """
@@ -69,7 +71,9 @@ defmodule Droodotfoo.Raxol.State do
       crt_mode: false,
       autocomplete_suggestions: [],
       autocomplete_index: -1,
-      high_contrast_mode: false
+      high_contrast_mode: false,
+      selected_project_index: 0,
+      project_detail_view: false
     }
   end
 
