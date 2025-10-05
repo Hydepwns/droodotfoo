@@ -12,8 +12,22 @@ defmodule Droodotfoo.Raxol.Navigation do
   """
 
   # Arrow key navigation (primary for normal users)
-  def handle_input("ArrowDown", state), do: move_down(state)
-  def handle_input("ArrowUp", state), do: move_up(state)
+  def handle_input("ArrowDown", state) do
+    if state.current_section == :projects and not state.project_detail_view do
+      move_project_down(state)
+    else
+      move_down(state)
+    end
+  end
+
+  def handle_input("ArrowUp", state) do
+    if state.current_section == :projects and not state.project_detail_view do
+      move_project_up(state)
+    else
+      move_up(state)
+    end
+  end
+
   def handle_input("ArrowRight", state), do: move_down(state)
   def handle_input("ArrowLeft", state), do: move_up(state)
 
@@ -120,9 +134,23 @@ defmodule Droodotfoo.Raxol.Navigation do
   end
 
   def handle_input("Enter", state) do
-    # Select current item
-    selected = Enum.at(state.navigation_items, state.cursor_y)
-    %{state | current_section: selected}
+    if state.current_section == :projects and not state.project_detail_view do
+      # Enter detail view for selected project
+      %{state | project_detail_view: true}
+    else
+      # Select current item
+      selected = Enum.at(state.navigation_items, state.cursor_y)
+      %{state | current_section: selected}
+    end
+  end
+
+  # Backspace to return from project detail view
+  def handle_input("Backspace", state) do
+    if state.current_section == :projects and state.project_detail_view do
+      %{state | project_detail_view: false}
+    else
+      state
+    end
   end
 
   # Handle direct cursor positioning (for mouse clicks)
@@ -262,5 +290,17 @@ defmodule Droodotfoo.Raxol.Navigation do
     # Fixed column for navigation cursor (column 2 is where cursor displays)
     col = 2
     {row, col}
+  end
+
+  # Project-specific navigation helpers
+  defp move_project_down(state) do
+    project_count = Droodotfoo.Projects.count()
+    new_idx = min((state.selected_project_index || 0) + 1, project_count - 1)
+    %{state | selected_project_index: new_idx}
+  end
+
+  defp move_project_up(state) do
+    new_idx = max((state.selected_project_index || 0) - 1, 0)
+    %{state | selected_project_index: new_idx}
   end
 end
