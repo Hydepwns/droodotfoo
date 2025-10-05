@@ -5,6 +5,7 @@ defmodule Droodotfoo.Spotify.API do
   """
 
   require Logger
+  alias Droodotfoo.HttpClient
   alias Droodotfoo.Spotify.{Auth, Cache}
 
   @base_url "https://api.spotify.com/v1"
@@ -14,11 +15,9 @@ defmodule Droodotfoo.Spotify.API do
   defp client do
     case Auth.get_access_token() do
       {:ok, token} ->
-        Req.new(
-          base_url: @base_url,
-          headers: [{"authorization", "Bearer #{token}"}],
-          retry: :transient,
-          max_retries: 2
+        HttpClient.new(
+          @base_url,
+          [{"authorization", "Bearer #{token}"}]
         )
 
       {:error, reason} ->
@@ -213,30 +212,11 @@ defmodule Droodotfoo.Spotify.API do
       nil ->
         {:error, :no_auth_token}
 
-      req_client ->
-        options = if body, do: [json: body], else: []
+      http_client ->
+        options = [method: method, url: endpoint]
+        options = if body, do: options ++ [json: body], else: options
 
-        case Req.request(req_client, [method: method, url: endpoint] ++ options) do
-          {:ok, %{status: status} = response} when status in 200..299 ->
-            {:ok, response}
-
-          {:ok, %{status: 401}} ->
-            {:error, :unauthorized}
-
-          {:ok, %{status: 403}} ->
-            {:error, :forbidden}
-
-          {:ok, %{status: 429}} ->
-            {:error, :rate_limited}
-
-          {:ok, %{status: status}} ->
-            Logger.error("Spotify API error: #{status}")
-            {:error, :api_error}
-
-          {:error, reason} ->
-            Logger.error("HTTP request failed: #{inspect(reason)}")
-            {:error, :request_failed}
-        end
+        HttpClient.request(http_client, options)
     end
   end
 
