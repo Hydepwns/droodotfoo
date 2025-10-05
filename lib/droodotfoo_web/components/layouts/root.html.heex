@@ -36,12 +36,84 @@
           setTheme(localStorage.getItem("phx:theme") || "system");
         }
         window.addEventListener("storage", (e) => e.key === "phx:theme" && setTheme(e.newValue || "system"));
-        
+
         window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
       })();
     </script>
   </head>
   <body>
+    <!-- Theme Toggle Button (site-wide) -->
+    <button
+      class="theme-toggle"
+      id="theme-toggle"
+      title="Cycle Theme (capital-T)"
+      aria-label="Cycle Theme (capital-T)"
+    >
+      T
+    </button>
+
     {@inner_content}
+
+    <script>
+      // Theme cycling functionality
+      const themes = ['theme-synthwave84', 'theme-green', 'theme-matrix', 'theme-cyberpunk', 'theme-phosphor', 'theme-amber', 'theme-high-contrast'];
+      const themeNames = ['Synthwave84', 'Green', 'Matrix', 'Cyberpunk', 'Phosphor', 'Amber', 'High Contrast'];
+      let currentThemeIndex = 0;
+
+      // Get current theme from CSS classes on html element
+      const getCurrentThemeIndex = () => {
+        const classList = document.documentElement.classList;
+        for (let i = 0; i < themes.length; i++) {
+          if (classList.contains(themes[i])) {
+            return i;
+          }
+        }
+        return 0;
+      };
+
+      // Load saved theme on page load (run immediately)
+      const savedTheme = localStorage.getItem('phx:theme');
+      if (savedTheme && themes.includes(savedTheme)) {
+        themes.forEach(t => document.documentElement.classList.remove(t));
+        document.documentElement.classList.add(savedTheme);
+        currentThemeIndex = themes.indexOf(savedTheme);
+      } else {
+        // Set default theme if none saved
+        document.documentElement.classList.add(themes[0]);
+        localStorage.setItem('phx:theme', themes[0]);
+      }
+
+      // Theme toggle button click handler
+      document.addEventListener('DOMContentLoaded', () => {
+        const button = document.getElementById('theme-toggle');
+        if (button) {
+          button.addEventListener('click', () => {
+            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+            const newTheme = themes[currentThemeIndex];
+
+            // Remove all theme classes
+            themes.forEach(t => document.documentElement.classList.remove(t));
+
+            // Add new theme class
+            document.documentElement.classList.add(newTheme);
+
+            // Store in localStorage
+            localStorage.setItem('phx:theme', newTheme);
+
+            console.log('Theme changed to:', themeNames[currentThemeIndex], '(' + newTheme + ')');
+          });
+        }
+      });
+
+      // Keyboard shortcut 'T' for theme toggle
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'T' && !e.target.matches('input, textarea, select')) {
+          const button = document.getElementById('theme-toggle');
+          if (button) {
+            button.click();
+          }
+        }
+      });
+    </script>
   </body>
 </html>
