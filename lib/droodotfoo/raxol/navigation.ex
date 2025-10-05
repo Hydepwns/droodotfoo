@@ -137,12 +137,13 @@ defmodule Droodotfoo.Raxol.Navigation do
     end
   end
 
-  # Number key shortcuts (1-5) - jump to menu item and select
+  # Number key shortcuts (1-6) - jump to menu item and select
   def handle_input("1", state), do: jump_to_and_select(state, 0)
   def handle_input("2", state), do: jump_to_and_select(state, 1)
   def handle_input("3", state), do: jump_to_and_select(state, 2)
   def handle_input("4", state), do: jump_to_and_select(state, 3)
   def handle_input("5", state), do: jump_to_and_select(state, 4)
+  def handle_input("6", state), do: jump_to_and_select(state, 5)
 
   # Toggle vim mode with 'v' key
   def handle_input("v", state) do

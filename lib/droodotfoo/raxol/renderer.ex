@@ -74,18 +74,32 @@ defmodule Droodotfoo.Raxol.Renderer do
       {" Skills                  ", :skills, 2},
       {" Experience              ", :experience, 3},
       {" Contact                 ", :contact, 4},
+      {:section_header, "Tools", nil},
       {" STL Viewer              ", :stl_viewer, 5}
     ]
 
-    buffer = TerminalBridge.draw_box(buffer, 0, nav_y, 30, 9, :single)
+    # Box now has an extra line for the Tools section header
+    buffer = TerminalBridge.draw_box(buffer, 0, nav_y, 30, 10, :single)
     buffer = TerminalBridge.write_at(buffer, 2, nav_y, "─ Navigation ──────────────")
 
     nav_items
-    |> Enum.reduce(buffer, fn {text, _key, idx}, buf ->
-      y_pos = nav_y + 2 + idx
-      cursor = if idx == cursor_y, do: ">", else: " "
-      TerminalBridge.write_at(buf, 2, y_pos, cursor <> text)
+    |> Enum.reduce({buffer, 0}, fn item, {buf, row_offset} ->
+      case item do
+        {:section_header, label, _} ->
+          # Draw section header
+          y_pos = nav_y + 2 + row_offset
+          buf = TerminalBridge.write_at(buf, 2, y_pos, "─ #{label} ───────────────────")
+          {buf, row_offset + 1}
+
+        {text, _key, idx} ->
+          # Draw navigation item
+          y_pos = nav_y + 2 + row_offset
+          cursor = if idx == cursor_y, do: ">", else: " "
+          buf = TerminalBridge.write_at(buf, 2, y_pos, cursor <> text)
+          {buf, row_offset + 1}
+      end
     end)
+    |> elem(0)
   end
 
   defp draw_cursor_trail(buffer, state) do
@@ -312,20 +326,31 @@ defmodule Droodotfoo.Raxol.Renderer do
   end
 
   defp draw_content(buffer, :projects, _state) do
+    # Main projects content with three sections
     project_lines = [
-      "┌─ Projects ──────────────────────────────────────────────────────────┐",
+      "┌─ Demo Projects ─────────────────────────────────────────────────────┐",
       "│                                                                     │",
-      "│  ▪ Terminal droo.foo System                                         │",
-      "│    This droo.foo! Built with Raxol terminal framework               │",
-      "│    [Elixir] [Phoenix] [LiveView] [60fps]                            │",
+      "│  > STL Viewer Demo          localhost:4000/dev/stl-viewer-demo     │",
+      "│    Interactive 3D model viewer with HUD overlay                    │",
+      "│    [RaxolWeb] [Three.js] [LiveView] [STL]                          │",
       "│                                                                     │",
-      "│  ▪ Real-time Collaboration Platform                                 │",
-      "│    WebRTC-based pair programming tool with live code sharing        │",
-      "│    [Elixir] [Phoenix Channels] [WebRTC]                             │",
+      "│  > RaxolWeb Demo            localhost:4000/dev/raxol-demo          │",
+      "│    Terminal UI framework demonstration                             │",
+      "│    [Elixir] [Phoenix] [LiveView] [Terminal]                        │",
       "│                                                                     │",
-      "│  ▪ Distributed Event Processing                                     │",
-      "│    High-throughput event stream processor handling millions/day     │",
-      "│    [Elixir] [Broadway] [Kafka] [ClickHouse]                         │",
+      "│  > RaxolWeb Comparison      localhost:4000/dev/raxol-comparison    │",
+      "│    Side-by-side renderer performance comparison                    │",
+      "│    [Benchmark] [Virtual DOM] [Diffing]                             │",
+      "│                                                                     │",
+      "└─────────────────────────────────────────────────────────────────────┘",
+      "┌─ Recent Activity ───────────────────────────────────────────────────┐",
+      "│                                                                     │",
+      "│  Coming soon: GitHub commits integration                            │",
+      "│                                                                     │",
+      "└─────────────────────────────────────────────────────────────────────┘",
+      "┌─ Top Repositories ──────────────────────────────────────────────────┐",
+      "│                                                                     │",
+      "│  Coming soon: GitHub starred repos                                  │",
       "│                                                                     │",
       "└─────────────────────────────────────────────────────────────────────┘"
     ]

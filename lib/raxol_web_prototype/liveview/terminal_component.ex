@@ -108,6 +108,13 @@ defmodule RaxolWeb.LiveView.TerminalComponent do
   use Phoenix.LiveComponent
   alias RaxolWeb.{Renderer, Themes}
 
+  @doc """
+  Initializes the component with a new renderer instance.
+
+  Called once when the component is first mounted to the page.
+  Sets up an empty renderer and nil theme CSS which will be
+  populated on first update.
+  """
   @impl true
   def mount(socket) do
     renderer = Renderer.new()
@@ -118,6 +125,31 @@ defmodule RaxolWeb.LiveView.TerminalComponent do
      |> assign(:theme_css, nil)}
   end
 
+  @doc """
+  Updates the component state with new assigns from the parent LiveView.
+
+  ## Assigns
+
+  Required:
+  - `:id` - Unique identifier for this component instance
+
+  Optional:
+  - `:buffer` - Terminal buffer to render (creates blank if not provided)
+  - `:theme` - Theme atom or custom theme map (default: `:synthwave84`)
+  - `:width` - Terminal width in characters (default: 80)
+  - `:height` - Terminal height in characters (default: 24)
+  - `:crt_mode` - Enable CRT scanline effects (default: false)
+  - `:high_contrast` - Enable high contrast mode (default: false)
+  - `:aria_label` - ARIA label for accessibility (default: "Interactive terminal")
+  - `:on_keypress` - Event name for keyboard events (optional)
+  - `:on_cell_click` - Event name for cell click events (optional)
+
+  ## Performance
+
+  - Only regenerates theme CSS when theme changes
+  - Uses renderer's virtual DOM diffing for efficient updates
+  - Caches common character/style combinations
+  """
   @impl true
   def update(assigns, socket) do
     # Extract configuration
@@ -167,6 +199,20 @@ defmodule RaxolWeb.LiveView.TerminalComponent do
      |> assign(:on_cell_click, Map.get(assigns, :on_cell_click))}
   end
 
+  @doc """
+  Renders the terminal component HTML.
+
+  Outputs a wrapper div with:
+  - Scoped theme CSS injected as <style> tag
+  - Base CSS for terminal grid layout
+  - CRT mode and high contrast class modifiers
+  - ARIA attributes for accessibility
+  - Keyboard and mouse event handlers
+  - Rendered terminal HTML from buffer
+
+  The rendered HTML uses character-perfect 1ch grid alignment
+  with monospace fonts for pixel-perfect terminal display.
+  """
   @impl true
   def render(assigns) do
     ~H"""
@@ -258,6 +304,22 @@ defmodule RaxolWeb.LiveView.TerminalComponent do
     """
   end
 
+  @doc """
+  Handles terminal events (keyboard and cell clicks).
+
+  ## Events
+
+  ### "keypress"
+  When `:on_keypress` assign is set, sends a message to the parent
+  LiveView in the format `{:terminal_keypress, component_id, key}`.
+
+  ### "cell_click"
+  When `:on_cell_click` assign is set, sends a message to the parent
+  LiveView in the format `{:terminal_cell_click, component_id, row, col}`.
+
+  The parent LiveView should implement handlers for these messages to
+  process user interactions with the terminal.
+  """
   @impl true
   def handle_event("keypress", %{"key" => key}, socket) do
     if socket.assigns.on_keypress do
@@ -267,6 +329,7 @@ defmodule RaxolWeb.LiveView.TerminalComponent do
     {:noreply, socket}
   end
 
+  @impl true
   def handle_event("cell_click", %{"row" => row, "col" => col}, socket) do
     if socket.assigns.on_cell_click do
       send(self(), {:terminal_cell_click, socket.assigns.id, row, col})
@@ -277,6 +340,8 @@ defmodule RaxolWeb.LiveView.TerminalComponent do
 
   # Helpers
 
+  @doc false
+  @spec create_blank_buffer(integer(), integer()) :: map()
   defp create_blank_buffer(width, height) do
     lines =
       for _ <- 1..height do
