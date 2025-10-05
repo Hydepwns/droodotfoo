@@ -1,5 +1,6 @@
 // MonospaceGrid is not used in this simplified hook
 // import MonospaceGrid from './terminal_grid';
+import { STLViewerHook } from './hooks/stl_viewer.ts';
 
 const TerminalHook = {
   mounted() {
@@ -28,6 +29,15 @@ const TerminalHook = {
     this.applyTheme(storedTheme);
     // Send to server
     this.pushEvent('set_theme', { theme: storedTheme });
+
+    // Load terminal visibility preference from localStorage
+    const storedTerminalVisible = localStorage.getItem('terminal_visible');
+    if (storedTerminalVisible !== null) {
+      const terminalVisible = storedTerminalVisible === 'true';
+      console.log('Loaded terminal visibility from localStorage:', terminalVisible);
+      // Send to server to initialize state
+      this.pushEvent('set_terminal_visible', { visible: terminalVisible });
+    }
 
     // Focus on the terminal wrapper to capture keyboard events
     this.el.setAttribute('tabindex', '0');
@@ -140,6 +150,13 @@ const TerminalHook = {
       // Save to localStorage
       localStorage.setItem('terminal_theme', theme);
     });
+
+    // Handle terminal visibility changes from server
+    this.handleEvent('save_terminal_pref', ({ visible }) => {
+      console.log('Terminal visibility changed:', visible);
+      // Save to localStorage for session persistence
+      localStorage.setItem('terminal_visible', visible);
+    });
   },
 
   // Apply theme to the terminal wrapper
@@ -175,5 +192,6 @@ const TerminalHook = {
 
 // Export all hooks
 export default {
-  TerminalHook
+  TerminalHook,
+  STLViewerHook
 };
