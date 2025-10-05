@@ -9,9 +9,9 @@ defmodule Droodotfoo.BootSequence do
 
   @boot_steps [
     {"RAXOL TERMINAL v#{@version}", 100},
-    {"[OK] Initializing kernel...", 300},
-    {"[OK] Loading modules...", 400},
-    {"[OK] Starting Phoenix LiveView...", 350},
+    {"[OK] Initializing kernel...", 150},
+    {"[OK] Loading modules...", 250},
+    {"[OK] Starting Phoenix LiveView...", 275},
     {"[OK] Connecting WebSocket...", 300},
     {"[OK] Ready.", 200}
   ]
