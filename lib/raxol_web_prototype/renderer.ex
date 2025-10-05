@@ -66,12 +66,12 @@ defmodule RaxolWeb.Renderer do
     case renderer.previous_buffer do
       nil ->
         # First render - generate full HTML
-        html = render_full_buffer(buffer, renderer)
+        {html, updated_renderer} = render_full_buffer(buffer, renderer)
         new_renderer = %{
-          renderer
+          updated_renderer
           | previous_buffer: buffer,
             previous_html: html,
-            render_count: renderer.render_count + 1
+            render_count: updated_renderer.render_count + 1
         }
 
         {html, new_renderer}
@@ -83,13 +83,13 @@ defmodule RaxolWeb.Renderer do
           {renderer.previous_html, renderer}
         else
           # Changes detected - use smart diffing
-          {html, new_renderer} = render_with_smart_diff(buffer, prev_buffer, renderer)
+          {html, updated_renderer} = render_with_smart_diff(buffer, prev_buffer, renderer)
 
           final_renderer = %{
-            new_renderer
+            updated_renderer
             | previous_buffer: buffer,
               previous_html: html,
-              render_count: renderer.render_count + 1
+              render_count: updated_renderer.render_count + 1
           }
 
           {html, final_renderer}
@@ -131,13 +131,26 @@ defmodule RaxolWeb.Renderer do
   # Private Implementation
 
   defp render_full_buffer(buffer, renderer) do
-    buffer
-    |> get_buffer_lines()
-    |> Enum.with_index()
-    |> Enum.map(fn {line, line_idx} ->
-      line_to_html_optimized(line, line_idx, renderer)
-    end)
-    |> wrap_in_grid_container()
+    # Render all lines and collect cache stats
+    {lines_html, total_hits, total_misses} =
+      buffer
+      |> get_buffer_lines()
+      |> Enum.with_index()
+      |> Enum.reduce({[], 0, 0}, fn {line, line_idx}, {html_acc, hits_acc, misses_acc} ->
+        {line_html, hits, misses} = line_to_html_optimized(line, line_idx, renderer)
+        {[line_html | html_acc], hits_acc + hits, misses_acc + misses}
+      end)
+
+    html = wrap_in_grid_container(Enum.reverse(lines_html))
+
+    # Update renderer with cache stats
+    updated_renderer = %{
+      renderer
+      | cache_hits: renderer.cache_hits + total_hits,
+        cache_misses: renderer.cache_misses + total_misses
+    }
+
+    {html, updated_renderer}
   end
 
   defp render_with_smart_diff(buffer, prev_buffer, renderer) do
@@ -149,12 +162,10 @@ defmodule RaxolWeb.Renderer do
 
     if length(changed_lines) > div(length(current_lines), 3) do
       # More than 1/3 of lines changed - full render is faster
-      html = render_full_buffer(buffer, renderer)
-      {html, renderer}
+      render_full_buffer(buffer, renderer)
     else
       # Render only changed lines and patch
-      html = patch_html_with_changes(current_lines, changed_lines, renderer)
-      {html, renderer}
+      patch_html_with_changes(current_lines, changed_lines, renderer)
     end
   end
 
@@ -169,27 +180,45 @@ defmodule RaxolWeb.Renderer do
 
   defp patch_html_with_changes(current_lines, _changed_lines, renderer) do
     # Always do full render (patch-based rendering would need client-side JS support)
-    current_lines
-    |> Enum.with_index()
-    |> Enum.map(fn {line, line_idx} ->
-      line_to_html_optimized(line, line_idx, renderer)
-    end)
-    |> wrap_in_grid_container()
+    {lines_html, total_hits, total_misses} =
+      current_lines
+      |> Enum.with_index()
+      |> Enum.reduce({[], 0, 0}, fn {line, line_idx}, {html_acc, hits_acc, misses_acc} ->
+        {line_html, hits, misses} = line_to_html_optimized(line, line_idx, renderer)
+        {[line_html | html_acc], hits_acc + hits, misses_acc + misses}
+      end)
+
+    html = wrap_in_grid_container(Enum.reverse(lines_html))
+
+    # Update renderer with cache stats
+    updated_renderer = %{
+      renderer
+      | cache_hits: renderer.cache_hits + total_hits,
+        cache_misses: renderer.cache_misses + total_misses
+    }
+
+    {html, updated_renderer}
   end
 
   # Optimized line rendering using caches
   defp line_to_html_optimized(line, _line_idx, renderer) do
     cells = line.cells
 
-    # Use IO.iodata for efficient string building
-    cell_html =
-      cells
-      |> Enum.map(fn cell ->
-        cell_to_html_cached(cell, renderer)
+    # Use IO.iodata for efficient string building and track cache stats
+    {cell_html, hits, misses} =
+      Enum.reduce(cells, {[], 0, 0}, fn cell, {html_acc, hits_acc, misses_acc} ->
+        {cell_html, hit?} = cell_to_html_cached(cell, renderer)
+
+        if hit? do
+          {[cell_html | html_acc], hits_acc + 1, misses_acc}
+        else
+          {[cell_html | html_acc], hits_acc, misses_acc + 1}
+        end
       end)
 
     # Build line HTML efficiently
-    [~s(<div class="raxol-line">), cell_html, ~s(</div>)]
+    line_html = [~s(<div class="raxol-line">), Enum.reverse(cell_html), ~s(</div>)]
+    {line_html, hits, misses}
   end
 
   defp cell_to_html_cached(cell, renderer) do
@@ -198,12 +227,12 @@ defmodule RaxolWeb.Renderer do
 
     case Map.get(renderer.html_char_cache, cache_key) do
       nil ->
-        # Generate HTML for this cell
-        generate_cell_html(cell)
+        # Cache miss - generate HTML for this cell
+        {generate_cell_html(cell), false}
 
       cached_html ->
-        # Return cached HTML
-        cached_html
+        # Cache hit - return cached HTML
+        {cached_html, true}
     end
   end
 
