@@ -328,19 +328,21 @@ defmodule Droodotfoo.Raxol.Renderer do
   defp draw_content(buffer, :projects, _state) do
     # Main projects content with three sections
     project_lines = [
-      "┌─ Demo Projects ─────────────────────────────────────────────────────┐",
+      "┌─ Terminal droo.foo System ──────────────────────────────────────────┐",
       "│                                                                     │",
-      "│  > STL Viewer Demo          localhost:4000/dev/stl-viewer-demo     │",
-      "│    Interactive 3D model viewer with HUD overlay                    │",
-      "│    [RaxolWeb] [Three.js] [LiveView] [STL]                          │",
+      "│  Projects                                                           │",
       "│                                                                     │",
-      "│  > RaxolWeb Demo            localhost:4000/dev/raxol-demo          │",
-      "│    Terminal UI framework demonstration                             │",
-      "│    [Elixir] [Phoenix] [LiveView] [Terminal]                        │",
+      "│  > Real-time Collaboration Platform                                 │",
+      "│    Distributed systems with CRDT-based sync                        │",
+      "│    [Elixir] [Phoenix] [LiveView] [Distributed]                     │",
       "│                                                                     │",
-      "│  > RaxolWeb Comparison      localhost:4000/dev/raxol-comparison    │",
-      "│    Side-by-side renderer performance comparison                    │",
-      "│    [Benchmark] [Virtual DOM] [Diffing]                             │",
+      "│  > Terminal UI Framework                                            │",
+      "│    60fps terminal rendering with vim keybindings                   │",
+      "│    [Accessibility] [Virtual DOM] [Performance]                     │",
+      "│                                                                     │",
+      "│  > Blog Publishing System                                           │",
+      "│    Obsidian -> Phoenix publishing pipeline                         │",
+      "│    [Content Management] [Markdown] [API]                           │",
       "│                                                                     │",
       "└─────────────────────────────────────────────────────────────────────┘",
       "┌─ Recent Activity ───────────────────────────────────────────────────┐",
@@ -468,41 +470,6 @@ defmodule Droodotfoo.Raxol.Renderer do
     ]
 
     draw_box_at(buffer, ssh_lines, 35, 13)
-  end
-
-  defp draw_content(buffer, :stl_viewer, state) do
-    viewer_state = state.stl_viewer_state || Droodotfoo.StlViewerState.new()
-    info_lines = Droodotfoo.StlViewerState.format_model_info(viewer_state)
-    status = Droodotfoo.StlViewerState.status_message(viewer_state)
-
-    # Build the viewer HUD overlay
-    viewer_lines =
-      [
-        "┌─ STL Viewer ──────────────────────────────────────────────────┐",
-        "│                                                               │",
-        "│  #{String.pad_trailing(status, 60)} │"
-      ] ++
-        Enum.map(info_lines, fn line ->
-          "│  #{String.pad_trailing(line, 60)} │"
-        end) ++
-        [
-          "│                                                               │",
-          "│  Controls: j/k rotate • h/l zoom • r reset • m mode • q quit  │",
-          "│                                                               │",
-          "│  ┌─ 3D Viewport ────────────────────────────────────────────┐ │",
-          "│  │                                                          │ │",
-          "│  │                                                          │ │",
-          "│  │                                                          │ │",
-          "│  │                   [DROO.FOO]                             │ │",
-          "│  │                                                          │ │",
-          "│  │                                                          │ │",
-          "│  │                                                          │ │",
-          "│  └──────────────────────────────────────────────────────────┘ │",
-          "│                                                               │",
-          "└───────────────────────────────────────────────────────────────┘"
-        ]
-
-    draw_box_at(buffer, viewer_lines, 35, 13)
   end
 
   defp draw_content(buffer, :export_markdown, _state) do

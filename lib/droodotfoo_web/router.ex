@@ -46,9 +46,6 @@ defmodule DroodotfooWeb.Router do
       pipe_through :browser
 
       live_dashboard "/dashboard", metrics: DroodotfooWeb.Telemetry
-      live "/raxol-demo", DroodotfooWeb.RaxolDemoLive
-      live "/raxol-comparison", DroodotfooWeb.RaxolComparisonLive
-      live "/stl-viewer-demo", DroodotfooWeb.STLViewerDemoLive
     end
   end
 end
