@@ -729,6 +729,60 @@ defmodule Droodotfoo.Terminal.Commands do
   def github([], state), do: launch_plugin("github", state)
   def gh(args, state), do: github(args, state)
 
+  # Project commands
+  def project([], state) do
+    # Go to projects section
+    {:ok, "Navigating to projects...", %{state | current_section: :projects}}
+  end
+
+  def project([project_name], state) do
+    # Find project by name
+    projects = Droodotfoo.Projects.all()
+
+    matching_project =
+      Enum.find_index(projects, fn p ->
+        String.downcase(p.name) =~ String.downcase(project_name) or
+          Atom.to_string(p.id) == String.downcase(project_name)
+      end)
+
+    case matching_project do
+      nil ->
+        {:error, "Project not found: #{project_name}"}
+
+      idx ->
+        {:ok, "Opening project: #{Enum.at(projects, idx).name}",
+         %{state | current_section: :projects, selected_project_index: idx, project_detail_view: true}}
+    end
+  end
+
+  def projects(_state) do
+    # List all projects
+    projects = Droodotfoo.Projects.all()
+
+    output =
+      projects
+      |> Enum.with_index()
+      |> Enum.map(fn {p, idx} ->
+        status = case p.status do
+          :active -> "[ACTIVE]"
+          :completed -> "[COMPLETED]"
+          :archived -> "[ARCHIVED]"
+        end
+        "#{idx + 1}. #{p.name} #{status}\n   #{p.tagline}"
+      end)
+      |> Enum.join("\n\n")
+
+    {:ok, "Portfolio Projects:\n\n#{output}\n\nUse 'project <name>' to view details"}
+  end
+
+  def charts(_state) do
+    # Display ASCII chart showcase
+    output = Droodotfoo.AsciiChart.showcase()
+    |> Enum.join("\n")
+
+    {:ok, output}
+  end
+
   def conway([], state), do: launch_plugin("conway", state)
   def life(args, state), do: conway(args, state)
 

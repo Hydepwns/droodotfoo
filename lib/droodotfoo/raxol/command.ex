@@ -3,7 +3,7 @@ defmodule Droodotfoo.Raxol.Command do
   Handles command mode input and command execution.
   """
 
-  alias Droodotfoo.Terminal.CommandParser
+  alias Droodotfoo.Terminal.{CommandParser, CommandRegistry}
   alias Droodotfoo.Terminal.Commands.Stl, as: StlCommands
 
   @doc """
@@ -359,25 +359,8 @@ defmodule Droodotfoo.Raxol.Command do
     %{
       help: """
       Available Commands:
-      :help - Show this help menu
-      :ls - List available sections
-      :cat <sec> - Display section content
-      :clear - Clear screen
-      :matrix - Matrix rain effect
-      :perf - Performance metrics dashboard
-      :metrics - Alias for :perf
-      :theme <name> - Change color theme
-      :spotify - Spotify music player
-      :github - GitHub integration
-      :tetris - Classic Tetris game
-      :2048 - 2048 puzzle game
-      :wordle - Wordle word game
-      :conway - Conway's Game of Life
-      /query - Search for content
-      :ssh - SSH simulation
-      :export fmt - Export resume (md/json/txt)
-      :analytics - View analytics dashboard
-      :stl load <url> - Load STL 3D model
+      #{Enum.join(CommandRegistry.help_text(), "\n      ")}
+
       Navigation:
       hjkl - Vim-style navigation
       Arrow keys - Alternative navigation
