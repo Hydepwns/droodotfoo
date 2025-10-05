@@ -273,6 +273,128 @@ nav a:hover {
 .p-1 { padding: var(--line-height); }
 .p-2 { padding: calc(var(--line-height) * 2); }
 
+/* Terminal Overlay and Toggle */
+.terminal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  background-color: var(--background-color);
+  opacity: 0;
+  transform: translateY(-100%);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.terminal-overlay.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.terminal-toggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10000;
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-bold);
+  font-size: 1.5rem;
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  border: var(--border-thickness) solid var(--border-color);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.terminal-toggle:hover {
+  background-color: var(--text-color);
+  color: var(--background-color);
+  transform: scale(1.1);
+}
+
+.theme-toggle {
+  position: fixed;
+  top: 4.5rem;
+  right: 1rem;
+  z-index: 10000;
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-bold);
+  font-size: 1.2rem;
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  border: var(--border-thickness) solid var(--border-color);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle:hover {
+  background-color: var(--text-color);
+  color: var(--background-color);
+  transform: scale(1.1);
+}
+
+/* Homepage Styles */
+.site-container {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.monospace-container header h1 {
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: calc(var(--line-height) * 2);
+}
+
+.monospace-container section {
+  margin-bottom: calc(var(--line-height) * 2);
+}
+
+.monospace-container article {
+  margin-bottom: var(--line-height);
+}
+
+.monospace-container article h3 {
+  margin-bottom: calc(var(--line-height) * 0.5);
+}
+
+.monospace-container article p {
+  margin-bottom: calc(var(--line-height) * 0.25);
+}
+
+.monospace-container a {
+  color: var(--text-color);
+  text-decoration: underline;
+}
+
+.monospace-container a:hover {
+  background-color: var(--text-color);
+  color: var(--background-color);
+}
+
+.monospace-container footer {
+  text-align: center;
+  margin-top: auto;
+  padding-top: calc(var(--line-height) * 2);
+  font-size: 0.875rem;
+  color: var(--text-color-alt);
+}
+
 /* Responsive */
 @media screen and (max-width: 768px) {
   :root {
@@ -286,5 +408,18 @@ nav a:hover {
 
   .monospace-grid {
     grid-template-columns: 1fr;
+  }
+
+  .terminal-toggle {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.25rem;
+  }
+
+  .theme-toggle {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1rem;
+    top: 3.5rem;
   }
 }
