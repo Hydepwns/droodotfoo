@@ -69,7 +69,11 @@ defmodule Droodotfoo.MixProject do
       {:stream_data, "~> 1.0", only: [:test, :dev]},
       # Code quality tools
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:ex_check, "~> 0.16.0", only: [:dev, :test], runtime: false}
+      {:ex_check, "~> 0.16.0", only: [:dev, :test], runtime: false},
+      # Blog system dependencies
+      {:mdex, "~> 0.2"},
+      {:yaml_elixir, "~> 2.9"},
+      {:plug_crypto, "~> 2.0"}
     ]
   end
 
