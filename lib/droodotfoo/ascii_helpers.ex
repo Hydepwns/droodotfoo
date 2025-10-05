@@ -151,4 +151,74 @@ defmodule Droodotfoo.AsciiHelpers do
       Enum.map(list, render_fn)
     end
   end
+
+  @doc """
+  Creates a box header with title and optional border style.
+
+  ## Examples
+
+      iex> Droodotfoo.AsciiHelpers.box_header("Title", 30)
+      "┌─ Title ────────────────────┐"
+
+      iex> Droodotfoo.AsciiHelpers.box_header("Test", 20, :simple)
+      "+-- Test --------------+"
+  """
+  def box_header(title, width, style \\ :rounded) do
+    {left, fill, right, prefix} =
+      case style do
+        :simple -> {"+", "-", "+", "-- "}
+        :double -> {"╔", "═", "╗", "═ "}
+        _ -> {"┌", "─", "┐", "─ "}
+      end
+
+    title_part = prefix <> title <> " "
+    remaining = width - String.length(title_part) - 2
+
+    left <> title_part <> String.duplicate(fill, max(0, remaining)) <> right
+  end
+
+  @doc """
+  Creates a box footer with optional border style.
+
+  ## Examples
+
+      iex> Droodotfoo.AsciiHelpers.box_footer(30)
+      "└────────────────────────────┘"
+
+      iex> Droodotfoo.AsciiHelpers.box_footer(20, :simple)
+      "+------------------+"
+  """
+  def box_footer(width, style \\ :rounded) do
+    {left, fill, right} =
+      case style do
+        :simple -> {"+", "-", "+"}
+        :double -> {"╚", "═", "╝"}
+        _ -> {"└", "─", "┘"}
+      end
+
+    left <> String.duplicate(fill, width - 2) <> right
+  end
+
+  @doc """
+  Creates a box content line with proper padding and borders.
+
+  ## Examples
+
+      iex> Droodotfoo.AsciiHelpers.box_content("Hello world", 30)
+      "│ Hello world                 │"
+
+      iex> Droodotfoo.AsciiHelpers.box_content("Test", 20, :simple)
+      "| Test               |"
+  """
+  def box_content(text, width, style \\ :rounded) do
+    border =
+      case style do
+        :simple -> "|"
+        :double -> "║"
+        _ -> "│"
+      end
+
+    content_width = width - 4
+    "#{border} #{String.pad_trailing(text, content_width)} #{border}"
+  end
 end
