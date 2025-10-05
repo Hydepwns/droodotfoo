@@ -47,7 +47,10 @@
       "Bash(MIX_ENV=test mix test test/raxol_web/themes_test.exs)",
       "Bash(MIX_ENV=test mix test test/raxol_web/renderer_test.exs)",
       "Bash(MIX_ENV=test mix test test/raxol_web/liveview/terminal_component_test.exs)",
-      "WebFetch(domain:api.github.com)"
+      "WebFetch(domain:api.github.com)",
+      "Read(//Users/droo/Documents/CODE/raxol/**)",
+      "Bash(mix format:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []
