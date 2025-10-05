@@ -80,13 +80,11 @@ defmodule Droodotfoo.Spotify.AsciiArt do
     max_items = Keyword.get(options, :max_items, 10)
     width = Keyword.get(options, :width, 78)
 
-    header = [
-      "┌─ Your Playlists " <> String.duplicate("─", width - 18) <> "┐"
-    ]
+    header = [AsciiHelpers.box_header("Your Playlists", width)]
 
     content =
       if Enum.empty?(playlists) do
-        ["│  No playlists found" <> String.duplicate(" ", width - 22) <> "│"]
+        [AsciiHelpers.box_content(" No playlists found", width)]
       else
         playlists
         |> Enum.take(max_items)
@@ -95,19 +93,12 @@ defmodule Droodotfoo.Spotify.AsciiArt do
           name = AsciiHelpers.truncate_text(playlist.name, width - 10)
           track_count = playlist.tracks.total
 
-          padding =
-            String.duplicate(
-              " ",
-              width - String.length("│ #{index}. #{name} (#{track_count} tracks)") - 1
-            )
-
-          "│ #{index}. #{name} (#{track_count} tracks)#{padding}│"
+          text = "#{index}. #{name} (#{track_count} tracks)"
+          AsciiHelpers.box_content(text, width)
         end)
       end
 
-    footer = [
-      "└" <> String.duplicate("─", width - 2) <> "┘"
-    ]
+    footer = [AsciiHelpers.box_footer(width)]
 
     header ++ content ++ footer
   end
@@ -118,13 +109,11 @@ defmodule Droodotfoo.Spotify.AsciiArt do
   def render_device_list(devices, options \\ []) do
     width = Keyword.get(options, :width, 78)
 
-    header = [
-      "┌─ Available Devices " <> String.duplicate("─", width - 21) <> "┐"
-    ]
+    header = [AsciiHelpers.box_header("Available Devices", width)]
 
     content =
       if Enum.empty?(devices) do
-        ["│  No devices found" <> String.duplicate(" ", width - 20) <> "│"]
+        [AsciiHelpers.box_content(" No devices found", width)]
       else
         devices
         |> Enum.with_index(1)
@@ -135,14 +124,11 @@ defmodule Droodotfoo.Spotify.AsciiArt do
           volume = if device.volume_percent, do: " #{device.volume_percent}%", else: ""
 
           text = "#{status} #{index}. #{name} (#{type})#{volume}"
-          padding = String.duplicate(" ", width - String.length("│ #{text}") - 1)
-          "│ #{text}#{padding}│"
+          AsciiHelpers.box_content(text, width)
         end)
       end
 
-    footer = [
-      "└" <> String.duplicate("─", width - 2) <> "┘"
-    ]
+    footer = [AsciiHelpers.box_footer(width)]
 
     header ++ content ++ footer
   end
@@ -154,14 +140,12 @@ defmodule Droodotfoo.Spotify.AsciiArt do
     max_items = Keyword.get(options, :max_items, 10)
     width = Keyword.get(options, :width, 78)
 
-    header = [
-      "┌─ Search Results: \"#{AsciiHelpers.truncate_text(query, 20)}\" " <>
-        String.duplicate("─", max(0, width - 30 - String.length(query))) <> "┐"
-    ]
+    truncated_query = AsciiHelpers.truncate_text(query, 20)
+    header = [AsciiHelpers.box_header("Search Results: \"#{truncated_query}\"", width)]
 
     content =
       if Enum.empty?(results) do
-        ["│  No results found" <> String.duplicate(" ", width - 20) <> "│"]
+        [AsciiHelpers.box_content(" No results found", width)]
       else
         results
         |> Enum.take(max_items)
@@ -171,9 +155,7 @@ defmodule Droodotfoo.Spotify.AsciiArt do
         end)
       end
 
-    footer = [
-      "└" <> String.duplicate("─", width - 2) <> "┘"
-    ]
+    footer = [AsciiHelpers.box_footer(width)]
 
     header ++ content ++ footer
   end
@@ -254,8 +236,7 @@ defmodule Droodotfoo.Spotify.AsciiArt do
       end
 
     truncated = AsciiHelpers.truncate_text(text, width - 8)
-    padding = String.duplicate(" ", width - String.length("│ #{index}. #{truncated}") - 1)
-    "│ #{index}. #{truncated}#{padding}│"
+    AsciiHelpers.box_content("#{index}. #{truncated}", width)
   end
 
 end

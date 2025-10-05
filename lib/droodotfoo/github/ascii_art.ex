@@ -285,8 +285,8 @@ defmodule Droodotfoo.Github.AsciiArt do
   defp format_relative_time(datetime_string) when is_binary(datetime_string) do
     case DateTime.from_iso8601(datetime_string) do
       {:ok, dt, _} ->
-        diff = DateTime.diff(DateTime.utc_now(), dt)
-        AsciiHelpers.format_relative_time(diff)
+        diff_seconds = DateTime.diff(DateTime.utc_now(), dt)
+        AsciiHelpers.format_relative_time(diff_seconds)
 
       _ ->
         "unknown"
