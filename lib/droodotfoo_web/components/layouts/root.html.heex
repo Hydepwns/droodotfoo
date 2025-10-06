@@ -106,14 +106,39 @@
       });
 
       // Keyboard shortcut 'T' for theme toggle
+      // Use capturing phase to intercept before LiveView processes it
+      let lastThemeChange = 0;
+      const themeChangeDelay = 100; // Minimum 100ms between theme changes
+
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'T' && !e.target.matches('input, textarea, select')) {
-          const button = document.getElementById('theme-toggle');
-          if (button) {
-            button.click();
+        // Allow T key for theme toggle from anywhere except regular input fields
+        // Terminal input (id="terminal-input") is allowed to trigger theme toggle
+        const isRegularInput = e.target.matches('input, textarea, select') && e.target.id !== 'terminal-input';
+
+        if (e.key === 'T' && !isRegularInput && !e.repeat) {
+          const now = Date.now();
+          if (now - lastThemeChange >= themeChangeDelay) {
+            lastThemeChange = now;
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Cycle theme directly instead of clicking button for faster response
+            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+            const newTheme = themes[currentThemeIndex];
+
+            // Remove all theme classes
+            themes.forEach(t => document.documentElement.classList.remove(t));
+
+            // Add new theme class
+            document.documentElement.classList.add(newTheme);
+
+            // Store in localStorage
+            localStorage.setItem('phx:theme', newTheme);
+
+            console.log('Theme changed to:', themeNames[currentThemeIndex], '(' + newTheme + ')');
           }
         }
-      });
+      }, true); // true = use capturing phase
     </script>
   </body>
 </html>
