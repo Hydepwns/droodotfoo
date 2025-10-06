@@ -75,11 +75,13 @@ defmodule Droodotfoo.Raxol.Renderer do
       {" Experience              ", :experience, 3},
       {" Contact                 ", :contact, 4},
       {:section_header, "Tools", nil},
-      {" STL Viewer              ", :stl_viewer, 5}
+      {" Spotify                 ", :spotify, 5},
+      {" STL Viewer              ", :stl_viewer, 6},
+      {" Web3                    ", :web3, 7}
     ]
 
-    # Box now has an extra line for the Tools section header
-    buffer = TerminalBridge.draw_box(buffer, 0, nav_y, 30, 10, :single)
+    # Box now has extra lines for the Tools section header, Spotify, STL Viewer, and Web3
+    buffer = TerminalBridge.draw_box(buffer, 0, nav_y, 30, 12, :single)
     buffer = TerminalBridge.write_at(buffer, 2, nav_y, "─ Navigation ──────────────")
 
     nav_items
@@ -689,7 +691,395 @@ defmodule Droodotfoo.Raxol.Renderer do
     |> then(&draw_box_at(buffer, &1, 35, 13))
   end
 
+  defp draw_content(buffer, :spotify, state) do
+    alias Droodotfoo.Spotify.Manager
+
+    # Check auth status
+    auth_status = Manager.auth_status()
+
+    spotify_lines = case auth_status do
+      :authenticated ->
+        draw_spotify_view(state)
+
+      _ ->
+        draw_spotify_auth_prompt()
+    end
+
+    draw_box_at(buffer, spotify_lines, 35, 13)
+  end
+
+  defp draw_content(buffer, :web3, state) do
+    # Check wallet connection status
+    web3_lines = if state.web3_wallet_connected do
+      draw_web3_connected(state)
+    else
+      draw_web3_connect_prompt(state)
+    end
+
+    draw_box_at(buffer, web3_lines, 35, 13)
+  end
+
   defp draw_content(buffer, _, _state), do: buffer
+
+  # Spotify helper functions
+
+  defp draw_spotify_auth_prompt do
+    [
+      "┌─ Spotify ───────────────────────────────────────────────────────────┐",
+      "│                                                                     │",
+      "│  Status: [NOT AUTHENTICATED]                                       │",
+      "│                                                                     │",
+      "│  To use Spotify features, authenticate:                            │",
+      "│                                                                     │",
+      "│  ┌──────────────────────────────────────────────────────────────┐  │",
+      "│  │  1. Run: :spotify auth                                       │  │",
+      "│  │     - Opens browser automatically                            │  │",
+      "│  │     - Log in with your Spotify account                       │  │",
+      "│  │     - Grant access to droo.foo                               │  │",
+      "│  └──────────────────────────────────────────────────────────────┘  │",
+      "│                                                                     │",
+      "│  Or visit manually:                                                 │",
+      "│    http://localhost:4000/auth/spotify                              │",
+      "│                                                                     │",
+      "│  Features available after auth:                                    │",
+      "│    [>] Now Playing Display with real-time progress                 │",
+      "│    [>] Playback Controls (play/pause/next/prev/volume)             │",
+      "│    [>] Playlist Browser                                            │",
+      "│    [>] Device Control                                              │",
+      "│    [>] Search & Play                                               │",
+      "│                                                                     │",
+      "│  Press 'a' to start authentication                                 │",
+      "│                                                                     │",
+      "└─────────────────────────────────────────────────────────────────────┘"
+    ]
+  end
+
+  defp draw_spotify_dashboard do
+    alias Droodotfoo.Spotify.Manager
+
+    # Get current playback
+    current_track = Manager.current_track()
+    playback = Manager.playback_state()
+    loading = Manager.loading?()
+    last_error = Manager.last_error()
+
+    # Determine playback state icon
+    state_icon = cond do
+      loading -> "[~]"
+      playback && playback.is_playing -> "[>]"
+      playback && !playback.is_playing -> "[||]"
+      true -> "[--]"
+    end
+
+    # Connection status
+    status_line = cond do
+      loading ->
+        "│  Status: [LOADING...]                                         │"
+
+      last_error ->
+        error_msg = String.slice(to_string(last_error), 0..40)
+        "│  Status: [ERROR: #{String.pad_trailing(error_msg, 40)}] │"
+
+      true ->
+        "│  Status: [CONNECTED]                                          │"
+    end
+
+    now_playing = case current_track do
+      %{name: name, artists: artists} ->
+        artist_names = Enum.map_join(artists, ", ", & &1["name"])
+        truncated_name = String.slice(name, 0..40)
+        truncated_artist = String.slice(artist_names, 0..40)
+
+        # Build progress bar if we have playback data
+        progress_bar = build_progress_bar(playback)
+
+        [
+          "│  Now Playing: #{state_icon}                                         │",
+          "│    #{String.pad_trailing(truncated_name, 63)}│",
+          "│    #{String.pad_trailing(truncated_artist, 63)}│",
+          "│                                                                     │",
+          "│  #{progress_bar} │"
+        ]
+
+      _ ->
+        [
+          "│  Now Playing: #{state_icon} --                                      │",
+          "│                                                                     │"
+        ]
+    end
+
+    # Playback controls
+    controls = [
+      "│                                                                     │",
+      "│      [<< PREV]       [SPACE PLAY/PAUSE]       [NEXT >>]            │"
+    ]
+
+    # Last update timestamp
+    last_update_line = case Manager.playback_state() do
+      %{timestamp: ts} when not is_nil(ts) ->
+        time_ago = format_time_ago(ts)
+        "│  Last refresh: #{String.pad_trailing(time_ago, 50)}│"
+
+      _ ->
+        "│  Last refresh: --                                              │"
+    end
+
+    header = [
+      "┌─ Spotify ───────────────────────────────────────────────────────────┐",
+      "│                                                                     │",
+      status_line,
+      last_update_line,
+      "│                                                                     │"
+    ]
+
+    buttons = [
+      "│                                                                     │",
+      "│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐             │",
+      "│  │ [P]LAYLISTS  │  │  [D]EVICES   │  │   [S]EARCH   │             │",
+      "│  └──────────────┘  └──────────────┘  └──────────────┘             │",
+      "│                                                                     │",
+      "│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐             │",
+      "│  │ [C]ONTROLS   │  │  [M]COMPACT  │  │  [R]EFRESH   │             │",
+      "│  └──────────────┘  └──────────────┘  └──────────────┘             │",
+      "│                                                                     │",
+      "│  Quick: [SPACE]Play/Pause [[]Back []]Next [=/-]Volume              │",
+      "│                                                                     │",
+      "└─────────────────────────────────────────────────────────────────────┘"
+    ]
+
+    header ++ now_playing ++ controls ++ buttons
+  end
+
+  defp draw_spotify_view(state) do
+    case Map.get(state, :spotify_mode, :dashboard) do
+      :dashboard -> draw_spotify_dashboard()
+      :playlists -> draw_spotify_playlists()
+      :devices -> draw_spotify_devices()
+      :search -> draw_spotify_search()
+      :controls -> draw_spotify_controls()
+      _ -> draw_spotify_dashboard()
+    end
+  end
+
+  defp draw_spotify_playlists do
+    alias Droodotfoo.Spotify.Manager
+
+    playlists = Manager.playlists() || []
+
+    header = [
+      "┌─ Spotify > Playlists ───────────────────────────────────────────────┐",
+      "│                                                                     │"
+    ]
+
+    playlist_lines = if Enum.empty?(playlists) do
+      [
+        "│  No playlists found.                                               │",
+        "│                                                                     │",
+        "│  Loading playlists...                                              │"
+      ]
+    else
+      playlists
+      |> Enum.take(15)
+      |> Enum.map(fn playlist ->
+        name = String.slice(playlist["name"] || "Untitled", 0..55)
+        track_count = playlist["tracks"]["total"] || 0
+        info = "#{track_count} tracks"
+        "│  > #{String.pad_trailing(name, 50)} #{String.pad_trailing(info, 10)}│"
+      end)
+    end
+
+    footer = [
+      "│                                                                     │",
+      "│  [ESC] Back to Dashboard  [ENTER] Play Playlist                    │",
+      "│                                                                     │",
+      "└─────────────────────────────────────────────────────────────────────┘"
+    ]
+
+    header ++ playlist_lines ++ footer
+  end
+
+  defp draw_spotify_devices do
+    alias Droodotfoo.Spotify.Manager
+
+    playback = Manager.playback_state()
+    current_device = playback && playback.device
+
+    header = [
+      "┌─ Spotify > Devices ─────────────────────────────────────────────────┐",
+      "│                                                                     │"
+    ]
+
+    device_lines = if current_device do
+      device_name = String.slice(current_device["name"] || "Unknown", 0..40)
+      device_type = String.slice(current_device["type"] || "Unknown", 0..15)
+      volume = current_device["volume_percent"] || 0
+      is_active = if current_device["is_active"], do: "[ACTIVE]", else: ""
+
+      [
+        "│  Current Device:                                                   │",
+        "│    #{String.pad_trailing(device_name, 63)}│",
+        "│    Type: #{String.pad_trailing(device_type, 56)}│",
+        "│    Volume: #{String.pad_trailing("#{volume}%", 54)}│",
+        "│    #{String.pad_trailing(is_active, 63)}│"
+      ]
+    else
+      [
+        "│  No active device found.                                           │",
+        "│                                                                     │",
+        "│  Please start playback on a Spotify device.                        │"
+      ]
+    end
+
+    footer = [
+      "│                                                                     │",
+      "│  [ESC] Back to Dashboard  [=/-] Adjust Volume                      │",
+      "│                                                                     │",
+      "└─────────────────────────────────────────────────────────────────────┘"
+    ]
+
+    header ++ device_lines ++ footer
+  end
+
+  defp draw_spotify_search do
+    header = [
+      "┌─ Spotify > Search ──────────────────────────────────────────────────┐",
+      "│                                                                     │",
+      "│  Search Mode                                                        │",
+      "│                                                                     │",
+      "│  Enter search query:                                                │",
+      "│  ┌──────────────────────────────────────────────────────────────┐  │",
+      "│  │ _                                                            │  │",
+      "│  └──────────────────────────────────────────────────────────────┘  │",
+      "│                                                                     │",
+      "│  Results will appear here...                                        │",
+      "│                                                                     │",
+      "│  Search for:                                                        │",
+      "│    - Tracks                                                         │",
+      "│    - Albums                                                         │",
+      "│    - Artists                                                        │",
+      "│    - Playlists                                                      │",
+      "│                                                                     │",
+      "│  [ESC] Back to Dashboard  [ENTER] Search                           │",
+      "│                                                                     │",
+      "└─────────────────────────────────────────────────────────────────────┘"
+    ]
+
+    header
+  end
+
+  defp draw_spotify_controls do
+    alias Droodotfoo.Spotify.Manager
+
+    current_track = Manager.current_track()
+    playback = Manager.playback_state()
+
+    state_icon = cond do
+      playback && playback.is_playing -> "[>]"
+      playback && !playback.is_playing -> "[||]"
+      true -> "[--]"
+    end
+
+    progress_bar = build_progress_bar(playback)
+
+    now_playing = case current_track do
+      %{name: name, artists: artists} ->
+        artist_names = Enum.map_join(artists, ", ", & &1["name"])
+        truncated_name = String.slice(name, 0..50)
+        truncated_artist = String.slice(artist_names, 0..50)
+
+        [
+          "│  #{state_icon} #{String.pad_trailing(truncated_name, 61)}│",
+          "│    by #{String.pad_trailing(truncated_artist, 59)}│"
+        ]
+
+      _ ->
+        [
+          "│  #{state_icon} No track playing                                          │",
+          "│                                                                     │"
+        ]
+    end
+
+    header = [
+      "┌─ Spotify > Playback Controls ───────────────────────────────────────┐",
+      "│                                                                     │"
+    ]
+
+    controls = [
+      "│                                                                     │",
+      "│  #{progress_bar} │",
+      "│                                                                     │",
+      "│                  Playback Controls                                  │",
+      "│                                                                     │",
+      "│              ┌──────────────────────────────┐                       │",
+      "│              │   [[] PREVIOUS  [SPACE] PLAY │                       │",
+      "│              │   []] NEXT     [=/-] VOLUME  │                       │",
+      "│              └──────────────────────────────┘                       │",
+      "│                                                                     │"
+    ]
+
+    footer = [
+      "│  [ESC] Back to Dashboard  [R] Refresh                              │",
+      "│                                                                     │",
+      "└─────────────────────────────────────────────────────────────────────┘"
+    ]
+
+    header ++ now_playing ++ controls ++ footer
+  end
+
+  defp build_progress_bar(playback) do
+    case playback do
+      %{progress_ms: progress, duration_ms: duration} when progress > 0 and duration > 0 ->
+        # Calculate progress percentage
+        percentage = progress / duration
+        bar_width = 50
+        filled = round(percentage * bar_width)
+        empty = bar_width - filled
+
+        # Build bar with block characters
+        bar = String.duplicate("█", filled) <> String.duplicate("░", empty)
+
+        # Format time
+        current_time = format_time(progress)
+        total_time = format_time(duration)
+
+        time_str = "#{current_time} / #{total_time}"
+        padding = String.duplicate(" ", max(0, 67 - String.length(bar) - String.length(time_str) - 2))
+
+        "#{bar}  #{time_str}#{padding}"
+
+      _ ->
+        # No playback data
+        String.pad_trailing("--:-- / --:--", 67)
+    end
+  end
+
+  defp format_time(ms) when is_integer(ms) do
+    total_seconds = div(ms, 1000)
+    minutes = div(total_seconds, 60)
+    seconds = rem(total_seconds, 60)
+    "#{minutes}:#{String.pad_leading(Integer.to_string(seconds), 2, "0")}"
+  end
+
+  defp format_time(_), do: "--:--"
+
+  defp format_time_ago(timestamp) when is_integer(timestamp) do
+    now = System.system_time(:millisecond)
+    diff_ms = now - timestamp
+    diff_seconds = div(diff_ms, 1000)
+
+    cond do
+      diff_seconds < 10 -> "just now"
+      diff_seconds < 60 -> "#{diff_seconds}s ago"
+      diff_seconds < 3600 ->
+        minutes = div(diff_seconds, 60)
+        "#{minutes}m ago"
+      true ->
+        hours = div(diff_seconds, 3600)
+        "#{hours}h ago"
+    end
+  end
+
+  defp format_time_ago(_), do: "never"
 
   # Project view helper functions
 
@@ -919,4 +1309,124 @@ defmodule Droodotfoo.Raxol.Renderer do
     # Center the modal (start at column 2, row 0)
     draw_box_at(buffer, help_lines, 2, 0)
   end
+
+  # Web3 helper functions
+
+  defp draw_web3_connect_prompt(state) do
+    connecting = state.web3_connecting
+
+    status_line = if connecting do
+      "│  Status: [CONNECTING...]                                        │"
+    else
+      "│  Status: [NOT CONNECTED]                                        │"
+    end
+
+    [
+      "┌─ Web3 Wallet ───────────────────────────────────────────────────┐",
+      "│                                                                     │",
+      status_line,
+      "│                                                                     │",
+      "│  Connect your wallet to access Web3 features:                      │",
+      "│                                                                     │",
+      "│  ┌──────────────────────────────────────────────────────────────┐  │",
+      "│  │  Supported Wallets:                                          │  │",
+      "│  │    [>] MetaMask                                              │  │",
+      "│  │    [>] WalletConnect (coming soon)                           │  │",
+      "│  │    [>] Coinbase Wallet (coming soon)                         │  │",
+      "│  └──────────────────────────────────────────────────────────────┘  │",
+      "│                                                                     │",
+      "│  Commands:                                                          │",
+      "│    :web3 connect   - Connect MetaMask wallet                       │",
+      "│    :wallet         - Alias for :web3 connect                       │",
+      "│    :w3             - Short alias                                   │",
+      "│                                                                     │",
+      "│  Features available after connection:                               │",
+      "│    [>] ENS Name Resolution (vitalik.eth)                           │",
+      "│    [>] NFT Gallery Viewer                                          │",
+      "│    [>] Token Balances (ERC-20)                                     │",
+      "│    [>] Transaction History                                         │",
+      "│    [>] Smart Contract Interaction                                  │",
+      "│                                                                     │",
+      "└─────────────────────────────────────────────────────────────────────┘"
+    ]
+  end
+
+  defp draw_web3_connected(state) do
+    address = state.web3_wallet_address || "Unknown"
+    chain_id = state.web3_chain_id || 1
+
+    # Abbreviate address (0x1234...5678)
+    abbreviated_address = abbreviate_address(address)
+
+    # Get network name
+    network_name = get_network_name(chain_id)
+
+    # Try to resolve ENS name (if on mainnet)
+    ens_lines = if chain_id == 1 and address != "Unknown" do
+      case Droodotfoo.Web3.Manager.resolve_ens(address) do
+        {:ok, ens_name} when ens_name != address ->
+          [
+            "│  │                                                              │  │",
+            "│  │  ENS Name:                                                   │  │",
+            "│  │    #{String.pad_trailing(ens_name, 56)}│  │"
+          ]
+
+        _ ->
+          []
+      end
+    else
+      []
+    end
+
+    [
+      "┌─ Web3 Wallet ───────────────────────────────────────────────────┐",
+      "│                                                                     │",
+      "│  Status: [CONNECTED]                                                │",
+      "│                                                                     │",
+      "│  ┌──────────────────────────────────────────────────────────────┐  │",
+      "│  │  Wallet Address:                                             │  │",
+      "│  │    #{String.pad_trailing(abbreviated_address, 56)}│  │"
+    ] ++
+    ens_lines ++
+    [
+      "│  │                                                              │  │",
+      "│  │  Network:                                                    │  │",
+      "│  │    #{String.pad_trailing(network_name, 56)}│  │",
+      "│  └──────────────────────────────────────────────────────────────┘  │",
+      "│                                                                     │",
+      "│  Available Commands:                                                │",
+      "│    :web3 disconnect   - Disconnect wallet                          │",
+      "│    :ens <name>        - Resolve ENS name                           │",
+      "│    :nft list          - View your NFTs                             │",
+      "│    :tokens            - View token balances                        │",
+      "│    :tx history        - View transaction history                   │",
+      "│                                                                     │",
+      "│  Quick Actions:                                                     │",
+      "│    [D]isconnect  [E]NS  [N]FTs  [T]okens  [H]istory               │",
+      "│                                                                     │",
+      "└─────────────────────────────────────────────────────────────────────┘"
+    ]
+  end
+
+  defp abbreviate_address(address) when is_binary(address) do
+    if String.length(address) > 12 do
+      prefix = String.slice(address, 0..5)
+      suffix = String.slice(address, -4..-1)
+      "#{prefix}...#{suffix}"
+    else
+      address
+    end
+  end
+
+  defp abbreviate_address(_), do: "Unknown"
+
+  defp get_network_name(1), do: "Ethereum Mainnet"
+  defp get_network_name(5), do: "Goerli Testnet"
+  defp get_network_name(11155111), do: "Sepolia Testnet"
+  defp get_network_name(137), do: "Polygon Mainnet"
+  defp get_network_name(80001), do: "Mumbai Testnet"
+  defp get_network_name(42161), do: "Arbitrum One"
+  defp get_network_name(10), do: "Optimism"
+  defp get_network_name(8453), do: "Base"
+  defp get_network_name(chain_id), do: "Chain ID: #{chain_id}"
 end

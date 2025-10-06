@@ -88,18 +88,30 @@ defmodule Droodotfoo.Raxol.Navigation do
 
   # STL Viewer specific controls
   def handle_input("r", state) do
-    if state.current_section == :stl_viewer do
-      Map.put(state, :stl_viewer_action, {:reset, nil})
-    else
-      state
+    cond do
+      state.current_section == :spotify ->
+        # Refresh Spotify data
+        Map.put(state, :spotify_action, :refresh)
+
+      state.current_section == :stl_viewer ->
+        Map.put(state, :stl_viewer_action, {:reset, nil})
+
+      true ->
+        state
     end
   end
 
   def handle_input("m", state) do
-    if state.current_section == :stl_viewer do
-      Map.put(state, :stl_viewer_action, {:cycle_mode, nil})
-    else
-      state
+    cond do
+      state.current_section == :spotify ->
+        # Toggle compact mode
+        %{state | spotify_compact_mode: !state.spotify_compact_mode}
+
+      state.current_section == :stl_viewer ->
+        Map.put(state, :stl_viewer_action, {:cycle_mode, nil})
+
+      true ->
+        state
     end
   end
 
@@ -107,6 +119,97 @@ defmodule Droodotfoo.Raxol.Navigation do
     if state.current_section == :stl_viewer do
       # Exit viewer, return to home
       %{state | current_section: :home}
+    else
+      state
+    end
+  end
+
+  # Spotify specific controls
+  def handle_input("a", state) do
+    if state.current_section == :spotify do
+      Map.put(state, :spotify_action, :start_auth)
+    else
+      state
+    end
+  end
+
+  # Escape key - return to dashboard from Spotify sub-modes
+  def handle_input("Escape", state) do
+    if state.current_section == :spotify and state.spotify_mode != :dashboard do
+      %{state | spotify_mode: :dashboard}
+    else
+      state
+    end
+  end
+
+  def handle_input("p", state) do
+    if state.current_section == :spotify do
+      %{state | spotify_mode: :playlists}
+    else
+      state
+    end
+  end
+
+  def handle_input("d", state) do
+    if state.current_section == :spotify do
+      %{state | spotify_mode: :devices}
+    else
+      state
+    end
+  end
+
+  def handle_input("s", state) do
+    if state.current_section == :spotify do
+      %{state | spotify_mode: :search}
+    else
+      state
+    end
+  end
+
+  def handle_input("c", state) do
+    if state.current_section == :spotify do
+      %{state | spotify_mode: :controls}
+    else
+      state
+    end
+  end
+
+  # Spotify playback controls
+  def handle_input(" ", state) do
+    if state.current_section == :spotify do
+      Map.put(state, :spotify_action, :play_pause)
+    else
+      state
+    end
+  end
+
+  def handle_input("]", state) do
+    if state.current_section == :spotify do
+      Map.put(state, :spotify_action, :next_track)
+    else
+      state
+    end
+  end
+
+  def handle_input("[", state) do
+    if state.current_section == :spotify do
+      Map.put(state, :spotify_action, :previous_track)
+    else
+      state
+    end
+  end
+
+  def handle_input("=", state) do
+    if state.current_section == :spotify do
+      Map.put(state, :spotify_action, :volume_up)
+    else
+      state
+    end
+  end
+
+  def handle_input("-", state) do
+    if state.current_section == :spotify do
+      Map.put(state, :spotify_action, :volume_down)
     else
       state
     end
@@ -165,13 +268,15 @@ defmodule Droodotfoo.Raxol.Navigation do
     end
   end
 
-  # Number key shortcuts (1-6) - jump to menu item and select
+  # Number key shortcuts (1-8) - jump to menu item and select
   def handle_input("1", state), do: jump_to_and_select(state, 0)
   def handle_input("2", state), do: jump_to_and_select(state, 1)
   def handle_input("3", state), do: jump_to_and_select(state, 2)
   def handle_input("4", state), do: jump_to_and_select(state, 3)
   def handle_input("5", state), do: jump_to_and_select(state, 4)
   def handle_input("6", state), do: jump_to_and_select(state, 5)
+  def handle_input("7", state), do: jump_to_and_select(state, 6)
+  def handle_input("8", state), do: jump_to_and_select(state, 7)
 
   # Toggle vim mode with 'v' key
   def handle_input("v", state) do
@@ -197,7 +302,7 @@ defmodule Droodotfoo.Raxol.Navigation do
     try do
       section_atom = String.to_existing_atom(section_str)
 
-      if section_atom in state.navigation_items or section_atom in [:terminal, :search_results, :performance, :matrix, :ssh, :analytics, :help] do
+      if section_atom in state.navigation_items or section_atom in [:terminal, :search_results, :performance, :matrix, :ssh, :analytics, :help, :spotify] do
         %{state | current_section: section_atom}
       else
         state
@@ -208,10 +313,25 @@ defmodule Droodotfoo.Raxol.Navigation do
   end
 
   # Search navigation - next match with 'n'
+  # Also used for Spotify next track
   def handle_input("n", state) do
-    if state.current_section == :search_results do
-      updated_search = Droodotfoo.AdvancedSearch.next_match(state.search_state)
-      %{state | search_state: updated_search}
+    cond do
+      state.current_section == :search_results ->
+        updated_search = Droodotfoo.AdvancedSearch.next_match(state.search_state)
+        %{state | search_state: updated_search}
+
+      state.current_section == :spotify ->
+        Map.put(state, :spotify_action, :next_track)
+
+      true ->
+        state
+    end
+  end
+
+  # 'b' for Spotify previous track (back)
+  def handle_input("b", state) do
+    if state.current_section == :spotify do
+      Map.put(state, :spotify_action, :previous_track)
     else
       state
     end
