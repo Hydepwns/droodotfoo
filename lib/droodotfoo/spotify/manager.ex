@@ -15,7 +15,9 @@ defmodule Droodotfoo.Spotify.Manager do
     :current_track,
     :playback_state,
     :playlists,
-    :last_update
+    :last_update,
+    :loading,
+    :last_error
   ]
 
   # Client API
@@ -88,6 +90,53 @@ defmodule Droodotfoo.Spotify.Manager do
     GenServer.call(__MODULE__, {:control_playback, action})
   end
 
+  @doc """
+  Toggles play/pause based on current playback state.
+  """
+  def play_pause do
+    playback = playback_state()
+    action = case playback do
+      %{is_playing: true} -> :pause
+      _ -> :play
+    end
+    control_playback(action)
+  end
+
+  @doc """
+  Skips to the next track.
+  """
+  def next_track do
+    control_playback(:next)
+  end
+
+  @doc """
+  Skips to the previous track.
+  """
+  def previous_track do
+    control_playback(:previous)
+  end
+
+  @doc """
+  Adjusts volume up or down.
+  """
+  def adjust_volume(direction) when direction in [:up, :down] do
+    GenServer.call(__MODULE__, {:adjust_volume, direction})
+  end
+
+  @doc """
+  Gets loading state.
+  """
+  def loading? do
+    GenServer.call(__MODULE__, :loading)
+  end
+
+  @doc """
+  Gets last error if any.
+  """
+  def last_error do
+    GenServer.call(__MODULE__, :last_error)
+  end
+
   # Server Callbacks
 
   @impl true
@@ -101,7 +150,9 @@ defmodule Droodotfoo.Spotify.Manager do
       current_track: nil,
       playback_state: nil,
       playlists: [],
-      last_update: nil
+      last_update: nil,
+      loading: false,
+      last_error: nil
     }
 
     {:ok, state}
@@ -163,6 +214,16 @@ defmodule Droodotfoo.Spotify.Manager do
   end
 
   @impl true
+  def handle_call(:loading, _from, state) do
+    {:reply, state.loading, state}
+  end
+
+  @impl true
+  def handle_call(:last_error, _from, state) do
+    {:reply, state.last_error, state}
+  end
+
+  @impl true
   def handle_call({:control_playback, action}, _from, state) do
     if state.auth_state == :authenticated do
       case API.control_playback(action) do
@@ -173,6 +234,36 @@ defmodule Droodotfoo.Spotify.Manager do
 
         {:error, reason} ->
           Logger.error("Failed to control playback: #{inspect(reason)}")
+          {:reply, {:error, reason}, state}
+      end
+    else
+      {:reply, {:error, :not_authenticated}, state}
+    end
+  end
+
+  @impl true
+  def handle_call({:adjust_volume, direction}, _from, state) do
+    if state.auth_state == :authenticated do
+      # Get current volume from playback state
+      current_volume = case state.playback_state do
+        %{device: %{"volume_percent" => vol}} -> vol
+        _ -> 50  # Default if unknown
+      end
+
+      # Adjust by 10%
+      new_volume = case direction do
+        :up -> min(current_volume + 10, 100)
+        :down -> max(current_volume - 10, 0)
+      end
+
+      case API.set_volume(new_volume) do
+        :ok ->
+          # Refresh playback state after volume change
+          spawn(fn -> refresh_playback_data() end)
+          {:reply, :ok, state}
+
+        {:error, reason} ->
+          Logger.error("Failed to adjust volume: #{inspect(reason)}")
           {:reply, {:error, reason}, state}
       end
     else
