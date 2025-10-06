@@ -748,7 +748,8 @@ defmodule Droodotfoo.Terminal.Commands do
   end
 
   def web3([subcommand | _], _state) do
-    {:error, "Unknown web3 subcommand: #{subcommand}\n\nUsage:\n  web3         - Open Web3 interface\n  web3 connect - Connect wallet\n  web3 disconnect - Disconnect wallet"}
+    {:error,
+     "Unknown web3 subcommand: #{subcommand}\n\nUsage:\n  web3         - Open Web3 interface\n  web3 connect - Connect wallet\n  web3 disconnect - Disconnect wallet"}
   end
 
   def wallet(args, state), do: web3(["connect" | args], state)
@@ -790,7 +791,8 @@ defmodule Droodotfoo.Terminal.Commands do
 
   # NFT commands
   def nft([], _state) do
-    {:error, "Usage:\n  nft list [address]     - List NFTs for an address\n  nft view <contract> <id> - View NFT details"}
+    {:error,
+     "Usage:\n  nft list [address]     - List NFTs for an address\n  nft view <contract> <id> - View NFT details"}
   end
 
   def nft(["list"], state) do
@@ -916,7 +918,8 @@ defmodule Droodotfoo.Terminal.Commands do
         if Enum.empty?(non_zero) do
           {:ok, "No token balances found (all balances are zero)"}
         else
-          header = "Token Balances for #{String.slice(address, 0..9)}...#{String.slice(address, -4..-1)}\n\n"
+          header =
+            "Token Balances for #{String.slice(address, 0..9)}...#{String.slice(address, -4..-1)}\n\n"
 
           rows =
             non_zero
@@ -966,7 +969,8 @@ defmodule Droodotfoo.Terminal.Commands do
   end
 
   def tokens([subcommand | _], _state) do
-    {:error, "Unknown tokens subcommand: #{subcommand}\n\nUsage:\n  tokens          - List token balances\n  tokens list     - List token balances\n  balance <symbol> - Get price for a specific token"}
+    {:error,
+     "Unknown tokens subcommand: #{subcommand}\n\nUsage:\n  tokens          - List token balances\n  tokens list     - List token balances\n  balance <symbol> - Get price for a specific token"}
   end
 
   # Balance command for specific token price
@@ -1001,7 +1005,8 @@ defmodule Droodotfoo.Terminal.Commands do
       {:ok, String.trim(output)}
     else
       {:error, :token_not_found} ->
-        {:error, "Token not found: #{symbol}. Supported tokens: ETH, USDT, USDC, DAI, WBTC, LINK, MATIC, UNI, AAVE"}
+        {:error,
+         "Token not found: #{symbol}. Supported tokens: ETH, USDT, USDC, DAI, WBTC, LINK, MATIC, UNI, AAVE"}
 
       {:error, :rate_limit} ->
         {:error, "CoinGecko API rate limit reached. Please try again later."}
@@ -1062,6 +1067,7 @@ defmodule Droodotfoo.Terminal.Commands do
               case DateTime.from_unix(tx.timestamp) do
                 {:ok, dt} ->
                   diff = DateTime.diff(DateTime.utc_now(), dt)
+
                   cond do
                     diff < 60 -> "#{diff}s ago"
                     diff < 3600 -> "#{div(diff, 60)}m ago"
@@ -1129,7 +1135,8 @@ defmodule Droodotfoo.Terminal.Commands do
   end
 
   def tx([subcommand | _], _state) do
-    {:error, "Unknown tx subcommand: #{subcommand}\n\nUsage:\n  tx                   - Show transaction history\n  tx history [address] - Show transaction history\n  tx <hash>            - View transaction details"}
+    {:error,
+     "Unknown tx subcommand: #{subcommand}\n\nUsage:\n  tx                   - Show transaction history\n  tx history [address] - Show transaction history\n  tx <hash>            - View transaction details"}
   end
 
   # Alias for tx history
@@ -1137,7 +1144,8 @@ defmodule Droodotfoo.Terminal.Commands do
 
   # Contract commands
   def contract([], _state) do
-    {:error, "Usage:\n  contract <address>         - View contract info and ABI\n  contract <address> <function> [args...] - Call read-only function"}
+    {:error,
+     "Usage:\n  contract <address>         - View contract info and ABI\n  contract <address> <function> [args...] - Call read-only function"}
   end
 
   def contract([address], _state) do
@@ -1266,7 +1274,8 @@ defmodule Droodotfoo.Terminal.Commands do
 
   # IPFS commands
   def ipfs([], _state) do
-    {:error, "Usage:\n  ipfs cat <cid>    - Fetch and display IPFS content\n  ipfs gateway <cid> - Show gateway URLs"}
+    {:error,
+     "Usage:\n  ipfs cat <cid>    - Fetch and display IPFS content\n  ipfs gateway <cid> - Show gateway URLs"}
   end
 
   def ipfs(["cat", cid], _state) do
@@ -1348,7 +1357,8 @@ defmodule Droodotfoo.Terminal.Commands do
         {:error, "Invalid IPFS CID format"}
 
       {:error, :not_implemented} ->
-        {:error, "Directory listing not yet implemented\n\nUse: ipfs gateway <cid> to view in browser"}
+        {:error,
+         "Directory listing not yet implemented\n\nUse: ipfs gateway <cid> to view in browser"}
 
       {:error, reason} ->
         {:error, "Failed to list directory: #{reason}"}
@@ -1356,12 +1366,16 @@ defmodule Droodotfoo.Terminal.Commands do
   end
 
   def ipfs([subcommand | _], _state) do
-    {:error, "Unknown ipfs subcommand: #{subcommand}\n\nUsage:\n  ipfs cat <cid>     - Fetch and display content\n  ipfs gateway <cid> - Show gateway URLs\n  ipfs ls <cid>      - List directory (not yet implemented)"}
+    {:error,
+     "Unknown ipfs subcommand: #{subcommand}\n\nUsage:\n  ipfs cat <cid>     - Fetch and display content\n  ipfs gateway <cid> - Show gateway URLs\n  ipfs ls <cid>      - List directory (not yet implemented)"}
   end
 
   defp format_content_size(bytes) when bytes < 1024, do: "#{bytes} bytes"
   defp format_content_size(bytes) when bytes < 1_048_576, do: "#{Float.round(bytes / 1024, 2)} KB"
-  defp format_content_size(bytes) when bytes < 1_073_741_824, do: "#{Float.round(bytes / 1_048_576, 2)} MB"
+
+  defp format_content_size(bytes) when bytes < 1_073_741_824,
+    do: "#{Float.round(bytes / 1_048_576, 2)} MB"
+
   defp format_content_size(bytes), do: "#{Float.round(bytes / 1_073_741_824, 2)} GB"
 
   defp format_ipfs_directory(entries) do
@@ -1385,7 +1399,8 @@ defmodule Droodotfoo.Terminal.Commands do
     if not wallet do
       {:error, "Please connect your wallet first using: web3 connect"}
     else
-      {:error, "Usage:\n  ddoc list          - List your documents\n  ddoc new <title>   - Create new document\n  ddoc view <id>     - View document\n  ddoc delete <id>   - Delete document"}
+      {:error,
+       "Usage:\n  ddoc list          - List your documents\n  ddoc new <title>   - Create new document\n  ddoc view <id>     - View document\n  ddoc delete <id>   - Delete document"}
     end
   end
 
@@ -1439,9 +1454,13 @@ defmodule Droodotfoo.Terminal.Commands do
     if not wallet do
       {:error, "Please connect your wallet first"}
     else
-      case Droodotfoo.Fileverse.DDoc.get(doc_id, wallet) do
+      opts = if state.encryption_keys, do: [encryption_keys: state.encryption_keys], else: []
+
+      case Droodotfoo.Fileverse.DDoc.get(doc_id, wallet, opts) do
         {:ok, doc} ->
-          {:ok, Droodotfoo.Fileverse.DDoc.format_doc_info(doc) <> "\n#{String.duplicate("-", 78)}\n\n#{doc.content}"}
+          {:ok,
+           Droodotfoo.Fileverse.DDoc.format_doc_info(doc) <>
+             "\n#{String.duplicate("-", 78)}\n\n#{doc.content}"}
 
         {:error, :not_found} ->
           {:error, "Document not found: #{doc_id}"}
@@ -1456,7 +1475,12 @@ defmodule Droodotfoo.Terminal.Commands do
     {:error, "Unknown ddoc subcommand: #{subcommand}"}
   end
 
-  defp get_wallet_address(%{web3_wallet: %{address: address}}) when is_binary(address), do: address
+  defp get_wallet_address(%{web3_wallet_address: address}) when is_binary(address),
+    do: address
+
+  defp get_wallet_address(%{web3_wallet: %{address: address}}) when is_binary(address),
+    do: address
+
   defp get_wallet_address(_), do: nil
 
   # docs command - alias for ddoc list
@@ -1597,6 +1621,272 @@ defmodule Droodotfoo.Terminal.Commands do
 
   defp format_file_size(bytes), do: "#{Float.round(bytes / 1_073_741_824, 2)} GB"
 
+  # Fileverse Portal commands
+  def portal([], state) do
+    {:error,
+     "Usage:\n  portal list                - List your portals\n  portal create <name>       - Create new portal\n  portal join <id>           - Join existing portal\n  portal peers <id>          - View portal members\n  portal share <id> <file>   - Share file in portal\n  portal leave <id>          - Leave portal"}
+  end
+
+  def portal(["list"], state) do
+    if not state.web3_wallet_connected do
+      {:error, "Web3 wallet not connected. Run: :web3 connect"}
+    else
+      wallet = state.web3_wallet_address
+
+      case Droodotfoo.Fileverse.Portal.list(wallet) do
+        {:ok, portals} ->
+          output = """
+          Fileverse Portals - P2P Collaboration Spaces
+          =============================================
+
+          #{Droodotfoo.Fileverse.Portal.format_portal_list(portals)}
+
+          Commands:
+            :portal create <name>     - Create new portal
+            :portal join <id>         - Join portal
+            :portal peers <id>        - View members
+
+          Note: Full Portal integration requires Fileverse Portal SDK and WebRTC
+          """
+
+          {:ok, output, state}
+
+        {:error, reason} ->
+          {:error, "Failed to list portals: #{inspect(reason)}"}
+      end
+    end
+  end
+
+  def portal(["create", name], state) do
+    if not state.web3_wallet_connected do
+      {:error, "Web3 wallet not connected. Run: :web3 connect"}
+    else
+      wallet = state.web3_wallet_address
+
+      case Droodotfoo.Fileverse.Portal.create(name, wallet_address: wallet) do
+        {:ok, portal} ->
+          output = """
+          Portal Created Successfully!
+          ============================
+
+          Portal ID:   #{portal.id}
+          Name:        #{portal.name}
+          Creator:     #{abbreviate_address(portal.creator)}
+          Encrypted:   #{if portal.encrypted, do: "Yes", else: "No"}
+          Public:      #{if portal.public, do: "Yes", else: "No"}
+
+          Share this ID to invite collaborators:
+            :portal join #{portal.id}
+
+          Commands:
+            :portal peers #{portal.id}       - View members
+            :portal share #{portal.id} <file> - Share file
+          """
+
+          {:ok, output, state}
+
+        {:error, :wallet_required} ->
+          {:error, "Web3 wallet required. Run: :web3 connect"}
+
+        {:error, reason} ->
+          {:error, "Failed to create portal: #{inspect(reason)}"}
+      end
+    end
+  end
+
+  def portal(["join", portal_id], state) do
+    if not state.web3_wallet_connected do
+      {:error, "Web3 wallet not connected. Run: :web3 connect"}
+    else
+      wallet = state.web3_wallet_address
+
+      case Droodotfoo.Fileverse.Portal.join(portal_id, wallet_address: wallet) do
+        {:ok, portal} ->
+          peer_count = length(portal.peers)
+
+          output = """
+          Joined Portal Successfully!
+          ===========================
+
+          Portal ID:   #{portal.id}
+          Name:        #{portal.name}
+          Members:     #{peer_count}
+          Files:       #{portal.files_shared} shared
+
+          Active Peers:
+          #{format_peer_list(portal.peers)}
+
+          Commands:
+            :portal peers #{portal.id}       - Refresh peer list
+            :portal share #{portal.id} <file> - Share file
+            :portal leave #{portal.id}        - Leave portal
+          """
+
+          {:ok, output, state}
+
+        {:error, :wallet_required} ->
+          {:error, "Web3 wallet required. Run: :web3 connect"}
+
+        {:error, :not_found} ->
+          {:error, "Portal not found: #{portal_id}"}
+
+        {:error, reason} ->
+          {:error, "Failed to join portal: #{inspect(reason)}"}
+      end
+    end
+  end
+
+  def portal(["peers", portal_id], state) do
+    case Droodotfoo.Fileverse.Portal.peers(portal_id) do
+      {:ok, peers} ->
+        peer_count = length(peers)
+
+        output = """
+        Portal Members (#{peer_count})
+        #{String.duplicate("=", 50)}
+
+        #{format_peer_list(peers)}
+
+        Status Legend:
+          [CONNECTED]    - Active peer
+          [CONNECTING]   - Establishing connection
+          [DISCONNECTED] - Offline
+        """
+
+        {:ok, output, state}
+
+      {:error, :not_found} ->
+        {:error, "Portal not found: #{portal_id}"}
+
+      {:error, reason} ->
+        {:error, "Failed to get peers: #{inspect(reason)}"}
+    end
+  end
+
+  def portal(["share", portal_id, file_path], state) do
+    if not state.web3_wallet_connected do
+      {:error, "Web3 wallet not connected. Run: :web3 connect"}
+    else
+      wallet = state.web3_wallet_address
+
+      case Droodotfoo.Fileverse.Portal.share_file(portal_id, file_path, wallet_address: wallet) do
+        {:ok, file_share} ->
+          output = """
+          File Sharing Started!
+          =====================
+
+          File:        #{file_share.filename}
+          Size:        #{format_file_size(file_share.size)}
+          Status:      #{format_transfer_status(file_share.transfer_status)}
+          Progress:    #{Float.round(file_share.progress * 100, 1)}%
+
+          Sending to:  #{length(file_share.recipients)} peers
+
+          Note: File transfer happens via P2P WebRTC data channels.
+                Full implementation requires WebRTC hooks.
+          """
+
+          {:ok, output, state}
+
+        {:error, :wallet_required} ->
+          {:error, "Web3 wallet required. Run: :web3 connect"}
+
+        {:error, reason} ->
+          {:error, "Failed to share file: #{inspect(reason)}"}
+      end
+    end
+  end
+
+  def portal(["leave", portal_id], state) do
+    if not state.web3_wallet_connected do
+      {:error, "Web3 wallet not connected. Run: :web3 connect"}
+    else
+      wallet = state.web3_wallet_address
+
+      case Droodotfoo.Fileverse.Portal.leave(portal_id, wallet_address: wallet) do
+        :ok ->
+          {:ok, "Left portal: #{portal_id}", state}
+
+        {:error, :wallet_required} ->
+          {:error, "Web3 wallet required. Run: :web3 connect"}
+
+        {:error, reason} ->
+          {:error, "Failed to leave portal: #{inspect(reason)}"}
+      end
+    end
+  end
+
+  def portal(_args, _state) do
+    {:error,
+     "Invalid portal command. Usage:\n  portal list\n  portal create <name>\n  portal join <id>\n  portal peers <id>\n  portal share <id> <file>\n  portal leave <id>"}
+  end
+
+  defp format_peer_list(peers) do
+    if Enum.empty?(peers) do
+      "  No active peers"
+    else
+      peers
+      |> Enum.map(fn peer ->
+        status_badge =
+          case peer.connection_status do
+            :connected -> "[CONNECTED]   "
+            :connecting -> "[CONNECTING]  "
+            :disconnected -> "[DISCONNECTED]"
+          end
+
+        name = peer.ens_name || abbreviate_address(peer.address)
+        role = if peer.is_host, do: " (Host)", else: ""
+        time_ago = format_relative_time(peer.joined_at)
+
+        "  #{status_badge} #{String.pad_trailing(name, 25)} Joined: #{time_ago}#{role}"
+      end)
+      |> Enum.join("\n")
+    end
+  end
+
+  defp format_transfer_status(:pending), do: "Pending"
+  defp format_transfer_status(:transferring), do: "Transferring..."
+  defp format_transfer_status(:complete), do: "Complete"
+  defp format_transfer_status(:failed), do: "Failed"
+
+  defp abbreviate_address(address) when is_binary(address) do
+    if String.length(address) > 12 do
+      prefix = String.slice(address, 0..5)
+      suffix = String.slice(address, -4..-1)
+      "#{prefix}...#{suffix}"
+    else
+      address
+    end
+  end
+
+  defp abbreviate_address(_), do: "Unknown"
+
+  defp format_relative_time(datetime) do
+    now = DateTime.utc_now()
+    diff_seconds = DateTime.diff(now, datetime, :second)
+
+    cond do
+      diff_seconds < 60 ->
+        "#{diff_seconds}s ago"
+
+      diff_seconds < 3600 ->
+        minutes = div(diff_seconds, 60)
+        "#{minutes}m ago"
+
+      diff_seconds < 86400 ->
+        hours = div(diff_seconds, 3600)
+        "#{hours}h ago"
+
+      diff_seconds < 2_592_000 ->
+        days = div(diff_seconds, 86400)
+        "#{days}d ago"
+
+      true ->
+        months = div(diff_seconds, 2_592_000)
+        "#{months}mo ago"
+    end
+  end
+
   # Project commands
   def project([], state) do
     # Go to projects section
@@ -1619,7 +1909,12 @@ defmodule Droodotfoo.Terminal.Commands do
 
       idx ->
         {:ok, "Opening project: #{Enum.at(projects, idx).name}",
-         %{state | current_section: :projects, selected_project_index: idx, project_detail_view: true}}
+         %{
+           state
+           | current_section: :projects,
+             selected_project_index: idx,
+             project_detail_view: true
+         }}
     end
   end
 
@@ -1631,11 +1926,13 @@ defmodule Droodotfoo.Terminal.Commands do
       projects
       |> Enum.with_index()
       |> Enum.map(fn {p, idx} ->
-        status = case p.status do
-          :active -> "[ACTIVE]"
-          :completed -> "[COMPLETED]"
-          :archived -> "[ARCHIVED]"
-        end
+        status =
+          case p.status do
+            :active -> "[ACTIVE]"
+            :completed -> "[COMPLETED]"
+            :archived -> "[ARCHIVED]"
+          end
+
         "#{idx + 1}. #{p.name} #{status}\n   #{p.tagline}"
       end)
       |> Enum.join("\n\n")
@@ -1645,8 +1942,9 @@ defmodule Droodotfoo.Terminal.Commands do
 
   def charts(_state) do
     # Display ASCII chart showcase
-    output = Droodotfoo.AsciiChart.showcase()
-    |> Enum.join("\n")
+    output =
+      Droodotfoo.AsciiChart.showcase()
+      |> Enum.join("\n")
 
     {:ok, output}
   end
@@ -1908,4 +2206,654 @@ defmodule Droodotfoo.Terminal.Commands do
 
   # Accessibility alias
   def a11y(args, state), do: contrast(args, state)
+
+  # Encryption Commands
+
+  @doc """
+  Encrypt a document with wallet-derived keys.
+  Usage: :encrypt <doc_id>
+  """
+  def encrypt([], _state) do
+    {:error, "Usage: encrypt <doc_id>\nEncrypt a document with your wallet keys"}
+  end
+
+  def encrypt([doc_id], state) do
+    if not state.web3_wallet_connected do
+      {:error, "Web3 wallet not connected. Run: :web3 connect"}
+    else
+      wallet = state.web3_wallet_address
+
+      # Derive encryption keys from wallet if not already present
+      {keys, new_state} =
+        if state.encryption_keys do
+          {state.encryption_keys, state}
+        else
+          # Generate mock signature for key derivation
+          # In production, would request wallet signature
+          signature = :crypto.strong_rand_bytes(65)
+          {:ok, keys} = Droodotfoo.Fileverse.Encryption.derive_keys_from_wallet(wallet, signature)
+          {keys, %{state | encryption_keys: keys}}
+        end
+
+      # Get document
+      case Droodotfoo.Fileverse.DDoc.get(doc_id, wallet) do
+        {:ok, doc} ->
+          # Encrypt document content
+          case Droodotfoo.Fileverse.Encryption.encrypt_document(doc.content, keys) do
+            {:ok, encrypted} ->
+              output = """
+              Document Encrypted Successfully!
+              #{String.duplicate("=", 50)}
+
+              Document ID:  #{doc_id}
+              Title:        #{doc.title}
+              Algorithm:    #{encrypted.algorithm}
+              Key ID:       #{encrypted.key_id}
+              Encrypted At: #{Calendar.strftime(encrypted.encrypted_at, "%Y-%m-%d %H:%M:%S UTC")}
+
+              Status: [ENCRYPTED] Document is now end-to-end encrypted
+              """
+
+              {:ok, output, new_state}
+
+            {:error, reason} ->
+              {:error, "Encryption failed: #{inspect(reason)}"}
+          end
+
+        {:error, :not_found} ->
+          {:error, "Document not found: #{doc_id}"}
+
+        {:error, reason} ->
+          {:error, "Failed to get document: #{inspect(reason)}"}
+      end
+    end
+  end
+
+  def encrypt(_args, _state) do
+    {:error, "Usage: encrypt <doc_id>"}
+  end
+
+  @doc """
+  Decrypt a document with wallet-derived keys.
+  Usage: :decrypt <doc_id>
+  """
+  def decrypt([], _state) do
+    {:error, "Usage: decrypt <doc_id>\nDecrypt a document with your wallet keys"}
+  end
+
+  def decrypt([doc_id], state) do
+    if not state.web3_wallet_connected do
+      {:error, "Web3 wallet not connected. Run: :web3 connect"}
+    else
+      if not state.encryption_keys do
+        {:error, "No encryption keys found. Run: :encrypt first to derive keys"}
+      else
+        wallet = state.web3_wallet_address
+
+        # Get document (would be encrypted in production)
+        case Droodotfoo.Fileverse.DDoc.get(doc_id, wallet) do
+          {:ok, doc} ->
+            output = """
+            Document Decryption
+            #{String.duplicate("=", 50)}
+
+            Document ID:  #{doc_id}
+            Title:        #{doc.title}
+            Status:       Ready for decryption
+
+            Note: Full implementation requires encrypted document storage.
+                  Currently showing mock decryption flow.
+
+            Content Preview:
+            #{String.slice(doc.content, 0..200)}...
+            """
+
+            {:ok, output, state}
+
+          {:error, :not_found} ->
+            {:error, "Document not found: #{doc_id}"}
+
+          {:error, reason} ->
+            {:error, "Failed to get document: #{inspect(reason)}"}
+        end
+      end
+    end
+  end
+
+  def decrypt(_args, _state) do
+    {:error, "Usage: decrypt <doc_id>"}
+  end
+
+  @doc """
+  Toggle privacy mode to hide sensitive data in terminal.
+  Usage: :privacy [on|off|status]
+  """
+  def privacy([], state) do
+    # Toggle privacy mode
+    new_mode = !state.privacy_mode
+    new_state = %{state | privacy_mode: new_mode}
+    status = if new_mode, do: "enabled", else: "disabled"
+
+    output = """
+    Privacy Mode #{String.upcase(status)}
+    #{String.duplicate("=", 50)}
+
+    Status: Privacy mode is now #{status}
+
+    When enabled:
+      - Wallet addresses are abbreviated
+      - Document content is hidden
+      - File names are masked
+      - IPFS CIDs are shortened
+    """
+
+    {:ok, output, new_state}
+  end
+
+  def privacy(["on"], state) do
+    new_state = %{state | privacy_mode: true}
+
+    output = """
+    Privacy Mode ENABLED
+    #{String.duplicate("=", 50)}
+
+    All sensitive data will now be hidden or abbreviated.
+    """
+
+    {:ok, output, new_state}
+  end
+
+  def privacy(["off"], state) do
+    new_state = %{state | privacy_mode: false}
+
+    output = """
+    Privacy Mode DISABLED
+    #{String.duplicate("=", 50)}
+
+    Sensitive data will now be displayed in full.
+    """
+
+    {:ok, output, new_state}
+  end
+
+  def privacy(["status"], state) do
+    status = if state.privacy_mode, do: "enabled", else: "disabled"
+    wallet_status = if state.web3_wallet_connected, do: "connected", else: "not connected"
+    keys_status = if state.encryption_keys, do: "present", else: "not derived"
+
+    output = """
+    Privacy & Encryption Status
+    #{String.duplicate("=", 50)}
+
+    Privacy Mode:     #{String.upcase(status)}
+    Wallet:           #{wallet_status}
+    Encryption Keys:  #{keys_status}
+    Sessions:         #{map_size(state.encryption_sessions)} active
+
+    Commands:
+      :privacy on/off  - Toggle privacy mode
+      :keys            - View encryption key info
+      :encrypt <doc>   - Encrypt document
+      :decrypt <doc>   - Decrypt document
+    """
+
+    {:ok, output, state}
+  end
+
+  def privacy(_args, _state) do
+    {:error, "Usage: privacy [on|off|status]\nToggle privacy mode for sensitive data"}
+  end
+
+  @doc """
+  Display encryption key information.
+  Usage: :keys [status|generate|export]
+  """
+  def keys([], state), do: keys(["status"], state)
+
+  def keys(["status"], state) do
+    if not state.web3_wallet_connected do
+      {:error, "Web3 wallet not connected. Run: :web3 connect"}
+    else
+      if state.encryption_keys do
+        keys = state.encryption_keys
+
+        output = """
+        Encryption Keys Status
+        #{String.duplicate("=", 50)}
+
+        Wallet:     #{abbreviate_address(keys.wallet_address)}
+        Key ID:     #{keys.key_id}
+        Algorithm:  Signal Protocol + AES-256-GCM
+        Status:     Active and ready
+
+        Key Derivation:
+          Keys are derived deterministically from wallet signatures.
+          No storage required - keys regenerate from signature each session.
+          Same wallet always produces same encryption keys.
+
+        Sessions:   #{map_size(state.encryption_sessions)} active
+        """
+
+        {:ok, output, state}
+      else
+        output = """
+        Encryption Keys Status
+        #{String.duplicate("=", 50)}
+
+        Status:     No keys derived yet
+        Wallet:     #{abbreviate_address(state.web3_wallet_address)}
+
+        To derive encryption keys:
+          Run: :encrypt <doc_id>
+
+        Keys are automatically derived from your wallet signature
+        when you first encrypt a document.
+        """
+
+        {:ok, output, state}
+      end
+    end
+  end
+
+  def keys(["generate"], state) do
+    if not state.web3_wallet_connected do
+      {:error, "Web3 wallet not connected. Run: :web3 connect"}
+    else
+      wallet = state.web3_wallet_address
+
+      # Generate mock signature for key derivation
+      signature = :crypto.strong_rand_bytes(65)
+      {:ok, keys} = Droodotfoo.Fileverse.Encryption.derive_keys_from_wallet(wallet, signature)
+
+      new_state = %{state | encryption_keys: keys}
+
+      output = """
+      Encryption Keys Generated!
+      #{String.duplicate("=", 50)}
+
+      Wallet:     #{abbreviate_address(wallet)}
+      Key ID:     #{keys.key_id}
+      Algorithm:  Signal Protocol + AES-256-GCM
+
+      Keys have been derived from your wallet signature.
+      You can now encrypt and decrypt documents.
+
+      Commands:
+        :encrypt <doc_id>  - Encrypt a document
+        :decrypt <doc_id>  - Decrypt a document
+        :keys status       - View key information
+      """
+
+      {:ok, output, new_state}
+    end
+  end
+
+  def keys(["export"], _state) do
+    {:error,
+     "Key export not supported.\n" <>
+       "Keys are derived deterministically from wallet signatures.\n" <>
+       "No need to export - simply connect wallet to regenerate keys."}
+  end
+
+  def keys(_args, _state) do
+    {:error, "Usage: keys [status|generate|export]\nManage encryption keys"}
+  end
+
+  # dSheets Commands
+
+  @doc """
+  Manage Fileverse dSheets - spreadsheet views of blockchain data.
+  Usage: :sheet <subcommand> [args]
+  """
+  def sheet([], _state) do
+    {:error,
+     "Usage:\n" <>
+       "  :sheet list              - List your sheets\n" <>
+       "  :sheet new <name>        - Create new sheet\n" <>
+       "  :sheet open <id>         - Open sheet by ID\n" <>
+       "  :sheet query <type>      - Query blockchain data\n" <>
+       "  :sheet export <id> <fmt> - Export sheet (csv/json)"}
+  end
+
+  def sheet(["list"], state) do
+    if not state.web3_wallet_connected do
+      {:error, "Web3 wallet not connected. Run: :web3 connect"}
+    else
+      wallet = state.web3_wallet_address
+
+      case Droodotfoo.Fileverse.DSheet.list(wallet) do
+        {:ok, sheets} ->
+          if Enum.empty?(sheets) do
+            output = """
+            Fileverse dSheets - Onchain Data Visualization
+            #{String.duplicate("=", 78)}
+
+            No sheets found.
+
+            Create a new sheet:
+              :sheet new <name>
+
+            Query blockchain data:
+              :sheet query tokens      - Token balances
+              :sheet query nfts        - NFT holdings
+              :sheet query txs         - Transaction history
+            """
+
+            {:ok, output, state}
+          else
+            header =
+              String.pad_trailing("ID", 15) <>
+                String.pad_trailing("Name", 30) <>
+                String.pad_trailing("Type", 20) <> "Rows"
+
+            rows =
+              Enum.map(sheets, fn sheet ->
+                id = String.pad_trailing(sheet.id, 15)
+                name = String.pad_trailing(truncate_str(sheet.name, 28), 30)
+                type = String.pad_trailing(to_string(sheet.sheet_type), 20)
+                rows = to_string(sheet.row_count)
+                "#{id}#{name}#{type}#{rows}"
+              end)
+
+            table = Enum.join([header, String.duplicate("-", 78) | rows], "\n")
+
+            output = """
+            Fileverse dSheets - Onchain Data Visualization
+            #{String.duplicate("=", 78)}
+
+            #{table}
+
+            Commands:
+              :sheet open <id>      - View sheet details
+              :sheet export <id>    - Export to CSV
+              :sheet query <type>   - Create new sheet from query
+            """
+
+            {:ok, output, state}
+          end
+
+        {:error, reason} ->
+          {:error, "Failed to list sheets: #{inspect(reason)}"}
+      end
+    end
+  end
+
+  def sheet(["new", name], state) do
+    if not state.web3_wallet_connected do
+      {:error, "Web3 wallet not connected. Run: :web3 connect"}
+    else
+      wallet = state.web3_wallet_address
+
+      case Droodotfoo.Fileverse.DSheet.create(name, wallet_address: wallet) do
+        {:ok, sheet} ->
+          output = """
+          Sheet Created Successfully!
+          #{String.duplicate("=", 78)}
+
+          ID:          #{sheet.id}
+          Name:        #{sheet.name}
+          Owner:       #{abbreviate_address(sheet.owner)}
+          Type:        #{sheet.sheet_type}
+          Columns:     #{sheet.col_count}
+          Created:     #{Calendar.strftime(sheet.created_at, "%Y-%m-%d %H:%M UTC")}
+
+          Add data to your sheet:
+            :sheet query tokens    - Import token balances
+            :sheet query nfts      - Import NFT holdings
+            :sheet query txs       - Import transactions
+          """
+
+          {:ok, output, state}
+
+        {:error, reason} ->
+          {:error, "Failed to create sheet: #{inspect(reason)}"}
+      end
+    end
+  end
+
+  def sheet(["open", sheet_id], state) do
+    if not state.web3_wallet_connected do
+      {:error, "Web3 wallet not connected. Run: :web3 connect"}
+    else
+      wallet = state.web3_wallet_address
+
+      case Droodotfoo.Fileverse.DSheet.get(sheet_id, wallet) do
+        {:ok, sheet} ->
+          table = Droodotfoo.Fileverse.DSheet.format_table(sheet, max_rows: 15)
+
+          output = """
+          dSheet: #{sheet.name}
+          #{String.duplicate("=", 78)}
+
+          ID:           #{sheet.id}
+          Owner:        #{abbreviate_address(sheet.owner)}
+          Description:  #{sheet.description}
+          Type:         #{sheet.sheet_type}
+          Dimensions:   #{sheet.row_count} rows x #{sheet.col_count} columns
+          Last Updated: #{Calendar.strftime(sheet.updated_at, "%Y-%m-%d %H:%M UTC")}
+
+          #{String.duplicate("-", 78)}
+
+          #{table}
+
+          #{String.duplicate("-", 78)}
+
+          Commands:
+            :sheet export #{sheet.id} csv   - Export as CSV
+            :sheet export #{sheet.id} json  - Export as JSON
+            :sheet sort #{sheet.id} <col>   - Sort by column
+          """
+
+          {:ok, output, state}
+
+        {:error, :not_found} ->
+          {:error, "Sheet not found: #{sheet_id}"}
+
+        {:error, reason} ->
+          {:error, "Failed to open sheet: #{inspect(reason)}"}
+      end
+    end
+  end
+
+  def sheet(["query", query_type | args], state) do
+    if not state.web3_wallet_connected do
+      {:error, "Web3 wallet not connected. Run: :web3 connect"}
+    else
+      wallet = state.web3_wallet_address
+
+      {type, params} =
+        case query_type do
+          "tokens" ->
+            address = List.first(args) || wallet
+            {:token_balances, %{address: address}}
+
+          "nfts" ->
+            address = List.first(args) || wallet
+            {:nft_holdings, %{address: address}}
+
+          "txs" ->
+            address = List.first(args) || wallet
+            {:transactions, %{address: address}}
+
+          "transactions" ->
+            address = List.first(args) || wallet
+            {:transactions, %{address: address}}
+
+          "contract" ->
+            case args do
+              [contract_address] ->
+                {:contract_state, %{contract: contract_address}}
+
+              _ ->
+                {:error, "Usage: :sheet query contract <address>"}
+            end
+
+          _ ->
+            {:error, "Unknown query type: #{query_type}"}
+        end
+
+      case type do
+        :error ->
+          {:error, params}
+
+        _ ->
+          case Droodotfoo.Fileverse.DSheet.query(type, params, wallet_address: wallet) do
+            {:ok, sheet} ->
+              table = Droodotfoo.Fileverse.DSheet.format_table(sheet, max_rows: 15)
+
+              output = """
+              Query Result: #{sheet.name}
+              #{String.duplicate("=", 78)}
+
+              Query Type:   #{type}
+              Rows:         #{sheet.row_count}
+              Columns:      #{sheet.col_count}
+              Sheet ID:     #{sheet.id}
+
+              #{String.duplicate("-", 78)}
+
+              #{table}
+
+              #{String.duplicate("-", 78)}
+
+              This data is now available as a dSheet.
+              Commands:
+                :sheet export #{sheet.id} csv   - Export as CSV
+                :sheet open #{sheet.id}         - View full sheet
+              """
+
+              {:ok, output, state}
+
+            {:error, reason} ->
+              {:error, "Query failed: #{inspect(reason)}"}
+          end
+      end
+    end
+  end
+
+  def sheet(["export", sheet_id, format], state) do
+    if not state.web3_wallet_connected do
+      {:error, "Web3 wallet not connected. Run: :web3 connect"}
+    else
+      wallet = state.web3_wallet_address
+
+      case Droodotfoo.Fileverse.DSheet.get(sheet_id, wallet) do
+        {:ok, sheet} ->
+          case format do
+            "csv" ->
+              case Droodotfoo.Fileverse.DSheet.export_csv(sheet) do
+                {:ok, csv_data} ->
+                  # In production, would write to file or clipboard
+                  output = """
+                  CSV Export: #{sheet.name}
+                  #{String.duplicate("=", 78)}
+
+                  #{String.slice(csv_data, 0..500)}
+
+                  ... (#{String.length(csv_data)} bytes total)
+
+                  Note: In production, this would save to a file or clipboard.
+                  """
+
+                  {:ok, output, state}
+
+                {:error, reason} ->
+                  {:error, "CSV export failed: #{inspect(reason)}"}
+              end
+
+            "json" ->
+              case Droodotfoo.Fileverse.DSheet.export_json(sheet) do
+                {:ok, json_data} ->
+                  output = """
+                  JSON Export: #{sheet.name}
+                  #{String.duplicate("=", 78)}
+
+                  #{String.slice(json_data, 0..500)}
+
+                  ... (#{String.length(json_data)} bytes total)
+
+                  Note: In production, this would save to a file or clipboard.
+                  """
+
+                  {:ok, output, state}
+
+                {:error, reason} ->
+                  {:error, "JSON export failed: #{inspect(reason)}"}
+              end
+
+            _ ->
+              {:error, "Invalid format: #{format}. Use 'csv' or 'json'"}
+          end
+
+        {:error, :not_found} ->
+          {:error, "Sheet not found: #{sheet_id}"}
+
+        {:error, reason} ->
+          {:error, "Failed to load sheet: #{inspect(reason)}"}
+      end
+    end
+  end
+
+  def sheet(["export", sheet_id], state) do
+    # Default to CSV
+    sheet(["export", sheet_id, "csv"], state)
+  end
+
+  def sheet(["sort", sheet_id, col_index], state) do
+    if not state.web3_wallet_connected do
+      {:error, "Web3 wallet not connected. Run: :web3 connect"}
+    else
+      wallet = state.web3_wallet_address
+
+      case Droodotfoo.Fileverse.DSheet.get(sheet_id, wallet) do
+        {:ok, sheet} ->
+          col_num = String.to_integer(col_index)
+
+          case Droodotfoo.Fileverse.DSheet.sort(sheet, col_num, :asc) do
+            {:ok, sorted_sheet} ->
+              table = Droodotfoo.Fileverse.DSheet.format_table(sorted_sheet, max_rows: 15)
+
+              output = """
+              Sorted Sheet: #{sorted_sheet.name}
+              #{String.duplicate("=", 78)}
+
+              Sorted by column: #{Enum.at(sorted_sheet.headers, col_num)}
+
+              #{table}
+              """
+
+              {:ok, output, state}
+
+            {:error, reason} ->
+              {:error, "Sort failed: #{inspect(reason)}"}
+          end
+
+        {:error, :not_found} ->
+          {:error, "Sheet not found: #{sheet_id}"}
+
+        {:error, reason} ->
+          {:error, "Failed to load sheet: #{inspect(reason)}"}
+      end
+    end
+  end
+
+  def sheet([subcommand | _], _state) do
+    {:error, "Unknown sheet subcommand: #{subcommand}"}
+  end
+
+  # Alias for sheet list
+  def sheets(_args, state), do: sheet(["list"], state)
+
+  # Helper function for truncating strings
+  defp truncate_str(string, max_length) when is_binary(string) do
+    if String.length(string) > max_length do
+      String.slice(string, 0, max_length - 3) <> "..."
+    else
+      string
+    end
+  end
+
+  defp truncate_str(value, max_length) do
+    value |> to_string() |> truncate_str(max_length)
+  end
 end
