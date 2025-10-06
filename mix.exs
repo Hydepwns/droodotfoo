@@ -78,7 +78,9 @@ defmodule Droodotfoo.MixProject do
       {:ethers, "~> 0.6.7"},
       {:ethereumex, "~> 0.10"},
       {:ex_keccak, "~> 0.7"},
-      {:ex_secp256k1, "~> 0.7"}
+      {:ex_secp256k1, "~> 0.7"},
+      # E2E Encryption (Signal Protocol)
+      {:libsignal_protocol, "~> 0.1.1"}
     ]
   end
 
