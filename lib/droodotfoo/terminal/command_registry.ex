@@ -6,7 +6,12 @@ defmodule Droodotfoo.Terminal.CommandRegistry do
 
   @commands [
     # Navigation
-    %{name: "ls", aliases: ["list", "dir"], category: :navigation, description: "List directory contents"},
+    %{
+      name: "ls",
+      aliases: ["list", "dir"],
+      category: :navigation,
+      description: "List directory contents"
+    },
     %{name: "cd", aliases: [], category: :navigation, description: "Change directory"},
     %{name: "pwd", aliases: [], category: :navigation, description: "Print working directory"},
     %{name: "cat", aliases: [], category: :file, description: "Display file contents"},
@@ -35,29 +40,151 @@ defmodule Droodotfoo.Terminal.CommandRegistry do
     %{name: "wordle", aliases: ["word"], category: :game, description: "Play Wordle"},
     %{name: "conway", aliases: ["life"], category: :game, description: "Conway's Game of Life"},
     %{name: "2048", aliases: [], category: :game, description: "Play 2048"},
-    %{name: "typing", aliases: ["type", "wpm"], category: :game, description: "Typing speed test"},
+    %{
+      name: "typing",
+      aliases: ["type", "wpm"],
+      category: :game,
+      description: "Typing speed test"
+    },
     %{name: "calculator", aliases: ["calc"], category: :tool, description: "Simple calculator"},
 
     # Integrations
-    %{name: "spotify", aliases: ["music"], category: :integration, description: "Spotify integration"},
+    %{
+      name: "spotify",
+      aliases: ["music"],
+      category: :integration,
+      description: "Spotify integration"
+    },
     %{name: "github", aliases: ["gh"], category: :integration, description: "GitHub integration"},
-    %{name: "web3", aliases: ["wallet", "w3"], category: :integration, description: "Web3 wallet integration"},
+    %{
+      name: "web3",
+      aliases: ["wallet", "w3"],
+      category: :integration,
+      description: "Web3 wallet integration"
+    },
     %{name: "ens", aliases: [], category: :integration, description: "Resolve ENS names"},
     %{name: "nft", aliases: [], category: :integration, description: "NFT gallery and viewer"},
-    %{name: "nfts", aliases: [], category: :integration, description: "List NFTs (alias for nft list)"},
-    %{name: "tokens", aliases: [], category: :integration, description: "View token balances with USD values"},
-    %{name: "balance", aliases: [], category: :integration, description: "Get token price and chart"},
-    %{name: "crypto", aliases: [], category: :integration, description: "View crypto balances (alias for tokens)"},
-    %{name: "tx", aliases: [], category: :integration, description: "View transaction history and details"},
-    %{name: "transactions", aliases: [], category: :integration, description: "View transaction history (alias for tx)"},
-    %{name: "contract", aliases: [], category: :integration, description: "View contract ABI and call functions"},
-    %{name: "call", aliases: [], category: :integration, description: "Call contract function (alias for contract)"},
-    %{name: "ipfs", aliases: [], category: :integration, description: "Fetch and display IPFS content"},
-    %{name: "ddoc", aliases: [], category: :integration, description: "Fileverse encrypted documents"},
-    %{name: "docs", aliases: [], category: :integration, description: "List dDocs (alias for ddoc list)"},
-    %{name: "upload", aliases: [], category: :integration, description: "Upload file to IPFS via Fileverse"},
+    %{
+      name: "nfts",
+      aliases: [],
+      category: :integration,
+      description: "List NFTs (alias for nft list)"
+    },
+    %{
+      name: "tokens",
+      aliases: [],
+      category: :integration,
+      description: "View token balances with USD values"
+    },
+    %{
+      name: "balance",
+      aliases: [],
+      category: :integration,
+      description: "Get token price and chart"
+    },
+    %{
+      name: "crypto",
+      aliases: [],
+      category: :integration,
+      description: "View crypto balances (alias for tokens)"
+    },
+    %{
+      name: "tx",
+      aliases: [],
+      category: :integration,
+      description: "View transaction history and details"
+    },
+    %{
+      name: "transactions",
+      aliases: [],
+      category: :integration,
+      description: "View transaction history (alias for tx)"
+    },
+    %{
+      name: "contract",
+      aliases: [],
+      category: :integration,
+      description: "View contract ABI and call functions"
+    },
+    %{
+      name: "call",
+      aliases: [],
+      category: :integration,
+      description: "Call contract function (alias for contract)"
+    },
+    %{
+      name: "ipfs",
+      aliases: [],
+      category: :integration,
+      description: "Fetch and display IPFS content"
+    },
+    %{
+      name: "ddoc",
+      aliases: [],
+      category: :integration,
+      description: "Fileverse encrypted documents"
+    },
+    %{
+      name: "docs",
+      aliases: [],
+      category: :integration,
+      description: "List dDocs (alias for ddoc list)"
+    },
+    %{
+      name: "upload",
+      aliases: [],
+      category: :integration,
+      description: "Upload file to IPFS via Fileverse"
+    },
     %{name: "files", aliases: [], category: :integration, description: "List uploaded files"},
-    %{name: "file", aliases: [], category: :integration, description: "View file info and versions"},
+    %{
+      name: "file",
+      aliases: [],
+      category: :integration,
+      description: "View file info and versions"
+    },
+    %{
+      name: "portal",
+      aliases: [],
+      category: :integration,
+      description: "Fileverse Portal P2P collaboration spaces"
+    },
+    %{
+      name: "encrypt",
+      aliases: [],
+      category: :integration,
+      description: "Encrypt document with wallet-derived keys"
+    },
+    %{
+      name: "decrypt",
+      aliases: [],
+      category: :integration,
+      description: "Decrypt document with wallet keys"
+    },
+    %{
+      name: "privacy",
+      aliases: [],
+      category: :utility,
+      description: "Toggle privacy mode for sensitive data"
+    },
+    %{
+      name: "keys",
+      aliases: [],
+      category: :integration,
+      description: "Manage encryption keys"
+    },
+    %{
+      name: "sheet",
+      aliases: [],
+      category: :integration,
+      description: "Fileverse dSheets - onchain data visualization"
+    },
+    %{
+      name: "sheets",
+      aliases: [],
+      category: :integration,
+      description: "List dSheets (alias for sheet list)"
+    },
 
     # Utilities
     %{name: "matrix", aliases: [], category: :effect, description: "Matrix rain effect"},

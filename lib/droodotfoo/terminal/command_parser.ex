@@ -257,6 +257,78 @@ defmodule Droodotfoo.Terminal.CommandParser do
         "w3" ->
           Commands.w3(args, state)
 
+        "ens" ->
+          Commands.ens(args, state)
+
+        "nft" ->
+          Commands.nft(args, state)
+
+        "nfts" ->
+          Commands.nfts(args, state)
+
+        "tokens" ->
+          Commands.tokens(args, state)
+
+        "balance" ->
+          Commands.balance(args, state)
+
+        "crypto" ->
+          Commands.crypto(args, state)
+
+        "tx" ->
+          Commands.tx(args, state)
+
+        "transactions" ->
+          Commands.transactions(args, state)
+
+        "contract" ->
+          Commands.contract(args, state)
+
+        "call" ->
+          Commands.call(args, state)
+
+        "ipfs" ->
+          Commands.ipfs(args, state)
+
+        # Fileverse
+        "ddoc" ->
+          Commands.ddoc(args, state)
+
+        "docs" ->
+          Commands.docs(args, state)
+
+        "upload" ->
+          Commands.upload(args, state)
+
+        "files" ->
+          Commands.files(args, state)
+
+        "file" ->
+          Commands.file(args, state)
+
+        "portal" ->
+          Commands.portal(args, state)
+
+        # Encryption
+        "encrypt" ->
+          Commands.encrypt(args, state)
+
+        "decrypt" ->
+          Commands.decrypt(args, state)
+
+        "privacy" ->
+          Commands.privacy(args, state)
+
+        "keys" ->
+          Commands.keys(args, state)
+
+        # dSheets
+        "sheet" ->
+          Commands.sheet(args, state)
+
+        "sheets" ->
+          Commands.sheets(args, state)
+
         # Portfolio
         "project" ->
           Commands.project(args, state)
@@ -302,7 +374,6 @@ defmodule Droodotfoo.Terminal.CommandParser do
     |> Enum.take(3)
     |> Enum.map(fn {cmd, _score} -> cmd end)
   end
-
 
   @doc """
   Get command completion suggestions.
