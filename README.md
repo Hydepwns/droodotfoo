@@ -120,7 +120,23 @@ fly deploy
 - `SPOTIFY_CLIENT_SECRET` - Spotify API client secret
 - `SPOTIFY_REDIRECT_URI` - OAuth callback URL
 - `CDN_HOST` - Cloudflare Pages domain for static asset CDN
+- `BLOG_API_TOKEN` - API token for Obsidian publishing
 - `PORT` - Server port (default: 4000)
+
+## Obsidian Publishing
+
+Publish posts directly from Obsidian via API:
+
+```bash
+# Set API token
+export BLOG_API_TOKEN="your_secure_token"
+
+# POST to /api/posts with:
+# - Authorization: Bearer <token>
+# - Body: {"content": "markdown...", "metadata": {"title": "...", "description": "...", "tags": [...]}}
+```
+
+Posts saved to `priv/posts/` and served at `/posts/:slug`
 
 ## Documentation
 
