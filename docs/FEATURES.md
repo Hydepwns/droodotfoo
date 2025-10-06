@@ -4,15 +4,15 @@ Comprehensive feature list showcasing terminal capabilities, organized by impact
 
 **Legend:**
 - Effort: `[Low]` `[Med]` `[High]`
-- Impact: `⭐` (1-3 stars)
-- Status: `✅ Done` `🚧 In Progress` `📋 Planned` `💡 Idea`
+- Impact: `*` (1-3 stars)
+- Status: `[DONE]` `[WIP]` `[PLANNED]` `[IDEA]`
 
 ---
 
-## 🚀 Currently Implementing
+## [ROCKET] Currently Implementing
 
-### 3D Model Viewer (Three.js WebGL) 🚧
-**Effort:** `[High]` | **Impact:** ⭐⭐⭐
+### 3D Model Viewer (Three.js WebGL) [WIP]
+**Effort:** `[High]` | **Impact:** ***
 
 Interactive 3D STL model viewer with terminal controls.
 
@@ -34,10 +34,10 @@ Interactive 3D STL model viewer with terminal controls.
 
 ---
 
-## ⚡ Quick Wins (High Impact, Low Effort)
+## [QUICK WIN] Quick Wins (High Impact, Low Effort)
 
-### 1. Live Command Mode ✅ (Partially Done)
-**Effort:** `[Low]` | **Impact:** ⭐⭐⭐
+### 1. Live Command Mode [DONE] (Partially Done)
+**Effort:** `[Low]` | **Impact:** ***
 
 Vim-style `:` commands for instant actions.
 
@@ -61,8 +61,8 @@ Vim-style `:` commands for instant actions.
 
 ---
 
-### 2. Enhanced Search System 📋
-**Effort:** `[Low]` | **Impact:** ⭐⭐
+### 2. Enhanced Search System [PLANNED]
+**Effort:** `[Low]` | **Impact:** **
 
 Current: Basic `/` search exists
 **Improvements:**
@@ -80,8 +80,8 @@ Current: Basic `/` search exists
 
 ---
 
-### 3. Interactive Demos 📋
-**Effort:** `[Low-Med]` | **Impact:** ⭐⭐⭐
+### 3. Interactive Demos [PLANNED]
+**Effort:** `[Low-Med]` | **Impact:** ***
 
 **Typing Test**
 ```
@@ -110,7 +110,7 @@ Current: Basic `/` search exists
 
 **Terminal Games**
 ```
-:snake          ✅ Already exists
+:snake          [DONE] Already exists
 :tetris         Classic Tetris
 :wordle         Terminal Wordle
 :2048           2048 puzzle game
@@ -121,10 +121,10 @@ Current: Basic `/` search exists
 
 ---
 
-## 🔥 Real-time Features (Impressive Showcases)
+## [HOT] Real-time Features (Impressive Showcases)
 
-### 4. Live Performance Dashboard ✅ (Partially Done)
-**Effort:** `[Low]` | **Impact:** ⭐⭐⭐
+### 4. Live Performance Dashboard [DONE] (Partially Done)
+**Effort:** `[Low]` | **Impact:** ***
 
 **Already exists:** PerformanceMonitor collecting metrics
 
@@ -160,8 +160,8 @@ Current: Basic `/` search exists
 
 ---
 
-### 5. Spotify Now Playing 📋
-**Effort:** `[Med]` | **Impact:** ⭐⭐⭐
+### 5. Spotify Now Playing [PLANNED]
+**Effort:** `[Med]` | **Impact:** ***
 
 **Credentials available:** SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET
 
@@ -179,7 +179,7 @@ Current: Basic `/` search exists
 **Live Display:**
 ```
 ╔════════════════════════════════════════════════════════════╗
-║ 🎵 NOW PLAYING                                             ║
+║ NOW PLAYING                                                ║
 ╠════════════════════════════════════════════════════════════╣
 ║                                                            ║
 ║  Track:    Midnight City                                   ║
@@ -188,7 +188,7 @@ Current: Basic `/` search exists
 ║                                                            ║
 ║  [████████████████░░░░░░░░░░]  2:34 / 4:05                 ║
 ║                                                            ║
-║  ⏮  ⏸  ⏭     🔀 Off  🔁 Off  🔊 ━━━━━╸─────  65%         ║
+║  <<  ||  >>     Shuffle: Off  Repeat: Off  Vol: 65%        ║
 ║                                                            ║
 ╚════════════════════════════════════════════════════════════╝
 ```
@@ -197,8 +197,8 @@ Current: Basic `/` search exists
 
 ---
 
-### 6. Live Data Streams 📋
-**Effort:** `[Med]` | **Impact:** ⭐⭐
+### 6. Live Data Streams [PLANNED]
+**Effort:** `[Med]` | **Impact:** **
 
 **GitHub Activity Feed**
 ```
@@ -229,10 +229,10 @@ Current: Basic `/` search exists
 
 ---
 
-## 💻 Developer Tools
+## [CODE] Developer Tools
 
-### 7. Code Playground 📋
-**Effort:** `[Med]` | **Impact:** ⭐⭐⭐
+### 7. Code Playground [PLANNED]
+**Effort:** `[Med]` | **Impact:** ***
 
 Execute code in the terminal with live output.
 
@@ -269,8 +269,8 @@ Output: 120
 
 ---
 
-### 8. Git Visualizer 💡
-**Effort:** `[High]` | **Impact:** ⭐⭐
+### 8. Git Visualizer [IDEA]
+**Effort:** `[High]` | **Impact:** **
 
 **Commands:**
 ```
@@ -297,8 +297,8 @@ Output: 120
 
 ---
 
-### 9. Package Manager Explorer 📋
-**Effort:** `[Low]` | **Impact:** ⭐⭐
+### 9. Package Manager Explorer [PLANNED]
+**Effort:** `[Low]` | **Impact:** **
 
 Already simulated: `npm`, `pip` commands exist in `terminal/commands.ex`
 
@@ -312,10 +312,10 @@ Already simulated: `npm`, `pip` commands exist in `terminal/commands.ex`
 
 ---
 
-## 🎮 Interactive Experiences
+## [GAME] Interactive Experiences
 
-### 10. Terminal Games 📋
-**Effort:** `[Low-Med]` | **Impact:** ⭐⭐⭐
+### 10. Terminal Games [PLANNED]
+**Effort:** `[Low-Med]` | **Impact:** ***
 
 **Already exists:** Snake (`lib/droodotfoo/plugins/snake_game.ex`)
 
@@ -350,8 +350,8 @@ Already simulated: `npm`, `pip` commands exist in `terminal/commands.ex`
 
 ---
 
-### 11. Typing Speed Test 📋
-**Effort:** `[Low]` | **Impact:** ⭐⭐
+### 11. Typing Speed Test [PLANNED]
+**Effort:** `[Low]` | **Impact:** **
 
 **Command:** `:typing-test [difficulty]`
 
@@ -382,8 +382,8 @@ Already simulated: `npm`, `pip` commands exist in `terminal/commands.ex`
 
 ---
 
-### 12. ASCII Art Generator 💡
-**Effort:** `[Med]` | **Impact:** ⭐⭐
+### 12. ASCII Art Generator [IDEA]
+**Effort:** `[Med]` | **Impact:** **
 
 **Commands:**
 ```
@@ -397,8 +397,8 @@ Already simulated: `npm`, `pip` commands exist in `terminal/commands.ex`
 
 ---
 
-### 13. File Browser (Ranger-style) 💡
-**Effort:** `[Med]` | **Impact:** ⭐⭐
+### 13. File Browser (Ranger-style) [IDEA]
+**Effort:** `[Med]` | **Impact:** **
 
 **Command:** `:ranger` or `:files`
 
@@ -412,8 +412,8 @@ Already simulated: `npm`, `pip` commands exist in `terminal/commands.ex`
 
 ---
 
-### 14. Markdown Live Preview 💡
-**Effort:** `[Med]` | **Impact:** ⭐⭐
+### 14. Markdown Live Preview [IDEA]
+**Effort:** `[Med]` | **Impact:** **
 
 **Commands:**
 ```
@@ -429,10 +429,10 @@ Already simulated: `npm`, `pip` commands exist in `terminal/commands.ex`
 
 ---
 
-## 🌟 Advanced Features (Complex but Impressive)
+## [STAR] Advanced Features (Complex but Impressive)
 
-### 15. Terminal Recording/Replay 💡
-**Effort:** `[High]` | **Impact:** ⭐⭐⭐
+### 15. Terminal Recording/Replay [IDEA]
+**Effort:** `[High]` | **Impact:** ***
 
 **Commands:**
 ```
@@ -452,8 +452,8 @@ Already simulated: `npm`, `pip` commands exist in `terminal/commands.ex`
 
 ---
 
-### 16. Collaborative Terminal (Multiplayer) 💡
-**Effort:** `[High]` | **Impact:** ⭐⭐⭐
+### 16. Collaborative Terminal (Multiplayer) [IDEA]
+**Effort:** `[High]` | **Impact:** ***
 
 **Commands:**
 ```
@@ -473,8 +473,8 @@ Already simulated: `npm`, `pip` commands exist in `terminal/commands.ex`
 
 ---
 
-### 17. AI Chat Integration 💡
-**Effort:** `[High]` | **Impact:** ⭐⭐⭐
+### 17. AI Chat Integration [IDEA]
+**Effort:** `[High]` | **Impact:** ***
 
 **Commands:**
 ```
@@ -491,8 +491,8 @@ Already simulated: `npm`, `pip` commands exist in `terminal/commands.ex`
 
 ---
 
-### 18. WebAssembly Execution 💡
-**Effort:** `[High]` | **Impact:** ⭐⭐
+### 18. WebAssembly Execution [IDEA]
+**Effort:** `[High]` | **Impact:** **
 
 **Commands:**
 ```
@@ -508,8 +508,8 @@ Already simulated: `npm`, `pip` commands exist in `terminal/commands.ex`
 
 ---
 
-### 19. Network Diagnostics Visualizer 💡
-**Effort:** `[Med-High]` | **Impact:** ⭐⭐
+### 19. Network Diagnostics Visualizer [IDEA]
+**Effort:** `[Med-High]` | **Impact:** **
 
 **Commands:**
 ```
@@ -532,10 +532,10 @@ Traceroute to google.com (142.250.185.46)
 
 ---
 
-## 📊 Portfolio-Specific Features
+## [GRAPH] Portfolio-Specific Features
 
-### 20. Interactive Resume 📋
-**Effort:** `[Low]` | **Impact:** ⭐⭐⭐
+### 20. Interactive Resume [PLANNED]
+**Effort:** `[Low]` | **Impact:** ***
 
 **Enhancements to existing resume:**
 ```
@@ -552,8 +552,8 @@ Traceroute to google.com (142.250.185.46)
 
 ---
 
-### 21. Project Showcase 📋
-**Effort:** `[Med]` | **Impact:** ⭐⭐⭐
+### 21. Project Showcase [PLANNED]
+**Effort:** `[Med]` | **Impact:** ***
 
 **Commands:**
 ```
@@ -571,8 +571,8 @@ Traceroute to google.com (142.250.185.46)
 
 ---
 
-### 22. Skill Visualizations 📋
-**Effort:** `[Low]` | **Impact:** ⭐⭐
+### 22. Skill Visualizations [PLANNED]
+**Effort:** `[Low]` | **Impact:** **
 
 **Commands:**
 ```
@@ -587,19 +587,19 @@ Traceroute to google.com (142.250.185.46)
 ║ TECHNICAL SKILLS                                           ║
 ╠════════════════════════════════════════════════════════════╣
 ║                                                            ║
-║  Elixir       ████████████████████░  95%  ⭐⭐⭐           ║
-║  JavaScript   ██████████████████░░  90%  ⭐⭐⭐           ║
-║  Rust         ███████████████░░░░░  75%  ⭐⭐             ║
-║  Python       ████████████████░░░░  80%  ⭐⭐⭐           ║
-║  Go           ███████████░░░░░░░░░  55%  ⭐⭐             ║
+║  Elixir       ████████████████████░  95%  ***              ║
+║  JavaScript   ██████████████████░░  90%  ***              ║
+║  Rust         ███████████████░░░░░  75%  **               ║
+║  Python       ████████████████░░░░  80%  ***              ║
+║  Go           ███████████░░░░░░░░░  55%  **               ║
 ║                                                            ║
 ╚════════════════════════════════════════════════════════════╝
 ```
 
 ---
 
-### 23. Contact Form 📋
-**Effort:** `[Low]` | **Impact:** ⭐⭐
+### 23. Contact Form [PLANNED]
+**Effort:** `[Low]` | **Impact:** **
 
 **Command:** `:contact`
 
@@ -612,10 +612,10 @@ Traceroute to google.com (142.250.185.46)
 
 ---
 
-## 🎨 Visual Enhancements
+## [ART] Visual Enhancements
 
-### 24. Boot Sequence Animation 💡
-**Effort:** `[Low]` | **Impact:** ⭐⭐
+### 24. Boot Sequence Animation [IDEA]
+**Effort:** `[Low]` | **Impact:** **
 
 Animated boot screen on page load:
 ```
@@ -632,8 +632,8 @@ droo.foo Terminal - Type 'help' for commands
 
 ---
 
-### 25. CRT/Retro Effects 💡
-**Effort:** `[Low]` | **Impact:** ⭐⭐
+### 25. CRT/Retro Effects [IDEA]
+**Effort:** `[Low]` | **Impact:** **
 
 Already has Synthwave84 theme, add:
 - Scanline overlay
@@ -646,8 +646,8 @@ Already has Synthwave84 theme, add:
 
 ---
 
-### 26. Status Bar 📋
-**Effort:** `[Low]` | **Impact:** ⭐⭐
+### 26. Status Bar [PLANNED]
+**Effort:** `[Low]` | **Impact:** **
 
 Bottom status bar showing:
 - Current section
@@ -659,8 +659,8 @@ Bottom status bar showing:
 
 ---
 
-### 27. Command History UI 📋
-**Effort:** `[Low]` | **Impact:** ⭐
+### 27. Command History UI [PLANNED]
+**Effort:** `[Low]` | **Impact:** *
 
 **Already partially exists:** History tracked in state
 
@@ -672,10 +672,10 @@ Bottom status bar showing:
 
 ---
 
-## 📱 Mobile & Accessibility
+## [MOBILE] Mobile & Accessibility
 
-### 28. Touch Gestures 📋
-**Effort:** `[Med]` | **Impact:** ⭐⭐
+### 28. Touch Gestures [PLANNED]
+**Effort:** `[Med]` | **Impact:** **
 
 - Swipe up/down for section navigation
 - Pinch to zoom text
@@ -684,8 +684,8 @@ Bottom status bar showing:
 
 ---
 
-### 29. Accessibility Improvements 📋
-**Effort:** `[Med]` | **Impact:** ⭐⭐⭐
+### 29. Accessibility Improvements [PLANNED]
+**Effort:** `[Med]` | **Impact:** ***
 
 - Screen reader support (ARIA labels)
 - High contrast mode
@@ -696,7 +696,7 @@ Bottom status bar showing:
 
 ---
 
-## 🔧 Implementation Priority
+## [TOOL] Implementation Priority
 
 ### Phase 1: Quick Wins (1-2 weeks)
 1. Command mode shortcuts (`:theme`, `:perf`, `:clear`)
@@ -735,7 +735,7 @@ Bottom status bar showing:
 
 ---
 
-## 📈 Success Metrics
+## [CHART] Success Metrics
 
 Track feature adoption and impact:
 
@@ -747,7 +747,7 @@ Track feature adoption and impact:
 
 ---
 
-## 🎯 Next Steps
+## [TARGET] Next Steps
 
 1. **Review this document** - Prioritize features based on:
    - Portfolio goals (job hunting vs. showcase)
@@ -767,8 +767,8 @@ Track feature adoption and impact:
 ---
 
 **Remember:** Focus on features that demonstrate:
-- ✨ Real-time capabilities (LiveView strength)
-- 🎨 Visual polish (terminal aesthetics)
-- 💡 Technical sophistication (Elixir/Phoenix expertise)
-- 🚀 Performance (60fps terminal rendering)
-- 🎮 Interactivity (engaging user experience)
+- Real-time capabilities (LiveView strength)
+- Visual polish (terminal aesthetics)
+- Technical sophistication (Elixir/Phoenix expertise)
+- Performance (60fps terminal rendering)
+- Interactivity (engaging user experience)
