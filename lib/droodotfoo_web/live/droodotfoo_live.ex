@@ -3,7 +3,6 @@ defmodule DroodotfooWeb.DroodotfooLive do
   alias Droodotfoo.TerminalBridge
   alias Droodotfoo.{RaxolApp, AdaptiveRefresh, InputDebouncer, InputRateLimiter, BootSequence}
   alias DroodotfooWeb.Live.ConnectionRecovery
-  alias RaxolWeb.LiveView.STLViewerComponent
 
   @impl true
   def mount(_params, _session, socket) do
@@ -130,18 +129,17 @@ defmodule DroodotfooWeb.DroodotfooLive do
         </div>
       <% end %>
 
-      <%= if @terminal_visible do %>
-        <!-- Terminal Overlay -->
-        <div class={"terminal-overlay #{if @terminal_visible, do: "active", else: ""}"}>
-          <div
-            class={"terminal-wrapper #{if @crt_mode, do: "crt-mode", else: ""} #{if @high_contrast_mode, do: "high-contrast", else: ""}"}
-            id="terminal-wrapper"
-            role="application"
-            aria-label="Interactive terminal interface"
-            phx-hook="TerminalHook"
-            phx-window-keydown="key_press"
-            tabindex="0"
-          >
+      <!-- Terminal Overlay (always rendered, visibility controlled by CSS) -->
+      <div class={"terminal-overlay #{if @terminal_visible, do: "active", else: ""}"}>
+        <div
+          class={"terminal-wrapper #{if @crt_mode, do: "crt-mode", else: ""} #{if @high_contrast_mode, do: "high-contrast", else: ""}"}
+          id="terminal-wrapper"
+          role="application"
+          aria-label="Interactive terminal interface"
+          phx-hook="TerminalHook"
+          phx-window-keydown="key_press"
+          tabindex="0"
+        >
             <!-- Monospace-web style header inside terminal -->
             <table class="header">
               <tr>
@@ -158,19 +156,8 @@ defmodule DroodotfooWeb.DroodotfooLive do
               </tr>
             </table>
 
-            <%= if @current_section == :stl_viewer do %>
-              <!-- STL Viewer Component (RaxolWeb) -->
-              <.live_component
-                module={STLViewerComponent}
-                id="main-stl-viewer"
-                model_url="/models/cube.stl"
-                width={65}
-                height={18}
-              />
-            <% else %>
-              <!-- Terminal buffer HTML -->
-              {raw(@terminal_html)}
-            <% end %>
+            <!-- Terminal buffer HTML -->
+            {raw(@terminal_html)}
             
     <!-- Hidden input for keyboard capture inside the hook element -->
             <input
@@ -183,9 +170,9 @@ defmodule DroodotfooWeb.DroodotfooLive do
             />
           </div>
         </div>
-      <% else %>
-        <!-- Homepage View -->
-        <div class="monospace-container">
+
+      <!-- Homepage View (always rendered) -->
+      <div class="monospace-container">
           <header class="box-thick" style="margin-bottom: 1.2em; padding: 1.2em;">
             <h1 style="font-size: 2rem; margin-bottom: 0.6em;">DROO.FOO</h1>
             <p style="color: var(--text-color-alt);">
@@ -244,7 +231,6 @@ defmodule DroodotfooWeb.DroodotfooLive do
             No tracking • No analytics • Just code
           </footer>
         </div>
-      <% end %>
     </div>
     """
   end
