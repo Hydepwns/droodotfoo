@@ -166,8 +166,8 @@ GET https://api.github.com/users/hydepwns/repos?sort=stars&per_page=6
 
 ### Rate Limits
 
-- **Without token**: 60 requests/hour → cached = 4 requests/hour ✅
-- **With token**: 5,000 requests/hour → plenty of headroom ✅
+- **Without token**: 60 requests/hour → cached = 4 requests/hour [OK]
+- **With token**: 5,000 requests/hour → plenty of headroom [OK]
 
 ### Configuration
 
@@ -309,13 +309,13 @@ export SPOTIFY_REDIRECT_URI="https://yourapp.com/auth/spotify/callback"
 
 ### Implementation Status
 
-✅ Completed:
+[DONE] Completed:
 - Backend services (Auth, API, Manager, Cache)
 - Terminal plugin (navigation, controls, search)
 - Web component (TypeScript, Shadow DOM)
 - LiveView integration
 
-🚧 Pending:
+[PENDING] Pending:
 - Production OAuth callback
 - Album art ASCII conversion
 - Collaborative playlists
@@ -384,7 +384,7 @@ end
 
 ### Common Pitfalls
 
-❌ **Don't**:
+[X] **Don't**:
 ```elixir
 # Stops GenServer (won't restart!)
 test "something" do
@@ -393,7 +393,7 @@ test "something" do
 end
 ```
 
-✅ **Do**:
+[OK] **Do**:
 ```elixir
 # Resets state instead
 test "something" do
@@ -478,14 +478,14 @@ end
 
 ### Security Checklist
 
-- ✅ Secrets in environment variables
-- ✅ GitHub token optional (degrades gracefully)
-- ✅ Spotify tokens encrypted
-- ✅ All HTTP requests over HTTPS
-- ✅ Input validation on all commands
-- ✅ Rate limiting on user input
-- ✅ No sensitive data logged
-- ✅ CORS configured for APIs
+- [OK] Secrets in environment variables
+- [OK] GitHub token optional (degrades gracefully)
+- [OK] Spotify tokens encrypted
+- [OK] All HTTP requests over HTTPS
+- [OK] Input validation on all commands
+- [OK] Rate limiting on user input
+- [OK] No sensitive data logged
+- [OK] CORS configured for APIs
 
 ---
 
