@@ -51,6 +51,18 @@ if config_env() == :prod do
     client_secret: System.get_env("SPOTIFY_CLIENT_SECRET"),
     redirect_uri: System.get_env("SPOTIFY_REDIRECT_URI") || "https://#{host}/auth/spotify/callback"
 
+  # Web3/Ethereum configuration
+  config :ethereumex,
+    url: System.get_env("ETHEREUM_RPC_URL") || "https://eth.llamarpc.com",
+    http_options: [timeout: 30_000, recv_timeout: 30_000]
+
+  config :droodotfoo, Droodotfoo.Web3.Manager,
+    default_chain_id: String.to_integer(System.get_env("CHAIN_ID") || "1"),
+    opensea_api_key: System.get_env("OPENSEA_API_KEY"),
+    alchemy_api_key: System.get_env("ALCHEMY_API_KEY"),
+    etherscan_api_key: System.get_env("ETHERSCAN_API_KEY"),
+    walletconnect_project_id: System.get_env("WALLETCONNECT_PROJECT_ID")
+
   endpoint_config = [
     url: [host: host, port: 443, scheme: "https"],
     http: [

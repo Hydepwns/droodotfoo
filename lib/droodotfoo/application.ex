@@ -20,6 +20,8 @@ defmodule Droodotfoo.Application do
       # Start Spotify services
       Droodotfoo.Spotify.Cache,
       Droodotfoo.Spotify.Manager,
+      # Start Web3 manager
+      Droodotfoo.Web3.Manager,
       # Start plugin system manager
       Droodotfoo.PluginSystem.Manager,
       # Start blog post manager
