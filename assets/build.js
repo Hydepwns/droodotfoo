@@ -86,17 +86,17 @@ if (watch) {
       const text = esbuild.analyzeMetafile(result.metafile, {
         verbose: false,
       });
-      console.log("\n📊 Bundle Analysis:");
+      console.log("\n[ANALYSIS] Bundle Analysis:");
       console.log(text);
 
       // Calculate total size
       const outputs = result.metafile.outputs;
       const totalSize = Object.values(outputs).reduce((acc, output) => acc + output.bytes, 0);
-      console.log(`\n📦 Total Bundle Size: ${(totalSize / 1024).toFixed(2)} KB`);
+      console.log(`\n[BUNDLE] Total Bundle Size: ${(totalSize / 1024).toFixed(2)} KB`);
 
       // Save metafile for further analysis
       require("fs").writeFileSync("meta.json", JSON.stringify(result.metafile));
-      console.log("\n💾 Metafile saved to meta.json for detailed analysis");
+      console.log("\n[SAVED] Metafile saved to meta.json for detailed analysis");
     }
   }).catch((_e) => {
     process.exit(1);

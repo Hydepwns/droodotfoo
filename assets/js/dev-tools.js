@@ -58,10 +58,10 @@ export function setupDevTools(window, liveSocket) {
     if (totalSize > 500000) {
       // 500KB warning threshold
       console.warn(
-        `⚠️ Bundle size warning: ${(totalSize / 1024).toFixed(2)}KB of JavaScript loaded`
+        `[WARNING] Bundle size warning: ${(totalSize / 1024).toFixed(2)}KB of JavaScript loaded`
       );
     }
   }
 
-  console.log("🛠️ Development tools loaded");
+  console.log("[DEV] Development tools loaded");
 }

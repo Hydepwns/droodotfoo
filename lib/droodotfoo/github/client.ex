@@ -239,7 +239,7 @@ defmodule Droodotfoo.Github.Client do
         repos
         |> Enum.with_index(1)
         |> Enum.map(fn {repo, idx} ->
-          stars = if repo.stars > 0, do: " [#{repo.stars} ⭐]", else: ""
+          stars = if repo.stars > 0, do: " [#{repo.stars} stars]", else: ""
           language = "[#{repo.language}]"
 
           """
