@@ -729,6 +729,874 @@ defmodule Droodotfoo.Terminal.Commands do
   def github([], state), do: launch_plugin("github", state)
   def gh(args, state), do: github(args, state)
 
+  # Web3 commands
+  def web3([], state) do
+    # Navigate to web3 section
+    {:ok, "Opening Web3 wallet interface...", %{state | section_change: :web3}}
+  end
+
+  def web3(["connect" | _], state) do
+    # Set connecting flag and navigate to web3 section
+    # The LiveView will pick up the web3_action and trigger MetaMask
+    {:ok, "Initiating wallet connection...",
+     %{state | section_change: :web3, web3_action: :connect}}
+  end
+
+  def web3(["disconnect" | _], state) do
+    # Set disconnect action
+    {:ok, "Disconnecting wallet...", %{state | web3_action: :disconnect}}
+  end
+
+  def web3([subcommand | _], _state) do
+    {:error, "Unknown web3 subcommand: #{subcommand}\n\nUsage:\n  web3         - Open Web3 interface\n  web3 connect - Connect wallet\n  web3 disconnect - Disconnect wallet"}
+  end
+
+  def wallet(args, state), do: web3(["connect" | args], state)
+  def w3(args, state), do: web3(args, state)
+
+  # ENS resolution command
+  def ens([], _state) do
+    {:error, "Usage: ens <name.eth> - Resolve ENS name to address"}
+  end
+
+  def ens([name | _], _state) do
+    if String.ends_with?(name, ".eth") do
+      case Droodotfoo.Web3.Manager.lookup_ens(name) do
+        {:ok, address} ->
+          output = """
+          ENS Resolution:
+            Name:    #{name}
+            Address: #{address}
+          """
+
+          {:ok, String.trim(output)}
+
+        {:error, :invalid_ens_name} ->
+          {:error, "Invalid ENS name: #{name}"}
+
+        {:error, :ens_only_on_mainnet} ->
+          {:error, "ENS is only available on Ethereum mainnet"}
+
+        {:error, :not_found} ->
+          {:error, "ENS name not found: #{name}"}
+
+        {:error, reason} ->
+          {:error, "Failed to resolve ENS: #{reason}"}
+      end
+    else
+      {:error, "ENS names must end with .eth (e.g., vitalik.eth)"}
+    end
+  end
+
+  # NFT commands
+  def nft([], _state) do
+    {:error, "Usage:\n  nft list [address]     - List NFTs for an address\n  nft view <contract> <id> - View NFT details"}
+  end
+
+  def nft(["list"], state) do
+    # List NFTs for connected wallet
+    case Map.get(state, :web3_wallet_address) do
+      nil ->
+        {:error, "No wallet connected. Use 'web3 connect' first."}
+
+      address ->
+        nft(["list", address], state)
+    end
+  end
+
+  def nft(["list", address], _state) do
+    case Droodotfoo.Web3.NFT.fetch_nfts(address, limit: 10) do
+      {:ok, []} ->
+        {:ok, "No NFTs found for address: #{address}"}
+
+      {:ok, nfts} ->
+        output =
+          nfts
+          |> Enum.with_index(1)
+          |> Enum.map(fn {nft, idx} ->
+            "#{idx}. #{nft.name}\n   Collection: #{nft.collection_name}\n   Token ID: #{nft.token_id}\n   Standard: #{nft.token_standard}"
+          end)
+          |> Enum.join("\n\n")
+
+        header = "NFTs owned by #{address}:\n\n"
+        {:ok, header <> output}
+
+      {:error, :invalid_address} ->
+        {:error, "Invalid Ethereum address"}
+
+      {:error, _reason} ->
+        {:error, "Failed to fetch NFTs. Check network connection."}
+    end
+  end
+
+  def nft(["view", contract_address, token_id], _state) do
+    case Droodotfoo.Web3.NFT.fetch_nft(contract_address, token_id) do
+      {:ok, nft} ->
+        {:ok, ascii_art} = Droodotfoo.Web3.NFT.image_to_ascii(nft.image_url)
+
+        properties_text =
+          if is_list(nft.properties) and length(nft.properties) > 0 do
+            props =
+              nft.properties
+              |> Enum.take(5)
+              |> Enum.map(fn prop ->
+                trait_type = Map.get(prop, "trait_type", "Unknown")
+                value = Map.get(prop, "value", "Unknown")
+                "  - #{trait_type}: #{value}"
+              end)
+              |> Enum.join("\n")
+
+            "\n\nProperties:\n" <> props
+          else
+            ""
+          end
+
+        output = """
+        #{ascii_art}
+
+        Name: #{nft.name}
+        Collection: #{nft.collection_name}
+        Token ID: #{nft.token_id}
+        Standard: #{nft.token_standard}
+        Contract: #{nft.contract_address}
+
+        Description:
+        #{String.slice(nft.description, 0..200)}#{if String.length(nft.description) > 200, do: "...", else: ""}#{properties_text}
+        """
+
+        {:ok, String.trim(output)}
+
+      {:error, :invalid_contract_address} ->
+        {:error, "Invalid contract address"}
+
+      {:error, _reason} ->
+        {:error, "Failed to fetch NFT. Check contract address and token ID."}
+    end
+  end
+
+  def nft([subcommand | _], _state) do
+    {:error, "Unknown nft subcommand: #{subcommand}"}
+  end
+
+  # Alias for nft list
+  def nfts([], state), do: nft(["list"], state)
+  def nfts([address], state), do: nft(["list", address], state)
+
+  # Token balance commands
+  def tokens([], state) do
+    # List tokens for connected wallet
+    case Map.get(state, :web3_wallet_address) do
+      nil ->
+        {:error, "No wallet connected. Use 'web3 connect' first."}
+
+      address ->
+        tokens(["list", address], state)
+    end
+  end
+
+  def tokens(["list"], state) do
+    case Map.get(state, :web3_wallet_address) do
+      nil ->
+        {:error, "No wallet connected. Use 'web3 connect' first."}
+
+      address ->
+        tokens(["list", address], state)
+    end
+  end
+
+  def tokens(["list", address], _state) do
+    case Droodotfoo.Web3.Token.fetch_balances(address) do
+      {:ok, []} ->
+        {:ok, "No token balances found for address: #{address}"}
+
+      {:ok, balances} ->
+        # Filter out zero balances
+        non_zero = Enum.filter(balances, fn t -> t.balance_formatted > 0 end)
+
+        if Enum.empty?(non_zero) do
+          {:ok, "No token balances found (all balances are zero)"}
+        else
+          header = "Token Balances for #{String.slice(address, 0..9)}...#{String.slice(address, -4..-1)}\n\n"
+
+          rows =
+            non_zero
+            |> Enum.map(fn token ->
+              balance_str = :erlang.float_to_binary(token.balance_formatted, decimals: 4)
+
+              price_str =
+                if token.usd_price do
+                  "$#{:erlang.float_to_binary(token.usd_price, decimals: 2)}"
+                else
+                  "N/A"
+                end
+
+              value_str =
+                if token.usd_value do
+                  "$#{:erlang.float_to_binary(token.usd_value, decimals: 2)}"
+                else
+                  "N/A"
+                end
+
+              change_str =
+                if token.price_change_24h do
+                  change = :erlang.float_to_binary(token.price_change_24h, decimals: 2)
+
+                  if token.price_change_24h >= 0 do
+                    "+#{change}%"
+                  else
+                    "#{change}%"
+                  end
+                else
+                  "N/A"
+                end
+
+              "#{String.pad_trailing(token.symbol, 6)} #{String.pad_leading(balance_str, 12)} @ #{String.pad_leading(price_str, 10)} = #{String.pad_leading(value_str, 12)}  (#{change_str})"
+            end)
+            |> Enum.join("\n")
+
+          {:ok, header <> rows}
+        end
+
+      {:error, :invalid_address} ->
+        {:error, "Invalid Ethereum address"}
+
+      {:error, _reason} ->
+        {:error, "Failed to fetch token balances. Check network connection."}
+    end
+  end
+
+  def tokens([subcommand | _], _state) do
+    {:error, "Unknown tokens subcommand: #{subcommand}\n\nUsage:\n  tokens          - List token balances\n  tokens list     - List token balances\n  balance <symbol> - Get price for a specific token"}
+  end
+
+  # Balance command for specific token price
+  def balance([], _state) do
+    {:error, "Usage: balance <symbol> - Get USD price and chart for a token (e.g., balance ETH)"}
+  end
+
+  def balance([symbol | _], _state) do
+    symbol_upper = String.upcase(symbol)
+
+    with {:ok, price_data} <- Droodotfoo.Web3.Token.get_token_price(symbol_upper),
+         {:ok, history} <- Droodotfoo.Web3.Token.get_price_history(symbol_upper, 7) do
+      chart = Droodotfoo.Web3.Token.price_chart(history)
+
+      change_str =
+        if price_data.usd_24h_change >= 0 do
+          "+#{:erlang.float_to_binary(price_data.usd_24h_change, decimals: 2)}%"
+        else
+          "#{:erlang.float_to_binary(price_data.usd_24h_change, decimals: 2)}%"
+        end
+
+      output = """
+      #{symbol_upper} Price Information
+
+      Current Price: $#{:erlang.float_to_binary(price_data.usd, decimals: 2)}
+      24h Change:    #{change_str}
+
+      7-Day Price Chart:
+      #{chart}
+      """
+
+      {:ok, String.trim(output)}
+    else
+      {:error, :token_not_found} ->
+        {:error, "Token not found: #{symbol}. Supported tokens: ETH, USDT, USDC, DAI, WBTC, LINK, MATIC, UNI, AAVE"}
+
+      {:error, :rate_limit} ->
+        {:error, "CoinGecko API rate limit reached. Please try again later."}
+
+      {:error, _reason} ->
+        {:error, "Failed to fetch price for #{symbol}. Check network connection."}
+    end
+  end
+
+  # Alias for tokens list
+  def crypto(args, state), do: tokens(args, state)
+
+  # Transaction history commands
+  def tx([], state) do
+    # Show transaction history for connected wallet
+    case Map.get(state, :web3_wallet_address) do
+      nil ->
+        {:error, "No wallet connected. Use 'web3 connect' first."}
+
+      address ->
+        tx(["history", address], state)
+    end
+  end
+
+  def tx(["history"], state) do
+    case Map.get(state, :web3_wallet_address) do
+      nil ->
+        {:error, "No wallet connected. Use 'web3 connect' first."}
+
+      address ->
+        tx(["history", address], state)
+    end
+  end
+
+  def tx(["history", address], _state) do
+    case Droodotfoo.Web3.Transaction.fetch_history(address, limit: 10) do
+      {:ok, []} ->
+        {:ok, "No transactions found for address: #{address}"}
+
+      {:ok, transactions} ->
+        header = """
+        Transaction History for #{Droodotfoo.Web3.Transaction.shorten(address)}
+
+        """
+
+        # ASCII table with transaction data
+        rows =
+          transactions
+          |> Enum.with_index(1)
+          |> Enum.map(fn {tx, idx} ->
+            tx_hash = Droodotfoo.Web3.Transaction.shorten(tx.hash)
+            from = Droodotfoo.Web3.Transaction.shorten(tx.from)
+            to = Droodotfoo.Web3.Transaction.shorten(tx.to)
+            value = :erlang.float_to_binary(tx.value_eth, decimals: 4)
+            gas = :erlang.float_to_binary(tx.gas_cost_eth, decimals: 6)
+
+            time_ago =
+              case DateTime.from_unix(tx.timestamp) do
+                {:ok, dt} ->
+                  diff = DateTime.diff(DateTime.utc_now(), dt)
+                  cond do
+                    diff < 60 -> "#{diff}s ago"
+                    diff < 3600 -> "#{div(diff, 60)}m ago"
+                    diff < 86400 -> "#{div(diff, 3600)}h ago"
+                    true -> "#{div(diff, 86400)}d ago"
+                  end
+
+                _ ->
+                  "Unknown"
+              end
+
+            status = if tx.status == "1", do: "OK", else: "FAIL"
+
+            "#{String.pad_leading(Integer.to_string(idx), 2)}. #{tx_hash} #{String.pad_trailing(from, 14)} -> #{String.pad_trailing(to, 14)} #{String.pad_leading(value, 10)} ETH  Gas: #{String.pad_leading(gas, 8)} ETH  #{String.pad_trailing(time_ago, 8)} [#{status}]"
+          end)
+          |> Enum.join("\n")
+
+        {:ok, header <> rows}
+
+      {:error, :invalid_address} ->
+        {:error, "Invalid Ethereum address"}
+
+      {:error, _reason} ->
+        {:error, "Failed to fetch transaction history"}
+    end
+  end
+
+  def tx([tx_hash], _state) when byte_size(tx_hash) > 60 do
+    # View transaction details by hash
+    case Droodotfoo.Web3.Transaction.fetch_transaction(tx_hash) do
+      {:ok, tx} ->
+        time = Droodotfoo.Web3.Transaction.format_timestamp(tx.timestamp)
+        value = :erlang.float_to_binary(tx.value_eth, decimals: 6)
+        gas_price_gwei = String.to_integer(tx.gas_price) / 1_000_000_000
+        gas_cost = :erlang.float_to_binary(tx.gas_cost_eth, decimals: 6)
+        status = if tx.status == "1", do: "Success", else: "Failed"
+
+        output = """
+        Transaction Details
+
+        Hash:        #{tx.hash}
+        Status:      #{status}
+        Block:       #{tx.block_number}
+        Timestamp:   #{time}
+
+        From:        #{tx.from}
+        To:          #{tx.to}
+        Value:       #{value} ETH
+
+        Gas Used:    #{tx.gas_used}
+        Gas Price:   #{:erlang.float_to_binary(gas_price_gwei, decimals: 2)} Gwei
+        Gas Cost:    #{gas_cost} ETH
+
+        Method:      #{if tx.method == "", do: "Transfer", else: tx.method}
+        """
+
+        {:ok, String.trim(output)}
+
+      {:error, :invalid_tx_hash} ->
+        {:error, "Invalid transaction hash"}
+
+      {:error, _reason} ->
+        {:error, "Failed to fetch transaction details"}
+    end
+  end
+
+  def tx([subcommand | _], _state) do
+    {:error, "Unknown tx subcommand: #{subcommand}\n\nUsage:\n  tx                   - Show transaction history\n  tx history [address] - Show transaction history\n  tx <hash>            - View transaction details"}
+  end
+
+  # Alias for tx history
+  def transactions(args, state), do: tx(["history" | args], state)
+
+  # Contract commands
+  def contract([], _state) do
+    {:error, "Usage:\n  contract <address>         - View contract info and ABI\n  contract <address> <function> [args...] - Call read-only function"}
+  end
+
+  def contract([address], _state) do
+    case Droodotfoo.Web3.Contract.fetch_contract(address) do
+      {:ok, contract_info} ->
+        # Parse ABI
+        case Droodotfoo.Web3.Contract.parse_abi(contract_info.abi) do
+          {:ok, %{functions: functions, events: events}} ->
+            # Display contract info
+            output = """
+            Contract Information
+            #{String.duplicate("=", 78)}
+
+            Address:     #{contract_info.address}
+            Name:        #{contract_info.name}
+            Verified:    #{if contract_info.verified, do: "YES", else: "NO"}
+            Compiler:    #{contract_info.compiler_version}
+            License:     #{contract_info.license_type}
+            Proxy:       #{if contract_info.proxy, do: "YES", else: "NO"}
+
+            #{String.duplicate("-", 78)}
+            VIEW FUNCTIONS (Read-only)
+            #{String.duplicate("-", 78)}
+
+            #{format_functions_list(functions, :view)}
+
+            #{String.duplicate("-", 78)}
+            WRITE FUNCTIONS (State-changing)
+            #{String.duplicate("-", 78)}
+
+            #{format_functions_list(functions, :write)}
+
+            #{String.duplicate("-", 78)}
+            EVENTS
+            #{String.duplicate("-", 78)}
+
+            #{format_events_list(events)}
+
+            Usage: contract #{Droodotfoo.Web3.Transaction.shorten(address)} <function> [args...]
+            """
+
+            {:ok, output}
+
+          {:error, reason} ->
+            {:error, "Failed to parse ABI: #{reason}"}
+        end
+
+      {:error, :invalid_address} ->
+        {:error, "Invalid contract address"}
+
+      {:error, reason} ->
+        {:error, "Failed to fetch contract: #{reason}"}
+    end
+  end
+
+  def contract([address, function_name | args], _state) do
+    # Call read-only contract function
+    case Droodotfoo.Web3.Contract.call_function(address, function_name, args) do
+      {:ok, result} ->
+        output = """
+        Contract Call Result
+        #{String.duplicate("=", 78)}
+
+        Contract:  #{Droodotfoo.Web3.Transaction.shorten(address)}
+        Function:  #{function_name}
+        Arguments: #{if Enum.empty?(args), do: "(none)", else: inspect(args)}
+
+        Result:    #{inspect(result)}
+        """
+
+        {:ok, output}
+
+      {:error, :invalid_address} ->
+        {:error, "Invalid contract address"}
+
+      {:error, reason} ->
+        {:error, "Function call failed: #{reason}"}
+    end
+  end
+
+  defp format_functions_list(functions, type) do
+    filtered =
+      case type do
+        :view ->
+          Enum.filter(functions, fn f ->
+            f.state_mutability in ["view", "pure"]
+          end)
+
+        :write ->
+          Enum.filter(functions, fn f ->
+            f.state_mutability not in ["view", "pure"]
+          end)
+      end
+
+    if Enum.empty?(filtered) do
+      "  (none)"
+    else
+      filtered
+      |> Enum.map(fn func ->
+        "  #{Droodotfoo.Web3.Contract.format_function_signature(func)}"
+      end)
+      |> Enum.join("\n")
+    end
+  end
+
+  defp format_events_list(events) do
+    if Enum.empty?(events) do
+      "  (none)"
+    else
+      events
+      |> Enum.map(fn event ->
+        "  #{Droodotfoo.Web3.Contract.format_event_signature(event)}"
+      end)
+      |> Enum.join("\n")
+    end
+  end
+
+  # call command - shorthand for contract function calls
+  def call([address, function_name | args], state) do
+    contract([address, function_name | args], state)
+  end
+
+  def call(_args, _state) do
+    {:error, "Usage: call <contract_address> <function> [args...]"}
+  end
+
+  # IPFS commands
+  def ipfs([], _state) do
+    {:error, "Usage:\n  ipfs cat <cid>    - Fetch and display IPFS content\n  ipfs gateway <cid> - Show gateway URLs"}
+  end
+
+  def ipfs(["cat", cid], _state) do
+    case Droodotfoo.Web3.IPFS.cat(cid) do
+      {:ok, content} ->
+        formatted = Droodotfoo.Web3.IPFS.format_content(content, max_lines: 100)
+
+        output = """
+        IPFS Content
+        #{String.duplicate("=", 78)}
+
+        CID:          #{content.cid}
+        Content-Type: #{content.content_type}
+        Size:         #{format_content_size(content.size)}
+        Gateway:      #{String.replace(content.gateway, "https://", "")}
+
+        #{String.duplicate("-", 78)}
+
+        #{formatted}
+        """
+
+        {:ok, output}
+
+      {:error, :invalid_cid} ->
+        {:error, "Invalid IPFS CID format"}
+
+      {:error, :not_found} ->
+        {:error, "Content not found on IPFS"}
+
+      {:error, :content_too_large} ->
+        {:error, "Content too large to display (>10MB)"}
+
+      {:error, :all_gateways_failed} ->
+        {:error, "Failed to fetch from all IPFS gateways"}
+
+      {:error, reason} ->
+        {:error, "Failed to fetch IPFS content: #{reason}"}
+    end
+  end
+
+  def ipfs(["gateway", cid], _state) do
+    if Droodotfoo.Web3.IPFS.valid_cid?(cid) do
+      output = """
+      IPFS Gateway URLs
+      #{String.duplicate("=", 78)}
+
+      CID: #{cid}
+
+      Available Gateways:
+      - https://cloudflare-ipfs.com/ipfs/#{cid}
+      - https://ipfs.io/ipfs/#{cid}
+      - https://gateway.pinata.cloud/ipfs/#{cid}
+      - https://dweb.link/ipfs/#{cid}
+
+      Copy any URL to access the content in your browser.
+      """
+
+      {:ok, output}
+    else
+      {:error, "Invalid IPFS CID format"}
+    end
+  end
+
+  def ipfs(["ls", cid], _state) do
+    case Droodotfoo.Web3.IPFS.ls(cid) do
+      {:ok, entries} ->
+        output = """
+        IPFS Directory Listing
+        #{String.duplicate("=", 78)}
+
+        CID: #{cid}
+
+        #{format_ipfs_directory(entries)}
+        """
+
+        {:ok, output}
+
+      {:error, :invalid_cid} ->
+        {:error, "Invalid IPFS CID format"}
+
+      {:error, :not_implemented} ->
+        {:error, "Directory listing not yet implemented\n\nUse: ipfs gateway <cid> to view in browser"}
+
+      {:error, reason} ->
+        {:error, "Failed to list directory: #{reason}"}
+    end
+  end
+
+  def ipfs([subcommand | _], _state) do
+    {:error, "Unknown ipfs subcommand: #{subcommand}\n\nUsage:\n  ipfs cat <cid>     - Fetch and display content\n  ipfs gateway <cid> - Show gateway URLs\n  ipfs ls <cid>      - List directory (not yet implemented)"}
+  end
+
+  defp format_content_size(bytes) when bytes < 1024, do: "#{bytes} bytes"
+  defp format_content_size(bytes) when bytes < 1_048_576, do: "#{Float.round(bytes / 1024, 2)} KB"
+  defp format_content_size(bytes) when bytes < 1_073_741_824, do: "#{Float.round(bytes / 1_048_576, 2)} MB"
+  defp format_content_size(bytes), do: "#{Float.round(bytes / 1_073_741_824, 2)} GB"
+
+  defp format_ipfs_directory(entries) do
+    if Enum.empty?(entries) do
+      "(empty directory)"
+    else
+      entries
+      |> Enum.map(fn entry ->
+        type_indicator = if entry.type == :directory, do: "[DIR]", else: "[FILE]"
+        size_str = if entry.size, do: " (#{format_content_size(entry.size)})", else: ""
+        "#{type_indicator} #{entry.name}#{size_str}"
+      end)
+      |> Enum.join("\n")
+    end
+  end
+
+  # Fileverse dDocs commands
+  def ddoc([], state) do
+    wallet = get_wallet_address(state)
+
+    if not wallet do
+      {:error, "Please connect your wallet first using: web3 connect"}
+    else
+      {:error, "Usage:\n  ddoc list          - List your documents\n  ddoc new <title>   - Create new document\n  ddoc view <id>     - View document\n  ddoc delete <id>   - Delete document"}
+    end
+  end
+
+  def ddoc(["list"], state) do
+    wallet = get_wallet_address(state)
+
+    if not wallet do
+      {:error, "Please connect your wallet first"}
+    else
+      case Droodotfoo.Fileverse.DDoc.list(wallet) do
+        {:ok, docs} ->
+          output = """
+          Fileverse dDocs - Encrypted Documents
+          #{String.duplicate("=", 78)}
+
+          #{Droodotfoo.Fileverse.DDoc.format_doc_list(docs)}
+
+          Note: Full dDocs integration requires @fileverse-dev/ddoc React SDK
+          """
+
+          {:ok, output}
+
+        {:error, reason} ->
+          {:error, "Failed to list documents: #{reason}"}
+      end
+    end
+  end
+
+  def ddoc(["new", title], state) do
+    wallet = get_wallet_address(state)
+
+    if not wallet do
+      {:error, "Please connect your wallet first"}
+    else
+      case Droodotfoo.Fileverse.DDoc.create(title, wallet_address: wallet) do
+        {:ok, doc} ->
+          {:ok, "Created document: #{doc.id}\nTitle: #{doc.title}\nEncrypted: YES"}
+
+        {:error, :wallet_required} ->
+          {:error, "Wallet connection required"}
+
+        {:error, reason} ->
+          {:error, "Failed to create document: #{reason}"}
+      end
+    end
+  end
+
+  def ddoc(["view", doc_id], state) do
+    wallet = get_wallet_address(state)
+
+    if not wallet do
+      {:error, "Please connect your wallet first"}
+    else
+      case Droodotfoo.Fileverse.DDoc.get(doc_id, wallet) do
+        {:ok, doc} ->
+          {:ok, Droodotfoo.Fileverse.DDoc.format_doc_info(doc) <> "\n#{String.duplicate("-", 78)}\n\n#{doc.content}"}
+
+        {:error, :not_found} ->
+          {:error, "Document not found: #{doc_id}"}
+
+        {:error, reason} ->
+          {:error, "Failed to load document: #{reason}"}
+      end
+    end
+  end
+
+  def ddoc([subcommand | _], _state) do
+    {:error, "Unknown ddoc subcommand: #{subcommand}"}
+  end
+
+  defp get_wallet_address(%{web3_wallet: %{address: address}}) when is_binary(address), do: address
+  defp get_wallet_address(_), do: nil
+
+  # docs command - alias for ddoc list
+  def docs(_args, state), do: ddoc(["list"], state)
+
+  # Fileverse Storage commands
+  def upload([file_path | _rest], state) do
+    wallet = get_wallet_address(state)
+
+    if not wallet do
+      {:error, "Please connect your wallet first with :web3 connect"}
+    else
+      case Droodotfoo.Fileverse.Storage.upload(file_path, wallet_address: wallet) do
+        {:ok, metadata} ->
+          output = """
+          File Upload Successful
+          #{String.duplicate("=", 78)}
+
+          #{Droodotfoo.Fileverse.Storage.format_file_info(metadata)}
+
+          Note: Full upload implementation requires Fileverse Storage API
+          """
+
+          {:ok, output}
+
+        {:error, :wallet_required} ->
+          {:error, "Please connect your wallet first with :web3 connect"}
+
+        {:error, reason} ->
+          {:error, "Upload failed: #{inspect(reason)}"}
+      end
+    end
+  end
+
+  def upload([], _state) do
+    {:error, "Usage: :upload <file_path>"}
+  end
+
+  # files command - list uploaded files
+  def files(_args, state) do
+    wallet = get_wallet_address(state)
+
+    if not wallet do
+      {:error, "Please connect your wallet first with :web3 connect"}
+    else
+      case Droodotfoo.Fileverse.Storage.list_files(wallet) do
+        {:ok, file_list} ->
+          output = """
+          Fileverse Storage - My Files
+          #{String.duplicate("=", 78)}
+
+          #{Droodotfoo.Fileverse.Storage.format_file_list(file_list)}
+
+          Use ':file info <cid>' to view file details
+          Use ':file versions <cid>' to see version history
+
+          Note: Full storage integration requires Fileverse Storage API
+          """
+
+          {:ok, output}
+
+        {:error, :wallet_required} ->
+          {:error, "Please connect your wallet first with :web3 connect"}
+
+        {:error, reason} ->
+          {:error, "Failed to list files: #{inspect(reason)}"}
+      end
+    end
+  end
+
+  # file command - file operations
+  def file(["info", cid], state) do
+    wallet = get_wallet_address(state)
+
+    if not wallet do
+      {:error, "Please connect your wallet first with :web3 connect"}
+    else
+      case Droodotfoo.Fileverse.Storage.get_file(cid, wallet) do
+        {:ok, metadata} ->
+          output = """
+          #{Droodotfoo.Fileverse.Storage.format_file_info(metadata)}
+
+          Note: Full storage integration requires Fileverse Storage API
+          """
+
+          {:ok, output}
+
+        {:error, :not_found} ->
+          {:error, "File not found: #{cid}"}
+
+        {:error, reason} ->
+          {:error, "Failed to get file info: #{inspect(reason)}"}
+      end
+    end
+  end
+
+  def file(["versions", cid], _state) do
+    case Droodotfoo.Fileverse.Storage.get_versions(cid) do
+      {:ok, versions} ->
+        version_lines =
+          Enum.map(versions, fn v ->
+            uploaded = Calendar.strftime(v.uploaded_at, "%Y-%m-%d %H:%M UTC")
+            size = format_file_size(v.size)
+            "  v#{v.version} - #{v.cid} (#{size}) - #{uploaded}\n  #{v.notes}"
+          end)
+
+        output = """
+        File Version History
+        #{String.duplicate("=", 78)}
+
+        CID: #{cid}
+
+        #{Enum.join(version_lines, "\n\n")}
+
+        Note: Full storage integration requires Fileverse Storage API
+        """
+
+        {:ok, output}
+
+      {:error, reason} ->
+        {:error, "Failed to get versions: #{inspect(reason)}"}
+    end
+  end
+
+  def file([], _state) do
+    {:error, "Usage: :file info <cid> or :file versions <cid>"}
+  end
+
+  def file(_args, _state) do
+    {:error, "Usage: :file info <cid> or :file versions <cid>"}
+  end
+
+  defp format_file_size(bytes) when bytes < 1024, do: "#{bytes} B"
+  defp format_file_size(bytes) when bytes < 1_048_576, do: "#{Float.round(bytes / 1024, 2)} KB"
+
+  defp format_file_size(bytes) when bytes < 1_073_741_824,
+    do: "#{Float.round(bytes / 1_048_576, 2)} MB"
+
+  defp format_file_size(bytes), do: "#{Float.round(bytes / 1_073_741_824, 2)} GB"
+
   # Project commands
   def project([], state) do
     # Go to projects section

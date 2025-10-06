@@ -247,6 +247,16 @@ defmodule Droodotfoo.Terminal.CommandParser do
         "gh" ->
           Commands.gh(args, state)
 
+        # Web3
+        "web3" ->
+          Commands.web3(args, state)
+
+        "wallet" ->
+          Commands.wallet(args, state)
+
+        "w3" ->
+          Commands.w3(args, state)
+
         # Portfolio
         "project" ->
           Commands.project(args, state)
