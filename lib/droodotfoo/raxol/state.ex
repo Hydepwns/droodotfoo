@@ -31,7 +31,15 @@ defmodule Droodotfoo.Raxol.State do
     :autocomplete_index,
     :high_contrast_mode,
     :selected_project_index,
-    :project_detail_view
+    :project_detail_view,
+    :spotify_mode,
+    :spotify_selected_button,
+    :spotify_is_playing,
+    :spotify_compact_mode,
+    :web3_wallet_connected,
+    :web3_wallet_address,
+    :web3_chain_id,
+    :web3_connecting
   ]
 
   @doc """
@@ -55,7 +63,7 @@ defmodule Droodotfoo.Raxol.State do
       current_section: :home,
       cursor_y: 2,
       cursor_x: 0,
-      navigation_items: [:home, :projects, :skills, :experience, :contact],
+      navigation_items: [:home, :projects, :skills, :experience, :contact, :spotify, :stl_viewer, :web3],
       command_mode: false,
       command_buffer: "",
       command_history: [],
@@ -73,7 +81,15 @@ defmodule Droodotfoo.Raxol.State do
       autocomplete_index: -1,
       high_contrast_mode: false,
       selected_project_index: 0,
-      project_detail_view: false
+      project_detail_view: false,
+      spotify_mode: :dashboard,
+      spotify_selected_button: 0,
+      spotify_is_playing: false,
+      spotify_compact_mode: false,
+      web3_wallet_connected: false,
+      web3_wallet_address: nil,
+      web3_chain_id: nil,
+      web3_connecting: false
     }
   end
 

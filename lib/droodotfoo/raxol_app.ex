@@ -57,6 +57,15 @@ defmodule Droodotfoo.RaxolApp do
     end
   end
 
+  def get_spotify_action(pid \\ __MODULE__) do
+    try do
+      GenServer.call(pid, :get_spotify_action, 1000)
+    catch
+      :exit, _ ->
+        nil
+    end
+  end
+
   def get_crt_mode(pid \\ __MODULE__) do
     try do
       GenServer.call(pid, :get_crt_mode, 1000)
@@ -72,6 +81,24 @@ defmodule Droodotfoo.RaxolApp do
     catch
       :exit, _ ->
         false
+    end
+  end
+
+  def get_web3_action(pid \\ __MODULE__) do
+    try do
+      GenServer.call(pid, :get_web3_action, 1000)
+    catch
+      :exit, _ ->
+        nil
+    end
+  end
+
+  def set_web3_wallet(pid \\ __MODULE__, address, chain_id) do
+    try do
+      GenServer.call(pid, {:set_web3_wallet, address, chain_id}, 1000)
+    catch
+      :exit, _ ->
+        :error
     end
   end
 
@@ -133,6 +160,33 @@ defmodule Droodotfoo.RaxolApp do
     # Clear the action after reading it
     new_state = Map.delete(state, :stl_viewer_action)
     {:reply, action, new_state}
+  end
+
+  def handle_call(:get_spotify_action, _from, state) do
+    action = Map.get(state, :spotify_action)
+    # Clear the action after reading it
+    new_state = Map.delete(state, :spotify_action)
+    {:reply, action, new_state}
+  end
+
+  def handle_call(:get_web3_action, _from, state) do
+    action = Map.get(state, :web3_action)
+    # Clear the action after reading it
+    new_state = Map.delete(state, :web3_action)
+    {:reply, action, new_state}
+  end
+
+  def handle_call({:set_web3_wallet, address, chain_id}, _from, state) do
+    # Update the internal Raxol state with wallet info
+    new_raxol_state = %{
+      state.raxol_state
+      | web3_wallet_connected: address != nil,
+        web3_wallet_address: address,
+        web3_chain_id: chain_id
+    }
+
+    new_state = %{state | raxol_state: new_raxol_state}
+    {:reply, :ok, new_state}
   end
 
   def handle_call(:ping, _from, state) do

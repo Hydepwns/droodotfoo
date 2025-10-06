@@ -375,6 +375,26 @@ defmodule DroodotfooWeb.DroodotfooLive do
             socket
           end
 
+        # Check for Spotify actions
+        spotify_action = RaxolApp.get_spotify_action(socket.assigns.raxol_pid)
+
+        socket =
+          if spotify_action do
+            handle_spotify_action(socket, spotify_action)
+          else
+            socket
+          end
+
+        # Check for Web3 actions
+        web3_action = RaxolApp.get_web3_action(socket.assigns.raxol_pid)
+
+        socket =
+          if web3_action do
+            handle_web3_action(socket, web3_action)
+          else
+            socket
+          end
+
         # Check for CRT mode changes
         crt_mode = RaxolApp.get_crt_mode(socket.assigns.raxol_pid)
 
@@ -644,6 +664,25 @@ defmodule DroodotfooWeb.DroodotfooLive do
     {:noreply, socket}
   end
 
+  # Handle Web3 wallet connection success from JavaScript hook
+  def handle_event("web3_connect_success", %{"address" => _address, "chainId" => chain_id, "signature" => signature, "nonce" => nonce}, socket) do
+    # Verify the signature and recover the address
+    case Droodotfoo.Web3.Auth.verify_signature(nonce, signature) do
+      {:ok, verified_address} ->
+        # Store the wallet session
+        Droodotfoo.Web3.Manager.start_session(verified_address, chain_id)
+
+        # Update RaxolApp state
+        RaxolApp.set_web3_wallet(socket.assigns.raxol_pid, verified_address, chain_id)
+
+        {:noreply, socket}
+
+      {:error, _reason} ->
+        # Authentication failed
+        {:noreply, push_event(socket, "web3_auth_failed", %{error: "Signature verification failed"})}
+    end
+  end
+
   defp valid_input_key?(nil), do: false
   defp valid_input_key?(""), do: false
 
@@ -855,6 +894,68 @@ defmodule DroodotfooWeb.DroodotfooLive do
   end
 
   defp handle_stl_viewer_action(socket, _), do: socket
+
+  # Handle Spotify actions from keyboard
+  defp handle_spotify_action(socket, :play_pause) do
+    Droodotfoo.Spotify.Manager.play_pause()
+    socket
+  end
+
+  defp handle_spotify_action(socket, :next_track) do
+    Droodotfoo.Spotify.Manager.next_track()
+    socket
+  end
+
+  defp handle_spotify_action(socket, :previous_track) do
+    Droodotfoo.Spotify.Manager.previous_track()
+    socket
+  end
+
+  defp handle_spotify_action(socket, :volume_up) do
+    Droodotfoo.Spotify.Manager.adjust_volume(:up)
+    socket
+  end
+
+  defp handle_spotify_action(socket, :volume_down) do
+    Droodotfoo.Spotify.Manager.adjust_volume(:down)
+    socket
+  end
+
+  defp handle_spotify_action(socket, :refresh) do
+    Droodotfoo.Spotify.Manager.refresh_now_playing()
+    socket
+  end
+
+  defp handle_spotify_action(socket, :start_auth) do
+    case Droodotfoo.Spotify.Manager.start_auth() do
+      {:ok, url} ->
+        # Push event to JS to open browser
+        push_event(socket, "open_url", %{url: url})
+
+      {:error, _} ->
+        socket
+    end
+  end
+
+  defp handle_spotify_action(socket, _), do: socket
+
+  # Handle Web3 actions
+  defp handle_web3_action(socket, :connect) do
+    # Generate a temporary nonce (will be replaced by one from the backend)
+    # For now, we'll generate it client-side in the JavaScript hook
+    # Just push the event to trigger MetaMask
+    push_event(socket, "web3_connect_request", %{})
+  end
+
+  defp handle_web3_action(socket, :disconnect) do
+    # Clear wallet session (get session ID from RaxolApp state)
+    # For now, just update the RaxolApp state
+    RaxolApp.set_web3_wallet(socket.assigns.raxol_pid, nil, nil)
+
+    socket
+  end
+
+  defp handle_web3_action(socket, _), do: socket
 
   # Render boot sequence to HTML
   defp render_boot_sequence(step) do

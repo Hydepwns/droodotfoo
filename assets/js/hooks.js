@@ -1,6 +1,7 @@
 // MonospaceGrid is not used in this simplified hook
 // import MonospaceGrid from './terminal_grid';
 import { STLViewerHook } from './hooks/stl_viewer.ts';
+import { Web3WalletHook } from './hooks/web3_wallet.js';
 
 const TerminalHook = {
   mounted() {
@@ -157,6 +158,12 @@ const TerminalHook = {
       // Save to localStorage for session persistence
       localStorage.setItem('terminal_visible', visible);
     });
+
+    // Handle open URL requests (e.g., for Spotify auth)
+    this.handleEvent('open_url', ({ url }) => {
+      console.log('Opening URL:', url);
+      window.open(url, '_blank');
+    });
   },
 
   // Apply theme to the terminal wrapper
@@ -193,5 +200,6 @@ const TerminalHook = {
 // Export all hooks
 export default {
   TerminalHook,
-  STLViewerHook
+  STLViewerHook,
+  Web3WalletHook
 };
