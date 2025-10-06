@@ -11,16 +11,19 @@ defmodule Droodotfoo.Fileverse.DDoc do
 
   require Logger
 
+  alias Droodotfoo.Fileverse.Encryption
+
   @type document :: %{
           id: String.t(),
           title: String.t(),
-          content: String.t(),
+          content: String.t() | map(),
           author: String.t(),
           collaborators: [String.t()],
           encrypted: boolean(),
           created_at: DateTime.t(),
           updated_at: DateTime.t(),
-          ipfs_cid: String.t() | nil
+          ipfs_cid: String.t() | nil,
+          encryption_metadata: map() | nil
         }
 
   @doc """
@@ -33,6 +36,8 @@ defmodule Droodotfoo.Fileverse.DDoc do
     - `:wallet_address` - Creator's wallet address
     - `:encrypted` - Enable encryption (default: true)
     - `:collaborators` - List of wallet addresses with access
+    - `:content` - Initial content (default: "")
+    - `:encryption_keys` - Encryption keys for E2E encryption
 
   ## Examples
 
@@ -45,22 +50,42 @@ defmodule Droodotfoo.Fileverse.DDoc do
     wallet_address = Keyword.get(opts, :wallet_address)
     encrypted = Keyword.get(opts, :encrypted, true)
     collaborators = Keyword.get(opts, :collaborators, [])
+    content = Keyword.get(opts, :content, "")
+    encryption_keys = Keyword.get(opts, :encryption_keys)
 
     if not wallet_address do
       {:error, :wallet_required}
     else
-      # Mock implementation
-      # Production would call Fileverse API/SDK
+      # Encrypt content if keys provided
+      {final_content, encryption_metadata} =
+        if encrypted and encryption_keys do
+          case Encryption.encrypt_document(content, encryption_keys) do
+            {:ok, encrypted_data} ->
+              {encrypted_data, %{
+                algorithm: encrypted_data.algorithm,
+                key_id: encrypted_data.key_id,
+                encrypted_at: encrypted_data.encrypted_at
+              }}
+
+            {:error, _reason} ->
+              Logger.warn("Failed to encrypt document, storing plaintext")
+              {content, nil}
+          end
+        else
+          {content, nil}
+        end
+
       doc = %{
         id: "ddoc_" <> generate_id(),
         title: title,
-        content: "",
+        content: final_content,
         author: wallet_address,
         collaborators: collaborators,
-        encrypted: encrypted,
+        encrypted: encrypted and encryption_metadata != nil,
         created_at: DateTime.utc_now(),
         updated_at: DateTime.utc_now(),
-        ipfs_cid: nil
+        ipfs_cid: nil,
+        encryption_metadata: encryption_metadata
       }
 
       {:ok, doc}
@@ -115,34 +140,69 @@ defmodule Droodotfoo.Fileverse.DDoc do
   @doc """
   Get a document by ID.
 
+  ## Parameters
+
+  - `doc_id`: Document ID
+  - `wallet_address`: Wallet address for access control
+  - `opts`: Keyword list of options
+    - `:encryption_keys` - Keys to decrypt if document is encrypted
+
   ## Examples
 
       iex> Droodotfoo.Fileverse.DDoc.get("doc_123", "0x...")
       {:ok, %{id: "doc_123", title: "My Doc", ...}}
 
   """
-  @spec get(String.t(), String.t()) :: {:ok, document()} | {:error, atom()}
-  def get(doc_id, wallet_address) do
+  @spec get(String.t(), String.t(), keyword()) :: {:ok, document()} | {:error, atom()}
+  def get(doc_id, wallet_address, opts \\ []) do
     if not wallet_address do
       {:error, :wallet_required}
     else
+      encryption_keys = Keyword.get(opts, :encryption_keys)
+
       # Mock implementation
       # Production would fetch from Fileverse and decrypt if needed
       case String.starts_with?(doc_id, "ddoc_") do
         true ->
-          {:ok,
-           %{
-             id: doc_id,
-             title: "Sample Document",
-             content:
-               "# Sample dDoc\n\nThis is a decentralized document stored on IPFS.\n\nFeatures:\n- End-to-end encryption\n- Real-time collaboration\n- Version history\n- Offline editing",
-             author: wallet_address,
-             collaborators: [],
-             encrypted: true,
-             created_at: DateTime.utc_now() |> DateTime.add(-86400, :second),
-             updated_at: DateTime.utc_now(),
-             ipfs_cid: "QmSample789"
-           }}
+          content =
+            "# Sample dDoc\n\nThis is a decentralized document stored on IPFS.\n\nFeatures:\n- End-to-end encryption\n- Real-time collaboration\n- Version history\n- Offline editing"
+
+          # Mock encrypted content
+          encrypted_metadata = %{
+            algorithm: "AES-256-GCM",
+            key_id: "mock_key_id",
+            encrypted_at: DateTime.utc_now()
+          }
+
+          doc = %{
+            id: doc_id,
+            title: "Sample Document",
+            content: content,
+            author: wallet_address,
+            collaborators: [],
+            encrypted: true,
+            created_at: DateTime.utc_now() |> DateTime.add(-86400, :second),
+            updated_at: DateTime.utc_now(),
+            ipfs_cid: "QmSample789",
+            encryption_metadata: encrypted_metadata
+          }
+
+          # Decrypt if keys provided (for real encrypted documents)
+          final_doc =
+            if encryption_keys and is_map(doc.content) do
+              case Encryption.decrypt_document(doc.content, encryption_keys) do
+                {:ok, plaintext} ->
+                  %{doc | content: plaintext}
+
+                {:error, _reason} ->
+                  Logger.warn("Failed to decrypt document #{doc_id}")
+                  %{doc | content: "[ENCRYPTED - Unable to decrypt]"}
+              end
+            else
+              doc
+            end
+
+          {:ok, final_doc}
 
         false ->
           {:error, :not_found}
@@ -198,8 +258,34 @@ defmodule Droodotfoo.Fileverse.DDoc do
   def format_doc_info(doc) do
     created = Calendar.strftime(doc.created_at, "%Y-%m-%d %H:%M UTC")
     updated = Calendar.strftime(doc.updated_at, "%Y-%m-%d %H:%M UTC")
-    encrypted_status = if doc.encrypted, do: "YES (E2E)", else: "NO"
+
+    encrypted_status =
+      if doc.encrypted do
+        metadata = doc.encryption_metadata
+
+        if metadata do
+          "YES - [E2E] #{metadata.algorithm}"
+        else
+          "YES (E2E)"
+        end
+      else
+        "NO"
+      end
+
     ipfs_status = if doc.ipfs_cid, do: doc.ipfs_cid, else: "Not published"
+
+    encryption_info =
+      if doc.encrypted and doc.encryption_metadata do
+        """
+
+        Encryption Details:
+          Algorithm:   #{doc.encryption_metadata.algorithm}
+          Key ID:      #{doc.encryption_metadata.key_id}
+          Encrypted:   #{Calendar.strftime(doc.encryption_metadata.encrypted_at, "%Y-%m-%d %H:%M UTC")}
+        """
+      else
+        ""
+      end
 
     """
     Document: #{doc.title}
@@ -211,7 +297,7 @@ defmodule Droodotfoo.Fileverse.DDoc do
     Last Updated:  #{updated}
     Encrypted:     #{encrypted_status}
     IPFS CID:      #{ipfs_status}
-    Collaborators: #{length(doc.collaborators)}
+    Collaborators: #{length(doc.collaborators)}#{encryption_info}
     """
   end
 

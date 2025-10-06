@@ -39,7 +39,10 @@ defmodule Droodotfoo.Raxol.State do
     :web3_wallet_connected,
     :web3_wallet_address,
     :web3_chain_id,
-    :web3_connecting
+    :web3_connecting,
+    :privacy_mode,
+    :encryption_keys,
+    :encryption_sessions
   ]
 
   @doc """
@@ -89,7 +92,10 @@ defmodule Droodotfoo.Raxol.State do
       web3_wallet_connected: false,
       web3_wallet_address: nil,
       web3_chain_id: nil,
-      web3_connecting: false
+      web3_connecting: false,
+      privacy_mode: false,
+      encryption_keys: nil,
+      encryption_sessions: %{}
     }
   end
 
