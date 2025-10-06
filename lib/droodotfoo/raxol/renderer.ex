@@ -187,13 +187,25 @@ defmodule Droodotfoo.Raxol.Renderer do
         do: " ▓SEARCH",
         else: ""
 
+    # Encryption and privacy indicators
+    privacy_indicator = if state.privacy_mode, do: " ▓PRIVACY", else: ""
+    encryption_indicator = if state.encryption_keys, do: " ▓E2E", else: ""
+    wallet_indicator = if state.web3_wallet_connected, do: " ▓WALLET", else: ""
+
     # Right side: time and connection status with gradient
     {:ok, now} = DateTime.now("Etc/UTC")
     time_str = Calendar.strftime(now, "%H:%M:%S")
     right_side = "#{time_str} │ ░▒▓█ "
 
     # Calculate spacing
-    middle_content = vim_indicator <> cmd_indicator <> search_indicator
+    middle_content =
+      vim_indicator <>
+        cmd_indicator <>
+        search_indicator <>
+        privacy_indicator <>
+        encryption_indicator <>
+        wallet_indicator
+
     left_section = breadcrumb
     right_section = right_side
 
@@ -244,6 +256,7 @@ defmodule Droodotfoo.Raxol.Renderer do
 
     # Draw autocomplete dropdown if suggestions exist
     suggestions = Map.get(state, :autocomplete_suggestions, [])
+
     if suggestions != [] do
       draw_autocomplete_dropdown(buffer, state)
     else
@@ -287,7 +300,13 @@ defmodule Droodotfoo.Raxol.Renderer do
       end)
 
     # Draw top border
-    buffer = TerminalBridge.write_at(buffer, 2, dropdown_y, "┌─ Suggestions " <> String.duplicate("─", 25) <> "┐")
+    buffer =
+      TerminalBridge.write_at(
+        buffer,
+        2,
+        dropdown_y,
+        "┌─ Suggestions " <> String.duplicate("─", 25) <> "┐"
+      )
 
     # Draw bottom border
     bottom_y = dropdown_y + length(suggestions) + 1
@@ -697,24 +716,26 @@ defmodule Droodotfoo.Raxol.Renderer do
     # Check auth status
     auth_status = Manager.auth_status()
 
-    spotify_lines = case auth_status do
-      :authenticated ->
-        draw_spotify_view(state)
+    spotify_lines =
+      case auth_status do
+        :authenticated ->
+          draw_spotify_view(state)
 
-      _ ->
-        draw_spotify_auth_prompt()
-    end
+        _ ->
+          draw_spotify_auth_prompt()
+      end
 
     draw_box_at(buffer, spotify_lines, 35, 13)
   end
 
   defp draw_content(buffer, :web3, state) do
     # Check wallet connection status
-    web3_lines = if state.web3_wallet_connected do
-      draw_web3_connected(state)
-    else
-      draw_web3_connect_prompt(state)
-    end
+    web3_lines =
+      if state.web3_wallet_connected do
+        draw_web3_connected(state)
+      else
+        draw_web3_connect_prompt(state)
+      end
 
     draw_box_at(buffer, web3_lines, 35, 13)
   end
@@ -764,65 +785,69 @@ defmodule Droodotfoo.Raxol.Renderer do
     last_error = Manager.last_error()
 
     # Determine playback state icon
-    state_icon = cond do
-      loading -> "[~]"
-      playback && playback.is_playing -> "[>]"
-      playback && !playback.is_playing -> "[||]"
-      true -> "[--]"
-    end
+    state_icon =
+      cond do
+        loading -> "[~]"
+        playback && playback.is_playing -> "[>]"
+        playback && !playback.is_playing -> "[||]"
+        true -> "[--]"
+      end
 
     # Connection status
-    status_line = cond do
-      loading ->
-        "│  Status: [LOADING...]                                         │"
+    status_line =
+      cond do
+        loading ->
+          "│  Status: [LOADING...]                                         │"
 
-      last_error ->
-        error_msg = String.slice(to_string(last_error), 0..40)
-        "│  Status: [ERROR: #{String.pad_trailing(error_msg, 40)}] │"
+        last_error ->
+          error_msg = String.slice(to_string(last_error), 0..40)
+          "│  Status: [ERROR: #{String.pad_trailing(error_msg, 40)}] │"
 
-      true ->
-        "│  Status: [CONNECTED]                                          │"
-    end
+        true ->
+          "│  Status: [CONNECTED]                                          │"
+      end
 
-    now_playing = case current_track do
-      %{name: name, artists: artists} ->
-        artist_names = Enum.map_join(artists, ", ", & &1["name"])
-        truncated_name = String.slice(name, 0..40)
-        truncated_artist = String.slice(artist_names, 0..40)
+    now_playing =
+      case current_track do
+        %{name: name, artists: artists} ->
+          artist_names = Enum.map_join(artists, ", ", & &1["name"])
+          truncated_name = String.slice(name, 0..40)
+          truncated_artist = String.slice(artist_names, 0..40)
 
-        # Build progress bar if we have playback data
-        progress_bar = build_progress_bar(playback)
+          # Build progress bar if we have playback data
+          progress_bar = build_progress_bar(playback)
 
-        [
-          "│  Now Playing: #{state_icon}                                         │",
-          "│    #{String.pad_trailing(truncated_name, 63)}│",
-          "│    #{String.pad_trailing(truncated_artist, 63)}│",
-          "│                                                                     │",
-          "│  #{progress_bar} │"
-        ]
+          [
+            "│  Now Playing: #{state_icon}                                         │",
+            "│    #{String.pad_trailing(truncated_name, 63)}│",
+            "│    #{String.pad_trailing(truncated_artist, 63)}│",
+            "│                                                                     │",
+            "│  #{progress_bar} │"
+          ]
 
-      _ ->
-        [
-          "│  Now Playing: #{state_icon} --                                      │",
-          "│                                                                     │"
-        ]
-    end
+        _ ->
+          [
+            "│  Now Playing: #{state_icon} --                                      │",
+            "│                                                                     │"
+          ]
+      end
 
     # Playback controls
     controls = [
       "│                                                                     │",
-      "│      [<< PREV]       [SPACE PLAY/PAUSE]       [NEXT >>]            │"
+      "│     [B]PREV  [SPACE]PLAY/PAUSE  [N]EXT    [=/-]VOL  [R]EFRESH     │"
     ]
 
     # Last update timestamp
-    last_update_line = case Manager.playback_state() do
-      %{timestamp: ts} when not is_nil(ts) ->
-        time_ago = format_time_ago(ts)
-        "│  Last refresh: #{String.pad_trailing(time_ago, 50)}│"
+    last_update_line =
+      case Manager.playback_state() do
+        %{timestamp: ts} when not is_nil(ts) ->
+          time_ago = format_time_ago(ts)
+          "│  Last refresh: #{String.pad_trailing(time_ago, 50)}│"
 
-      _ ->
-        "│  Last refresh: --                                              │"
-    end
+        _ ->
+          "│  Last refresh: --                                              │"
+      end
 
     header = [
       "┌─ Spotify ───────────────────────────────────────────────────────────┐",
@@ -839,10 +864,10 @@ defmodule Droodotfoo.Raxol.Renderer do
       "│  └──────────────┘  └──────────────┘  └──────────────┘             │",
       "│                                                                     │",
       "│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐             │",
-      "│  │ [C]ONTROLS   │  │  [M]COMPACT  │  │  [R]EFRESH   │             │",
+      "│  │ [C]ONTROLS   │  │  [V]OLUME    │  │  [R]EFRESH   │             │",
       "│  └──────────────┘  └──────────────┘  └──────────────┘             │",
       "│                                                                     │",
-      "│  Quick: [SPACE]Play/Pause [[]Back []]Next [=/-]Volume              │",
+      "│  Quick: [SPACE]Play/Pause [N]ext [B]ack [=/-]Volume                │",
       "│                                                                     │",
       "└─────────────────────────────────────────────────────────────────────┘"
     ]
@@ -857,6 +882,7 @@ defmodule Droodotfoo.Raxol.Renderer do
       :devices -> draw_spotify_devices()
       :search -> draw_spotify_search()
       :controls -> draw_spotify_controls()
+      :volume -> draw_spotify_volume()
       _ -> draw_spotify_dashboard()
     end
   end
@@ -871,26 +897,28 @@ defmodule Droodotfoo.Raxol.Renderer do
       "│                                                                     │"
     ]
 
-    playlist_lines = if Enum.empty?(playlists) do
-      [
-        "│  No playlists found.                                               │",
-        "│                                                                     │",
-        "│  Loading playlists...                                              │"
-      ]
-    else
-      playlists
-      |> Enum.take(15)
-      |> Enum.map(fn playlist ->
-        name = String.slice(playlist["name"] || "Untitled", 0..55)
-        track_count = playlist["tracks"]["total"] || 0
-        info = "#{track_count} tracks"
-        "│  > #{String.pad_trailing(name, 50)} #{String.pad_trailing(info, 10)}│"
-      end)
-    end
+    playlist_lines =
+      if Enum.empty?(playlists) do
+        [
+          "│  No playlists found.                                               │",
+          "│                                                                     │",
+          "│  Loading playlists...                                              │"
+        ]
+      else
+        playlists
+        |> Enum.take(15)
+        |> Enum.map(fn playlist ->
+          name = String.slice(playlist["name"] || "Untitled", 0..55)
+          track_count = playlist["tracks"]["total"] || 0
+          info = "#{track_count} tracks"
+          "│  > #{String.pad_trailing(name, 50)} #{String.pad_trailing(info, 10)}│"
+        end)
+      end
 
     footer = [
       "│                                                                     │",
-      "│  [ESC] Back to Dashboard  [ENTER] Play Playlist                    │",
+      "│  [ESC] Back to Dashboard  [ENTER] Play Playlist  [R] Refresh       │",
+      "│  Quick: [P]laylists [D]evices [S]earch [C]ontrols [V]olume         │",
       "│                                                                     │",
       "└─────────────────────────────────────────────────────────────────────┘"
     ]
@@ -909,30 +937,32 @@ defmodule Droodotfoo.Raxol.Renderer do
       "│                                                                     │"
     ]
 
-    device_lines = if current_device do
-      device_name = String.slice(current_device["name"] || "Unknown", 0..40)
-      device_type = String.slice(current_device["type"] || "Unknown", 0..15)
-      volume = current_device["volume_percent"] || 0
-      is_active = if current_device["is_active"], do: "[ACTIVE]", else: ""
+    device_lines =
+      if current_device do
+        device_name = String.slice(current_device["name"] || "Unknown", 0..40)
+        device_type = String.slice(current_device["type"] || "Unknown", 0..15)
+        volume = current_device["volume_percent"] || 0
+        is_active = if current_device["is_active"], do: "[ACTIVE]", else: ""
 
-      [
-        "│  Current Device:                                                   │",
-        "│    #{String.pad_trailing(device_name, 63)}│",
-        "│    Type: #{String.pad_trailing(device_type, 56)}│",
-        "│    Volume: #{String.pad_trailing("#{volume}%", 54)}│",
-        "│    #{String.pad_trailing(is_active, 63)}│"
-      ]
-    else
-      [
-        "│  No active device found.                                           │",
-        "│                                                                     │",
-        "│  Please start playback on a Spotify device.                        │"
-      ]
-    end
+        [
+          "│  Current Device:                                                   │",
+          "│    #{String.pad_trailing(device_name, 63)}│",
+          "│    Type: #{String.pad_trailing(device_type, 56)}│",
+          "│    Volume: #{String.pad_trailing("#{volume}%", 54)}│",
+          "│    #{String.pad_trailing(is_active, 63)}│"
+        ]
+      else
+        [
+          "│  No active device found.                                           │",
+          "│                                                                     │",
+          "│  Please start playback on a Spotify device.                        │"
+        ]
+      end
 
     footer = [
       "│                                                                     │",
-      "│  [ESC] Back to Dashboard  [=/-] Adjust Volume                      │",
+      "│  [ESC] Back to Dashboard  [=/-] Adjust Volume  [R] Refresh         │",
+      "│  Quick: [P]laylists [D]evices [S]earch [C]ontrols [V]olume         │",
       "│                                                                     │",
       "└─────────────────────────────────────────────────────────────────────┘"
     ]
@@ -941,7 +971,7 @@ defmodule Droodotfoo.Raxol.Renderer do
   end
 
   defp draw_spotify_search do
-    header = [
+    body = [
       "┌─ Spotify > Search ──────────────────────────────────────────────────┐",
       "│                                                                     │",
       "│  Search Mode                                                        │",
@@ -959,12 +989,13 @@ defmodule Droodotfoo.Raxol.Renderer do
       "│    - Artists                                                        │",
       "│    - Playlists                                                      │",
       "│                                                                     │",
-      "│  [ESC] Back to Dashboard  [ENTER] Search                           │",
+      "│  [ESC] Back to Dashboard  [ENTER] Search  [R] Refresh              │",
+      "│  Quick: [P]laylists [D]evices [S]earch [C]ontrols [V]olume         │",
       "│                                                                     │",
       "└─────────────────────────────────────────────────────────────────────┘"
     ]
 
-    header
+    body
   end
 
   defp draw_spotify_controls do
@@ -973,31 +1004,33 @@ defmodule Droodotfoo.Raxol.Renderer do
     current_track = Manager.current_track()
     playback = Manager.playback_state()
 
-    state_icon = cond do
-      playback && playback.is_playing -> "[>]"
-      playback && !playback.is_playing -> "[||]"
-      true -> "[--]"
-    end
+    state_icon =
+      cond do
+        playback && playback.is_playing -> "[>]"
+        playback && !playback.is_playing -> "[||]"
+        true -> "[--]"
+      end
 
     progress_bar = build_progress_bar(playback)
 
-    now_playing = case current_track do
-      %{name: name, artists: artists} ->
-        artist_names = Enum.map_join(artists, ", ", & &1["name"])
-        truncated_name = String.slice(name, 0..50)
-        truncated_artist = String.slice(artist_names, 0..50)
+    now_playing =
+      case current_track do
+        %{name: name, artists: artists} ->
+          artist_names = Enum.map_join(artists, ", ", & &1["name"])
+          truncated_name = String.slice(name, 0..50)
+          truncated_artist = String.slice(artist_names, 0..50)
 
-        [
-          "│  #{state_icon} #{String.pad_trailing(truncated_name, 61)}│",
-          "│    by #{String.pad_trailing(truncated_artist, 59)}│"
-        ]
+          [
+            "│  #{state_icon} #{String.pad_trailing(truncated_name, 61)}│",
+            "│    by #{String.pad_trailing(truncated_artist, 59)}│"
+          ]
 
-      _ ->
-        [
-          "│  #{state_icon} No track playing                                          │",
-          "│                                                                     │"
-        ]
-    end
+        _ ->
+          [
+            "│  #{state_icon} No track playing                                          │",
+            "│                                                                     │"
+          ]
+      end
 
     header = [
       "┌─ Spotify > Playback Controls ───────────────────────────────────────┐",
@@ -1011,19 +1044,68 @@ defmodule Droodotfoo.Raxol.Renderer do
       "│                  Playback Controls                                  │",
       "│                                                                     │",
       "│              ┌──────────────────────────────┐                       │",
-      "│              │   [[] PREVIOUS  [SPACE] PLAY │                       │",
-      "│              │   []] NEXT     [=/-] VOLUME  │                       │",
+      "│              │   [B] PREV   [SPACE] PLAY    │                       │",
+      "│              │   [N] NEXT     [=/-] VOLUME  │                       │",
       "│              └──────────────────────────────┘                       │",
       "│                                                                     │"
     ]
 
     footer = [
       "│  [ESC] Back to Dashboard  [R] Refresh                              │",
+      "│  Quick: [P]laylists [D]evices [S]earch [C]ontrols [V]olume         │",
       "│                                                                     │",
       "└─────────────────────────────────────────────────────────────────────┘"
     ]
 
     header ++ now_playing ++ controls ++ footer
+  end
+
+  defp draw_spotify_volume do
+    alias Droodotfoo.Spotify.Manager
+
+    playback = Manager.playback_state()
+
+    current_volume =
+      case playback do
+        %{device: %{"volume_percent" => vol}} -> vol
+        _ -> 50
+      end
+
+    # Build volume bar (0-100)
+    bar_width = 50
+    filled = round(current_volume / 100 * bar_width)
+    empty = bar_width - filled
+    volume_bar = String.duplicate("█", filled) <> String.duplicate("░", empty)
+
+    header = [
+      "┌─ Spotify > Volume Control ──────────────────────────────────────────┐",
+      "│                                                                     │"
+    ]
+
+    volume_display = [
+      "│  Current Volume: #{String.pad_trailing("#{current_volume}%", 52)}│",
+      "│                                                                     │",
+      "│  #{String.pad_trailing(volume_bar, 67)}│",
+      "│                                                                     │",
+      "│                                                                     │",
+      "│                  Volume Controls                                    │",
+      "│                                                                     │",
+      "│              ┌──────────────────────────────┐                       │",
+      "│              │   [=] Volume Up              │                       │",
+      "│              │   [-] Volume Down            │                       │",
+      "│              │   [0-9] Set volume (0-100%)  │                       │",
+      "│              └──────────────────────────────┘                       │",
+      "│                                                                     │"
+    ]
+
+    footer = [
+      "│  [ESC] Back to Dashboard  [R] Refresh                              │",
+      "│  Quick: [P]laylists [D]evices [S]earch [C]ontrols [V]olume         │",
+      "│                                                                     │",
+      "└─────────────────────────────────────────────────────────────────────┘"
+    ]
+
+    header ++ volume_display ++ footer
   end
 
   defp build_progress_bar(playback) do
@@ -1043,7 +1125,9 @@ defmodule Droodotfoo.Raxol.Renderer do
         total_time = format_time(duration)
 
         time_str = "#{current_time} / #{total_time}"
-        padding = String.duplicate(" ", max(0, 67 - String.length(bar) - String.length(time_str) - 2))
+
+        padding =
+          String.duplicate(" ", max(0, 67 - String.length(bar) - String.length(time_str) - 2))
 
         "#{bar}  #{time_str}#{padding}"
 
@@ -1068,11 +1152,16 @@ defmodule Droodotfoo.Raxol.Renderer do
     diff_seconds = div(diff_ms, 1000)
 
     cond do
-      diff_seconds < 10 -> "just now"
-      diff_seconds < 60 -> "#{diff_seconds}s ago"
+      diff_seconds < 10 ->
+        "just now"
+
+      diff_seconds < 60 ->
+        "#{diff_seconds}s ago"
+
       diff_seconds < 3600 ->
         minutes = div(diff_seconds, 60)
         "#{minutes}m ago"
+
       true ->
         hours = div(diff_seconds, 3600)
         "#{hours}h ago"
@@ -1315,11 +1404,12 @@ defmodule Droodotfoo.Raxol.Renderer do
   defp draw_web3_connect_prompt(state) do
     connecting = state.web3_connecting
 
-    status_line = if connecting do
-      "│  Status: [CONNECTING...]                                        │"
-    else
-      "│  Status: [NOT CONNECTED]                                        │"
-    end
+    status_line =
+      if connecting do
+        "│  Status: [CONNECTING...]                                        │"
+      else
+        "│  Status: [NOT CONNECTED]                                        │"
+      end
 
     [
       "┌─ Web3 Wallet ───────────────────────────────────────────────────┐",
@@ -1362,21 +1452,22 @@ defmodule Droodotfoo.Raxol.Renderer do
     network_name = get_network_name(chain_id)
 
     # Try to resolve ENS name (if on mainnet)
-    ens_lines = if chain_id == 1 and address != "Unknown" do
-      case Droodotfoo.Web3.Manager.resolve_ens(address) do
-        {:ok, ens_name} when ens_name != address ->
-          [
-            "│  │                                                              │  │",
-            "│  │  ENS Name:                                                   │  │",
-            "│  │    #{String.pad_trailing(ens_name, 56)}│  │"
-          ]
+    ens_lines =
+      if chain_id == 1 and address != "Unknown" do
+        case Droodotfoo.Web3.Manager.resolve_ens(address) do
+          {:ok, ens_name} when ens_name != address ->
+            [
+              "│  │                                                              │  │",
+              "│  │  ENS Name:                                                   │  │",
+              "│  │    #{String.pad_trailing(ens_name, 56)}│  │"
+            ]
 
-        _ ->
-          []
+          _ ->
+            []
+        end
+      else
+        []
       end
-    else
-      []
-    end
 
     [
       "┌─ Web3 Wallet ───────────────────────────────────────────────────┐",
@@ -1387,25 +1478,25 @@ defmodule Droodotfoo.Raxol.Renderer do
       "│  │  Wallet Address:                                             │  │",
       "│  │    #{String.pad_trailing(abbreviated_address, 56)}│  │"
     ] ++
-    ens_lines ++
-    [
-      "│  │                                                              │  │",
-      "│  │  Network:                                                    │  │",
-      "│  │    #{String.pad_trailing(network_name, 56)}│  │",
-      "│  └──────────────────────────────────────────────────────────────┘  │",
-      "│                                                                     │",
-      "│  Available Commands:                                                │",
-      "│    :web3 disconnect   - Disconnect wallet                          │",
-      "│    :ens <name>        - Resolve ENS name                           │",
-      "│    :nft list          - View your NFTs                             │",
-      "│    :tokens            - View token balances                        │",
-      "│    :tx history        - View transaction history                   │",
-      "│                                                                     │",
-      "│  Quick Actions:                                                     │",
-      "│    [D]isconnect  [E]NS  [N]FTs  [T]okens  [H]istory               │",
-      "│                                                                     │",
-      "└─────────────────────────────────────────────────────────────────────┘"
-    ]
+      ens_lines ++
+      [
+        "│  │                                                              │  │",
+        "│  │  Network:                                                    │  │",
+        "│  │    #{String.pad_trailing(network_name, 56)}│  │",
+        "│  └──────────────────────────────────────────────────────────────┘  │",
+        "│                                                                     │",
+        "│  Available Commands:                                                │",
+        "│    :web3 disconnect   - Disconnect wallet                          │",
+        "│    :ens <name>        - Resolve ENS name                           │",
+        "│    :nft list          - View your NFTs                             │",
+        "│    :tokens            - View token balances                        │",
+        "│    :tx history        - View transaction history                   │",
+        "│                                                                     │",
+        "│  Quick Actions:                                                     │",
+        "│    [D]isconnect  [E]NS  [N]FTs  [T]okens  [H]istory               │",
+        "│                                                                     │",
+        "└─────────────────────────────────────────────────────────────────────┘"
+      ]
   end
 
   defp abbreviate_address(address) when is_binary(address) do
@@ -1422,7 +1513,7 @@ defmodule Droodotfoo.Raxol.Renderer do
 
   defp get_network_name(1), do: "Ethereum Mainnet"
   defp get_network_name(5), do: "Goerli Testnet"
-  defp get_network_name(11155111), do: "Sepolia Testnet"
+  defp get_network_name(11_155_111), do: "Sepolia Testnet"
   defp get_network_name(137), do: "Polygon Mainnet"
   defp get_network_name(80001), do: "Mumbai Testnet"
   defp get_network_name(42161), do: "Arbitrum One"
