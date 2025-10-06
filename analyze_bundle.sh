@@ -3,8 +3,8 @@
 # Bundle Analysis Script for droo.foo
 # Analyzes JavaScript bundle size and provides optimization recommendations
 
-echo "🔍 Analyzing droo.foo Bundle Size..."
-echo "=================================="
+echo "[ANALYZING] Analyzing droo.foo Bundle Size..."
+echo "=============================================="
 
 # Build assets in production mode
 echo "Building production assets..."
@@ -12,7 +12,7 @@ MIX_ENV=prod mix assets.deploy
 
 # Check if metafile was generated
 if [ ! -f "priv/static/assets/js/meta.json" ]; then
-    echo "❌ Meta file not found. Running esbuild with metafile generation..."
+    echo "[X] Meta file not found. Running esbuild with metafile generation..."
     cd assets && npx esbuild js/app.js \
         --bundle \
         --target=es2022 \
@@ -26,8 +26,8 @@ fi
 
 # Analyze bundle sizes
 echo ""
-echo "📊 Bundle Size Report:"
-echo "---------------------"
+echo "[REPORT] Bundle Size Report:"
+echo "----------------------------"
 
 # Get main bundle size
 if [ -f "priv/static/assets/js/app.js" ]; then
@@ -62,48 +62,48 @@ TOTAL_SIZE=$(du -sh priv/static/assets | cut -f1)
 echo "Total Assets: $TOTAL_SIZE"
 
 echo ""
-echo "🎯 Optimization Recommendations:"
-echo "--------------------------------"
+echo "[RECOMMENDATIONS] Optimization Recommendations:"
+echo "-----------------------------------------------"
 
 # Check main bundle size and provide recommendations
 if [ -n "$MAIN_SIZE_BYTES" ]; then
     if [ "$MAIN_SIZE_BYTES" -gt 500000 ]; then
-        echo "⚠️  Main bundle is larger than 500KB"
+        echo "[WARNING] Main bundle is larger than 500KB"
         echo "   Consider:"
         echo "   - Implementing more code splitting"
         echo "   - Removing unused dependencies"
         echo "   - Using dynamic imports for large features"
     elif [ "$MAIN_SIZE_BYTES" -gt 250000 ]; then
-        echo "⚡ Main bundle is moderately sized (250-500KB)"
+        echo "[INFO] Main bundle is moderately sized (250-500KB)"
         echo "   Consider:"
         echo "   - Lazy loading non-critical features"
         echo "   - Tree shaking unused exports"
     else
-        echo "✅ Main bundle is well optimized (<250KB)"
+        echo "[OK] Main bundle is well optimized (<250KB)"
     fi
 fi
 
 # Check for common issues
 echo ""
-echo "🔎 Checking for common issues..."
+echo "[CHECKING] Checking for common issues..."
 
 # Check for source maps in production
 if ls priv/static/assets/js/*.map 1> /dev/null 2>&1; then
-    echo "⚠️  Source maps found in production build"
+    echo "[WARNING] Source maps found in production build"
     echo "   Remove source maps for production deployment"
 fi
 
 # Check for console statements
 if grep -q "console\." priv/static/assets/js/app.js 2>/dev/null; then
-    echo "⚠️  Console statements found in production bundle"
+    echo "[WARNING] Console statements found in production bundle"
     echo "   Add --drop:console to build config"
 fi
 
 # Generate detailed report with esbuild
 if [ -f "priv/static/assets/js/meta.json" ]; then
     echo ""
-    echo "📈 Detailed Bundle Analysis:"
-    echo "---------------------------"
+    echo "[ANALYSIS] Detailed Bundle Analysis:"
+    echo "------------------------------------"
     # Use node to analyze the metafile
     node -e "
       const fs = require('fs');
@@ -123,23 +123,23 @@ fi
 
 # Performance budget check
 echo ""
-echo "📏 Performance Budget Check:"
-echo "---------------------------"
+echo "[BUDGET] Performance Budget Check:"
+echo "----------------------------------"
 BUDGET_JS=300000  # 300KB
 BUDGET_CSS=50000  # 50KB
 
 if [ -n "$MAIN_SIZE_BYTES" ] && [ "$MAIN_SIZE_BYTES" -gt "$BUDGET_JS" ]; then
     OVER=$((MAIN_SIZE_BYTES - BUDGET_JS))
     OVER_KB=$((OVER / 1024))
-    echo "❌ JS budget exceeded by ${OVER_KB}KB"
+    echo "[FAIL] JS budget exceeded by ${OVER_KB}KB"
 else
-    echo "✅ JS within budget (<300KB)"
+    echo "[OK] JS within budget (<300KB)"
 fi
 
 # Provide optimization script
 echo ""
-echo "💡 Quick Optimizations:"
-echo "----------------------"
+echo "[TIP] Quick Optimizations:"
+echo "--------------------------"
 echo "1. Run: mix phx.digest.clean --all"
 echo "2. Run: MIX_ENV=prod mix assets.deploy"
 echo "3. Enable gzip compression in your web server"
@@ -147,4 +147,4 @@ echo "4. Use CDN for static assets"
 echo "5. Implement Service Worker for caching"
 
 echo ""
-echo "✨ Analysis complete!"
+echo "[COMPLETE] Analysis complete!"
