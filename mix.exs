@@ -73,7 +73,12 @@ defmodule Droodotfoo.MixProject do
       # Blog system dependencies
       {:mdex, "~> 0.2"},
       {:yaml_elixir, "~> 2.9"},
-      {:plug_crypto, "~> 2.0"}
+      {:plug_crypto, "~> 2.0"},
+      # Web3 integration dependencies
+      {:ethers, "~> 0.6.7"},
+      {:ethereumex, "~> 0.10"},
+      {:ex_keccak, "~> 0.7"},
+      {:ex_secp256k1, "~> 0.7"}
     ]
   end
 
