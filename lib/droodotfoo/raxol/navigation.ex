@@ -115,6 +115,14 @@ defmodule Droodotfoo.Raxol.Navigation do
     end
   end
 
+  def handle_input("v", state) do
+    if state.current_section == :spotify do
+      %{state | spotify_mode: :volume}
+    else
+      state
+    end
+  end
+
   def handle_input("q", state) do
     if state.current_section == :stl_viewer do
       # Exit viewer, return to home
@@ -215,6 +223,22 @@ defmodule Droodotfoo.Raxol.Navigation do
     end
   end
 
+  def handle_input("n", state) do
+    if state.current_section == :spotify do
+      Map.put(state, :spotify_action, :next_track)
+    else
+      state
+    end
+  end
+
+  def handle_input("b", state) do
+    if state.current_section == :spotify do
+      Map.put(state, :spotify_action, :previous_track)
+    else
+      state
+    end
+  end
+
   def handle_input("g", state) do
     if State.vim_mode?(state) do
       # Go to top
@@ -278,13 +302,18 @@ defmodule Droodotfoo.Raxol.Navigation do
   def handle_input("7", state), do: jump_to_and_select(state, 6)
   def handle_input("8", state), do: jump_to_and_select(state, 7)
 
-  # Toggle vim mode with 'v' key
+  # Toggle vim mode with 'v' key (unless in Spotify where it's volume control)
   def handle_input("v", state) do
-    %{state | vim_mode: !state.vim_mode}
+    if state.current_section == :spotify do
+      # Already handled above for volume control
+      state
+    else
+      %{state | vim_mode: !state.vim_mode}
+    end
   end
 
   def handle_input("V", state) do
-    # Same as 'v' - toggle vim mode
+    # Same as 'v' - toggle vim mode (capital V always toggles vim mode)
     %{state | vim_mode: !state.vim_mode}
   end
 
@@ -302,7 +331,17 @@ defmodule Droodotfoo.Raxol.Navigation do
     try do
       section_atom = String.to_existing_atom(section_str)
 
-      if section_atom in state.navigation_items or section_atom in [:terminal, :search_results, :performance, :matrix, :ssh, :analytics, :help, :spotify] do
+      if section_atom in state.navigation_items or
+           section_atom in [
+             :terminal,
+             :search_results,
+             :performance,
+             :matrix,
+             :ssh,
+             :analytics,
+             :help,
+             :spotify
+           ] do
         %{state | current_section: section_atom}
       else
         state
