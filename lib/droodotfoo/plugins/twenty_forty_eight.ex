@@ -2,18 +2,59 @@ defmodule Droodotfoo.Plugins.TwentyFortyEight do
   @moduledoc """
   2048 - Sliding tile puzzle game.
 
-  Combine tiles with the same number to create larger numbers.
-  Goal: Reach the 2048 tile!
+  Slide numbered tiles to combine matching values and reach 2048. Each move
+  spawns a new 2 or 4 tile. Game ends when no moves remain.
 
-  Controls:
-  - Arrow Keys: Slide tiles
-  - r: Restart game
-  - u: Undo last move
-  - q: Quit
+  ## Objective
+
+  Combine tiles with matching numbers to create larger values.
+  Goal: Create a 2048 tile! (But you can keep playing after winning)
+
+  ## Mechanics
+
+  - **Tile Movement**: Arrow keys slide all tiles in that direction
+  - **Tile Merging**: Adjacent tiles with same value merge into one (value doubles)
+  - **New Tiles**: After each move, a new tile (2 or 4) appears randomly
+  - **Scoring**: Gain points equal to the value of each merged tile
+  - **Game Over**: No empty cells and no possible merges
+
+  ## Tile Distribution
+
+  - 90% chance of spawning a 2 tile
+  - 10% chance of spawning a 4 tile
+
+  ## Features
+
+  - **Undo**: Revert up to 10 previous moves
+  - **Best Score**: Persists highest score during session
+  - **Win Detection**: Special message when reaching 2048
+  - **Continue Playing**: Keep going after winning for higher scores
+
+  ## Controls
+
+  - **Arrow Keys**: Slide tiles in direction
+  - **R**: Restart game (lose current progress)
+  - **U**: Undo last move (up to 10 moves)
+  - **Q**: Quit game
   """
 
   use Droodotfoo.Plugins.GameBase
   alias Droodotfoo.Plugins.GameUI
+
+  @type tile :: integer() | nil
+  @type grid :: [[tile()]]
+  @type direction :: :up | :down | :left | :right
+  @type state :: %__MODULE__{
+          grid: grid(),
+          score: integer(),
+          best_score: integer(),
+          game_over: boolean(),
+          won: boolean(),
+          move_history: [state()],
+          can_undo: boolean()
+        }
+  @type terminal_state :: map()
+  @type render_output :: [String.t()]
 
   defstruct [
     :grid,
@@ -28,6 +69,7 @@ defmodule Droodotfoo.Plugins.TwentyFortyEight do
   @grid_size 4
 
   @impl true
+  @spec metadata() :: map()
   def metadata do
     %{
       name: "2048",
@@ -40,6 +82,7 @@ defmodule Droodotfoo.Plugins.TwentyFortyEight do
   end
 
   @impl true
+  @spec init(terminal_state()) :: {:ok, state()}
   def init(_terminal_state) do
     grid = create_empty_grid()
 
@@ -61,6 +104,8 @@ defmodule Droodotfoo.Plugins.TwentyFortyEight do
   end
 
   @impl true
+  @spec handle_input(String.t(), state(), terminal_state()) ::
+          {:continue, state(), render_output()} | {:exit, [String.t()]}
   def handle_input("ArrowUp", state, _terminal_state) do
     if game_blocked?(state) do
       {:continue, state, render(state, %{})}
@@ -127,6 +172,7 @@ defmodule Droodotfoo.Plugins.TwentyFortyEight do
   end
 
   @impl true
+  @spec render(state(), terminal_state()) :: render_output()
   def render(state, _terminal_state) do
     status =
       cond do
@@ -143,7 +189,10 @@ defmodule Droodotfoo.Plugins.TwentyFortyEight do
         GameUI.title_line("2048", width),
         GameUI.divider(width),
         GameUI.empty_line(width),
-        GameUI.content_line("Score: #{String.pad_trailing("#{state.score}", 10)} Best: #{String.pad_trailing("#{state.best_score}", 10)} Status: #{String.pad_trailing(status, 15)}", width),
+        GameUI.content_line(
+          "Score: #{String.pad_trailing("#{state.score}", 10)} Best: #{String.pad_trailing("#{state.best_score}", 10)} Status: #{String.pad_trailing(status, 15)}",
+          width
+        ),
         GameUI.empty_line(width),
         "║      ┌──────┬──────┬──────┬──────┐                        ║"
       ] ++
@@ -163,6 +212,7 @@ defmodule Droodotfoo.Plugins.TwentyFortyEight do
   end
 
   @impl true
+  @spec cleanup(state()) :: :ok
   def cleanup(_state) do
     :ok
   end
@@ -181,11 +231,14 @@ defmodule Droodotfoo.Plugins.TwentyFortyEight do
     else
       {row, col} = Enum.random(empty_cells)
       value = if :rand.uniform() < 0.9, do: 2, else: 4
-
-      List.update_at(grid, row, fn row_data ->
-        List.update_at(row_data, col, fn _ -> value end)
-      end)
+      set_tile(grid, row, col, value)
     end
+  end
+
+  defp set_tile(grid, row, col, value) do
+    List.update_at(grid, row, fn row_data ->
+      List.update_at(row_data, col, fn _ -> value end)
+    end)
   end
 
   defp get_empty_cells(grid) do
@@ -220,7 +273,7 @@ defmodule Droodotfoo.Plugins.TwentyFortyEight do
       won = has_tile_with_value?(grid_with_new_tile, 2048)
 
       # Check game over condition
-      game_over = is_game_over?(grid_with_new_tile)
+      game_over = game_over?(grid_with_new_tile)
 
       %{
         state
@@ -304,15 +357,15 @@ defmodule Droodotfoo.Plugins.TwentyFortyEight do
     end)
   end
 
-  defp is_game_over?(grid) do
+  defp game_over?(grid) do
     # Game over if no empty cells and no possible merges
     no_empty_cells = get_empty_cells(grid) == []
 
-    if not no_empty_cells do
-      false
-    else
+    if no_empty_cells do
       # Check if any adjacent tiles can merge
       not has_possible_merge?(grid)
+    else
+      false
     end
   end
 
@@ -353,6 +406,6 @@ defmodule Droodotfoo.Plugins.TwentyFortyEight do
   defp format_cell(value) when value < 10, do: "   #{value}  "
   defp format_cell(value) when value < 100, do: "  #{value}  "
   defp format_cell(value) when value < 1000, do: "  #{value} "
-  defp format_cell(value) when value < 10000, do: " #{value} "
+  defp format_cell(value) when value < 10_000, do: " #{value} "
   defp format_cell(value), do: "#{value}"
 end

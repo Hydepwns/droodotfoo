@@ -5,14 +5,43 @@ defmodule Droodotfoo.Plugins.TypingTest do
   Type the displayed text as accurately and quickly as possible.
   Your Words Per Minute (WPM) and accuracy percentage are calculated in real-time.
 
-  Controls:
+  ## Metrics
+
+  - **WPM**: Words Per Minute (1 word = 5 characters)
+  - **Accuracy**: Percentage of correctly typed characters
+  - **Errors**: Count of mistyped characters
+  - **Time**: Elapsed time since first keypress
+
+  ## Controls
+
   - Type characters to match the target text
   - Backspace: Delete last character
-  - Escape: Restart test
-  - q: Quit (when not typing)
+  - Escape: Restart test with new sample
+  - q: Quit (only when not typing)
+
+  ## Sample Texts
+
+  The plugin includes 5 sample texts ranging from pangrams to famous literary quotes.
+  A random sample is selected for each test session.
   """
 
   @behaviour Droodotfoo.PluginSystem.Plugin
+
+  @type state :: %__MODULE__{
+          text: String.t(),
+          typed: String.t(),
+          started: boolean(),
+          start_time: integer() | nil,
+          end_time: integer() | nil,
+          errors: integer(),
+          finished: boolean(),
+          current_sample: String.t()
+        }
+  @type terminal_state :: map()
+  @type render_output :: [String.t()]
+  @type input_result ::
+          {:continue, state(), render_output()}
+          | {:exit, render_output()}
 
   defstruct [
     :text,
@@ -34,6 +63,7 @@ defmodule Droodotfoo.Plugins.TypingTest do
   ]
 
   @impl true
+  @spec metadata() :: map()
   def metadata do
     %{
       name: "typing_test",
@@ -46,6 +76,7 @@ defmodule Droodotfoo.Plugins.TypingTest do
   end
 
   @impl true
+  @spec init(terminal_state()) :: {:ok, state()}
   def init(_terminal_state) do
     sample = Enum.random(@sample_texts)
 
@@ -63,6 +94,7 @@ defmodule Droodotfoo.Plugins.TypingTest do
   end
 
   @impl true
+  @spec handle_input(String.t(), state(), terminal_state()) :: input_result()
   def handle_input(key, state, _terminal_state) when key == "Escape" do
     # Restart test with new sample
     sample = Enum.random(@sample_texts)
@@ -138,6 +170,7 @@ defmodule Droodotfoo.Plugins.TypingTest do
   end
 
   @impl true
+  @spec render(state(), terminal_state()) :: render_output()
   def render(state, _terminal_state) do
     {wpm, accuracy, elapsed} = calculate_stats(state)
 
@@ -148,33 +181,35 @@ defmodule Droodotfoo.Plugins.TypingTest do
         if state.started, do: "TYPING...", else: "Press any key to start"
       end
 
-    lines = [
-      "╔═══════════════════════════════════════════════════════════════╗",
-      "║ TYPING SPEED TEST                                             ║",
-      "╠═══════════════════════════════════════════════════════════════╣",
-      "║                                                               ║",
-      "║  #{String.pad_trailing(status_line, 61)}║",
-      "║                                                               ║",
-      "║  WPM: #{String.pad_trailing(format_number(wpm), 10)} Accuracy: #{String.pad_trailing("#{accuracy}%", 10)} Time: #{format_time(elapsed)}   ║",
-      "║  Errors: #{String.pad_trailing("#{state.errors}", 52)}║",
-      "║                                                               ║",
-      "╠═══════════════════════════════════════════════════════════════╣"
-    ] ++
-      render_text_comparison(state) ++
+    lines =
       [
+        "╔═══════════════════════════════════════════════════════════════╗",
+        "║ TYPING SPEED TEST                                             ║",
         "╠═══════════════════════════════════════════════════════════════╣",
         "║                                                               ║",
-        "║  Controls:                                                    ║",
-        "║  Type to match text  Backspace: Delete  Esc: Restart          ║",
-        "║  q: Quit (when idle)                                          ║",
+        "║  #{String.pad_trailing(status_line, 61)}║",
         "║                                                               ║",
-        "╚═══════════════════════════════════════════════════════════════╝"
-      ]
+        "║  WPM: #{String.pad_trailing(format_number(wpm), 10)} Accuracy: #{String.pad_trailing("#{accuracy}%", 10)} Time: #{format_time(elapsed)}   ║",
+        "║  Errors: #{String.pad_trailing("#{state.errors}", 52)}║",
+        "║                                                               ║",
+        "╠═══════════════════════════════════════════════════════════════╣"
+      ] ++
+        render_text_comparison(state) ++
+        [
+          "╠═══════════════════════════════════════════════════════════════╣",
+          "║                                                               ║",
+          "║  Controls:                                                    ║",
+          "║  Type to match text  Backspace: Delete  Esc: Restart          ║",
+          "║  q: Quit (when idle)                                          ║",
+          "║                                                               ║",
+          "╚═══════════════════════════════════════════════════════════════╝"
+        ]
 
     lines
   end
 
   @impl true
+  @spec cleanup(state()) :: :ok
   def cleanup(_state) do
     :ok
   end
@@ -202,7 +237,7 @@ defmodule Droodotfoo.Plugins.TypingTest do
     accuracy =
       if String.length(state.typed) > 0 do
         correct = String.length(state.typed) - state.errors
-        ((correct / String.length(state.typed)) * 100) |> Float.round(1)
+        (correct / String.length(state.typed) * 100) |> Float.round(1)
       else
         100.0
       end
@@ -318,22 +353,22 @@ defmodule Droodotfoo.Plugins.TypingTest do
       highlighted =
         typed_chars
         |> Enum.with_index()
-        |> Enum.map(fn {char, idx} ->
-          target_char = Enum.at(target_chars, idx)
-
-          if char == target_char do
-            char
-          else
-            # Mark incorrect characters with brackets
-            "[#{char}]"
-          end
-        end)
-        |> Enum.join("")
+        |> Enum.map_join("", &highlight_char(&1, target_chars))
         |> String.graphemes()
         |> Enum.chunk_every(max_width)
         |> Enum.map(&Enum.join/1)
 
       highlighted
+    end
+  end
+
+  defp highlight_char({char, idx}, target_chars) do
+    target_char = Enum.at(target_chars, idx)
+
+    if char == target_char do
+      char
+    else
+      "[#{char}]"
     end
   end
 end

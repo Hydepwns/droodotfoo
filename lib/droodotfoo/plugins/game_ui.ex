@@ -59,7 +59,8 @@ defmodule Droodotfoo.Plugins.GameUI do
   """
   def content_line(text, width \\ @default_width, left_pad \\ 1) do
     # Total content area between borders
-    content_area = width - 4  # Remove 4 for "║ " and " ║"
+    # Remove 4 for "║ " and " ║"
+    content_area = width - 4
 
     # Available space for padding + text
     padding = String.duplicate(" ", left_pad)
@@ -141,8 +142,7 @@ defmodule Droodotfoo.Plugins.GameUI do
   """
   def controls_help(control_pairs) do
     control_pairs
-    |> Enum.map(fn {key, action} -> "#{key}: #{action}" end)
-    |> Enum.join("  ")
+    |> Enum.map_join("  ", fn {key, action} -> "#{key}: #{action}" end)
     |> List.wrap()
   end
 

@@ -1,9 +1,49 @@
 defmodule Droodotfoo.Plugins.Calculator do
   @moduledoc """
-  Calculator plugin with basic arithmetic and RPN support
+  Calculator plugin with basic arithmetic and RPN support.
+
+  Supports two modes:
+  - **Standard mode**: Traditional infix notation (e.g., "2 + 2")
+  - **RPN mode**: Reverse Polish Notation with stack-based operations
+
+  ## Features
+
+  - Basic arithmetic operations: +, -, *, /, ^
+  - Expression evaluation with order of operations
+  - Stack-based RPN calculations
+  - Calculation history tracking
+  - Memory storage (planned)
+
+  ## Usage
+
+  Standard mode: Enter expressions like `5 + 3`, `10 * 2`, `100 / 4`
+  RPN mode: Enter numbers and operators separately (`5`, `3`, `+`)
+
+  ## Commands
+
+  - `rpn` - Switch to RPN mode
+  - `std` - Switch to standard mode
+  - `clear` - Clear display and stack
+  - `help` - Show detailed help
+  - `q` - Quit calculator
   """
 
   @behaviour Droodotfoo.PluginSystem.Plugin
+
+  @type mode :: :standard | :rpn
+  @type state :: %__MODULE__{
+          mode: mode(),
+          display: String.t(),
+          stack: [number()],
+          history: [String.t()],
+          memory: number()
+        }
+  @type terminal_state :: map()
+  @type render_output :: [String.t()]
+  @type input_result ::
+          {:continue, state(), render_output()}
+          | {:exit, render_output()}
+          | {:error, String.t()}
 
   defstruct [
     :mode,
@@ -16,6 +56,7 @@ defmodule Droodotfoo.Plugins.Calculator do
   # Plugin Behaviour Callbacks
 
   @impl true
+  @spec metadata() :: map()
   def metadata do
     %{
       name: "calc",
@@ -28,6 +69,7 @@ defmodule Droodotfoo.Plugins.Calculator do
   end
 
   @impl true
+  @spec init(terminal_state()) :: {:ok, state()}
   def init(_terminal_state) do
     initial_state = %__MODULE__{
       mode: :standard,
@@ -41,6 +83,7 @@ defmodule Droodotfoo.Plugins.Calculator do
   end
 
   @impl true
+  @spec handle_input(String.t(), state(), terminal_state()) :: input_result()
   def handle_input(input, state, _terminal_state) do
     input = String.trim(input)
 
@@ -72,6 +115,7 @@ defmodule Droodotfoo.Plugins.Calculator do
   end
 
   @impl true
+  @spec render(state(), terminal_state()) :: render_output()
   def render(state, _terminal_state) do
     header = [
       "=" |> String.duplicate(50),
@@ -124,6 +168,7 @@ defmodule Droodotfoo.Plugins.Calculator do
   end
 
   @impl true
+  @spec cleanup(state()) :: :ok
   def cleanup(_state) do
     :ok
   end
@@ -149,7 +194,7 @@ defmodule Droodotfoo.Plugins.Calculator do
   defp handle_rpn_input(input, state) do
     cond do
       # Check if it's a number
-      is_number?(input) ->
+      number?(input) ->
         {num, _} = Float.parse(input)
         new_state = %{state | stack: [num | state.stack]}
         {:continue, new_state, render(new_state, %{})}
@@ -177,41 +222,49 @@ defmodule Droodotfoo.Plugins.Calculator do
   end
 
   defp evaluate_expression(expr) do
-    # Simple expression evaluator
-    expr = String.replace(expr, " ", "")
+    expr
+    |> String.replace(" ", "")
+    |> do_evaluate()
+  end
 
+  defp do_evaluate(expr) do
     try do
-      # Parse and evaluate basic arithmetic
-      result =
-        case Regex.run(~r/^(-?\d+(?:\.\d+)?)([\+\-\*\/\^])(-?\d+(?:\.\d+)?)$/, expr) do
-          [_, left, op, right] ->
-            {l, _} = Float.parse(left)
-            {r, _} = Float.parse(right)
-
-            case op do
-              "+" -> l + r
-              "-" -> l - r
-              "*" -> l * r
-              "/" when r != 0 -> l / r
-              "/" -> throw(:division_by_zero)
-              "^" -> :math.pow(l, r)
-            end
-
-          _ ->
-            # Try to parse as a single number
-            case Float.parse(expr) do
-              {num, ""} -> num
-              _ ->
-                # Try to evaluate expression with order of operations
-                evaluate_with_precedence(expr)
-            end
-        end
-
+      result = parse_and_compute(expr)
       {:ok, result}
     catch
       :division_by_zero -> {:error, "Division by zero"}
       :invalid_expression -> {:error, "Invalid expression"}
       _ -> {:error, "Calculation error"}
+    end
+  end
+
+  defp parse_and_compute(expr) do
+    case Regex.run(~r/^(-?\d+(?:\.\d+)?)([\+\-\*\/\^])(-?\d+(?:\.\d+)?)$/, expr) do
+      [_, left, op, right] ->
+        evaluate_binary_operation(left, op, right)
+
+      _ ->
+        parse_single_value_or_complex(expr)
+    end
+  end
+
+  defp evaluate_binary_operation(left, op, right) do
+    {l, _} = Float.parse(left)
+    {r, _} = Float.parse(right)
+    apply_operator(op, l, r)
+  end
+
+  defp apply_operator("+", l, r), do: l + r
+  defp apply_operator("-", l, r), do: l - r
+  defp apply_operator("*", l, r), do: l * r
+  defp apply_operator("/", _l, r) when r == 0.0, do: throw(:division_by_zero)
+  defp apply_operator("/", l, r), do: l / r
+  defp apply_operator("^", l, r), do: :math.pow(l, r)
+
+  defp parse_single_value_or_complex(expr) do
+    case Float.parse(expr) do
+      {num, ""} -> num
+      _ -> evaluate_with_precedence(expr)
     end
   end
 
@@ -270,6 +323,7 @@ defmodule Droodotfoo.Plugins.Calculator do
       _ -> throw(:invalid_expression)
     end
   end
+
   defp calculate_operation(_, _, _), do: throw(:invalid_expression)
 
   defp apply_rpn_operator(_op, stack) when length(stack) < 2 do
@@ -293,7 +347,7 @@ defmodule Droodotfoo.Plugins.Calculator do
     end
   end
 
-  defp is_number?(str) do
+  defp number?(str) do
     case Float.parse(str) do
       {_, ""} -> true
       _ -> false

@@ -84,6 +84,7 @@ defmodule Droodotfoo.Plugins.Conway do
         running: false,
         pattern_name: "empty"
     }
+
     {:continue, new_state, render(new_state, %{})}
   end
 
@@ -156,28 +157,35 @@ defmodule Droodotfoo.Plugins.Conway do
     status = if state.running, do: "RUNNING", else: "PAUSED"
     width = 64
 
-    lines = [
-      GameUI.top_border(width),
-      GameUI.title_line("CONWAY'S GAME OF LIFE", width),
-      GameUI.divider(width),
-      GameUI.empty_line(width),
-      GameUI.content_line("Generation: #{String.pad_trailing("#{state.generation}", 10)} Pattern: #{String.pad_trailing(state.pattern_name, 15)}", width),
-      GameUI.content_line("Status: #{String.pad_trailing(status, 10)} Speed: #{state.speed}ms", width),
-      GameUI.empty_line(width),
-      "║  ┌───────────────────────────────────────────────────────┐   ║"
-    ] ++
-      render_grid(state.grid, state.width, state.height) ++
+    lines =
       [
-        "║  └───────────────────────────────────────────────────────┘   ║",
+        GameUI.top_border(width),
+        GameUI.title_line("CONWAY'S GAME OF LIFE", width),
+        GameUI.divider(width),
         GameUI.empty_line(width),
-        GameUI.content_line("Controls:", width),
-        GameUI.content_line("SPACE: Play/Pause  s: Step  c: Clear  r: Random", width),
-        GameUI.content_line("+/-: Speed  1-5: Patterns  q: Quit", width),
+        GameUI.content_line(
+          "Generation: #{String.pad_trailing("#{state.generation}", 10)} Pattern: #{String.pad_trailing(state.pattern_name, 15)}",
+          width
+        ),
+        GameUI.content_line(
+          "Status: #{String.pad_trailing(status, 10)} Speed: #{state.speed}ms",
+          width
+        ),
         GameUI.empty_line(width),
-        GameUI.content_line("Patterns: 1=Glider 2=Blinker 3=Toad 4=Beacon 5=Pulsar", width),
-        GameUI.empty_line(width),
-        GameUI.bottom_border(width)
-      ]
+        "║  ┌───────────────────────────────────────────────────────┐   ║"
+      ] ++
+        render_grid(state.grid, state.width, state.height) ++
+        [
+          "║  └───────────────────────────────────────────────────────┘   ║",
+          GameUI.empty_line(width),
+          GameUI.content_line("Controls:", width),
+          GameUI.content_line("SPACE: Play/Pause  s: Step  c: Clear  r: Random", width),
+          GameUI.content_line("+/-: Speed  1-5: Patterns  q: Quit", width),
+          GameUI.empty_line(width),
+          GameUI.content_line("Patterns: 1=Glider 2=Blinker 3=Toad 4=Beacon 5=Pulsar", width),
+          GameUI.empty_line(width),
+          GameUI.bottom_border(width)
+        ]
 
     lines
   end
@@ -211,9 +219,14 @@ defmodule Droodotfoo.Plugins.Conway do
 
   defp count_neighbors(grid, x, y, width, height) do
     neighbors = [
-      {x - 1, y - 1}, {x, y - 1}, {x + 1, y - 1},
-      {x - 1, y},                 {x + 1, y},
-      {x - 1, y + 1}, {x, y + 1}, {x + 1, y + 1}
+      {x - 1, y - 1},
+      {x, y - 1},
+      {x + 1, y - 1},
+      {x - 1, y},
+      {x + 1, y},
+      {x - 1, y + 1},
+      {x, y + 1},
+      {x + 1, y + 1}
     ]
 
     Enum.count(neighbors, fn {nx, ny} ->
@@ -241,13 +254,14 @@ defmodule Droodotfoo.Plugins.Conway do
 
   defp render_grid(grid, width, height) do
     for y <- 0..(height - 1) do
-      row = for x <- 0..(width - 1) do
-        if get_cell(grid, x, y, width, height) do
-          "█"
-        else
-          " "
+      row =
+        for x <- 0..(width - 1) do
+          if get_cell(grid, x, y, width, height) do
+            "█"
+          else
+            " "
+          end
         end
-      end
 
       "║  │" <> Enum.join(row, "") <> "│   ║"
     end
@@ -335,33 +349,52 @@ defmodule Droodotfoo.Plugins.Conway do
     # Build pulsar symmetrically
     offsets = [
       # Top group
-      {-6, -4}, {-5, -4}, {-4, -4},
-      {-6, -3}, {-4, -3},
-      {-6, -2}, {-5, -2}, {-4, -2},
+      {-6, -4},
+      {-5, -4},
+      {-4, -4},
+      {-6, -3},
+      {-4, -3},
+      {-6, -2},
+      {-5, -2},
+      {-4, -2},
       # Bottom group (mirror)
-      {-6, 2}, {-5, 2}, {-4, 2},
-      {-6, 3}, {-4, 3},
-      {-6, 4}, {-5, 4}, {-4, 4}
+      {-6, 2},
+      {-5, 2},
+      {-4, 2},
+      {-6, 3},
+      {-4, 3},
+      {-6, 4},
+      {-5, 4},
+      {-4, 4}
     ]
 
     # Generate all 4 quadrants
-    positions = for {ox, oy} <- offsets,
-                    {mx, my} <- [{1, 1}, {-1, 1}, {1, -1}, {-1, -1}] do
-      {center_x + ox * mx, center_y + oy * my}
-    end
+    positions =
+      for {ox, oy} <- offsets,
+          {mx, my} <- [{1, 1}, {-1, 1}, {1, -1}, {-1, -1}] do
+        {center_x + ox * mx, center_y + oy * my}
+      end
 
     set_cells(grid, positions, width, height)
   end
 
   defp set_cells(grid, positions, width, height) do
     Enum.reduce(positions, grid, fn {x, y}, acc_grid ->
-      if x >= 0 and x < width and y >= 0 and y < height do
-        List.update_at(acc_grid, y, fn row ->
-          List.update_at(row, x, fn _ -> true end)
-        end)
-      else
-        acc_grid
-      end
+      set_cell_if_valid(acc_grid, x, y, width, height)
+    end)
+  end
+
+  defp set_cell_if_valid(grid, x, y, width, height) do
+    if x >= 0 and x < width and y >= 0 and y < height do
+      update_grid_cell(grid, x, y)
+    else
+      grid
+    end
+  end
+
+  defp update_grid_cell(grid, x, y) do
+    List.update_at(grid, y, fn row ->
+      List.update_at(row, x, fn _ -> true end)
     end)
   end
 end

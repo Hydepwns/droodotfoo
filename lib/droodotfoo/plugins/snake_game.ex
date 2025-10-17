@@ -1,11 +1,54 @@
 defmodule Droodotfoo.Plugins.SnakeGame do
   @moduledoc """
-  Classic Snake game plugin for the terminal
+  Classic Snake game plugin for the terminal.
+
+  Control a growing snake to eat food while avoiding walls and self-collision.
+  The snake grows longer with each food item eaten, increasing difficulty.
+
+  ## Gameplay
+
+  - Start with 3-segment snake moving right
+  - Food appears at random positions (marked with `*`)
+  - Eating food adds 10 points and grows snake by 1 segment
+  - Game ends on wall collision or self-collision
+
+  ## Controls
+
+  - **WASD**: Move up/left/down/right
+  - **Arrow Keys**: Alternative movement controls
+  - **R**: Restart game (when game over)
+  - **Q**: Quit game
+
+  ## Visuals
+
+  - `@`: Snake head
+  - `o`: Snake body segments
+  - `*`: Food item
+  - Bordered 40x20 game board
+
+  ## Scoring
+
+  - +10 points per food item
+  - No time bonus or combo system
   """
 
   use Droodotfoo.Plugins.GameBase
 
   alias Droodotfoo.Plugins.GameUI
+
+  @type position :: {integer(), integer()}
+  @type direction :: :up | :down | :left | :right
+  @type state :: %__MODULE__{
+          snake: [position()],
+          food: position(),
+          direction: direction(),
+          score: integer(),
+          game_over: boolean(),
+          width: integer(),
+          height: integer()
+        }
+  @type terminal_state :: map()
+  @type render_output :: [String.t()]
 
   defstruct [
     :snake,
@@ -23,6 +66,7 @@ defmodule Droodotfoo.Plugins.SnakeGame do
   # Plugin Behaviour Callbacks
 
   @impl true
+  @spec metadata() :: map()
   def metadata do
     %{
       name: "snake",
@@ -35,6 +79,7 @@ defmodule Droodotfoo.Plugins.SnakeGame do
   end
 
   @impl true
+  @spec init(terminal_state()) :: {:ok, state()}
   def init(_terminal_state) do
     initial_state = %__MODULE__{
       snake: [{10, 10}, {9, 10}, {8, 10}],
@@ -50,10 +95,13 @@ defmodule Droodotfoo.Plugins.SnakeGame do
   end
 
   @impl true
+  @spec handle_input(String.t(), state(), terminal_state()) ::
+          {:continue, state(), render_output()}
+          | {:exit, [String.t()]}
   def handle_input(input, state, terminal_state) do
     cond do
       input in ["q", "Q", "exit"] ->
-        {:exit, ["Thanks for playing Snake! Final score: #{state.score}"]}
+        exit_game(state)
 
       state.game_over and input in ["r", "R"] ->
         handle_restart(__MODULE__, terminal_state)
@@ -62,21 +110,32 @@ defmodule Droodotfoo.Plugins.SnakeGame do
         {:continue, state, render(state, terminal_state)}
 
       true ->
-        new_direction =
-          case String.downcase(input) do
-            "w" when state.direction != :down -> :up
-            "s" when state.direction != :up -> :down
-            "a" when state.direction != :right -> :left
-            "d" when state.direction != :left -> :right
-            _ -> state.direction
-          end
+        process_direction_input(input, state, terminal_state)
+    end
+  end
 
-        new_state = %{state | direction: new_direction} |> update_game()
-        {:continue, new_state, render(new_state, terminal_state)}
+  defp exit_game(state) do
+    {:exit, ["Thanks for playing Snake! Final score: #{state.score}"]}
+  end
+
+  defp process_direction_input(input, state, terminal_state) do
+    new_direction = parse_direction_input(input, state.direction)
+    new_state = %{state | direction: new_direction} |> update_game()
+    {:continue, new_state, render(new_state, terminal_state)}
+  end
+
+  defp parse_direction_input(input, current_direction) do
+    case String.downcase(input) do
+      "w" when current_direction != :down -> :up
+      "s" when current_direction != :up -> :down
+      "a" when current_direction != :right -> :left
+      "d" when current_direction != :left -> :right
+      _ -> current_direction
     end
   end
 
   @impl true
+  @spec handle_key(atom(), state(), terminal_state()) :: {:ok, state()} | :pass
   def handle_key(key, state, _terminal_state) do
     if state.game_over do
       :pass
@@ -99,9 +158,11 @@ defmodule Droodotfoo.Plugins.SnakeGame do
   end
 
   @impl true
+  @spec render(state(), terminal_state()) :: render_output()
   def render(state, terminal_state) do
     # Calculate available space for the game
-    available_height = terminal_state.height - 7  # 3 header + 4 footer lines
+    # 3 header + 4 footer lines
+    available_height = terminal_state.height - 7
     board_height = min(@height, available_height)
 
     # Only show the part of the board that fits
@@ -137,6 +198,7 @@ defmodule Droodotfoo.Plugins.SnakeGame do
   end
 
   @impl true
+  @spec cleanup(state()) :: :ok
   def cleanup(_state) do
     :ok
   end
@@ -188,10 +250,10 @@ defmodule Droodotfoo.Plugins.SnakeGame do
     Enum.reduce_while(1..1000, nil, fn _, _ ->
       pos = {:rand.uniform(@width) - 1, :rand.uniform(@height) - 1}
 
-      if pos not in snake do
-        {:halt, pos}
-      else
+      if pos in snake do
         {:cont, nil}
+      else
+        {:halt, pos}
       end
     end) || {0, 0}
   end
