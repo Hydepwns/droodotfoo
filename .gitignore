@@ -65,3 +65,15 @@ coverage/
 
 # Ignore local configuration
 config/*.secret.exs
+
+# Ignore ASCII art files and documentation with visual formatting
+*.ascii
+*.art
+*_ascii.txt
+*_art.txt
+ascii_*
+art_*
+
+# Ignore generated documentation with ASCII art
+docs/ascii/
+docs/art/

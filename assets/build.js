@@ -27,7 +27,7 @@ if (!deploy && !watch) {
 }
 
 let opts = {
-  entryPoints: ["js/app.js"],
+  entryPoints: ["js/app.ts"],
   bundle: true,
   target: "es2022",
   outdir: "../priv/static/assets/js",

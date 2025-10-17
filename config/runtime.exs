@@ -49,7 +49,8 @@ if config_env() == :prod do
   config :droodotfoo, :spotify,
     client_id: System.get_env("SPOTIFY_CLIENT_ID"),
     client_secret: System.get_env("SPOTIFY_CLIENT_SECRET"),
-    redirect_uri: System.get_env("SPOTIFY_REDIRECT_URI") || "https://#{host}/auth/spotify/callback"
+    redirect_uri:
+      System.get_env("SPOTIFY_REDIRECT_URI") || "https://#{host}/auth/spotify/callback"
 
   # Web3/Ethereum configuration
   config :ethereumex,
@@ -79,7 +80,7 @@ if config_env() == :prod do
   # Add static_url config if CDN is configured
   endpoint_config =
     if cdn_host do
-      Keyword.put(endpoint_config, :static_url, [host: cdn_host, scheme: "https"])
+      Keyword.put(endpoint_config, :static_url, host: cdn_host, scheme: "https")
     else
       endpoint_config
     end
