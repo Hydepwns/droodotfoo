@@ -1,13 +1,13 @@
 {
-  "name": "droo.foo Terminal",
+  "name": "droo.foo - Terminal Interface",
   "short_name": "droo.foo",
-  "description": "Interactive terminal portfolio showcasing skills and projects",
+  "description": "Terminal-Powered Web Experience with Offline Support",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#0a0a0a",
+  "background_color": "#000000",
   "theme_color": "#00ff00",
   "orientation": "any",
-  "categories": ["developer", "portfolio", "terminal"],
   "icons": [
     {
       "src": "/images/icon-192x192.png",
@@ -22,32 +22,9 @@
       "purpose": "any maskable"
     }
   ],
-  "screenshots": [
-    {
-      "src": "/images/screenshot-desktop.png",
-      "sizes": "1920x1080",
-      "type": "image/png",
-      "form_factor": "wide"
-    },
-    {
-      "src": "/images/screenshot-mobile.png",
-      "sizes": "750x1334",
-      "type": "image/png",
-      "form_factor": "narrow"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Help",
-      "short_name": "Help",
-      "url": "/?cmd=help",
-      "icons": [{"src": "/images/icon-192x192.png", "sizes": "192x192"}]
-    },
-    {
-      "name": "Projects",
-      "short_name": "Projects",
-      "url": "/?cmd=projects",
-      "icons": [{"src": "/images/icon-192x192.png", "sizes": "192x192"}]
-    }
-  ]
+  "categories": ["productivity", "utilities", "developer tools"],
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "screenshots": []
 }

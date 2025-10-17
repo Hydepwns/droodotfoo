@@ -1,66 +1,48 @@
-/**
- * Service Worker for droo.foo PWA
- * Handles offline support and caching
- */
+// Service Worker for droo.foo PWA
+const CACHE_VERSION = 'v1.0.0';
+const CACHE_NAME = `droodotfoo-${CACHE_VERSION}`;
 
-const CACHE_NAME = 'droo-foo-v1';
-const RUNTIME_CACHE = 'droo-foo-runtime';
-
-// Static assets to cache for offline support
-const STATIC_CACHE_URLS = [
+// Assets to cache on install
+const STATIC_ASSETS = [
   '/',
+  '/manifest.json',
   '/assets/css/app.css',
   '/assets/js/app.js',
-  '/fonts/MonaspaceArgon-Regular.woff2',
-  '/manifest.json'
+  '/images/icon-192x192.png',
+  '/images/icon-512x512.png'
 ];
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
-  console.log('[ServiceWorker] Installing...');
-
+  console.log('[Service Worker] Installing...');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('[ServiceWorker] Caching static assets');
-        return cache.addAll(STATIC_CACHE_URLS);
+        console.log('[Service Worker] Caching static assets');
+        return cache.addAll(STATIC_ASSETS);
       })
-      .then(() => {
-        console.log('[ServiceWorker] Skip waiting');
-        return self.skipWaiting();
-      })
-      .catch((error) => {
-        console.error('[ServiceWorker] Installation failed:', error);
-      })
+      .then(() => self.skipWaiting())
   );
 });
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('[ServiceWorker] Activating...');
-
+  console.log('[Service Worker] Activating...');
   event.waitUntil(
-    caches.keys()
-      .then((cacheNames) => {
-        return Promise.all(
-          cacheNames
-            .filter((cacheName) => {
-              return cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE;
-            })
-            .map((cacheName) => {
-              console.log('[ServiceWorker] Deleting old cache:', cacheName);
-              return caches.delete(cacheName);
-            })
-        );
-      })
-      .then(() => {
-        console.log('[ServiceWorker] Claiming clients');
-        return self.clients.claim();
-      })
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames
+          .filter((name) => name.startsWith('droodotfoo-') && name !== CACHE_NAME)
+          .map((name) => {
+            console.log('[Service Worker] Deleting old cache:', name);
+            return caches.delete(name);
+          })
+      );
+    }).then(() => self.clients.claim())
   );
 });
 
-// Fetch event - serve from cache when possible
+// Fetch event - network first, fallback to cache
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -70,115 +52,95 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Skip WebSocket requests
+  // Skip WebSocket connections
   if (url.protocol === 'ws:' || url.protocol === 'wss:') {
     return;
   }
 
-  // Skip Phoenix LiveView requests
-  if (url.pathname.includes('/live') || url.pathname.includes('/phoenix')) {
+  // Skip Phoenix LiveView sockets
+  if (url.pathname.startsWith('/live/websocket')) {
     return;
   }
 
-  // Network-first strategy for HTML (for LiveView compatibility)
-  if (request.headers.get('accept')?.includes('text/html')) {
+  // Network-first strategy for same-origin requests
+  if (url.origin === location.origin) {
     event.respondWith(
       fetch(request)
         .then((response) => {
           // Clone the response before caching
-          const responseToCache = response.clone();
+          const responseClone = response.clone();
 
-          caches.open(RUNTIME_CACHE)
-            .then((cache) => {
-              cache.put(request, responseToCache);
+          // Cache successful responses
+          if (response.status === 200) {
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseClone);
             });
+          }
 
           return response;
         })
         .catch(() => {
-          // Fall back to cache if network fails
-          return caches.match(request)
-            .then((response) => {
-              if (response) {
-                console.log('[ServiceWorker] Serving HTML from cache:', request.url);
-                return response;
-              }
-              // Return offline page if available
-              return caches.match('/');
-            });
-        })
-    );
-    return;
-  }
-
-  // Cache-first strategy for static assets
-  event.respondWith(
-    caches.match(request)
-      .then((cachedResponse) => {
-        if (cachedResponse) {
-          // Fetch in background to update cache
-          fetch(request)
-            .then((response) => {
-              if (response.ok) {
-                caches.open(RUNTIME_CACHE)
-                  .then((cache) => {
-                    cache.put(request, response.clone());
-                  });
-              }
-            })
-            .catch(() => {
-              // Ignore network errors for background updates
-            });
-
-          return cachedResponse;
-        }
-
-        // Not in cache, fetch from network
-        return fetch(request)
-          .then((response) => {
-            // Cache successful responses
-            if (response.ok) {
-              const responseToCache = response.clone();
-
-              caches.open(RUNTIME_CACHE)
-                .then((cache) => {
-                  cache.put(request, responseToCache);
-                });
+          // Fallback to cache on network failure
+          return caches.match(request).then((cachedResponse) => {
+            if (cachedResponse) {
+              console.log('[Service Worker] Serving from cache:', request.url);
+              return cachedResponse;
             }
 
-            return response;
+            // Return offline page for HTML requests
+            if (request.headers.get('accept')?.includes('text/html')) {
+              return new Response(
+                `<!DOCTYPE html>
+                <html>
+                  <head>
+                    <meta charset="utf-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1">
+                    <title>Offline - droo.foo</title>
+                    <style>
+                      body {
+                        font-family: monospace;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        height: 100vh;
+                        margin: 0;
+                        background: #000;
+                        color: #0f0;
+                        text-align: center;
+                      }
+                      .container {
+                        border: 2px solid #0f0;
+                        padding: 2rem;
+                        max-width: 400px;
+                      }
+                      h1 { margin: 0 0 1rem 0; }
+                      p { margin: 0.5rem 0; }
+                    </style>
+                  </head>
+                  <body>
+                    <div class="container">
+                      <h1>OFFLINE</h1>
+                      <p>No network connection detected.</p>
+                      <p>Please check your connection and try again.</p>
+                    </div>
+                  </body>
+                </html>`,
+                {
+                  headers: { 'Content-Type': 'text/html' }
+                }
+              );
+            }
+
+            return new Response('Offline', { status: 503 });
           });
-      })
-      .catch((error) => {
-        console.error('[ServiceWorker] Fetch failed:', error);
-        // Return offline fallback if appropriate
-        if (request.destination === 'image') {
-          // Could return a placeholder image
-        }
-      })
-  );
+        })
+    );
+  }
 });
 
-// Handle messages from clients
+// Handle messages from the client
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    console.log('[ServiceWorker] Skip waiting on message');
+  if (event.data === 'skipWaiting') {
     self.skipWaiting();
-  }
-
-  if (event.data && event.data.type === 'CLEAR_CACHE') {
-    console.log('[ServiceWorker] Clearing caches');
-    caches.keys()
-      .then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((cacheName) => caches.delete(cacheName))
-        );
-      })
-      .then(() => {
-        event.ports[0].postMessage({ success: true });
-      })
-      .catch((error) => {
-        event.ports[0].postMessage({ success: false, error: error.message });
-      });
   }
 });
