@@ -16,73 +16,23 @@ defmodule Droodotfoo.Raxol.Command do
   end
 
   def handle_input("ArrowUp", state) do
-    # Check if autocomplete is active
     suggestions = Map.get(state, :autocomplete_suggestions, [])
-    if suggestions != [] do
-      # Navigate autocomplete up (decrease index, wrapping around)
-      max_index = length(suggestions) - 1
-      index = Map.get(state, :autocomplete_index, 0)
-      new_index = if index <= 0, do: max_index, else: index - 1
-      %{state | autocomplete_index: new_index}
-    # Check if we're in search mode
-    else if String.starts_with?(state.command_buffer, "search ") do
-      # Use search history
-      search_history = state.search_state.history
 
-      if state.history_index < length(search_history) - 1 do
-        new_index = state.history_index + 1
-        new_query = Enum.at(search_history, new_index, "")
-        %{state | history_index: new_index, command_buffer: "search " <> new_query}
-      else
-        state
-      end
+    if suggestions != [] do
+      navigate_autocomplete_up(state, suggestions)
     else
-      # Navigate command history up
-      if state.history_index < length(state.command_history) - 1 do
-        new_index = state.history_index + 1
-        new_buffer = Enum.at(state.command_history, new_index, "")
-        %{state | history_index: new_index, command_buffer: new_buffer}
-      else
-        state
-      end
-    end
+      navigate_history_up(state)
     end
   end
 
   def handle_input("ArrowDown", state) do
     # Check if autocomplete is active
     suggestions = Map.get(state, :autocomplete_suggestions, [])
+
     if suggestions != [] do
-      # Navigate autocomplete down (increase index, wrapping around)
-      max_index = length(suggestions) - 1
-      index = Map.get(state, :autocomplete_index, 0)
-      new_index = if index >= max_index, do: 0, else: index + 1
-      %{state | autocomplete_index: new_index}
-    # Check if we're in search mode
-    else if String.starts_with?(state.command_buffer, "search ") do
-      # Use search history
-      search_history = state.search_state.history
-
-      if state.history_index > -1 do
-        new_index = state.history_index - 1
-        new_query = if new_index == -1, do: "", else: Enum.at(search_history, new_index, "")
-        %{state | history_index: new_index, command_buffer: "search " <> new_query}
-      else
-        state
-      end
+      navigate_autocomplete_down(state, suggestions)
     else
-      # Navigate command history down
-      if state.history_index > -1 do
-        new_index = state.history_index - 1
-
-        new_buffer =
-          if new_index == -1, do: "", else: Enum.at(state.command_history, new_index, "")
-
-        %{state | history_index: new_index, command_buffer: new_buffer}
-      else
-        state
-      end
-    end
+      navigate_history_down(state)
     end
   end
 
@@ -92,28 +42,9 @@ defmodule Droodotfoo.Raxol.Command do
     index = Map.get(state, :autocomplete_index, -1)
 
     if suggestions != [] && index >= 0 do
-      selected = Enum.at(suggestions, index)
-      state
-      |> Map.put(:command_buffer, selected)
-      |> clear_autocomplete()
+      select_autocomplete_suggestion(state, suggestions, index)
     else
-      # Tab completion using our new system
-      completions = CommandParser.get_completions(state.command_buffer, state.terminal_state)
-
-      case completions do
-        [] ->
-          state
-        [single_completion] ->
-          state
-          |> Map.put(:command_buffer, single_completion)
-          |> clear_autocomplete()
-        multiple_completions when length(multiple_completions) > 1 ->
-          if Map.has_key?(state, :autocomplete_suggestions) do
-            %{state | autocomplete_suggestions: multiple_completions, autocomplete_index: 0}
-          else
-            state
-          end
-      end
+      perform_tab_completion(state)
     end
   end
 
@@ -125,6 +56,126 @@ defmodule Droodotfoo.Raxol.Command do
   end
 
   def handle_input(_key, state), do: state
+
+  # Helper functions for handle_input
+
+  defp navigate_autocomplete_up(state, suggestions) do
+    # Navigate autocomplete up (decrease index, wrapping around)
+    max_index = length(suggestions) - 1
+    index = Map.get(state, :autocomplete_index, 0)
+    new_index = if index <= 0, do: max_index, else: index - 1
+    %{state | autocomplete_index: new_index}
+  end
+
+  defp navigate_history_up(state) do
+    # Check if we're in search mode
+    if String.starts_with?(state.command_buffer, "search ") do
+      navigate_search_history_up(state)
+    else
+      navigate_command_history_up(state)
+    end
+  end
+
+  defp navigate_search_history_up(state) do
+    search_history = state.search_state.history
+
+    if state.history_index < length(search_history) - 1 do
+      new_index = state.history_index + 1
+      new_query = Enum.at(search_history, new_index, "")
+      %{state | history_index: new_index, command_buffer: "search " <> new_query}
+    else
+      state
+    end
+  end
+
+  defp navigate_command_history_up(state) do
+    if state.history_index < length(state.command_history) - 1 do
+      new_index = state.history_index + 1
+      new_buffer = Enum.at(state.command_history, new_index, "")
+      %{state | history_index: new_index, command_buffer: new_buffer}
+    else
+      state
+    end
+  end
+
+  defp navigate_autocomplete_down(state, suggestions) do
+    # Navigate autocomplete down (increase index, wrapping around)
+    max_index = length(suggestions) - 1
+    index = Map.get(state, :autocomplete_index, 0)
+    new_index = if index >= max_index, do: 0, else: index + 1
+    %{state | autocomplete_index: new_index}
+  end
+
+  defp navigate_history_down(state) do
+    # Check if we're in search mode
+    if String.starts_with?(state.command_buffer, "search ") do
+      navigate_search_history_down(state)
+    else
+      navigate_command_history_down(state)
+    end
+  end
+
+  defp navigate_search_history_down(state) do
+    search_history = state.search_state.history
+
+    if state.history_index > -1 do
+      new_index = state.history_index - 1
+      new_query = if new_index == -1, do: "", else: Enum.at(search_history, new_index, "")
+      %{state | history_index: new_index, command_buffer: "search " <> new_query}
+    else
+      state
+    end
+  end
+
+  defp navigate_command_history_down(state) do
+    if state.history_index > -1 do
+      new_index = state.history_index - 1
+
+      new_buffer =
+        if new_index == -1, do: "", else: Enum.at(state.command_history, new_index, "")
+
+      %{state | history_index: new_index, command_buffer: new_buffer}
+    else
+      state
+    end
+  end
+
+  defp select_autocomplete_suggestion(state, suggestions, index) do
+    selected = Enum.at(suggestions, index)
+
+    state
+    |> Map.put(:command_buffer, selected)
+    |> clear_autocomplete()
+  end
+
+  defp perform_tab_completion(state) do
+    completions = CommandParser.get_completions(state.command_buffer, state.terminal_state)
+
+    case completions do
+      [] ->
+        state
+
+      [single_completion] ->
+        apply_single_completion(state, single_completion)
+
+      multiple_completions when length(multiple_completions) > 1 ->
+        show_multiple_completions(state, multiple_completions)
+    end
+  end
+
+  defp apply_single_completion(state, completion) do
+    state
+    |> Map.put(:command_buffer, completion)
+    |> clear_autocomplete()
+  end
+
+  defp show_multiple_completions(state, completions) do
+    if Map.has_key?(state, :autocomplete_suggestions) do
+      %{state | autocomplete_suggestions: completions, autocomplete_index: 0}
+    else
+      state
+    end
+  end
 
   @doc """
   Executes a terminal command using the new command system
@@ -142,8 +193,10 @@ defmodule Droodotfoo.Raxol.Command do
         new_output = append_to_output(state.terminal_output, output)
 
         # Check for theme changes and section changes, move to main state
-        {theme_change, temp_state} = Map.pop(new_terminal_state, :theme_change)
-        {section_change, cleaned_terminal_state} = Map.pop(temp_state, :section_change)
+        {theme_change, temp_state1} = Map.pop(new_terminal_state, :theme_change)
+        {section_change, temp_state2} = Map.pop(temp_state1, :section_change)
+        {spotify_action, temp_state3} = Map.pop(temp_state2, :spotify_action)
+        {web3_action, cleaned_terminal_state} = Map.pop(temp_state3, :web3_action)
 
         base_state = %{
           state
@@ -152,12 +205,11 @@ defmodule Droodotfoo.Raxol.Command do
             current_section: section_change || :terminal
         }
 
-        # Add theme_change to main state if present
-        if theme_change do
-          Map.put(base_state, :theme_change, theme_change)
-        else
-          base_state
-        end
+        # Add optional state changes if present
+        base_state
+        |> maybe_put(:theme_change, theme_change)
+        |> maybe_put(:spotify_action, spotify_action)
+        |> maybe_put(:web3_action, web3_action)
 
       {:error, error_msg} ->
         # Error messages from CommandParser are already formatted
@@ -412,4 +464,8 @@ defmodule Droodotfoo.Raxol.Command do
       state
     end
   end
+
+  # Helper to conditionally put a value in a map if the value is not nil
+  defp maybe_put(map, _key, nil), do: map
+  defp maybe_put(map, key, value), do: Map.put(map, key, value)
 end

@@ -33,6 +33,12 @@ defmodule Droodotfoo.Terminal.CommandRegistry do
     %{name: "about", aliases: ["bio"], category: :content, description: "Learn about me"},
     %{name: "contact", aliases: [], category: :content, description: "Get contact information"},
     %{name: "blog", aliases: ["posts"], category: :content, description: "Read blog posts"},
+    %{
+      name: "tree",
+      aliases: [],
+      category: :content,
+      description: "Display site structure as ASCII tree"
+    },
 
     # Games & Plugins
     %{name: "tetris", aliases: ["t"], category: :game, description: "Play Tetris"},
@@ -185,11 +191,97 @@ defmodule Droodotfoo.Terminal.CommandRegistry do
       category: :integration,
       description: "List dSheets (alias for sheet list)"
     },
+    %{
+      name: "like",
+      aliases: [],
+      category: :integration,
+      description: "Send HeartBit (like) to content"
+    },
+    %{
+      name: "likes",
+      aliases: [],
+      category: :integration,
+      description: "View HeartBits for content"
+    },
+    %{
+      name: "activity",
+      aliases: [],
+      category: :integration,
+      description: "View social activity feed"
+    },
+    %{
+      name: "heartbits",
+      aliases: [],
+      category: :integration,
+      description: "View HeartBits you've sent"
+    },
+    %{
+      name: "heartbit_metrics",
+      aliases: [],
+      category: :integration,
+      description: "View HeartBit engagement metrics for content"
+    },
+    %{
+      name: "agent",
+      aliases: [],
+      category: :integration,
+      description: "AI agent for natural language blockchain queries"
+    },
+    %{
+      name: "agent_help",
+      aliases: [],
+      category: :integration,
+      description: "Show AI agent capabilities and examples"
+    },
+    %{
+      name: "agent_recommendations",
+      aliases: [],
+      category: :integration,
+      description: "Get AI-powered recommendations for your wallet"
+    },
+    %{
+      name: "agent_analyze",
+      aliases: [],
+      category: :integration,
+      description: "AI analysis of your blockchain data"
+    },
 
     # Utilities
     %{name: "matrix", aliases: [], category: :effect, description: "Matrix rain effect"},
     %{name: "search", aliases: ["find"], category: :utility, description: "Search content"},
-    %{name: "theme", aliases: [], category: :utility, description: "Change terminal theme"}
+    %{name: "theme", aliases: [], category: :utility, description: "Change terminal theme"},
+    # Resume Export
+    %{
+      name: "resume_export",
+      aliases: ["resume"],
+      category: :content,
+      description: "Open resume export with multiple formats and PDF generation"
+    },
+    %{
+      name: "resume_formats",
+      aliases: [],
+      category: :utility,
+      description: "List available resume formats and their descriptions"
+    },
+    %{
+      name: "resume_preview",
+      aliases: [],
+      category: :utility,
+      description: "Preview resume in specified format (technical, executive, minimal, detailed)"
+    },
+    # Contact Form
+    %{
+      name: "contact_form",
+      aliases: ["contact"],
+      category: :content,
+      description: "Open contact form with validation and email integration"
+    },
+    %{
+      name: "contact_status",
+      aliases: [],
+      category: :utility,
+      description: "Check contact form status and rate limiting"
+    }
   ]
 
   @doc """
@@ -259,20 +351,133 @@ defmodule Droodotfoo.Terminal.CommandRegistry do
     |> Enum.map(fn {category, cmds} ->
       category_name = category |> Atom.to_string() |> String.upcase()
 
-      command_lines =
-        Enum.map(cmds, fn cmd ->
-          aliases_str =
-            if Enum.empty?(cmd.aliases) do
-              ""
-            else
-              " (#{Enum.join(cmd.aliases, ", ")})"
-            end
-
-          "  #{String.pad_trailing(cmd.name, 12)}#{aliases_str} - #{cmd.description}"
-        end)
+      command_lines = Enum.map(cmds, &format_command_line/1)
 
       [category_name | command_lines]
     end)
     |> List.flatten()
   end
+
+  @doc """
+  Gets commands by category.
+  """
+  def get_commands_by_category(category) when is_atom(category) do
+    @commands
+    |> Enum.filter(&(&1.category == category))
+  end
+
+  @doc """
+  Gets all command categories.
+  """
+  def get_categories do
+    @commands
+    |> Enum.map(& &1.category)
+    |> Enum.uniq()
+    |> Enum.sort()
+  end
+
+  @doc """
+  Searches commands by name or description.
+  """
+  def search_commands(query) when is_binary(query) do
+    query_lower = String.downcase(query)
+
+    @commands
+    |> Enum.filter(fn cmd ->
+      String.contains?(String.downcase(cmd.name), query_lower) or
+        String.contains?(String.downcase(cmd.description), query_lower) or
+        Enum.any?(cmd.aliases, &String.contains?(String.downcase(&1), query_lower))
+    end)
+  end
+
+  @doc """
+  Gets command statistics.
+  """
+  def get_statistics do
+    total_commands = length(@commands)
+    categories = get_categories()
+
+    category_counts =
+      Enum.map(categories, fn cat ->
+        {cat, length(get_commands_by_category(cat))}
+      end)
+
+    %{
+      total_commands: total_commands,
+      categories: length(categories),
+      category_counts: category_counts,
+      most_common_category:
+        category_counts |> Enum.max_by(fn {_cat, count} -> count end) |> elem(0)
+    }
+  end
+
+  @doc """
+  Gets commands with aliases.
+  """
+  def get_commands_with_aliases do
+    @commands
+    |> Enum.filter(&(!Enum.empty?(&1.aliases)))
+  end
+
+  @doc """
+  Gets commands without aliases.
+  """
+  def get_commands_without_aliases do
+    @commands
+    |> Enum.filter(&Enum.empty?(&1.aliases))
+  end
+
+  @doc """
+  Validates command registry for duplicates and conflicts.
+  """
+  def validate_registry do
+    commands = @commands
+    names = Enum.map(commands, & &1.name)
+    all_aliases = commands |> Enum.flat_map(& &1.aliases)
+
+    duplicate_names = names -- Enum.uniq(names)
+    duplicate_aliases = all_aliases -- Enum.uniq(all_aliases)
+
+    name_alias_conflicts =
+      Enum.filter(commands, fn cmd ->
+        Enum.any?(cmd.aliases, &(&1 == cmd.name))
+      end)
+
+    %{
+      valid:
+        Enum.empty?(duplicate_names) and Enum.empty?(duplicate_aliases) and
+          Enum.empty?(name_alias_conflicts),
+      duplicate_names: duplicate_names,
+      duplicate_aliases: duplicate_aliases,
+      name_alias_conflicts: name_alias_conflicts
+    }
+  end
+
+  @doc """
+  Exports command registry to JSON format.
+  """
+  def export_to_json do
+    @commands
+    |> Jason.encode!(pretty: true)
+  end
+
+  @doc """
+  Imports command registry from JSON format.
+  """
+  def import_from_json(json_string) when is_binary(json_string) do
+    case Jason.decode(json_string) do
+      {:ok, commands} -> {:ok, commands}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  # Private helper functions
+
+  defp format_command_line(cmd) do
+    aliases_str = format_aliases(cmd.aliases)
+    "  #{String.pad_trailing(cmd.name, 12)}#{aliases_str} - #{cmd.description}"
+  end
+
+  defp format_aliases([]), do: ""
+  defp format_aliases(aliases), do: " (#{Enum.join(aliases, ", ")})"
 end

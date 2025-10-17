@@ -1,106 +1,266 @@
 defmodule Droodotfoo.RaxolApp do
   @moduledoc """
-  Main Raxol application that manages the terminal UI.
-  This module now acts as the orchestrator, delegating to specialized modules
-  for state management, input handling, and rendering.
+  Main Raxol application GenServer that manages the terminal UI.
+
+  Responsibilities:
+  - Manage terminal state and buffer
+  - Process keyboard input
+  - Coordinate section navigation
+  - Handle theme and mode changes
+  - Integrate with Web3 wallet state
+  - Manage cursor trail animations
+
+  This module acts as the orchestrator, delegating to specialized modules
+  for state management (`Droodotfoo.Raxol.State`), input handling
+  (`Droodotfoo.Raxol.Navigation`), and rendering (`Droodotfoo.Raxol.Renderer`).
   """
 
   use GenServer
-  alias Droodotfoo.Raxol.{State, Renderer}
   alias Droodotfoo.CursorTrail
+  alias Droodotfoo.Raxol.{Renderer, State}
 
   @width 80
   @height 24
 
+  # Type definitions
+
+  @type cell :: %{char: String.t(), style: map()}
+  @type buffer :: [[cell()]]
+  @type section ::
+          :home | :experience | :contact | :spotify | :stl_viewer | :tools | :projects | :web3
+  @type action :: map() | nil
+  @type theme_change :: String.t() | nil
+  @type pid_or_name :: pid() | atom()
+
+  ## Client API
+
+  @doc """
+  Start the RaxolApp GenServer.
+
+  ## Options
+
+  - Accepts standard GenServer options
+
+  ## Examples
+
+      iex> {:ok, pid} = Droodotfoo.RaxolApp.start_link()
+      iex> Process.alive?(pid)
+      true
+
+  """
+  @spec start_link(keyword()) :: GenServer.on_start()
   def start_link(opts \\ []) do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
+  @doc """
+  Get the current terminal buffer for rendering.
+
+  Returns a 2D grid of cells (80x24) representing the terminal display.
+  Each cell contains a character and styling information.
+
+  Falls back to an empty buffer if the GenServer is unavailable or times out.
+
+  ## Examples
+
+      iex> buffer = Droodotfoo.RaxolApp.get_buffer()
+      iex> is_list(buffer)
+      true
+      iex> length(buffer)
+      24
+
+  """
+  @spec get_buffer(pid_or_name()) :: buffer()
   def get_buffer(pid \\ __MODULE__) do
-    try do
-      GenServer.call(pid, :get_buffer, 5000)
-    catch
-      :exit, {:noproc, _} ->
-        # Process is dead, return empty buffer
-        create_empty_buffer()
+    GenServer.call(pid, :get_buffer, 5000)
+  catch
+    :exit, {:noproc, _} ->
+      # Process is dead, return empty buffer
+      create_empty_buffer()
 
-      :exit, {:timeout, _} ->
-        # Timeout, return last known or empty buffer
-        create_empty_buffer()
-    end
+    :exit, {:timeout, _} ->
+      # Timeout, return last known or empty buffer
+      create_empty_buffer()
   end
 
+  @doc """
+  Get the current navigation section.
+
+  Returns the currently active section (`:home`, `:experience`, `:spotify`, etc.).
+  Falls back to `:home` if unavailable.
+
+  ## Examples
+
+      iex> Droodotfoo.RaxolApp.get_current_section()
+      :home
+
+  """
+  @spec get_current_section(pid_or_name()) :: section()
   def get_current_section(pid \\ __MODULE__) do
-    try do
-      GenServer.call(pid, :get_current_section, 1000)
-    catch
-      :exit, _ ->
-        :home
-    end
+    GenServer.call(pid, :get_current_section, 1000)
+  catch
+    :exit, _ ->
+      :home
   end
 
+  @doc """
+  Get and clear the pending theme change action.
+
+  Returns the theme name if a theme change was requested, then clears it.
+  Subsequent calls return `nil` until a new theme change occurs.
+
+  ## Examples
+
+      iex> Droodotfoo.RaxolApp.get_theme_change()
+      "nord"
+
+      iex> Droodotfoo.RaxolApp.get_theme_change()
+      nil
+
+  """
+  @spec get_theme_change(pid_or_name()) :: theme_change()
   def get_theme_change(pid \\ __MODULE__) do
-    try do
-      GenServer.call(pid, :get_theme_change, 1000)
-    catch
-      :exit, _ ->
-        nil
-    end
+    GenServer.call(pid, :get_theme_change, 1000)
+  catch
+    :exit, _ ->
+      nil
   end
 
+  @doc """
+  Get and clear the pending STL viewer action.
+
+  Returns an action map if the STL viewer was triggered, then clears it.
+  Used to coordinate between terminal and LiveView components.
+  """
+  @spec get_stl_viewer_action(pid_or_name()) :: action()
   def get_stl_viewer_action(pid \\ __MODULE__) do
-    try do
-      GenServer.call(pid, :get_stl_viewer_action, 1000)
-    catch
-      :exit, _ ->
-        nil
-    end
+    GenServer.call(pid, :get_stl_viewer_action, 1000)
+  catch
+    :exit, _ ->
+      nil
   end
 
+  @doc """
+  Get and clear the pending Spotify action.
+
+  Returns an action map for Spotify operations (play, pause, next, etc.), then clears it.
+  Used to coordinate between terminal and Spotify integration.
+  """
+  @spec get_spotify_action(pid_or_name()) :: action()
   def get_spotify_action(pid \\ __MODULE__) do
-    try do
-      GenServer.call(pid, :get_spotify_action, 1000)
-    catch
-      :exit, _ ->
-        nil
-    end
+    GenServer.call(pid, :get_spotify_action, 1000)
+  catch
+    :exit, _ ->
+      nil
   end
 
+  @doc """
+  Get the current CRT mode status.
+
+  Returns `true` if CRT (retro terminal) effect is enabled, `false` otherwise.
+  This is a persistent setting that doesn't clear after reading.
+  """
+  @spec get_crt_mode(pid_or_name()) :: boolean()
   def get_crt_mode(pid \\ __MODULE__) do
-    try do
-      GenServer.call(pid, :get_crt_mode, 1000)
-    catch
-      :exit, _ ->
-        false
-    end
+    GenServer.call(pid, :get_crt_mode, 1000)
+  catch
+    :exit, _ ->
+      false
   end
 
+  @doc """
+  Get the current high contrast mode status.
+
+  Returns `true` if high contrast accessibility mode is enabled, `false` otherwise.
+  This is a persistent setting that doesn't clear after reading.
+  """
+  @spec get_high_contrast_mode(pid_or_name()) :: boolean()
   def get_high_contrast_mode(pid \\ __MODULE__) do
-    try do
-      GenServer.call(pid, :get_high_contrast_mode, 1000)
-    catch
-      :exit, _ ->
-        false
-    end
+    GenServer.call(pid, :get_high_contrast_mode, 1000)
+  catch
+    :exit, _ ->
+      false
   end
 
+  @doc """
+  Get and clear the pending Web3 action.
+
+  Returns an action map for Web3 operations (connect wallet, etc.), then clears it.
+  Used to coordinate between terminal and Web3 integration.
+  """
+  @spec get_web3_action(pid_or_name()) :: action()
   def get_web3_action(pid \\ __MODULE__) do
-    try do
-      GenServer.call(pid, :get_web3_action, 1000)
-    catch
-      :exit, _ ->
-        nil
-    end
+    GenServer.call(pid, :get_web3_action, 1000)
+  catch
+    :exit, _ ->
+      nil
   end
 
+  @doc """
+  Update the Web3 wallet connection state.
+
+  ## Parameters
+
+  - `address`: Wallet address (0x-prefixed) or `nil` to disconnect
+  - `chain_id`: Blockchain network ID (1 for mainnet, etc.)
+
+  ## Examples
+
+      iex> Droodotfoo.RaxolApp.set_web3_wallet("0x1234...5678", 1)
+      :ok
+
+  """
+  @spec set_web3_wallet(pid_or_name(), String.t() | nil, integer()) :: :ok | :error
   def set_web3_wallet(pid \\ __MODULE__, address, chain_id) do
-    try do
-      GenServer.call(pid, {:set_web3_wallet, address, chain_id}, 1000)
-    catch
-      :exit, _ ->
-        :error
-    end
+    GenServer.call(pid, {:set_web3_wallet, address, chain_id}, 1000)
+  catch
+    :exit, _ ->
+      :error
   end
+
+  @doc """
+  Send keyboard input to the terminal.
+
+  Asynchronously sends a key press to the terminal for processing.
+  Input is handled by the state reducer which may trigger navigation,
+  command execution, or other state changes.
+
+  ## Parameters
+
+  - `key`: Keyboard key string (e.g., "Enter", "ArrowUp", "a", "1")
+
+  ## Examples
+
+      iex> Droodotfoo.RaxolApp.send_input("1")
+      :ok
+
+      iex> Droodotfoo.RaxolApp.send_input("Enter")
+      :ok
+
+  """
+  @spec send_input(pid_or_name(), String.t()) :: :ok
+  def send_input(pid \\ __MODULE__, key) do
+    GenServer.cast(pid, {:input, key})
+  end
+
+  @doc """
+  Reset the terminal state to initial conditions.
+
+  Clears all state and returns the terminal to its default home screen.
+  Useful for testing or recovering from error states.
+
+  ## Examples
+
+      iex> Droodotfoo.RaxolApp.reset_state()
+      :ok
+
+  """
+  @spec reset_state(pid_or_name()) :: :ok
+  def reset_state(pid \\ __MODULE__) do
+    GenServer.call(pid, :reset_state)
+  end
+
+  ## Server Callbacks
 
   defp create_empty_buffer do
     # Create a fallback empty buffer
@@ -109,14 +269,6 @@ defmodule Droodotfoo.RaxolApp do
         %{char: " ", style: %{}}
       end
     end
-  end
-
-  def send_input(pid \\ __MODULE__, key) do
-    GenServer.cast(pid, {:input, key})
-  end
-
-  def reset_state(pid \\ __MODULE__) do
-    GenServer.call(pid, :reset_state)
   end
 
   @impl true

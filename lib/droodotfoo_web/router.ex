@@ -7,7 +7,7 @@ defmodule DroodotfooWeb.Router do
     plug :fetch_live_flash
     plug :put_root_layout, html: {DroodotfooWeb.Layouts, :root}
     plug :protect_from_forgery
-    plug :put_secure_browser_headers
+    plug DroodotfooWeb.Plugs.ContentSecurityPolicy
   end
 
   pipeline :api do
@@ -18,12 +18,24 @@ defmodule DroodotfooWeb.Router do
     pipe_through :browser
 
     live "/", DroodotfooLive
+    live "/contact", ContactLive
+    live "/resume", ResumeLive
+    live "/stl-viewer", STLViewerLive
+    live "/spotify", SpotifyLive
+    live "/pwa", PWALive
     live "/posts/:slug", PostLive
+    # Test route for Astro STL viewer
+    get "/astro-test", PageController, :astro_test
 
     # Spotify OAuth routes
     get "/auth/spotify", SpotifyAuthController, :authorize
     get "/auth/spotify/callback", SpotifyAuthController, :callback
     get "/auth/spotify/logout", SpotifyAuthController, :logout
+  end
+
+  # Service Worker route (no CSP needed)
+  scope "/", DroodotfooWeb do
+    get "/sw.js", PageController, :service_worker
   end
 
   # API routes for Obsidian publishing
