@@ -53,11 +53,9 @@ defmodule Droodotfoo.Fileverse.Storage do
   def upload(file_path, opts \\ []) do
     wallet_address = Keyword.get(opts, :wallet_address)
     filename = Keyword.get(opts, :filename, Path.basename(file_path))
-    encrypt = Keyword.get(opts, :encrypt, true)
+    _encrypt = Keyword.get(opts, :encrypt, true)
 
-    if not wallet_address do
-      {:error, :wallet_required}
-    else
+    if wallet_address do
       # Mock implementation
       # Production would:
       # 1. Generate UCAN token for authentication
@@ -100,6 +98,8 @@ defmodule Droodotfoo.Fileverse.Storage do
 
           {:ok, metadata}
       end
+    else
+      {:error, :wallet_required}
     end
   end
 
@@ -114,9 +114,7 @@ defmodule Droodotfoo.Fileverse.Storage do
   """
   @spec list_files(String.t()) :: {:ok, [file_metadata()]} | {:error, atom()}
   def list_files(wallet_address) do
-    if not wallet_address do
-      {:error, :wallet_required}
-    else
+    if wallet_address do
       # Mock implementation
       # Production would fetch from Fileverse API
       files = [
@@ -126,7 +124,7 @@ defmodule Droodotfoo.Fileverse.Storage do
           size: 2_457_600,
           content_type: "application/pdf",
           uploader: wallet_address,
-          uploaded_at: DateTime.utc_now() |> DateTime.add(-172800, :second),
+          uploaded_at: DateTime.utc_now() |> DateTime.add(-172_800, :second),
           version: 2,
           versions: ["QmOldVersion1", "QmOldVersion2"],
           storage_cost: 0.0024
@@ -137,7 +135,7 @@ defmodule Droodotfoo.Fileverse.Storage do
           size: 524_288,
           content_type: "image/png",
           uploader: wallet_address,
-          uploaded_at: DateTime.utc_now() |> DateTime.add(-86400, :second),
+          uploaded_at: DateTime.utc_now() |> DateTime.add(-86_400, :second),
           version: 1,
           versions: [],
           storage_cost: 0.0005
@@ -156,6 +154,8 @@ defmodule Droodotfoo.Fileverse.Storage do
       ]
 
       {:ok, files}
+    else
+      {:error, :wallet_required}
     end
   end
 
@@ -170,9 +170,7 @@ defmodule Droodotfoo.Fileverse.Storage do
   """
   @spec get_file(String.t(), String.t()) :: {:ok, file_metadata()} | {:error, atom()}
   def get_file(cid, wallet_address) do
-    if not wallet_address do
-      {:error, :wallet_required}
-    else
+    if wallet_address do
       # Mock implementation
       # Production would fetch from Fileverse API
       if String.starts_with?(cid, "Qm") or String.starts_with?(cid, "bafy") do
@@ -182,7 +180,7 @@ defmodule Droodotfoo.Fileverse.Storage do
           size: 4096,
           content_type: "text/plain",
           uploader: wallet_address,
-          uploaded_at: DateTime.utc_now() |> DateTime.add(-86400, :second),
+          uploaded_at: DateTime.utc_now() |> DateTime.add(-86_400, :second),
           version: 1,
           versions: [],
           storage_cost: 0.00001
@@ -192,6 +190,8 @@ defmodule Droodotfoo.Fileverse.Storage do
       else
         {:error, :not_found}
       end
+    else
+      {:error, :wallet_required}
     end
   end
 
@@ -219,7 +219,7 @@ defmodule Droodotfoo.Fileverse.Storage do
       %{
         version: 1,
         cid: "QmOlderVersion123",
-        uploaded_at: DateTime.utc_now() |> DateTime.add(-86400, :second),
+        uploaded_at: DateTime.utc_now() |> DateTime.add(-86_400, :second),
         size: 3072,
         notes: "Initial upload"
       }
@@ -239,12 +239,12 @@ defmodule Droodotfoo.Fileverse.Storage do
   """
   @spec delete(String.t(), String.t()) :: {:ok, String.t()} | {:error, atom()}
   def delete(cid, wallet_address) do
-    if not wallet_address do
-      {:error, :wallet_required}
-    else
+    if wallet_address do
       # Mock implementation
       # Production would call Fileverse API
       {:ok, "File #{cid} deleted from storage"}
+    else
+      {:error, :wallet_required}
     end
   end
 
@@ -342,21 +342,31 @@ defmodule Droodotfoo.Fileverse.Storage do
   end
 
   defp guess_content_type(filename) do
-    case Path.extname(filename) |> String.downcase() do
-      ".pdf" -> "application/pdf"
-      ".png" -> "image/png"
-      ".jpg" -> "image/jpeg"
-      ".jpeg" -> "image/jpeg"
-      ".gif" -> "image/gif"
-      ".json" -> "application/json"
-      ".txt" -> "text/plain"
-      ".md" -> "text/markdown"
-      ".html" -> "text/html"
-      ".css" -> "text/css"
-      ".js" -> "application/javascript"
-      ".zip" -> "application/zip"
-      _ -> "application/octet-stream"
-    end
+    filename
+    |> Path.extname()
+    |> String.downcase()
+    |> content_type_from_extension()
+  end
+
+  defp content_type_from_extension(ext) do
+    content_type_map()[ext] || "application/octet-stream"
+  end
+
+  defp content_type_map do
+    %{
+      ".pdf" => "application/pdf",
+      ".png" => "image/png",
+      ".jpg" => "image/jpeg",
+      ".jpeg" => "image/jpeg",
+      ".gif" => "image/gif",
+      ".json" => "application/json",
+      ".txt" => "text/plain",
+      ".md" => "text/markdown",
+      ".html" => "text/html",
+      ".css" => "text/css",
+      ".js" => "application/javascript",
+      ".zip" => "application/zip"
+    }
   end
 
   defp calculate_storage_cost(size_bytes) do
@@ -395,8 +405,8 @@ defmodule Droodotfoo.Fileverse.Storage do
     cond do
       diff < 60 -> "#{diff}s ago"
       diff < 3600 -> "#{div(diff, 60)}m ago"
-      diff < 86400 -> "#{div(diff, 3600)}h ago"
-      diff < 604800 -> "#{div(diff, 86400)}d ago"
+      diff < 86_400 -> "#{div(diff, 3600)}h ago"
+      diff < 604_800 -> "#{div(diff, 86_400)}d ago"
       true -> Calendar.strftime(datetime, "%Y-%m-%d")
     end
   end

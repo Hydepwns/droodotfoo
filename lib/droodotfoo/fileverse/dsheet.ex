@@ -131,7 +131,7 @@ defmodule Droodotfoo.Fileverse.DSheet do
           description: "ERC-20 token balances with USD values",
           row_count: 8,
           col_count: 6,
-          created_at: DateTime.utc_now() |> DateTime.add(-86400, :second),
+          created_at: DateTime.utc_now() |> DateTime.add(-86_400, :second),
           updated_at: DateTime.utc_now() |> DateTime.add(-3600, :second),
           sheet_type: :token_balances
         },
@@ -142,7 +142,7 @@ defmodule Droodotfoo.Fileverse.DSheet do
           description: "NFT holdings with metadata",
           row_count: 12,
           col_count: 5,
-          created_at: DateTime.utc_now() |> DateTime.add(-172800, :second),
+          created_at: DateTime.utc_now() |> DateTime.add(-172_800, :second),
           updated_at: DateTime.utc_now(),
           sheet_type: :nft_collection
         },
@@ -153,7 +153,7 @@ defmodule Droodotfoo.Fileverse.DSheet do
           description: "Last 20 transactions",
           row_count: 20,
           col_count: 7,
-          created_at: DateTime.utc_now() |> DateTime.add(-259200, :second),
+          created_at: DateTime.utc_now() |> DateTime.add(-259_200, :second),
           updated_at: DateTime.utc_now() |> DateTime.add(-1800, :second),
           sheet_type: :transactions
         }
@@ -268,9 +268,7 @@ defmodule Droodotfoo.Fileverse.DSheet do
     # Build CSV rows
     data_lines =
       Enum.map(sheet.rows, fn row ->
-        row
-        |> Enum.map(fn cell -> format_cell_for_export(cell) end)
-        |> Enum.join(",")
+        Enum.map_join(row, ",", fn cell -> format_cell_for_export(cell) end)
       end)
 
     csv_content = Enum.join([header_line | data_lines], "\n")
@@ -345,7 +343,7 @@ defmodule Droodotfoo.Fileverse.DSheet do
           |> Enum.take(max_rows)
           |> Enum.map(fn row ->
             cell = Enum.at(row, idx)
-            cell && String.length(to_string(cell.value)) || 0
+            (cell && String.length(to_string(cell.value))) || 0
           end)
           |> Enum.max(fn -> 0 end)
 
@@ -356,16 +354,12 @@ defmodule Droodotfoo.Fileverse.DSheet do
     header_row =
       sheet.headers
       |> Enum.zip(col_widths)
-      |> Enum.map(fn {header, width} ->
+      |> Enum.map_join(" | ", fn {header, width} ->
         String.pad_trailing(truncate(header, width), width)
       end)
-      |> Enum.join(" | ")
 
     # Build separator
-    separator =
-      col_widths
-      |> Enum.map(&String.duplicate("-", &1))
-      |> Enum.join("-+-")
+    separator = Enum.map_join(col_widths, "-+-", &String.duplicate("-", &1))
 
     # Build data rows
     data_rows =
@@ -374,11 +368,10 @@ defmodule Droodotfoo.Fileverse.DSheet do
       |> Enum.map(fn row ->
         row
         |> Enum.zip(col_widths)
-        |> Enum.map(fn {cell, width} ->
+        |> Enum.map_join(" | ", fn {cell, width} ->
           value = format_cell_value(cell)
           String.pad_trailing(truncate(value, width), width)
         end)
-        |> Enum.join(" | ")
       end)
 
     # Combine all parts
@@ -441,7 +434,7 @@ defmodule Droodotfoo.Fileverse.DSheet do
       rows: rows,
       row_count: length(rows),
       col_count: length(headers),
-      created_at: DateTime.utc_now() |> DateTime.add(-86400, :second),
+      created_at: DateTime.utc_now() |> DateTime.add(-86_400, :second),
       updated_at: DateTime.utc_now(),
       sheet_type: sheet_type
     }

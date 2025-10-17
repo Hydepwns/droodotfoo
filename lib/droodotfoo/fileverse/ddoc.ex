@@ -53,27 +53,10 @@ defmodule Droodotfoo.Fileverse.DDoc do
     content = Keyword.get(opts, :content, "")
     encryption_keys = Keyword.get(opts, :encryption_keys)
 
-    if not wallet_address do
-      {:error, :wallet_required}
-    else
+    if wallet_address do
       # Encrypt content if keys provided
       {final_content, encryption_metadata} =
-        if encrypted and encryption_keys do
-          case Encryption.encrypt_document(content, encryption_keys) do
-            {:ok, encrypted_data} ->
-              {encrypted_data, %{
-                algorithm: encrypted_data.algorithm,
-                key_id: encrypted_data.key_id,
-                encrypted_at: encrypted_data.encrypted_at
-              }}
-
-            {:error, _reason} ->
-              Logger.warn("Failed to encrypt document, storing plaintext")
-              {content, nil}
-          end
-        else
-          {content, nil}
-        end
+        prepare_content_with_encryption(content, encrypted, encryption_keys)
 
       doc = %{
         id: "ddoc_" <> generate_id(),
@@ -89,6 +72,8 @@ defmodule Droodotfoo.Fileverse.DDoc do
       }
 
       {:ok, doc}
+    else
+      {:error, :wallet_required}
     end
   end
 
@@ -103,9 +88,7 @@ defmodule Droodotfoo.Fileverse.DDoc do
   """
   @spec list(String.t()) :: {:ok, [document()]} | {:error, atom()}
   def list(wallet_address) do
-    if not wallet_address do
-      {:error, :wallet_required}
-    else
+    if wallet_address do
       # Mock implementation
       # Production would fetch from Fileverse
       docs = [
@@ -116,7 +99,7 @@ defmodule Droodotfoo.Fileverse.DDoc do
           author: wallet_address,
           collaborators: [],
           encrypted: true,
-          created_at: DateTime.utc_now() |> DateTime.add(-86400, :second),
+          created_at: DateTime.utc_now() |> DateTime.add(-86_400, :second),
           updated_at: DateTime.utc_now() |> DateTime.add(-3600, :second),
           ipfs_cid: "QmExample123"
         },
@@ -127,13 +110,15 @@ defmodule Droodotfoo.Fileverse.DDoc do
           author: wallet_address,
           collaborators: ["0x1234..."],
           encrypted: true,
-          created_at: DateTime.utc_now() |> DateTime.add(-172800, :second),
+          created_at: DateTime.utc_now() |> DateTime.add(-172_800, :second),
           updated_at: DateTime.utc_now(),
           ipfs_cid: "QmExample456"
         }
       ]
 
       {:ok, docs}
+    else
+      {:error, :wallet_required}
     end
   end
 
@@ -155,9 +140,7 @@ defmodule Droodotfoo.Fileverse.DDoc do
   """
   @spec get(String.t(), String.t(), keyword()) :: {:ok, document()} | {:error, atom()}
   def get(doc_id, wallet_address, opts \\ []) do
-    if not wallet_address do
-      {:error, :wallet_required}
-    else
+    if wallet_address do
       encryption_keys = Keyword.get(opts, :encryption_keys)
 
       # Mock implementation
@@ -181,32 +164,22 @@ defmodule Droodotfoo.Fileverse.DDoc do
             author: wallet_address,
             collaborators: [],
             encrypted: true,
-            created_at: DateTime.utc_now() |> DateTime.add(-86400, :second),
+            created_at: DateTime.utc_now() |> DateTime.add(-86_400, :second),
             updated_at: DateTime.utc_now(),
             ipfs_cid: "QmSample789",
             encryption_metadata: encrypted_metadata
           }
 
           # Decrypt if keys provided (for real encrypted documents)
-          final_doc =
-            if encryption_keys and is_map(doc.content) do
-              case Encryption.decrypt_document(doc.content, encryption_keys) do
-                {:ok, plaintext} ->
-                  %{doc | content: plaintext}
-
-                {:error, _reason} ->
-                  Logger.warn("Failed to decrypt document #{doc_id}")
-                  %{doc | content: "[ENCRYPTED - Unable to decrypt]"}
-              end
-            else
-              doc
-            end
+          final_doc = maybe_decrypt_document(doc, encryption_keys, doc_id)
 
           {:ok, final_doc}
 
         false ->
           {:error, :not_found}
       end
+    else
+      {:error, :wallet_required}
     end
   end
 
@@ -221,12 +194,12 @@ defmodule Droodotfoo.Fileverse.DDoc do
   """
   @spec delete(String.t(), String.t()) :: {:ok, String.t()} | {:error, atom()}
   def delete(doc_id, wallet_address) do
-    if not wallet_address do
-      {:error, :wallet_required}
-    else
+    if wallet_address do
       # Mock implementation
       # Production would call Fileverse API
       {:ok, "Document #{doc_id} deleted"}
+    else
+      {:error, :wallet_required}
     end
   end
 
@@ -241,13 +214,13 @@ defmodule Droodotfoo.Fileverse.DDoc do
   """
   @spec share(String.t(), [String.t()], String.t()) :: {:ok, String.t()} | {:error, atom()}
   def share(doc_id, collaborator_addresses, wallet_address) do
-    if not wallet_address do
-      {:error, :wallet_required}
-    else
+    if wallet_address do
       # Mock implementation
       # Production would update access control on Fileverse
       count = length(collaborator_addresses)
       {:ok, "Document #{doc_id} shared with #{count} collaborator(s)"}
+    else
+      {:error, :wallet_required}
     end
   end
 
@@ -352,9 +325,48 @@ defmodule Droodotfoo.Fileverse.DDoc do
     cond do
       diff < 60 -> "#{diff}s ago"
       diff < 3600 -> "#{div(diff, 60)}m ago"
-      diff < 86400 -> "#{div(diff, 3600)}h ago"
-      diff < 604800 -> "#{div(diff, 86400)}d ago"
+      diff < 86_400 -> "#{div(diff, 3600)}h ago"
+      diff < 604_800 -> "#{div(diff, 86_400)}d ago"
       true -> Calendar.strftime(datetime, "%Y-%m-%d")
     end
   end
+
+  defp prepare_content_with_encryption(content, encrypted, encryption_keys)
+       when encrypted and not is_nil(encryption_keys) do
+    case Encryption.encrypt_document(content, encryption_keys) do
+      {:ok, encrypted_data} ->
+        {encrypted_data,
+         %{
+           algorithm: encrypted_data.algorithm,
+           key_id: encrypted_data.key_id,
+           encrypted_at: encrypted_data.encrypted_at
+         }}
+
+      {:error, _reason} ->
+        Logger.warning("Failed to encrypt document, storing plaintext")
+        {content, nil}
+    end
+  end
+
+  defp prepare_content_with_encryption(content, _encrypted, _encryption_keys) do
+    {content, nil}
+  end
+
+  defp maybe_decrypt_document(doc, encryption_keys, doc_id)
+       when not is_nil(encryption_keys) and is_map_key(doc, :content) do
+    if is_map(doc.content) do
+      case Encryption.decrypt_document(doc.content, encryption_keys) do
+        {:ok, plaintext} ->
+          %{doc | content: plaintext}
+
+        {:error, _reason} ->
+          Logger.warning("Failed to decrypt document #{doc_id}")
+          %{doc | content: "[ENCRYPTED - Unable to decrypt]"}
+      end
+    else
+      doc
+    end
+  end
+
+  defp maybe_decrypt_document(doc, _encryption_keys, _doc_id), do: doc
 end
