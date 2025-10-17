@@ -115,14 +115,6 @@ defmodule Droodotfoo.Raxol.Navigation do
     end
   end
 
-  def handle_input("v", state) do
-    if state.current_section == :spotify do
-      %{state | spotify_mode: :volume}
-    else
-      state
-    end
-  end
-
   def handle_input("q", state) do
     if state.current_section == :stl_viewer do
       # Exit viewer, return to home
@@ -223,22 +215,6 @@ defmodule Droodotfoo.Raxol.Navigation do
     end
   end
 
-  def handle_input("n", state) do
-    if state.current_section == :spotify do
-      Map.put(state, :spotify_action, :next_track)
-    else
-      state
-    end
-  end
-
-  def handle_input("b", state) do
-    if state.current_section == :spotify do
-      Map.put(state, :spotify_action, :previous_track)
-    else
-      state
-    end
-  end
-
   def handle_input("g", state) do
     if State.vim_mode?(state) do
       # Go to top
@@ -292,21 +268,19 @@ defmodule Droodotfoo.Raxol.Navigation do
     end
   end
 
-  # Number key shortcuts (1-8) - jump to menu item and select
+  # Number key shortcuts (1-6) - jump to menu item and select
   def handle_input("1", state), do: jump_to_and_select(state, 0)
   def handle_input("2", state), do: jump_to_and_select(state, 1)
   def handle_input("3", state), do: jump_to_and_select(state, 2)
   def handle_input("4", state), do: jump_to_and_select(state, 3)
   def handle_input("5", state), do: jump_to_and_select(state, 4)
   def handle_input("6", state), do: jump_to_and_select(state, 5)
-  def handle_input("7", state), do: jump_to_and_select(state, 6)
-  def handle_input("8", state), do: jump_to_and_select(state, 7)
 
   # Toggle vim mode with 'v' key (unless in Spotify where it's volume control)
   def handle_input("v", state) do
     if state.current_section == :spotify do
-      # Already handled above for volume control
-      state
+      # Set Spotify to volume control mode
+      %{state | spotify_mode: :volume}
     else
       %{state | vim_mode: !state.vim_mode}
     end
@@ -328,27 +302,25 @@ defmodule Droodotfoo.Raxol.Navigation do
 
   # Restore section from localStorage
   def handle_input("restore_section:" <> section_str, state) do
-    try do
-      section_atom = String.to_existing_atom(section_str)
+    section_atom = String.to_existing_atom(section_str)
 
-      if section_atom in state.navigation_items or
-           section_atom in [
-             :terminal,
-             :search_results,
-             :performance,
-             :matrix,
-             :ssh,
-             :analytics,
-             :help,
-             :spotify
-           ] do
-        %{state | current_section: section_atom}
-      else
-        state
-      end
-    rescue
-      _ -> state
+    if section_atom in state.navigation_items or
+         section_atom in [
+           :terminal,
+           :search_results,
+           :performance,
+           :matrix,
+           :ssh,
+           :analytics,
+           :help,
+           :spotify
+         ] do
+      %{state | current_section: section_atom}
+    else
+      state
     end
+  rescue
+    _ -> state
   end
 
   # Search navigation - next match with 'n'

@@ -3,8 +3,8 @@ defmodule Droodotfoo.Terminal.CommandParser do
   Parses and executes terminal commands, providing a real Unix-like experience.
   """
 
-  alias Droodotfoo.Terminal.{FileSystem, Commands, CommandRegistry}
   alias Droodotfoo.ErrorFormatter
+  alias Droodotfoo.Terminal.{CommandRegistry, Commands, FileSystem}
 
   @doc """
   Parse and execute a command string.
@@ -89,269 +89,137 @@ defmodule Droodotfoo.Terminal.CommandParser do
   end
 
   def execute_command({:command, [cmd | args]}, state) do
-    result =
-      case cmd do
-        # Navigation commands
-        "ls" ->
-          Commands.ls(args, state)
-
-        "cd" ->
-          Commands.cd(args, state)
-
-        "pwd" ->
-          Commands.pwd(state)
-
-        # File operations
-        "cat" ->
-          Commands.cat(args, state)
-
-        "head" ->
-          Commands.head(args, state)
-
-        "tail" ->
-          Commands.tail(args, state)
-
-        "grep" ->
-          Commands.grep(args, state)
-
-        "find" ->
-          Commands.find(args, state)
-
-        # System info
-        "whoami" ->
-          Commands.whoami(state)
-
-        "date" ->
-          Commands.date(state)
-
-        "uptime" ->
-          Commands.uptime(state)
-
-        "uname" ->
-          Commands.uname(args, state)
-
-        # Custom commands
-        "help" ->
-          Commands.help(args, state)
-
-        "man" ->
-          Commands.man(args, state)
-
-        "clear" ->
-          Commands.clear(state)
-
-        "history" ->
-          Commands.history(state)
-
-        "echo" ->
-          Commands.echo(args, state)
-
-        # Fun commands
-        "fortune" ->
-          Commands.fortune(state)
-
-        "cowsay" ->
-          Commands.cowsay(args, state)
-
-        "sl" ->
-          Commands.sl(state)
-
-        "matrix" ->
-          Commands.matrix([], state)
-
-        # droo.foo specific
-        "skills" ->
-          Commands.skills(args, state)
-
-        "contact" ->
-          Commands.contact(args, state)
-
-        "resume" ->
-          Commands.resume(args, state)
-
-        "download" ->
-          Commands.download(args, state)
-
-        "api" ->
-          Commands.api(args, state)
-
-        # Git commands
-        "git" ->
-          Commands.git(args, state)
-
-        # Package managers
-        "npm" ->
-          Commands.npm(args, state)
-
-        "pip" ->
-          Commands.pip(args, state)
-
-        # Network
-        "curl" ->
-          Commands.curl(args, state)
-
-        "wget" ->
-          Commands.wget(args, state)
-
-        "ping" ->
-          Commands.ping(args, state)
-
-        # Easter eggs
-        "sudo" ->
-          Commands.sudo([cmd | args], state)
-
-        "rm" ->
-          Commands.rm(args, state)
-
-        "vim" ->
-          Commands.vim(args, state)
-
-        "emacs" ->
-          Commands.emacs(args, state)
-
-        "exit" ->
-          Commands.exit(state)
-
-        # Theme commands
-        "theme" ->
-          Commands.theme(args, state)
-
-        "themes" ->
-          Commands.themes(state)
-
-        # Performance commands
-        "perf" ->
-          Commands.perf(args, state)
-
-        "dashboard" ->
-          Commands.dashboard(args, state)
-
-        "metrics" ->
-          Commands.metrics(args, state)
-
-        # Visual Effects
-        "crt" ->
-          Commands.crt(args, state)
-
-        # Music/Entertainment
-        "spotify" ->
-          Commands.spotify(args, state)
-
-        "music" ->
-          Commands.music(args, state)
-
-        # Development/Social
-        "github" ->
-          Commands.github(args, state)
-
-        "gh" ->
-          Commands.gh(args, state)
-
-        # Web3
-        "web3" ->
-          Commands.web3(args, state)
-
-        "wallet" ->
-          Commands.wallet(args, state)
-
-        "w3" ->
-          Commands.w3(args, state)
-
-        "ens" ->
-          Commands.ens(args, state)
-
-        "nft" ->
-          Commands.nft(args, state)
-
-        "nfts" ->
-          Commands.nfts(args, state)
-
-        "tokens" ->
-          Commands.tokens(args, state)
-
-        "balance" ->
-          Commands.balance(args, state)
-
-        "crypto" ->
-          Commands.crypto(args, state)
-
-        "tx" ->
-          Commands.tx(args, state)
-
-        "transactions" ->
-          Commands.transactions(args, state)
-
-        "contract" ->
-          Commands.contract(args, state)
-
-        "call" ->
-          Commands.call(args, state)
-
-        "ipfs" ->
-          Commands.ipfs(args, state)
-
-        # Fileverse
-        "ddoc" ->
-          Commands.ddoc(args, state)
-
-        "docs" ->
-          Commands.docs(args, state)
-
-        "upload" ->
-          Commands.upload(args, state)
-
-        "files" ->
-          Commands.files(args, state)
-
-        "file" ->
-          Commands.file(args, state)
-
-        "portal" ->
-          Commands.portal(args, state)
-
-        # Encryption
-        "encrypt" ->
-          Commands.encrypt(args, state)
-
-        "decrypt" ->
-          Commands.decrypt(args, state)
-
-        "privacy" ->
-          Commands.privacy(args, state)
-
-        "keys" ->
-          Commands.keys(args, state)
-
-        # dSheets
-        "sheet" ->
-          Commands.sheet(args, state)
-
-        "sheets" ->
-          Commands.sheets(args, state)
-
-        # Portfolio
-        "project" ->
-          Commands.project(args, state)
-
-        "projects" ->
-          Commands.projects(state)
-
-        # Search
-        "search" ->
-          Commands.search(args, state)
-
-        # Charts
-        "charts" ->
-          Commands.charts(state)
-
-        # Unknown command
-        _ ->
-          suggestions = suggest_command(cmd)
-          formatted_error = ErrorFormatter.command_not_found(cmd, suggestions)
-          {:error, formatted_error}
-      end
-
-    # Normalize return values to ensure consistent format
+    cmd
+    |> dispatch_command(args, state)
+    |> normalize_result()
+  end
+
+  # Command dispatch using pattern matching
+  defp dispatch_command(cmd, args, state) do
+    case command_map()[cmd] do
+      nil -> handle_unknown_command(cmd)
+      handler -> handler.(args, state)
+    end
+  end
+
+  # Command registry map
+  defp command_map do
+    %{
+      # Navigation commands
+      "ls" => &Commands.ls/2,
+      "cd" => &Commands.cd/2,
+      "pwd" => fn _args, state -> Commands.pwd(state) end,
+      # File operations
+      "cat" => &Commands.cat/2,
+      "head" => &Commands.head/2,
+      "tail" => &Commands.tail/2,
+      "grep" => &Commands.grep/2,
+      "find" => &Commands.find/2,
+      # System info
+      "whoami" => fn _args, state -> Commands.whoami(state) end,
+      "date" => fn _args, state -> Commands.date(state) end,
+      "uptime" => fn _args, state -> Commands.uptime(state) end,
+      "uname" => &Commands.uname/2,
+      # Custom commands
+      "help" => &Commands.help/2,
+      "man" => &Commands.man/2,
+      "clear" => fn _args, state -> Commands.clear(state) end,
+      "history" => fn _args, state -> Commands.history(state) end,
+      "echo" => &Commands.echo/2,
+      # Fun commands
+      "fortune" => fn _args, state -> Commands.fortune(state) end,
+      "cowsay" => &Commands.cowsay/2,
+      "sl" => fn _args, state -> Commands.sl(state) end,
+      "matrix" => fn _args, state -> Commands.matrix([], state) end,
+      # droo.foo specific
+      "skills" => &Commands.skills/2,
+      "contact" => &Commands.contact/2,
+      "resume" => &Commands.resume/2,
+      "download" => &Commands.download/2,
+      "api" => &Commands.api/2,
+      # Git commands
+      "git" => &Commands.git/2,
+      # Package managers
+      "npm" => &Commands.npm/2,
+      "pip" => &Commands.pip/2,
+      # Network
+      "curl" => &Commands.curl/2,
+      "wget" => &Commands.wget/2,
+      "ping" => &Commands.ping/2,
+      # Easter eggs
+      "sudo" => fn args, state -> Commands.sudo(args, state) end,
+      "rm" => &Commands.rm/2,
+      "vim" => &Commands.vim/2,
+      "emacs" => &Commands.emacs/2,
+      "exit" => fn _args, state -> Commands.exit(state) end,
+      # Theme commands
+      "theme" => &Commands.theme/2,
+      "themes" => fn _args, state -> Commands.themes(state) end,
+      # Performance commands
+      "perf" => &Commands.perf/2,
+      "dashboard" => &Commands.dashboard/2,
+      "metrics" => &Commands.metrics/2,
+      # Visual Effects
+      "crt" => &Commands.crt/2,
+      # Music/Entertainment
+      "spotify" => &Commands.spotify/2,
+      "music" => &Commands.music/2,
+      # Development/Social
+      "github" => &Commands.github/2,
+      "gh" => &Commands.gh/2,
+      # Web3
+      "web3" => &Commands.web3/2,
+      "wallet" => &Commands.wallet/2,
+      "w3" => &Commands.w3/2,
+      "ens" => &Commands.ens/2,
+      "nft" => &Commands.nft/2,
+      "nfts" => &Commands.nfts/2,
+      "tokens" => &Commands.tokens/2,
+      "balance" => &Commands.balance/2,
+      "crypto" => &Commands.crypto/2,
+      "tx" => &Commands.tx/2,
+      "transactions" => &Commands.transactions/2,
+      "contract" => &Commands.contract/2,
+      "call" => &Commands.call/2,
+      "ipfs" => &Commands.ipfs/2,
+      # Fileverse
+      "ddoc" => &Commands.ddoc/2,
+      "docs" => &Commands.docs/2,
+      "upload" => &Commands.upload/2,
+      "files" => &Commands.files/2,
+      "file" => &Commands.file/2,
+      "portal" => &Commands.portal/2,
+      # Encryption
+      "encrypt" => &Commands.encrypt/2,
+      "decrypt" => &Commands.decrypt/2,
+      # dSheets
+      "sheet" => &Commands.sheet/2,
+      "sheets" => &Commands.sheets/2,
+      # Portfolio
+      "project" => &Commands.project/2,
+      "projects" => fn _args, state -> Commands.projects([], state) end,
+      "tree" => &Commands.tree/2,
+      # Search
+      "search" => &Commands.search/2,
+      # Charts
+      "charts" => fn _args, state -> Commands.charts(state) end,
+      # Resume Export
+      "resume_export" => &Commands.resume_export/2,
+      "resume_formats" => &Commands.resume_formats/2,
+      "resume_preview" => &Commands.resume_preview/2,
+      # Contact Form
+      "contact_form" => &Commands.contact_form/2,
+      "contact_status" => &Commands.contact_status/2
+    }
+  end
+
+  defp handle_unknown_command(cmd) do
+    suggestions = suggest_command(cmd)
+    formatted_error = ErrorFormatter.command_not_found(cmd, suggestions)
+    {:error, formatted_error}
+  end
+
+  defp normalize_result(result) do
     case result do
       {:ok, output, new_state} -> {:ok, output, new_state}
       {:ok, output} -> {:ok, output}

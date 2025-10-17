@@ -19,8 +19,10 @@ defmodule Droodotfoo.Raxol.Config do
   @command_line_y @height - 1
 
   # STL Viewer viewport dimensions and position
-  @stl_viewport_x 37  # Matches box drawing at "│  ┌─ 3D Viewport ─..."
-  @stl_viewport_y 26  # Row where viewport box starts
+  # Matches box drawing at "│  ┌─ 3D Viewport ─..."
+  @stl_viewport_x 37
+  # Row where viewport box starts
+  @stl_viewport_y 26
   @stl_viewport_width 60
   @stl_viewport_height 8
 
