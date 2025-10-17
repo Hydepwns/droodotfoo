@@ -112,13 +112,54 @@ def handle_event("keydown", %{"key" => key}, socket) do
 end
 ```
 
+## Rendering Architecture
+
+### When to Use Pure LiveView
+Use pure Phoenix LiveView for:
+- **Content pages**: Blog posts, resume, contact forms
+- **Terminal UI**: Raxol-based interfaces (DroodotfooLive)
+- **Simple forms**: User input with server-side validation
+- **Real-time updates**: LiveView excels at server-pushed updates
+
+Examples: `ContactLive`, `ResumeLive`, `PostLive`, `DroodotfooLive`
+
+### When to Use Astro Components + LiveView
+Use Astro components embedded in LiveView for:
+- **Complex client-side interactions**: 3D rendering, audio players
+- **Heavy JavaScript libraries**: Three.js (STL viewer), Spotify Web Playback SDK
+- **Progressive enhancement**: Features that degrade gracefully
+- **Static content islands**: Pre-rendered components in dynamic pages
+
+Examples: `SpotifyLive`, `STLViewerLive`, `PWALive`
+
+**Integration Pattern**:
+```elixir
+# LiveView template
+<div id="astro-component" phx-hook="AstroComponentHook" />
+```
+
+```javascript
+// JavaScript hook (assets/js/hooks/)
+Hooks.AstroComponentHook = {
+  mounted() {
+    // Load and initialize Astro component
+    // Set up bidirectional communication with LiveView
+  }
+}
+```
+
+### Layout Consistency
+All LiveViews use the same root layout (`DroodotfooWeb.Layouts.root`). No intermediate app layout - keep the monospace aesthetic consistent across all pages.
+
 ## Dependencies
 
 Main dependencies managed in `mix.exs`:
-- Phoenix 1.7.21 with LiveView 1.0.17
-- Raxol 1.0.1 (terminal UI framework)
-- Bandit web server
+- Phoenix 1.8.1 with LiveView 1.1.12
+- Raxol 1.4.1 (terminal UI framework)
+- Bandit web server (1.5+)
 - Tailwind CSS and esbuild for assets
+- Swoosh 1.15+ for email functionality
+- ChromicPDF 1.0+ for PDF generation
 
 ## Testing Approach
 
