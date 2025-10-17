@@ -11,6 +11,8 @@ import { LiveSocket } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
 import Hooks from "./hooks";
 import PWAManager from "./modules/PWAManager";
+import "./astro-stl-viewer.js";
+import "./astro-pwa.js";
 
 // Type definitions
 
@@ -21,12 +23,12 @@ interface PhoenixLiveReloader {
   openEditorAtDef: (element: EventTarget) => void;
 }
 
-interface WindowWithLiveSocket extends Window {
-  liveSocket?: typeof liveSocket;
-  liveReloader?: PhoenixLiveReloader;
+declare global {
+  interface Window {
+    liveSocket?: LiveSocket;
+    liveReloader?: PhoenixLiveReloader;
+  }
 }
-
-declare const window: WindowWithLiveSocket;
 
 // Get CSRF token from meta tag
 const getCsrfToken = (): string => {

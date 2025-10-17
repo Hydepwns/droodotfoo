@@ -113,21 +113,31 @@ export class MobileTerminal {
     const nav = document.createElement('div');
     nav.className = 'mobile-nav';
     nav.innerHTML = `
-      <button data-key="h" aria-label="Left">←</button>
-      <button data-key="k" aria-label="Up">↑</button>
-      <button data-key="j" aria-label="Down">↓</button>
-      <button data-key="l" aria-label="Right">→</button>
-      <button data-key="Enter" aria-label="Select">⏎</button>
-      <button data-key="/" aria-label="Search">/</button>
-      <button data-key="Escape" aria-label="Back">⌫</button>
+      <button data-key="h" aria-label="Left" title="Navigate Left">←</button>
+      <button data-key="k" aria-label="Up" title="Navigate Up">↑</button>
+      <button data-key="j" aria-label="Down" title="Navigate Down">↓</button>
+      <button data-key="l" aria-label="Right" title="Navigate Right">→</button>
+      <button data-key="Enter" aria-label="Select" title="Enter/Select">⏎</button>
+      <button data-key="/" aria-label="Search" title="Search">/</button>
+      <button data-key="Escape" aria-label="Back" title="Back/Escape">⌫</button>
+      <button data-key="toggle_keyboard" aria-label="Keyboard" title="Toggle Virtual Keyboard">⌨</button>
     `;
 
     nav.querySelectorAll('button').forEach(button => {
       button.addEventListener('click', (e) => {
         e.preventDefault();
         const key = (e.target as HTMLElement).getAttribute('data-key');
-        if (key) {
+        if (key === 'toggle_keyboard') {
+          this.toggleKeyboard();
+        } else if (key) {
           this.sendKey(key);
+        }
+      });
+
+      // Add haptic feedback for supported devices
+      button.addEventListener('touchstart', () => {
+        if ('vibrate' in navigator) {
+          navigator.vibrate(10);
         }
       });
     });
@@ -174,10 +184,14 @@ export class MobileTerminal {
     if (!terminal) return;
 
     const currentSize = parseInt(window.getComputedStyle(terminal).fontSize);
-    const newSize = Math.min(currentSize + 1, 20);
+    const newSize = Math.min(currentSize + 2, 24); // Increased max size for mobile
     terminal.style.fontSize = `${newSize}px`;
 
+    // Store font size preference
+    localStorage.setItem('terminal-font-size', newSize.toString());
+    
     this.recalculateGrid();
+    this.showFontSizeNotification(newSize);
   }
 
   private decreaseFontSize(): void {
@@ -185,10 +199,43 @@ export class MobileTerminal {
     if (!terminal) return;
 
     const currentSize = parseInt(window.getComputedStyle(terminal).fontSize);
-    const newSize = Math.max(currentSize - 1, 10);
+    const newSize = Math.max(currentSize - 2, 8); // Decreased min size for mobile
     terminal.style.fontSize = `${newSize}px`;
 
+    // Store font size preference
+    localStorage.setItem('terminal-font-size', newSize.toString());
+    
     this.recalculateGrid();
+    this.showFontSizeNotification(newSize);
+  }
+
+  private showFontSizeNotification(size: number): void {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--background-color-alt, #2a2a2a);
+      color: var(--text-color, #ffffff);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 2000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    `;
+    notification.textContent = `Font size: ${size}px`;
+    document.body.appendChild(notification);
+
+    // Fade in
+    setTimeout(() => notification.style.opacity = '1', 10);
+    
+    // Fade out and remove
+    setTimeout(() => {
+      notification.style.opacity = '0';
+      setTimeout(() => notification.remove(), 300);
+    }, 1500);
   }
 
   private recalculateGrid(): void {
@@ -303,8 +350,10 @@ export class MobileTerminal {
 }
 
 // Export a hook for Phoenix LiveView integration
+import type { PhoenixLiveViewHook } from '../types/hooks';
+
 export const MobileTerminalHook = {
-  mounted() {
+  mounted(this: PhoenixLiveViewHook) {
     const container = this.el as HTMLElement;
 
     const mobileTerminal = new MobileTerminal({
@@ -313,7 +362,7 @@ export const MobileTerminalHook = {
         console.log('Mobile command:', command);
       },
       pushEvent: (event, payload) => {
-        this.pushEvent(event, payload);
+        this.pushEvent?.(event, payload);
       }
     });
 
@@ -321,7 +370,7 @@ export const MobileTerminalHook = {
     (this.el as any).__mobileTerminal = mobileTerminal;
   },
 
-  destroyed() {
+  destroyed(this: PhoenixLiveViewHook) {
     const mobileTerminal = (this.el as any).__mobileTerminal;
     if (mobileTerminal) {
       mobileTerminal.destroy();

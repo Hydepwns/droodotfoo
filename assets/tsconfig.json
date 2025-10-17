@@ -25,6 +25,7 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "outDir": "./dist",
     "baseUrl": ".",
     "paths": {
       "phoenix": ["../deps/phoenix"],
@@ -39,6 +40,7 @@
   "exclude": [
     "node_modules",
     "js/dist",
-    "../vendor"
+    "vendor",
+    "dist"
   ]
 }

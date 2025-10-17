@@ -30,7 +30,16 @@ export class PWAManager {
       // Monitor installation status
       this.monitorInstallStatus();
 
+      // For testing: always show uninstall button
+      // In production, this should only show when installed
+      this.showUninstallButton();
+
       console.log('[PWA] Manager initialized');
+      console.log('[PWA] Install status:', {
+        isInstalled: this.isInstalled,
+        hasServiceWorker: !!this.serviceWorkerRegistration,
+        canInstall: !!this.deferredPrompt
+      });
     } catch (error) {
       console.error('[PWA] Initialization failed:', error);
     }
@@ -139,6 +148,7 @@ export class PWAManager {
       console.log('[PWA] App installed');
       this.isInstalled = true;
       this.hideInstallButton();
+      this.showUninstallButton();
       this.deferredPrompt = null;
     });
   }
@@ -180,6 +190,7 @@ export class PWAManager {
       if (event.matches) {
         this.isInstalled = true;
         this.hideInstallButton();
+        this.showUninstallButton();
         console.log('[PWA] Changed to standalone mode');
       }
     });
@@ -192,21 +203,30 @@ export class PWAManager {
     // Check if button already exists
     if (document.getElementById('pwa-install-btn')) return;
 
-    const installButton = document.createElement('button');
-    installButton.id = 'pwa-install-btn';
-    installButton.className = 'pwa-install-btn';
-    installButton.innerHTML = '+ Install App';
-    installButton.setAttribute('aria-label', 'Install droo.foo as an app');
+    const footer = document.getElementById('site-footer');
+    if (!footer) return;
 
-    installButton.addEventListener('click', () => {
+    // Add separator if footer has content
+    if (footer.textContent && footer.textContent.trim().length > 0) {
+      footer.appendChild(document.createTextNode(' • '));
+    }
+
+    const installButton = document.createElement('a');
+    installButton.id = 'pwa-install-btn';
+    installButton.className = 'pwa-install-link';
+    installButton.innerHTML = 'Install app';
+    installButton.setAttribute('href', '#');
+    installButton.setAttribute('aria-label', 'Install droo.foo as an app');
+    installButton.setAttribute('data-tooltip', '+ Works offline\n+ Faster loading\n+ Desktop app\n+ Auto updates');
+
+    installButton.addEventListener('click', (e) => {
+      e.preventDefault();
       this.promptInstall();
     });
 
-    // Add to appropriate location in UI
-    const container = document.querySelector('.terminal-header') || document.body;
-    container.appendChild(installButton);
+    footer.appendChild(installButton);
 
-    console.log('[PWA] Install button shown');
+    console.log('[PWA] Install link shown in footer');
   }
 
   /**
@@ -215,8 +235,62 @@ export class PWAManager {
   private hideInstallButton(): void {
     const button = document.getElementById('pwa-install-btn');
     if (button) {
+      // Remove the separator before it too
+      const previousNode = button.previousSibling;
+      if (previousNode && previousNode.nodeType === Node.TEXT_NODE && previousNode.textContent === ' • ') {
+        previousNode.remove();
+      }
       button.remove();
       console.log('[PWA] Install button hidden');
+    }
+  }
+
+  /**
+   * Show uninstall button in UI
+   */
+  private showUninstallButton(): void {
+    // Check if button already exists
+    if (document.getElementById('pwa-uninstall-btn')) return;
+
+    const footer = document.getElementById('site-footer');
+    if (!footer) return;
+
+    // Add separator if footer has content
+    if (footer.textContent && footer.textContent.trim().length > 0) {
+      footer.appendChild(document.createTextNode(' • '));
+    }
+
+    const uninstallButton = document.createElement('a');
+    uninstallButton.id = 'pwa-uninstall-btn';
+    uninstallButton.className = 'pwa-install-link';
+    uninstallButton.innerHTML = 'Uninstall app';
+    uninstallButton.setAttribute('href', '#');
+    uninstallButton.setAttribute('aria-label', 'Uninstall droo.foo app');
+    uninstallButton.setAttribute('data-tooltip', 'Clear caches\nReset app state\nFor testing');
+
+    uninstallButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      this.uninstall();
+    });
+
+    footer.appendChild(uninstallButton);
+
+    console.log('[PWA] Uninstall link shown in footer');
+  }
+
+  /**
+   * Hide uninstall button from UI
+   */
+  private hideUninstallButton(): void {
+    const button = document.getElementById('pwa-uninstall-btn');
+    if (button) {
+      // Remove the separator before it too
+      const previousNode = button.previousSibling;
+      if (previousNode && previousNode.nodeType === Node.TEXT_NODE && previousNode.textContent === ' • ') {
+        previousNode.remove();
+      }
+      button.remove();
+      console.log('[PWA] Uninstall button hidden');
     }
   }
 
@@ -263,6 +337,51 @@ export class PWAManager {
     }
 
     console.log('[PWA] Installation tracked');
+  }
+
+  /**
+   * Uninstall PWA - clears caches and unregisters service worker
+   */
+  async uninstall(): Promise<void> {
+    try {
+      console.log('[PWA] Starting uninstall process...');
+
+      // Clear all caches
+      try {
+        await this.clearCaches();
+      } catch (error) {
+        console.log('[PWA] Cache clearing failed (may not be registered):', error);
+      }
+
+      // Unregister all service workers
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const registration of registrations) {
+          await registration.unregister();
+          console.log('[PWA] Service worker unregistered');
+        }
+      }
+
+      // Clear service worker registration reference
+      this.serviceWorkerRegistration = null;
+
+      // Reset install state
+      this.isInstalled = false;
+
+      // Update UI
+      this.hideUninstallButton();
+
+      console.log('[PWA] Uninstall complete. Reloading...');
+
+      // Show brief message before reload
+      alert('PWA uninstalled! Caches cleared and service worker removed.\n\nTo complete removal from your system:\n- Chrome: chrome://apps, right-click droo.foo, Remove\n- Edge: edge://apps\n- Safari: Delete from Applications folder');
+
+      // Reload to reset state
+      window.location.reload();
+    } catch (error) {
+      console.error('[PWA] Uninstall failed:', error);
+      alert('Uninstall failed. Check console for details.');
+    }
   }
 
   /**

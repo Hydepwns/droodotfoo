@@ -6,6 +6,12 @@ import { PhoenixLiveViewHook, PhoenixHookElement, TerminalHookConfig, KeyboardHa
 import { MobileTerminal } from './modules/MobileTerminal';
 import { isMobileDevice } from './modules/TouchGestures';
 import { TerminalInputHandler } from './modules/TerminalInput';
+import { STLViewerHook } from './hooks/stl_viewer';
+import { AstroSTLViewerHook } from './hooks/astro_stl_viewer.js';
+import { AstroSpotifyWidgetHook } from './hooks/astro_spotify_widget.js';
+import { AstroPWAHook } from './hooks/astro_pwa_hook.js';
+import { Web3WalletHook } from './hooks/web3_wallet.js';
+import { PortalWebRTCHook } from './hooks/portal_webrtc.js';
 
 interface TerminalHookInstance extends PhoenixLiveViewHook {
   terminal: HTMLElement | null;
@@ -330,10 +336,13 @@ export const TerminalHook: Partial<TerminalHookInstance> = {
   }
 };
 
-import { STLViewerHook } from './hooks/stl_viewer';
-
 // Export all hooks
 export default {
   TerminalHook,
-  STLViewerHook
+  STLViewerHook,
+  AstroSTLViewerHook,
+  AstroSpotifyWidgetHook,
+  AstroPWAHook,
+  Web3WalletHook,
+  PortalWebRTCHook
 };
