@@ -1,7 +1,8 @@
 ---
 title: "Welcome to droo.foo"
 date: "2025-01-15"
-description: "Introducing the new droo.foo - a terminal-powered portfolio with Obsidian publishing"
+description: "A terminal-powered portfolio with Obsidian publishing"
+author: "Drew Hiro"
 tags: ["meta", "announcement"]
 slug: "welcome-to-droo-foo"
 ---
