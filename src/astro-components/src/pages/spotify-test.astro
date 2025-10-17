@@ -1,0 +1,152 @@
+---
+// Test page for Spotify Widget Astro component
+import SpotifyWidget from '../components/SpotifyWidget.astro';
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Spotify Widget Test</title>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1>Spotify Widget Astro Component Test</h1>
+      
+      <div class="test-section">
+        <h2>Basic Spotify Widget</h2>
+        <SpotifyWidget 
+          theme="gradient" 
+          showVolume={true} 
+          showProgress={true} 
+        />
+      </div>
+      
+      <div class="test-section">
+        <h2>Dark Theme Widget</h2>
+        <SpotifyWidget 
+          theme="dark" 
+          showVolume={true} 
+          showProgress={true} 
+        />
+      </div>
+      
+      <div class="test-section">
+        <h2>Light Theme Widget</h2>
+        <SpotifyWidget 
+          theme="light" 
+          showVolume={false} 
+          showProgress={true} 
+        />
+      </div>
+      
+      <div class="test-controls">
+        <h3>Test Controls</h3>
+        <button onclick="playMusic()">Play</button>
+        <button onclick="pauseMusic()">Pause</button>
+        <button onclick="nextTrack()">Next</button>
+        <button onclick="previousTrack()">Previous</button>
+        <button onclick="setVolume(25)">Volume 25%</button>
+        <button onclick="setVolume(75)">Volume 75%</button>
+        <button onclick="loadPlaylist('37i9dQZF1DXcBWIGoYBM5M')">Load Playlist</button>
+      </div>
+    </div>
+    
+    <script>
+      function playMusic() {
+        const event = new CustomEvent('phx:spotify_command', {
+          detail: { command: { type: 'play' } }
+        });
+        document.dispatchEvent(event);
+      }
+      
+      function pauseMusic() {
+        const event = new CustomEvent('phx:spotify_command', {
+          detail: { command: { type: 'pause' } }
+        });
+        document.dispatchEvent(event);
+      }
+      
+      function nextTrack() {
+        const event = new CustomEvent('phx:spotify_command', {
+          detail: { command: { type: 'next' } }
+        });
+        document.dispatchEvent(event);
+      }
+      
+      function previousTrack() {
+        const event = new CustomEvent('phx:spotify_command', {
+          detail: { command: { type: 'previous' } }
+        });
+        document.dispatchEvent(event);
+      }
+      
+      function setVolume(volume) {
+        const event = new CustomEvent('phx:spotify_command', {
+          detail: { command: { type: 'volume', level: volume } }
+        });
+        document.dispatchEvent(event);
+      }
+      
+      function loadPlaylist(playlistId) {
+        const event = new CustomEvent('phx:spotify_command', {
+          detail: { command: { type: 'load_playlist', playlistId: playlistId } }
+        });
+        document.dispatchEvent(event);
+      }
+      
+      // Listen for track changes
+      window.addEventListener('spotify-track-changed', (event) => {
+        console.log('Track changed:', event.detail);
+      });
+      
+      // Listen for state changes
+      window.addEventListener('spotify-state-changed', (event) => {
+        console.log('State changed:', event.detail);
+      });
+    </script>
+    
+    <style>
+      .test-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+        font-family: system-ui, sans-serif;
+      }
+      
+      .test-section {
+        margin: 2rem 0;
+        padding: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+      }
+      
+      .test-section h2 {
+        margin-top: 0;
+      }
+      
+      .test-controls {
+        margin: 2rem 0;
+        padding: 1rem;
+        background: #f5f5f5;
+        border-radius: 8px;
+      }
+      
+      .test-controls button {
+        margin: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: #007acc;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      
+      .test-controls button:hover {
+        background: #005a9e;
+      }
+    </style>
+  </body>
+</html>

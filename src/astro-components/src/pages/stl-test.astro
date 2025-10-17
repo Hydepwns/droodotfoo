@@ -1,0 +1,103 @@
+---
+// Test page for STL Viewer Astro component
+import STLViewer from '../components/STLViewer.astro';
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>STL Viewer Test</title>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1>STL Viewer Astro Component Test</h1>
+      
+      <div class="test-section">
+        <h2>Basic STL Viewer</h2>
+        <STLViewer componentId="test-1" initialModel="/models/cube.stl" />
+      </div>
+      
+      <div class="test-section">
+        <h2>STL Viewer with Custom Model</h2>
+        <STLViewer componentId="test-2" initialModel="/models/teapot.stl" />
+      </div>
+      
+      <div class="test-controls">
+        <h3>Test Controls</h3>
+        <button onclick="loadModel('test-1', '/models/cube.stl')">Load Cube</button>
+        <button onclick="loadModel('test-1', '/models/teapot.stl')">Load Teapot</button>
+        <button onclick="setMode('test-1', 'wireframe')">Wireframe</button>
+        <button onclick="setMode('test-1', 'solid')">Solid</button>
+        <button onclick="setMode('test-1', 'points')">Points</button>
+        <button onclick="resetCamera('test-1')">Reset Camera</button>
+      </div>
+    </div>
+    
+    <script>
+      function loadModel(componentId, url) {
+        const event = new CustomEvent('phx:stl_command', {
+          detail: { command: { type: 'load', url: url } }
+        });
+        document.dispatchEvent(event);
+      }
+      
+      function setMode(componentId, mode) {
+        const event = new CustomEvent('phx:stl_command', {
+          detail: { command: { type: 'mode', mode: mode } }
+        });
+        document.dispatchEvent(event);
+      }
+      
+      function resetCamera(componentId) {
+        const event = new CustomEvent('phx:stl_command', {
+          detail: { command: { type: 'reset' } }
+        });
+        document.dispatchEvent(event);
+      }
+    </script>
+    
+    <style>
+      .test-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+        font-family: system-ui, sans-serif;
+      }
+      
+      .test-section {
+        margin: 2rem 0;
+        padding: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+      }
+      
+      .test-section h2 {
+        margin-top: 0;
+      }
+      
+      .test-controls {
+        margin: 2rem 0;
+        padding: 1rem;
+        background: #f5f5f5;
+        border-radius: 8px;
+      }
+      
+      .test-controls button {
+        margin: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: #007acc;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      
+      .test-controls button:hover {
+        background: #005a9e;
+      }
+    </style>
+  </body>
+</html>
