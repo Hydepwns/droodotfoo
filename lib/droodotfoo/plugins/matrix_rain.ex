@@ -1,9 +1,48 @@
 defmodule Droodotfoo.Plugins.MatrixRain do
   @moduledoc """
-  Matrix rain effect plugin
+  Matrix rain effect plugin - Digital rain animation inspired by The Matrix.
+
+  Creates an animated cascade of green characters (Japanese katakana and alphanumerics)
+  falling down the terminal screen. Each column moves at a different speed with
+  varying character trail lengths.
+
+  ## Visual Effects
+
+  - **Bright green**: Leading character in each column
+  - **Medium green**: Characters 1-2 positions behind lead
+  - **Dim green**: Tail characters fading out
+
+  ## Animation
+
+  - 80x24 character grid
+  - Variable column speeds (0.5-1.0 units per frame)
+  - Random column heights (5-20 characters)
+  - Continuous loop with column recycling
+
+  ## Controls
+
+  - **Any key**: Exit the animation
+
+  ## Character Set
+
+  Japanese katakana (ア-ン) + alphanumerics (0-9, A-Z)
   """
 
   @behaviour Droodotfoo.PluginSystem.Plugin
+
+  @type column :: %{
+          y: float(),
+          speed: float(),
+          chars: [String.t()]
+        }
+  @type state :: %__MODULE__{
+          width: integer(),
+          height: integer(),
+          columns: %{integer() => column()},
+          frame: integer()
+        }
+  @type terminal_state :: map()
+  @type render_output :: [String.t()]
 
   defstruct [
     :width,
@@ -18,6 +57,7 @@ defmodule Droodotfoo.Plugins.MatrixRain do
   # Plugin Behaviour Callbacks
 
   @impl true
+  @spec metadata() :: map()
   def metadata do
     %{
       name: "matrix",
@@ -30,6 +70,7 @@ defmodule Droodotfoo.Plugins.MatrixRain do
   end
 
   @impl true
+  @spec init(terminal_state()) :: {:ok, state()}
   def init(_terminal_state) do
     width = 80
     height = 24
@@ -55,11 +96,13 @@ defmodule Droodotfoo.Plugins.MatrixRain do
   end
 
   @impl true
+  @spec handle_input(String.t(), state(), terminal_state()) :: {:exit, [String.t()]}
   def handle_input(_input, _state, _terminal_state) do
     {:exit, ["Exiting Matrix rain..."]}
   end
 
   @impl true
+  @spec handle_key(String.t(), state(), terminal_state()) :: {:ok, state()}
   def handle_key(_key, state, _terminal_state) do
     # Update animation frame
     new_columns = update_columns(state.columns, state.height)
@@ -68,6 +111,7 @@ defmodule Droodotfoo.Plugins.MatrixRain do
   end
 
   @impl true
+  @spec render(state(), terminal_state()) :: render_output()
   def render(state, _terminal_state) do
     # Create the display grid
     grid =
@@ -87,6 +131,7 @@ defmodule Droodotfoo.Plugins.MatrixRain do
   end
 
   @impl true
+  @spec cleanup(state()) :: :ok
   def cleanup(_state) do
     :ok
   end

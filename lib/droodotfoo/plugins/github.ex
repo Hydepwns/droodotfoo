@@ -150,10 +150,18 @@ defmodule Droodotfoo.Plugins.GitHub do
 
   defp handle_mode_input(input, %{mode: :repos} = state) do
     case input do
-      "m" -> {:continue, %{state | mode: :user}, render(state, %{})}
-      "a" -> load_activity(state)
-      "s" -> {:continue, %{state | mode: :search}, render(state, %{})}
-      "t" -> load_trending(state)
+      "m" ->
+        {:continue, %{state | mode: :user}, render(state, %{})}
+
+      "a" ->
+        load_activity(state)
+
+      "s" ->
+        {:continue, %{state | mode: :search}, render(state, %{})}
+
+      "t" ->
+        load_trending(state)
+
       _ ->
         # Try to parse as repo selection (1-based index)
         case Integer.parse(input) do
@@ -226,8 +234,12 @@ defmodule Droodotfoo.Plugins.GitHub do
 
   defp handle_mode_input(input, %{mode: :trending} = state) do
     case input do
-      "m" -> {:continue, %{state | mode: :input}, render(state, %{})}
-      "s" -> {:continue, %{state | mode: :search}, render(state, %{})}
+      "m" ->
+        {:continue, %{state | mode: :input}, render(state, %{})}
+
+      "s" ->
+        {:continue, %{state | mode: :search}, render(state, %{})}
+
       _ ->
         # Try to parse as repo selection
         case Integer.parse(input) do

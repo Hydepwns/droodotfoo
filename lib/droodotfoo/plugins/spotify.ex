@@ -6,7 +6,8 @@ defmodule Droodotfoo.Plugins.Spotify do
 
   @behaviour Droodotfoo.PluginSystem.Plugin
 
-  alias Droodotfoo.Spotify.{Manager, API, AsciiArt}
+  alias Droodotfoo.Spotify
+  alias Droodotfoo.Spotify.{API, AsciiArt}
 
   defstruct [
     :mode,
@@ -51,7 +52,7 @@ defmodule Droodotfoo.Plugins.Spotify do
     }
 
     # Check if already authenticated
-    case Manager.auth_status() do
+    case Spotify.auth_status() do
       :authenticated ->
         {:ok, %{initial_state | mode: :main}}
 
@@ -118,7 +119,7 @@ defmodule Droodotfoo.Plugins.Spotify do
   defp handle_mode_input(input, %{mode: :auth} = state) do
     case input do
       "1" ->
-        case Manager.start_auth() do
+        case Spotify.start_auth() do
           {:ok, url} ->
             message = "Visit this URL to authenticate: #{url}"
             {:continue, %{state | message: message}, render(state, %{})}
@@ -139,18 +140,7 @@ defmodule Droodotfoo.Plugins.Spotify do
   end
 
   defp handle_mode_input(input, %{mode: :main} = state) do
-    case input do
-      "p" -> switch_to_mode(state, :playlists)
-      "d" -> switch_to_mode(state, :devices)
-      "s" -> switch_to_mode(state, :search)
-      "c" -> switch_to_mode(state, :controls)
-      "v" -> switch_to_mode(state, :volume)
-      "r" -> refresh_data(state)
-      # Spacebar
-      " " -> toggle_playback(state)
-      "space" -> toggle_playback(state)
-      _ -> {:continue, state, render(state, %{})}
-    end
+    handle_main_mode_input(input, state)
   end
 
   defp handle_mode_input(input, %{mode: :controls} = state) do
@@ -228,6 +218,18 @@ defmodule Droodotfoo.Plugins.Spotify do
         end
     end
   end
+
+  # Main mode input helpers
+
+  defp handle_main_mode_input("p", state), do: switch_to_mode(state, :playlists)
+  defp handle_main_mode_input("d", state), do: switch_to_mode(state, :devices)
+  defp handle_main_mode_input("s", state), do: switch_to_mode(state, :search)
+  defp handle_main_mode_input("c", state), do: switch_to_mode(state, :controls)
+  defp handle_main_mode_input("v", state), do: switch_to_mode(state, :volume)
+  defp handle_main_mode_input("r", state), do: refresh_data(state)
+  defp handle_main_mode_input(" ", state), do: toggle_playback(state)
+  defp handle_main_mode_input("space", state), do: toggle_playback(state)
+  defp handle_main_mode_input(_, state), do: {:continue, state, render(state, %{})}
 
   # Mode Content Rendering
 
@@ -339,7 +341,7 @@ defmodule Droodotfoo.Plugins.Spotify do
   defp refresh_data(state) do
     # Refresh current track
     spawn(fn ->
-      Manager.refresh_now_playing()
+      Spotify.refresh_now_playing()
     end)
 
     message = "Refreshing data..."
@@ -349,7 +351,7 @@ defmodule Droodotfoo.Plugins.Spotify do
 
   defp toggle_playback(state) do
     # This would need to check current state
-    case Manager.control_playback(:play) do
+    case Spotify.control_playback(:play) do
       :ok ->
         message = "Playback toggled"
         {:continue, %{state | message: message}, render(state, %{})}
@@ -361,7 +363,7 @@ defmodule Droodotfoo.Plugins.Spotify do
   end
 
   defp control_playback(state, action) do
-    case Manager.control_playback(action) do
+    case Spotify.control_playback(action) do
       :ok ->
         message = "#{action |> to_string() |> String.capitalize()} command sent"
         {:continue, %{state | message: message}, render(state, %{})}
@@ -373,7 +375,7 @@ defmodule Droodotfoo.Plugins.Spotify do
   end
 
   defp refresh_playlists(state) do
-    case Manager.playlists() do
+    case Spotify.playlists() do
       playlists when is_list(playlists) ->
         message = "Playlists refreshed"
         new_state = %{state | playlists: playlists, message: message}
