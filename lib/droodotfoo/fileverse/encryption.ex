@@ -79,30 +79,28 @@ defmodule Droodotfoo.Fileverse.Encryption do
   @spec derive_keys_from_wallet(String.t(), binary()) ::
           {:ok, encryption_keys()} | {:error, atom()}
   def derive_keys_from_wallet(wallet_address, signature) do
-    try do
-      # Use signature as seed for deterministic key generation
-      # This ensures same wallet always generates same keys
-      seed = :crypto.hash(:sha256, signature)
+    # Use signature as seed for deterministic key generation
+    # This ensures same wallet always generates same keys
+    seed = :crypto.hash(:sha256, signature)
 
-      # Generate Curve25519 keypair from seed
-      # Note: Real implementation would use SignalProtocol.generate_identity_key_pair_from_seed/1
-      # For now, we'll use a mock implementation until the NIF is available
-      {:ok, {public_key, private_key}} = generate_keypair_from_seed(seed)
+    # Generate Curve25519 keypair from seed
+    # Note: Real implementation would use SignalProtocol.generate_identity_key_pair_from_seed/1
+    # For now, we'll use a mock implementation until the NIF is available
+    {:ok, {public_key, private_key}} = generate_keypair_from_seed(seed)
 
-      keys = %{
-        public_key: public_key,
-        private_key: private_key,
-        wallet_address: wallet_address,
-        key_id: generate_key_id(public_key)
-      }
+    keys = %{
+      public_key: public_key,
+      private_key: private_key,
+      wallet_address: wallet_address,
+      key_id: generate_key_id(public_key)
+    }
 
-      Logger.info("Derived encryption keys for wallet #{wallet_address}")
-      {:ok, keys}
-    rescue
-      error ->
-        Logger.error("Failed to derive keys: #{inspect(error)}")
-        {:error, :key_derivation_failed}
-    end
+    Logger.info("Derived encryption keys for wallet #{wallet_address}")
+    {:ok, keys}
+  rescue
+    error ->
+      Logger.error("Failed to derive keys: #{inspect(error)}")
+      {:error, :key_derivation_failed}
   end
 
   @doc """
@@ -128,38 +126,39 @@ defmodule Droodotfoo.Fileverse.Encryption do
   @spec encrypt_document(String.t() | binary(), encryption_keys()) ::
           {:ok, encrypted_data()} | {:error, atom()}
   def encrypt_document(content, keys) when is_binary(content) do
-    try do
-      # Generate random IV (96 bits / 12 bytes for GCM)
-      iv = :crypto.strong_rand_bytes(12)
+    # Generate random IV (96 bits / 12 bytes for GCM)
+    iv = :crypto.strong_rand_bytes(12)
 
-      # Derive symmetric key from private key
-      symmetric_key = derive_symmetric_key(keys.private_key)
+    # Derive symmetric key from private key
+    symmetric_key = derive_symmetric_key(keys.private_key)
 
-      # Encrypt with AES-256-GCM
-      {ciphertext, tag} = :crypto.crypto_one_time_aead(
+    # Encrypt with AES-256-GCM
+    {ciphertext, tag} =
+      :crypto.crypto_one_time_aead(
         :aes_256_gcm,
         symmetric_key,
         iv,
         content,
-        <<>>,  # No additional authenticated data
-        true    # Encrypt mode
+        # No additional authenticated data
+        <<>>,
+        # Encrypt mode
+        true
       )
 
-      encrypted = %{
-        ciphertext: ciphertext,
-        iv: iv,
-        tag: tag,
-        algorithm: "AES-256-GCM",
-        key_id: keys.key_id,
-        encrypted_at: DateTime.utc_now()
-      }
+    encrypted = %{
+      ciphertext: ciphertext,
+      iv: iv,
+      tag: tag,
+      algorithm: "AES-256-GCM",
+      key_id: keys.key_id,
+      encrypted_at: DateTime.utc_now()
+    }
 
-      {:ok, encrypted}
-    rescue
-      error ->
-        Logger.error("Encryption failed: #{inspect(error)}")
-        {:error, :encryption_failed}
-    end
+    {:ok, encrypted}
+  rescue
+    error ->
+      Logger.error("Encryption failed: #{inspect(error)}")
+      {:error, :encryption_failed}
   end
 
   @doc """
@@ -185,38 +184,37 @@ defmodule Droodotfoo.Fileverse.Encryption do
   @spec decrypt_document(encrypted_data(), encryption_keys()) ::
           {:ok, binary()} | {:error, atom()}
   def decrypt_document(encrypted_data, keys) do
-    try do
-      # Verify key ID matches
-      if encrypted_data.key_id != keys.key_id do
-        Logger.warn("Key ID mismatch: #{encrypted_data.key_id} != #{keys.key_id}")
-        {:error, :wrong_key}
-      else
-        # Derive symmetric key from private key
-        symmetric_key = derive_symmetric_key(keys.private_key)
+    # Verify key ID matches
+    if encrypted_data.key_id != keys.key_id do
+      Logger.warning("Key ID mismatch: #{encrypted_data.key_id} != #{keys.key_id}")
+      {:error, :wrong_key}
+    else
+      # Derive symmetric key from private key
+      symmetric_key = derive_symmetric_key(keys.private_key)
 
-        # Decrypt with AES-256-GCM (includes authentication)
-        case :crypto.crypto_one_time_aead(
-               :aes_256_gcm,
-               symmetric_key,
-               encrypted_data.iv,
-               encrypted_data.ciphertext,
-               <<>>,
-               encrypted_data.tag,
-               false  # Decrypt mode
-             ) do
-          plaintext when is_binary(plaintext) ->
-            {:ok, plaintext}
+      # Decrypt with AES-256-GCM (includes authentication)
+      case :crypto.crypto_one_time_aead(
+             :aes_256_gcm,
+             symmetric_key,
+             encrypted_data.iv,
+             encrypted_data.ciphertext,
+             <<>>,
+             encrypted_data.tag,
+             # Decrypt mode
+             false
+           ) do
+        plaintext when is_binary(plaintext) ->
+          {:ok, plaintext}
 
-          :error ->
-            Logger.error("Decryption failed: authentication tag mismatch")
-            {:error, :authentication_failed}
-        end
+        :error ->
+          Logger.error("Decryption failed: authentication tag mismatch")
+          {:error, :authentication_failed}
       end
-    rescue
-      error ->
-        Logger.error("Decryption failed: #{inspect(error)}")
-        {:error, :decryption_failed}
     end
+  rescue
+    error ->
+      Logger.error("Decryption failed: #{inspect(error)}")
+      {:error, :decryption_failed}
   end
 
   @doc """
@@ -280,13 +278,14 @@ defmodule Droodotfoo.Fileverse.Encryption do
     # Chunk size: 1MB for efficient streaming
     chunk_size = 1_048_576
 
-    chunks = for <<chunk::binary-size(chunk_size), rest::binary>> <- file_content do
-      # Encrypt each chunk
-      case encrypt_document(chunk, keys) do
-        {:ok, encrypted} -> encrypted
-        {:error, _} = error -> error
+    chunks =
+      for <<chunk::binary-size(chunk_size), _rest::binary>> <- file_content do
+        # Encrypt each chunk
+        case encrypt_document(chunk, keys) do
+          {:ok, encrypted} -> encrypted
+          {:error, _} = error -> error
+        end
       end
-    end
 
     # Check if any chunk failed
     case Enum.find(chunks, fn c -> match?({:error, _}, c) end) do

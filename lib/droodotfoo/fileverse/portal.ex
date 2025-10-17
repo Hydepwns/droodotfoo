@@ -7,9 +7,16 @@ defmodule Droodotfoo.Fileverse.Portal do
 
   Note: Full implementation requires Fileverse Portal SDK/API
   and LiveView hooks for WebRTC/P2P communication.
+
+  This module has been refactored into focused submodules:
+  - Lifecycle - Portal management (create, join, leave, list, get)
+  - Peers - Peer management (presence, activity, state updates)
+  - FileSharing - P2P file sharing operations
+  - UI - Enhanced UI integration (status, notifications, activity feed, formatting)
+  - Helpers - Utility functions (ID generation, time formatting, mock data)
   """
 
-  require Logger
+  alias Droodotfoo.Fileverse.Portal.{FileSharing, Lifecycle, Peers, UI}
 
   @type portal :: %{
           id: String.t(),
@@ -40,370 +47,193 @@ defmodule Droodotfoo.Fileverse.Portal do
           progress: float()
         }
 
+  # Portal Lifecycle Functions
+
   @doc """
   Create a new Portal space.
 
-  ## Parameters
-
-  - `name`: Portal name
-  - `opts`: Keyword list of options
-    - `:wallet_address` - Creator's wallet address (required)
-    - `:public` - Make portal publicly accessible (default: false)
-    - `:encrypted` - Enable E2E encryption (default: true)
-    - `:max_peers` - Maximum number of peers (default: 10)
-
-  ## Examples
-
-      iex> Droodotfoo.Fileverse.Portal.create("My Team Space", wallet_address: "0x...")
-      {:ok, %{id: "portal_abc123", name: "My Team Space", ...}}
-
+  See `Droodotfoo.Fileverse.Portal.Lifecycle.create/2` for details.
   """
   @spec create(String.t(), keyword()) :: {:ok, portal()} | {:error, atom()}
   def create(name, opts \\ []) do
-    wallet_address = Keyword.get(opts, :wallet_address)
-    public = Keyword.get(opts, :public, false)
-    encrypted = Keyword.get(opts, :encrypted, true)
-
-    if not wallet_address do
-      {:error, :wallet_required}
-    else
-      # Mock implementation
-      # Production would:
-      # 1. Deploy Portal smart contract
-      # 2. Initialize WebRTC signaling server
-      # 3. Generate encryption keys if encrypted
-      # 4. Register with Fileverse backend
-      portal = %{
-        id: "portal_" <> generate_id(),
-        name: name,
-        creator: wallet_address,
-        created_at: DateTime.utc_now(),
-        peers: [
-          %{
-            address: wallet_address,
-            ens_name: nil,
-            connection_status: :connected,
-            joined_at: DateTime.utc_now(),
-            is_host: true
-          }
-        ],
-        files_shared: 0,
-        encrypted: encrypted,
-        public: public
-      }
-
-      Logger.info("Created Portal: #{portal.id} (#{name})")
-      {:ok, portal}
-    end
+    Lifecycle.create(name, opts)
   end
 
   @doc """
   Join an existing Portal space.
 
-  ## Parameters
-
-  - `portal_id`: Portal ID or invite code
-  - `opts`: Keyword list of options
-    - `:wallet_address` - Joiner's wallet address (required)
-
-  ## Examples
-
-      iex> Droodotfoo.Fileverse.Portal.join("portal_abc123", wallet_address: "0x...")
-      {:ok, %{id: "portal_abc123", peers: [...], ...}}
-
+  See `Droodotfoo.Fileverse.Portal.Lifecycle.join/2` for details.
   """
   @spec join(String.t(), keyword()) :: {:ok, portal()} | {:error, atom()}
   def join(portal_id, opts \\ []) do
-    wallet_address = Keyword.get(opts, :wallet_address)
-
-    if not wallet_address do
-      {:error, :wallet_required}
-    else
-      # Mock implementation
-      # Production would:
-      # 1. Verify portal exists and is accessible
-      # 2. Establish WebRTC connection to peers
-      # 3. Exchange encryption keys if encrypted
-      # 4. Notify existing peers of new member
-      portal = get_mock_portal(portal_id, wallet_address)
-
-      Logger.info("Joined Portal: #{portal_id}")
-      {:ok, portal}
-    end
+    Lifecycle.join(portal_id, opts)
   end
 
   @doc """
   List available Portal spaces for a wallet.
 
-  ## Examples
-
-      iex> Droodotfoo.Fileverse.Portal.list("0x...")
-      {:ok, [%{id: "portal_123", name: "Team Space", ...}]}
-
+  See `Droodotfoo.Fileverse.Portal.Lifecycle.list/1` for details.
   """
   @spec list(String.t()) :: {:ok, [portal()]} | {:error, atom()}
   def list(wallet_address) do
-    # Mock data
-    # Production would fetch from smart contracts and backend
-    portals = [
-      %{
-        id: "portal_abc123",
-        name: "Team Collaboration",
-        creator: "0x1234...5678",
-        created_at: DateTime.add(DateTime.utc_now(), -3600 * 24 * 2, :second),
-        peers: [
-          %{
-            address: wallet_address,
-            ens_name: "alice.eth",
-            connection_status: :connected,
-            joined_at: DateTime.add(DateTime.utc_now(), -3600 * 24, :second),
-            is_host: false
-          },
-          %{
-            address: "0x1234...5678",
-            ens_name: "bob.eth",
-            connection_status: :connected,
-            joined_at: DateTime.add(DateTime.utc_now(), -3600 * 48, :second),
-            is_host: true
-          }
-        ],
-        files_shared: 12,
-        encrypted: true,
-        public: false
-      },
-      %{
-        id: "portal_def456",
-        name: "Public Documents",
-        creator: wallet_address,
-        created_at: DateTime.add(DateTime.utc_now(), -3600 * 24 * 5, :second),
-        peers: [
-          %{
-            address: wallet_address,
-            ens_name: "alice.eth",
-            connection_status: :connected,
-            joined_at: DateTime.add(DateTime.utc_now(), -3600 * 120, :second),
-            is_host: true
-          }
-        ],
-        files_shared: 3,
-        encrypted: false,
-        public: true
-      }
-    ]
-
-    {:ok, portals}
+    Lifecycle.list(wallet_address)
   end
 
   @doc """
   Get Portal details by ID.
 
-  ## Examples
-
-      iex> Droodotfoo.Fileverse.Portal.get("portal_abc123")
-      {:ok, %{id: "portal_abc123", ...}}
-
+  See `Droodotfoo.Fileverse.Portal.Lifecycle.get/1` for details.
   """
   @spec get(String.t()) :: {:ok, portal()} | {:error, atom()}
   def get(portal_id) do
-    # Mock implementation
-    case list("0xmock...address") do
-      {:ok, portals} ->
-        portal = Enum.find(portals, &(&1.id == portal_id))
-
-        if portal do
-          {:ok, portal}
-        else
-          {:error, :not_found}
-        end
-
-      error ->
-        error
-    end
-  end
-
-  @doc """
-  Share a file with Portal members via P2P.
-
-  ## Parameters
-
-  - `portal_id`: Portal to share file in
-  - `file_path`: Local file path
-  - `opts`: Keyword list of options
-    - `:wallet_address` - Sender's wallet address (required)
-    - `:recipients` - List of recipient addresses (default: all peers)
-    - `:encrypt` - Encrypt file transfer (default: true)
-
-  ## Examples
-
-      iex> Droodotfoo.Fileverse.Portal.share_file("portal_abc", "/path/file.pdf", wallet_address: "0x...")
-      {:ok, %{id: "share_123", status: :transferring, ...}}
-
-  """
-  @spec share_file(String.t(), String.t(), keyword()) :: {:ok, file_share()} | {:error, atom()}
-  def share_file(portal_id, file_path, opts \\ []) do
-    wallet_address = Keyword.get(opts, :wallet_address)
-    recipients = Keyword.get(opts, :recipients, :all)
-
-    if not wallet_address do
-      {:error, :wallet_required}
-    else
-      # Mock implementation
-      # Production would:
-      # 1. Chunk file for P2P transfer
-      # 2. Establish WebRTC data channels to recipients
-      # 3. Transfer file chunks with progress tracking
-      # 4. Verify integrity with checksums
-      filename = Path.basename(file_path)
-
-      file_share = %{
-        id: "share_" <> generate_id(),
-        filename: filename,
-        size: 1_024_000,
-        # Mock size
-        sender: wallet_address,
-        recipients: if(recipients == :all, do: ["all"], else: recipients),
-        transfer_status: :transferring,
-        progress: 0.0
-      }
-
-      Logger.info("Sharing file in Portal #{portal_id}: #{filename}")
-      {:ok, file_share}
-    end
-  end
-
-  @doc """
-  Get list of active peers in a Portal.
-
-  ## Examples
-
-      iex> Droodotfoo.Fileverse.Portal.peers("portal_abc123")
-      {:ok, [%{address: "0x...", ens_name: "alice.eth", ...}]}
-
-  """
-  @spec peers(String.t()) :: {:ok, [peer()]} | {:error, atom()}
-  def peers(portal_id) do
-    case get(portal_id) do
-      {:ok, portal} -> {:ok, portal.peers}
-      error -> error
-    end
+    Lifecycle.get(portal_id)
   end
 
   @doc """
   Leave a Portal space.
 
-  ## Examples
-
-      iex> Droodotfoo.Fileverse.Portal.leave("portal_abc123", wallet_address: "0x...")
-      :ok
-
+  See `Droodotfoo.Fileverse.Portal.Lifecycle.leave/2` for details.
   """
   @spec leave(String.t(), keyword()) :: :ok | {:error, atom()}
   def leave(portal_id, opts \\ []) do
-    wallet_address = Keyword.get(opts, :wallet_address)
-
-    if not wallet_address do
-      {:error, :wallet_required}
-    else
-      # Mock implementation
-      # Production would:
-      # 1. Close WebRTC connections
-      # 2. Notify other peers
-      # 3. Clean up local state
-      Logger.info("Left Portal: #{portal_id}")
-      :ok
-    end
+    Lifecycle.leave(portal_id, opts)
   end
+
+  # File Sharing Functions
+
+  @doc """
+  Share a file with Portal members via P2P.
+
+  See `Droodotfoo.Fileverse.Portal.FileSharing.share/3` for details.
+  """
+  @spec share_file(String.t(), String.t(), keyword()) :: {:ok, file_share()} | {:error, atom()}
+  def share_file(portal_id, file_path, opts \\ []) do
+    FileSharing.share(portal_id, file_path, opts)
+  end
+
+  # Peer Management Functions
+
+  @doc """
+  Get list of active peers in a Portal.
+
+  See `Droodotfoo.Fileverse.Portal.Peers.list/1` for details.
+  """
+  @spec peers(String.t()) :: {:ok, [peer()]} | {:error, atom()}
+  def peers(portal_id) do
+    Peers.list(portal_id)
+  end
+
+  @doc """
+  Get real-time peer presence for a Portal.
+
+  See `Droodotfoo.Fileverse.Portal.Peers.presence/1` for details.
+  """
+  @spec presence(String.t()) :: {:ok, map()} | {:error, atom()}
+  def presence(portal_id) do
+    Peers.presence(portal_id)
+  end
+
+  @doc """
+  Get active peers in a Portal.
+
+  See `Droodotfoo.Fileverse.Portal.Peers.active/1` for details.
+  """
+  @spec active_peers(String.t()) :: {:ok, [map()]} | {:error, atom()}
+  def active_peers(portal_id) do
+    Peers.active(portal_id)
+  end
+
+  @doc """
+  Update peer connection state.
+
+  See `Droodotfoo.Fileverse.Portal.Peers.update_state/3` for details.
+  """
+  @spec update_peer_state(String.t(), String.t(), atom()) :: {:ok, map()} | {:error, atom()}
+  def update_peer_state(portal_id, peer_id, connection_state) do
+    Peers.update_state(portal_id, peer_id, connection_state)
+  end
+
+  @doc """
+  Update peer activity status.
+
+  See `Droodotfoo.Fileverse.Portal.Peers.update_activity/3` for details.
+  """
+  @spec update_peer_activity(String.t(), String.t(), atom()) :: {:ok, map()} | {:error, atom()}
+  def update_peer_activity(portal_id, peer_id, activity_status) do
+    Peers.update_activity(portal_id, peer_id, activity_status)
+  end
+
+  # UI Integration Functions
 
   @doc """
   Format portal list for terminal display.
 
-  ## Examples
-
-      iex> Droodotfoo.Fileverse.Portal.format_portal_list(portals)
-      "portal_abc123  Team Collaboration  2 members  12 files  2d ago"
-
+  See `Droodotfoo.Fileverse.Portal.UI.format_portal_list/1` for details.
   """
   @spec format_portal_list([portal()]) :: String.t()
   def format_portal_list(portals) do
-    if Enum.empty?(portals) do
-      "No portals found.\n\nCreate one with: :portal create <name>"
-    else
-      portals
-      |> Enum.map(fn portal ->
-        peer_count = length(portal.peers)
-        time_ago = format_relative_time(portal.created_at)
-        encrypted_badge = if portal.encrypted, do: " [E2E]", else: ""
-        public_badge = if portal.public, do: " [PUBLIC]", else: ""
-
-        """
-        Portal: #{portal.name}#{encrypted_badge}#{public_badge}
-          ID:      #{portal.id}
-          Members: #{peer_count}
-          Files:   #{portal.files_shared} shared
-          Created: #{time_ago}
-        """
-      end)
-      |> Enum.join("\n")
-    end
+    UI.format_portal_list(portals)
   end
 
-  # Private helpers
+  @doc """
+  Get enhanced connection status for Portal UI.
 
-  defp generate_id do
-    :crypto.strong_rand_bytes(8) |> Base.encode16(case: :lower)
+  See `Droodotfoo.Fileverse.Portal.UI.get_enhanced_status/2` for details.
+  """
+  @spec get_enhanced_status(String.t(), keyword()) :: {:ok, map()} | {:error, atom()}
+  def get_enhanced_status(portal_id, opts \\ []) do
+    UI.get_enhanced_status(portal_id, opts)
   end
 
-  defp format_relative_time(datetime) do
-    now = DateTime.utc_now()
-    diff_seconds = DateTime.diff(now, datetime, :second)
+  @doc """
+  Get real-time notifications for Portal UI.
 
-    cond do
-      diff_seconds < 60 ->
-        "#{diff_seconds}s ago"
-
-      diff_seconds < 3600 ->
-        minutes = div(diff_seconds, 60)
-        "#{minutes}m ago"
-
-      diff_seconds < 86400 ->
-        hours = div(diff_seconds, 3600)
-        "#{hours}h ago"
-
-      diff_seconds < 2_592_000 ->
-        days = div(diff_seconds, 86400)
-        "#{days}d ago"
-
-      true ->
-        months = div(diff_seconds, 2_592_000)
-        "#{months}mo ago"
-    end
+  See `Droodotfoo.Fileverse.Portal.UI.get_notifications/2` for details.
+  """
+  @spec get_notifications(String.t(), keyword()) :: {:ok, [map()]} | {:error, atom()}
+  def get_notifications(portal_id, opts \\ []) do
+    UI.get_notifications(portal_id, opts)
   end
 
-  defp get_mock_portal(portal_id, wallet_address) do
-    %{
-      id: portal_id,
-      name: "Mock Portal",
-      creator: "0xabcd...efgh",
-      created_at: DateTime.add(DateTime.utc_now(), -3600, :second),
-      peers: [
-        %{
-          address: "0xabcd...efgh",
-          ens_name: "creator.eth",
-          connection_status: :connected,
-          joined_at: DateTime.add(DateTime.utc_now(), -3600, :second),
-          is_host: true
-        },
-        %{
-          address: wallet_address,
-          ens_name: nil,
-          connection_status: :connected,
-          joined_at: DateTime.utc_now(),
-          is_host: false
-        }
-      ],
-      files_shared: 0,
-      encrypted: true,
-      public: false
-    }
+  @doc """
+  Get real-time activity feed for Portal UI.
+
+  See `Droodotfoo.Fileverse.Portal.UI.get_activity_feed/2` for details.
+  """
+  @spec get_activity_feed(String.t(), keyword()) :: {:ok, map()} | {:error, atom()}
+  def get_activity_feed(portal_id, opts \\ []) do
+    UI.get_activity_feed(portal_id, opts)
+  end
+
+  @doc """
+  Get transfer progress for Portal UI.
+
+  See `Droodotfoo.Fileverse.Portal.UI.get_transfer_progress/2` for details.
+  """
+  @spec get_transfer_progress(String.t(), keyword()) :: {:ok, [map()]} | {:error, atom()}
+  def get_transfer_progress(portal_id, opts \\ []) do
+    UI.get_transfer_progress(portal_id, opts)
+  end
+
+  @doc """
+  Create a notification for Portal events.
+
+  See `Droodotfoo.Fileverse.Portal.UI.create_notification/5` for details.
+  """
+  @spec create_notification(atom(), String.t(), String.t(), String.t(), keyword()) ::
+          {:ok, map()} | {:error, atom()}
+  def create_notification(type, title, message, portal_id, opts \\ []) do
+    UI.create_notification(type, title, message, portal_id, opts)
+  end
+
+  @doc """
+  Track activity for Portal events.
+
+  See `Droodotfoo.Fileverse.Portal.UI.track_activity/4` for details.
+  """
+  @spec track_activity(atom(), String.t(), String.t(), keyword()) ::
+          {:ok, map()} | {:error, atom()}
+  def track_activity(type, peer_id, portal_id, opts \\ []) do
+    UI.track_activity(type, peer_id, portal_id, opts)
   end
 end
