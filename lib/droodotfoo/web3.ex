@@ -1,6 +1,6 @@
-defmodule Droodotfoo.Web3.Manager do
+defmodule Droodotfoo.Web3 do
   @moduledoc """
-  GenServer managing Web3 wallet sessions and state.
+  GenServer for Web3 wallet sessions and state.
 
   Responsibilities:
   - Track active wallet sessions
@@ -11,6 +11,8 @@ defmodule Droodotfoo.Web3.Manager do
 
   use GenServer
   require Logger
+
+  alias Droodotfoo.Web3.{Auth, ENS}
 
   @type address :: String.t()
 
@@ -180,7 +182,7 @@ defmodule Droodotfoo.Web3.Manager do
 
   @impl true
   def handle_call({:generate_nonce, address}, _from, state) do
-    nonce = Droodotfoo.Web3.Auth.generate_nonce()
+    nonce = Auth.generate_nonce()
 
     nonce_entry = %{
       nonce: nonce,
@@ -306,7 +308,7 @@ defmodule Droodotfoo.Web3.Manager do
   @impl true
   def handle_call({:lookup_ens, ens_name}, _from, state) do
     # ENS name -> address lookup
-    case Droodotfoo.Web3.ENS.resolve_name(ens_name, state.chain_id) do
+    case ENS.resolve_name(ens_name, state.chain_id) do
       {:ok, address} ->
         Logger.info("Resolved ENS #{ens_name} -> #{address}")
         {:reply, {:ok, address}, state}
@@ -325,11 +327,12 @@ defmodule Droodotfoo.Web3.Manager do
       |> Enum.filter(fn {_addr, session} -> session_expired?(session) end)
       |> Enum.map(fn {addr, _session} -> addr end)
 
-    state = update_in(state.sessions, fn sessions ->
-      Enum.reduce(expired_sessions, sessions, fn addr, acc ->
-        Map.delete(acc, addr)
+    state =
+      update_in(state.sessions, fn sessions ->
+        Enum.reduce(expired_sessions, sessions, fn addr, acc ->
+          Map.delete(acc, addr)
+        end)
       end)
-    end)
 
     if length(expired_sessions) > 0 do
       Logger.info("Cleaned up #{length(expired_sessions)} expired sessions")
@@ -341,11 +344,12 @@ defmodule Droodotfoo.Web3.Manager do
       |> Enum.filter(fn {_nonce, entry} -> nonce_expired?(entry) end)
       |> Enum.map(fn {nonce, _entry} -> nonce end)
 
-    state = update_in(state.nonces, fn nonces ->
-      Enum.reduce(expired_nonces, nonces, fn nonce, acc ->
-        Map.delete(acc, nonce)
+    state =
+      update_in(state.nonces, fn nonces ->
+        Enum.reduce(expired_nonces, nonces, fn nonce, acc ->
+          Map.delete(acc, nonce)
+        end)
       end)
-    end)
 
     if length(expired_nonces) > 0 do
       Logger.debug("Cleaned up #{length(expired_nonces)} expired nonces")
@@ -357,11 +361,12 @@ defmodule Droodotfoo.Web3.Manager do
       |> Enum.filter(fn {_addr, entry} -> ens_cache_expired?(entry) end)
       |> Enum.map(fn {addr, _entry} -> addr end)
 
-    state = update_in(state.ens_cache, fn cache ->
-      Enum.reduce(expired_ens, cache, fn addr, acc ->
-        Map.delete(acc, addr)
+    state =
+      update_in(state.ens_cache, fn cache ->
+        Enum.reduce(expired_ens, cache, fn addr, acc ->
+          Map.delete(acc, addr)
+        end)
       end)
-    end)
 
     if length(expired_ens) > 0 do
       Logger.debug("Cleaned up #{length(expired_ens)} expired ENS cache entries")
@@ -391,7 +396,7 @@ defmodule Droodotfoo.Web3.Manager do
   end
 
   defp resolve_and_cache_ens(address, state) do
-    case Droodotfoo.Web3.ENS.reverse_resolve(address, state.chain_id) do
+    case ENS.reverse_resolve(address, state.chain_id) do
       {:ok, name} ->
         # Cache the result
         cache_entry = %{

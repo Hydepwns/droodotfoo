@@ -23,7 +23,8 @@ defmodule Droodotfoo.Web3.Transaction do
         }
 
   # Etherscan API endpoints
-  @etherscan_api_base "https://api.etherscan.io/api"
+  # Reserved for future Etherscan API integration
+  # @etherscan_api_base "https://api.etherscan.io/api"
 
   # Note: Etherscan requires API key for production use
   # Free tier: 5 calls/second, 100k calls/day
@@ -50,12 +51,12 @@ defmodule Droodotfoo.Web3.Transaction do
     limit = Keyword.get(opts, :limit, 10)
     _offset = Keyword.get(opts, :offset, 0)
 
-    if not valid_address?(address) do
-      {:error, :invalid_address}
-    else
+    if valid_address?(address) do
       # For demo purposes, return mock data since Etherscan requires API key
       # In production, this would call Etherscan API
       {:ok, mock_transactions(address, limit)}
+    else
+      {:error, :invalid_address}
     end
   end
 
@@ -70,11 +71,11 @@ defmodule Droodotfoo.Web3.Transaction do
   """
   @spec fetch_transaction(String.t()) :: {:ok, transaction()} | {:error, atom()}
   def fetch_transaction(tx_hash) do
-    if not valid_tx_hash?(tx_hash) do
-      {:error, :invalid_tx_hash}
-    else
+    if valid_tx_hash?(tx_hash) do
       # Mock implementation
       {:ok, mock_transaction_detail(tx_hash)}
+    else
+      {:error, :invalid_tx_hash}
     end
   end
 
@@ -153,7 +154,7 @@ defmodule Droodotfoo.Web3.Transaction do
       to_addr = if is_sent, do: "0x" <> random_hex(40), else: address
 
       value_eth = :rand.uniform() * 10
-      gas_used = 21000 + :rand.uniform(50000)
+      gas_used = 21_000 + :rand.uniform(50_000)
       gas_price_gwei = 20 + :rand.uniform(100)
       gas_cost_eth = gas_used * gas_price_gwei / 1_000_000_000
 
@@ -177,7 +178,7 @@ defmodule Droodotfoo.Web3.Transaction do
   defp mock_transaction_detail(tx_hash) do
     now = DateTime.utc_now() |> DateTime.to_unix()
     value_eth = :rand.uniform() * 5
-    gas_used = 21000 + :rand.uniform(30000)
+    gas_used = 21_000 + :rand.uniform(30_000)
     gas_price_gwei = 25 + :rand.uniform(50)
     gas_cost_eth = gas_used * gas_price_gwei / 1_000_000_000
 

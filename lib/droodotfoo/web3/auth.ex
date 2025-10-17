@@ -118,15 +118,15 @@ defmodule Droodotfoo.Web3.Auth do
   - `{:error, reason}` if recovery fails
 
   """
-  @spec recover_address(String.t(), String.t()) :: {:ok, String.t()} | {:error, atom() | String.t()}
+  @spec recover_address(String.t(), String.t()) ::
+          {:ok, String.t()} | {:error, atom() | String.t()}
   def recover_address(message, signature) do
-    try do
-      # Remove 0x prefix if present
-      clean_signature = String.replace_prefix(signature, "0x", "")
+    # Remove 0x prefix if present
+    clean_signature = String.replace_prefix(signature, "0x", "")
 
-      # Decode signature (should be 65 bytes: r[32] + s[32] + v[1])
-      with {:ok, sig_bytes} <- Base.decode16(clean_signature, case: :mixed),
-           true <- byte_size(sig_bytes) == 65 do
+    # Decode signature (should be 65 bytes: r[32] + s[32] + v[1])
+    with {:ok, sig_bytes} <- Base.decode16(clean_signature, case: :mixed),
+         true <- byte_size(sig_bytes) == 65 do
         # Split signature into r, s, v components
         <<r::binary-size(32), s::binary-size(32), v::integer-8>> = sig_bytes
 
@@ -137,7 +137,7 @@ defmodule Droodotfoo.Web3.Auth do
         message_hash = ethereum_message_hash(message)
 
         # Recover public key using secp256k1
-        case :libsecp256k1.ecdsa_recover_compact(message_hash, r <> s, :uncompressed, recovery_id) do
+        case ExSecp256k1.recover_compact(message_hash, r <> s, recovery_id) do
           {:ok, public_key} ->
             # Public key is 65 bytes (0x04 prefix + 64 bytes), we need the last 64 bytes
             <<_prefix::8, key::binary-size(64)>> = public_key
@@ -154,13 +154,12 @@ defmodule Droodotfoo.Web3.Auth do
           {:error, reason} ->
             {:error, reason}
         end
-      else
-        false -> {:error, :invalid_signature_length}
-        {:error, reason} -> {:error, reason}
-      end
-    rescue
-      error -> {:error, error}
+    else
+      false -> {:error, :invalid_signature_length}
+      {:error, reason} -> {:error, reason}
     end
+  rescue
+    error -> {:error, error}
   end
 
   @doc """

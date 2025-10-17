@@ -24,23 +24,23 @@ defmodule Droodotfoo.Web3.Token do
           usd_24h_change: float()
         }
 
-  # Alchemy API for token balances (requires API key for production)
-  @alchemy_api_base "https://eth-mainnet.g.alchemy.com/v2"
+  # Reserved for future Alchemy API integration
+  # @alchemy_api_base "https://eth-mainnet.g.alchemy.com/v2"
 
   # CoinGecko API for pricing (free tier, no auth required)
   @coingecko_api_base "https://api.coingecko.com/api/v3"
 
-  # Popular token contract addresses for Ethereum mainnet
-  @popular_tokens %{
-    "0xdac17f958d2ee523a2206206994597c13d831ec7" => "USDT",
-    "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" => "USDC",
-    "0x6b175474e89094c44da98b954eedeac495271d0f" => "DAI",
-    "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599" => "WBTC",
-    "0x514910771af9ca656af840dff83e8264ecf986ca" => "LINK",
-    "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0" => "MATIC",
-    "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984" => "UNI",
-    "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9" => "AAVE"
-  }
+  # Reserved for future token balance lookups
+  # @popular_tokens %{
+  #   "0xdac17f958d2ee523a2206206994597c13d831ec7" => "USDT",
+  #   "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" => "USDC",
+  #   "0x6b175474e89094c44da98b954eedeac495271d0f" => "DAI",
+  #   "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599" => "WBTC",
+  #   "0x514910771af9ca656af840dff83e8264ecf986ca" => "LINK",
+  #   "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0" => "MATIC",
+  #   "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984" => "UNI",
+  #   "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9" => "AAVE"
+  # }
 
   # CoinGecko token ID mapping
   @coingecko_ids %{
@@ -74,30 +74,31 @@ defmodule Droodotfoo.Web3.Token do
   def fetch_balances(address, opts \\ []) do
     include_native = Keyword.get(opts, :include_native, true)
 
-    if not valid_address?(address) do
-      {:error, :invalid_address}
-    else
+    if valid_address?(address) do
       # For now, return popular tokens with mock balances
       # In production, this would call Alchemy or Etherscan API
       balances = get_popular_token_balances(address, include_native)
 
       # Enrich with pricing data
-      enriched_balances =
-        Enum.map(balances, fn token ->
-          case get_token_price(token.symbol) do
-            {:ok, price_data} ->
-              Map.merge(token, %{
-                usd_price: price_data.usd,
-                usd_value: token.balance_formatted * price_data.usd,
-                price_change_24h: price_data.usd_24h_change
-              })
-
-            {:error, _} ->
-              token
-          end
-        end)
+      enriched_balances = Enum.map(balances, &enrich_token_with_price/1)
 
       {:ok, enriched_balances}
+    else
+      {:error, :invalid_address}
+    end
+  end
+
+  defp enrich_token_with_price(token) do
+    case get_token_price(token.symbol) do
+      {:ok, price_data} ->
+        Map.merge(token, %{
+          usd_price: price_data.usd,
+          usd_value: token.balance_formatted * price_data.usd,
+          price_change_24h: price_data.usd_24h_change
+        })
+
+      {:error, _} ->
+        token
     end
   end
 
@@ -157,12 +158,11 @@ defmodule Droodotfoo.Web3.Token do
     else
       chars = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"]
 
-      Enum.map(prices, fn price ->
+      Enum.map_join(prices, "", fn price ->
         normalized = (price - min_price) / range
         index = min(trunc(normalized * (length(chars) - 1)), length(chars) - 1)
         Enum.at(chars, index)
       end)
-      |> Enum.join()
     end
   end
 
@@ -170,7 +170,7 @@ defmodule Droodotfoo.Web3.Token do
 
   ## Private Functions
 
-  defp get_popular_token_balances(address, include_native) do
+  defp get_popular_token_balances(_address, include_native) do
     # Mock implementation - in production, fetch from Alchemy/Etherscan
     # For now, return empty list to indicate we'd need API keys
     tokens = []
@@ -238,28 +238,12 @@ defmodule Droodotfoo.Web3.Token do
   end
 
   defp http_get(url) do
-    # Use :httpc (built-in Erlang HTTP client)
-    Application.ensure_all_started(:inets)
-    Application.ensure_all_started(:ssl)
+    # Use consolidated HttpClient for consistent error handling
+    client = Droodotfoo.HttpClient.new(url, [{"Accept", "application/json"}])
 
-    url_charlist = String.to_charlist(url)
-    headers = [{'Accept', 'application/json'}]
-    request = {url_charlist, headers}
-
-    case :httpc.request(:get, request, [{:timeout, 10000}], []) do
-      {:ok, {{_, 200, _}, _headers, body}} ->
-        case Jason.decode(body) do
-          {:ok, json} -> {:ok, json}
-          {:error, _} -> {:error, :invalid_json}
-        end
-
-      {:ok, {{_, 429, _}, _headers, _body}} ->
-        Logger.warning("CoinGecko rate limit hit")
-        {:error, :rate_limit}
-
-      {:ok, {{_, status_code, _}, _headers, _body}} ->
-        Logger.error("HTTP request failed with status: #{status_code}")
-        {:error, :http_error}
+    case Droodotfoo.HttpClient.get(client, "") do
+      {:ok, %{body: json}} ->
+        {:ok, json}
 
       {:error, reason} ->
         {:error, reason}

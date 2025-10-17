@@ -155,18 +155,22 @@ defmodule Droodotfoo.Spotify.API do
         {:ok, tracks}
 
       {:error, :not_found} ->
-        endpoint = "/playlists/#{playlist_id}/tracks?limit=#{limit}"
+        fetch_and_cache_playlist_tracks(playlist_id, limit, cache_key)
+    end
+  end
 
-        case make_request(:get, endpoint) do
-          {:ok, %{body: %{"items" => tracks_data}}} ->
-            tracks = Enum.map(tracks_data, fn item -> parse_track(item["track"]) end)
-            # Cache for 5 minutes
-            Cache.put(cache_key, tracks, 300_000)
-            {:ok, tracks}
+  defp fetch_and_cache_playlist_tracks(playlist_id, limit, cache_key) do
+    endpoint = "/playlists/#{playlist_id}/tracks?limit=#{limit}"
 
-          {:error, reason} ->
-            {:error, reason}
-        end
+    case make_request(:get, endpoint) do
+      {:ok, %{body: %{"items" => tracks_data}}} ->
+        tracks = Enum.map(tracks_data, fn item -> parse_track(item["track"]) end)
+        # Cache for 5 minutes
+        Cache.put(cache_key, tracks, 300_000)
+        {:ok, tracks}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 

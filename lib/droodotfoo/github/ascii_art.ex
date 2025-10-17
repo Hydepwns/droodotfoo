@@ -4,7 +4,7 @@ defmodule Droodotfoo.Github.AsciiArt do
   Creates terminal-friendly visualizations for repositories, commits, and activity.
   """
 
-  alias Droodotfoo.AsciiHelpers
+  alias Droodotfoo.Ascii
 
   @doc """
   Renders GitHub logo in ASCII art.
@@ -27,34 +27,68 @@ defmodule Droodotfoo.Github.AsciiArt do
     width = Keyword.get(options, :width, 78)
     border = String.duplicate("=", width - 2)
 
-    name_line = if user.name, do: user.name, else: user.login
-    bio_lines = if user.bio, do: AsciiHelpers.wrap_text(user.bio, width - 6), else: []
+    header = build_profile_header(user, width, border)
+    bio_section = build_bio_section(user, width)
+    stats_section = build_stats_section(user, width)
+    details_section = build_details_section(user, width)
+    footer = ["+" <> border <> "+"]
 
-    location = if user.location, do: " Location: #{user.location}", else: ""
-    company = if user.company, do: " Company: #{user.company}", else: ""
-    blog = if user.blog, do: " Website: #{user.blog}", else: ""
+    header ++ bio_section ++ stats_section ++ details_section ++ footer
+  end
+
+  defp build_profile_header(user, width, border) do
+    name_line = if user.name, do: user.name, else: user.login
 
     [
       "+" <> border <> "+",
       "| #{String.pad_trailing("@#{user.login} - #{name_line}", width - 4)}|",
       "+" <> border <> "+"
-    ] ++
-      (if Enum.any?(bio_lines),
-         do: ["| #{String.pad_trailing("", width - 4)}|"] ++ Enum.map(bio_lines, fn line -> "| #{String.pad_trailing(line, width - 4)}|" end),
-         else: []
-       ) ++
-      [
-        "| #{String.pad_trailing("", width - 4)}|",
-        "| #{String.pad_trailing("Stats:", width - 4)}|",
-        "| #{String.pad_trailing("  Repos: #{user.public_repos}  Followers: #{user.followers}  Following: #{user.following}", width - 4)}|"
-      ] ++
-      (if location != "", do: ["| #{String.pad_trailing(location, width - 4)}|"], else: []) ++
-      (if company != "", do: ["| #{String.pad_trailing(company, width - 4)}|"], else: []) ++
-      (if blog != "", do: ["| #{String.pad_trailing(blog, width - 4)}|"], else: []) ++
-      [
-        "+" <> border <> "+"
-      ]
+    ]
   end
+
+  defp build_bio_section(user, width) do
+    bio_lines = if user.bio, do: Ascii.wrap_text(user.bio, width - 6), else: []
+
+    if Enum.any?(bio_lines) do
+      ["| #{String.pad_trailing("", width - 4)}|"] ++
+        Enum.map(bio_lines, fn line -> "| #{String.pad_trailing(line, width - 4)}|" end)
+    else
+      []
+    end
+  end
+
+  defp build_stats_section(user, width) do
+    [
+      "| #{String.pad_trailing("", width - 4)}|",
+      "| #{String.pad_trailing("Stats:", width - 4)}|",
+      "| #{String.pad_trailing("  Repos: #{user.public_repos}  Followers: #{user.followers}  Following: #{user.following}", width - 4)}|"
+    ]
+  end
+
+  defp build_details_section(user, width) do
+    []
+    |> maybe_add_location(user, width)
+    |> maybe_add_company(user, width)
+    |> maybe_add_blog(user, width)
+  end
+
+  defp maybe_add_location(lines, %{location: location}, width) when not is_nil(location) and location != "" do
+    lines ++ ["| #{String.pad_trailing(" Location: #{location}", width - 4)}|"]
+  end
+
+  defp maybe_add_location(lines, _, _), do: lines
+
+  defp maybe_add_company(lines, %{company: company}, width) when not is_nil(company) and company != "" do
+    lines ++ ["| #{String.pad_trailing(" Company: #{company}", width - 4)}|"]
+  end
+
+  defp maybe_add_company(lines, _, _), do: lines
+
+  defp maybe_add_blog(lines, %{blog: blog}, width) when not is_nil(blog) and blog != "" do
+    lines ++ ["| #{String.pad_trailing(" Website: #{blog}", width - 4)}|"]
+  end
+
+  defp maybe_add_blog(lines, _, _), do: lines
 
   @doc """
   Renders repository list.
@@ -76,9 +110,9 @@ defmodule Droodotfoo.Github.AsciiArt do
         repos
         |> Enum.take(max_items)
         |> Enum.map(fn repo ->
-          name = AsciiHelpers.truncate_text(repo.name, 28)
+          name = Ascii.truncate_text(repo.name, 28)
           stars = String.pad_leading("#{repo.stargazers_count}", 6)
-          lang = AsciiHelpers.truncate_text(repo.language || "N/A", 13)
+          lang = Ascii.truncate_text(repo.language || "N/A", 13)
           updated = format_relative_time(repo.updated_at)
 
           "| #{String.pad_trailing(name, 30)} #{String.pad_trailing(stars, 8)} #{String.pad_trailing(lang, 15)} #{String.pad_trailing(updated, 18)}|"
@@ -99,12 +133,15 @@ defmodule Droodotfoo.Github.AsciiArt do
     width = Keyword.get(options, :width, 78)
     border = String.duplicate("=", width - 2)
 
-    desc_lines = if repo.description, do: AsciiHelpers.wrap_text(repo.description, width - 6), else: ["No description"]
+    desc_lines =
+      if repo.description,
+        do: Ascii.wrap_text(repo.description, width - 6),
+        else: ["No description"]
 
-    stars = AsciiHelpers.format_number(repo.stargazers_count)
-    forks = AsciiHelpers.format_number(repo.forks_count)
-    watchers = AsciiHelpers.format_number(repo.watchers_count)
-    issues = AsciiHelpers.format_number(repo.open_issues_count)
+    stars = Ascii.format_number(repo.stargazers_count)
+    forks = Ascii.format_number(repo.forks_count)
+    watchers = Ascii.format_number(repo.watchers_count)
+    issues = Ascii.format_number(repo.open_issues_count)
 
     [
       "+" <> border <> "+",
@@ -140,17 +177,7 @@ defmodule Droodotfoo.Github.AsciiArt do
       else
         commits
         |> Enum.take(max_items)
-        |> Enum.flat_map(fn commit ->
-          sha_short = String.slice(commit.sha, 0..6)
-          author = AsciiHelpers.truncate_text(commit.author.name, 20)
-          date = format_relative_time(commit.author.date)
-          message_lines = AsciiHelpers.wrap_text(commit.message, width - 8)
-
-          ["| #{sha_short} #{String.pad_trailing(author, 22)} #{String.pad_trailing(date, width - 36)}|"] ++
-            Enum.map(message_lines, fn line ->
-              "| #{String.pad_trailing("  " <> line, width - 4)}|"
-            end)
-        end)
+        |> Enum.flat_map(&format_commit_lines(&1, width))
       end
 
     footer = [
@@ -180,7 +207,7 @@ defmodule Droodotfoo.Github.AsciiArt do
         |> Enum.map(fn event ->
           icon = event_icon(event.type)
           action = event_action(event.type, event.payload)
-          repo = AsciiHelpers.truncate_text(event.repo.name, 35)
+          repo = Ascii.truncate_text(event.repo.name, 35)
           time = format_relative_time(event.created_at)
 
           "| #{icon} #{String.pad_trailing(action, 15)} #{String.pad_trailing(repo, 37)} #{String.pad_trailing(time, 10)}|"
@@ -213,14 +240,7 @@ defmodule Droodotfoo.Github.AsciiArt do
       else
         items
         |> Enum.take(max_items)
-        |> Enum.map(fn item ->
-          num = "##{item.number}"
-          state_icon = if item.state == "open", do: "○", else: "●"
-          title_text = AsciiHelpers.truncate_text(item.title, width - 20)
-          author = "@#{item.user.login}"
-
-          "| #{state_icon} #{String.pad_trailing(num, 6)} #{String.pad_trailing(title_text, width - 25)} #{String.pad_trailing(author, 12)}|"
-        end)
+        |> Enum.map(&format_issue_line(&1, width))
       end
 
     footer = [
@@ -233,60 +253,41 @@ defmodule Droodotfoo.Github.AsciiArt do
   # Private Functions
 
   defp event_icon(type) do
-    case type do
-      "PushEvent" -> "→"
-      "PullRequestEvent" -> "⇄"
-      "IssuesEvent" -> "◉"
-      "CreateEvent" -> "+"
-      "DeleteEvent" -> "-"
-      "ForkEvent" -> "⑂"
-      "WatchEvent" -> "★"
-      "ReleaseEvent" -> "↑"
-      _ -> "•"
-    end
+    event_icon_map()[type] || "•"
   end
 
-  defp event_action(type, payload) do
-    case type do
-      "PushEvent" ->
-        count = length(payload["commits"] || [])
-        "pushed #{count} commit#{if count != 1, do: "s", else: ""}"
-
-      "PullRequestEvent" ->
-        action = payload["action"]
-        "#{action} PR"
-
-      "IssuesEvent" ->
-        action = payload["action"]
-        "#{action} issue"
-
-      "CreateEvent" ->
-        ref_type = payload["ref_type"]
-        "created #{ref_type}"
-
-      "DeleteEvent" ->
-        ref_type = payload["ref_type"]
-        "deleted #{ref_type}"
-
-      "ForkEvent" ->
-        "forked"
-
-      "WatchEvent" ->
-        "starred"
-
-      "ReleaseEvent" ->
-        "released"
-
-      _ ->
-        type
-    end
+  defp event_icon_map do
+    %{
+      "PushEvent" => "→",
+      "PullRequestEvent" => "⇄",
+      "IssuesEvent" => "◉",
+      "CreateEvent" => "+",
+      "DeleteEvent" => "-",
+      "ForkEvent" => "⑂",
+      "WatchEvent" => "★",
+      "ReleaseEvent" => "↑"
+    }
   end
+
+  defp event_action("PushEvent", payload) do
+    count = length(payload["commits"] || [])
+    "pushed #{count} commit#{if count != 1, do: "s", else: ""}"
+  end
+
+  defp event_action("PullRequestEvent", payload), do: "#{payload["action"]} PR"
+  defp event_action("IssuesEvent", payload), do: "#{payload["action"]} issue"
+  defp event_action("CreateEvent", payload), do: "created #{payload["ref_type"]}"
+  defp event_action("DeleteEvent", payload), do: "deleted #{payload["ref_type"]}"
+  defp event_action("ForkEvent", _), do: "forked"
+  defp event_action("WatchEvent", _), do: "starred"
+  defp event_action("ReleaseEvent", _), do: "released"
+  defp event_action(type, _), do: type
 
   defp format_relative_time(datetime_string) when is_binary(datetime_string) do
     case DateTime.from_iso8601(datetime_string) do
       {:ok, dt, _} ->
         diff_seconds = DateTime.diff(DateTime.utc_now(), dt)
-        AsciiHelpers.format_relative_time(diff_seconds)
+        Ascii.format_relative_time(diff_seconds)
 
       _ ->
         "unknown"
@@ -294,4 +295,28 @@ defmodule Droodotfoo.Github.AsciiArt do
   end
 
   defp format_relative_time(_), do: "unknown"
+
+  defp format_commit_lines(commit, width) do
+    sha_short = String.slice(commit.sha, 0..6)
+    author = Ascii.truncate_text(commit.author.name, 20)
+    date = format_relative_time(commit.author.date)
+    message_lines = Ascii.wrap_text(commit.message, width - 8)
+
+    [
+      "| #{sha_short} #{String.pad_trailing(author, 22)} #{String.pad_trailing(date, width - 36)}|"
+    ] ++ Enum.map(message_lines, &format_message_line(&1, width))
+  end
+
+  defp format_message_line(line, width) do
+    "| #{String.pad_trailing("  " <> line, width - 4)}|"
+  end
+
+  defp format_issue_line(item, width) do
+    num = "##{item.number}"
+    state_icon = if item.state == "open", do: "○", else: "●"
+    title_text = Ascii.truncate_text(item.title, width - 20)
+    author = "@#{item.user.login}"
+
+    "| #{state_icon} #{String.pad_trailing(num, 6)} #{String.pad_trailing(title_text, width - 25)} #{String.pad_trailing(author, 12)}|"
+  end
 end

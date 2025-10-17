@@ -4,7 +4,7 @@ defmodule Droodotfoo.Spotify.AsciiArt do
   Creates terminal-friendly visualizations for tracks, albums, and playback state.
   """
 
-  alias Droodotfoo.{AsciiHelpers, AsciiChart}
+  alias Droodotfoo.{Ascii, AsciiChart}
 
   @doc """
   Renders the Spotify logo in ASCII art.
@@ -44,8 +44,8 @@ defmodule Droodotfoo.Spotify.AsciiArt do
       progress_ratio = progress_ms / duration_ms
       percentage = progress_ratio * 100
 
-      progress_time = AsciiHelpers.format_duration_ms(progress_ms)
-      total_time = AsciiHelpers.format_duration_ms(duration_ms)
+      progress_time = Ascii.format_duration_ms(progress_ms)
+      total_time = Ascii.format_duration_ms(duration_ms)
 
       bar = AsciiChart.bar_chart(percentage, max: 100, width: width)
 
@@ -80,25 +80,25 @@ defmodule Droodotfoo.Spotify.AsciiArt do
     max_items = Keyword.get(options, :max_items, 10)
     width = Keyword.get(options, :width, 78)
 
-    header = [AsciiHelpers.box_header("Your Playlists", width)]
+    header = [Ascii.box_header("Your Playlists", width)]
 
     content =
       if Enum.empty?(playlists) do
-        [AsciiHelpers.box_content(" No playlists found", width)]
+        [Ascii.box_content(" No playlists found", width)]
       else
         playlists
         |> Enum.take(max_items)
         |> Enum.with_index(1)
         |> Enum.map(fn {playlist, index} ->
-          name = AsciiHelpers.truncate_text(playlist.name, width - 10)
+          name = Ascii.truncate_text(playlist.name, width - 10)
           track_count = playlist.tracks.total
 
           text = "#{index}. #{name} (#{track_count} tracks)"
-          AsciiHelpers.box_content(text, width)
+          Ascii.box_content(text, width)
         end)
       end
 
-    footer = [AsciiHelpers.box_footer(width)]
+    footer = [Ascii.box_footer(width)]
 
     header ++ content ++ footer
   end
@@ -109,26 +109,20 @@ defmodule Droodotfoo.Spotify.AsciiArt do
   def render_device_list(devices, options \\ []) do
     width = Keyword.get(options, :width, 78)
 
-    header = [AsciiHelpers.box_header("Available Devices", width)]
+    header = [Ascii.box_header("Available Devices", width)]
 
     content =
       if Enum.empty?(devices) do
-        [AsciiHelpers.box_content(" No devices found", width)]
+        [Ascii.box_content(" No devices found", width)]
       else
         devices
         |> Enum.with_index(1)
         |> Enum.map(fn {device, index} ->
-          status = if device.is_active, do: "●", else: "○"
-          name = AsciiHelpers.truncate_text(device.name, width - 15)
-          type = device.type
-          volume = if device.volume_percent, do: " #{device.volume_percent}%", else: ""
-
-          text = "#{status} #{index}. #{name} (#{type})#{volume}"
-          AsciiHelpers.box_content(text, width)
+          format_device_entry(device, index, width)
         end)
       end
 
-    footer = [AsciiHelpers.box_footer(width)]
+    footer = [Ascii.box_footer(width)]
 
     header ++ content ++ footer
   end
@@ -140,12 +134,12 @@ defmodule Droodotfoo.Spotify.AsciiArt do
     max_items = Keyword.get(options, :max_items, 10)
     width = Keyword.get(options, :width, 78)
 
-    truncated_query = AsciiHelpers.truncate_text(query, 20)
-    header = [AsciiHelpers.box_header("Search Results: \"#{truncated_query}\"", width)]
+    truncated_query = Ascii.truncate_text(query, 20)
+    header = [Ascii.box_header("Search Results: \"#{truncated_query}\"", width)]
 
     content =
       if Enum.empty?(results) do
-        [AsciiHelpers.box_content(" No results found", width)]
+        [Ascii.box_content(" No results found", width)]
       else
         results
         |> Enum.take(max_items)
@@ -155,7 +149,7 @@ defmodule Droodotfoo.Spotify.AsciiArt do
         end)
       end
 
-    footer = [AsciiHelpers.box_footer(width)]
+    footer = [Ascii.box_footer(width)]
 
     header ++ content ++ footer
   end
@@ -179,15 +173,14 @@ defmodule Droodotfoo.Spotify.AsciiArt do
   # Private Functions
 
   defp render_playing_track(track, width) do
-    title_line = AsciiHelpers.truncate_text(track.name, width - 4)
+    title_line = Ascii.truncate_text(track.name, width - 4)
 
     artist_line =
       track.artists
-      |> Enum.map(& &1.name)
-      |> Enum.join(", ")
-      |> AsciiHelpers.truncate_text(width - 4)
+      |> Enum.map_join(", ", & &1.name)
+      |> Ascii.truncate_text(width - 4)
 
-    album_line = AsciiHelpers.truncate_text(track.album.name, width - 4)
+    album_line = Ascii.truncate_text(track.album.name, width - 4)
 
     border_line = String.duplicate("═", width - 2)
 
@@ -217,15 +210,15 @@ defmodule Droodotfoo.Spotify.AsciiArt do
     text =
       case type do
         "track" ->
-          artists = item.artists |> Enum.map(& &1.name) |> Enum.join(", ")
+          artists = Enum.map_join(item.artists, ", ", & &1.name)
           "#{item.name} - #{artists}"
 
         "artist" ->
-          follower_count = AsciiHelpers.format_number(item.followers)
+          follower_count = Ascii.format_number(item.followers)
           "#{item.name} (#{follower_count} followers)"
 
         "album" ->
-          artists = item.artists |> Enum.map(& &1.name) |> Enum.join(", ")
+          artists = Enum.map_join(item.artists, ", ", & &1.name)
           "#{item.name} by #{artists}"
 
         "playlist" ->
@@ -235,8 +228,17 @@ defmodule Droodotfoo.Spotify.AsciiArt do
           to_string(item)
       end
 
-    truncated = AsciiHelpers.truncate_text(text, width - 8)
-    AsciiHelpers.box_content("#{index}. #{truncated}", width)
+    truncated = Ascii.truncate_text(text, width - 8)
+    Ascii.box_content("#{index}. #{truncated}", width)
   end
 
+  defp format_device_entry(device, index, width) do
+    status = if device.is_active, do: "●", else: "○"
+    name = Ascii.truncate_text(device.name, width - 15)
+    type = device.type
+    volume = if device.volume_percent, do: " #{device.volume_percent}%", else: ""
+
+    text = "#{status} #{index}. #{name} (#{type})#{volume}"
+    Ascii.box_content(text, width)
+  end
 end
