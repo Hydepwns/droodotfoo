@@ -86,7 +86,13 @@ defmodule Droodotfoo.Github.Client do
 
     body = Jason.encode!(%{query: query})
 
-    case :httpc.request(:post, {String.to_charlist(@github_api_url), headers, ~c"application/json", String.to_charlist(body)}, [], []) do
+    case :httpc.request(
+           :post,
+           {String.to_charlist(@github_api_url), headers, ~c"application/json",
+            String.to_charlist(body)},
+           [],
+           []
+         ) do
       {:ok, {{_, 200, _}, _headers, response_body}} ->
         parse_graphql_response(List.to_string(response_body))
 
@@ -188,18 +194,7 @@ defmodule Droodotfoo.Github.Client do
         :miss
 
       _table ->
-        case :ets.lookup(:github_cache, username) do
-          [{^username, repos, cached_at}] ->
-            if System.system_time(:millisecond) - cached_at < @cache_ttl do
-              {:ok, repos}
-            else
-              :ets.delete(:github_cache, username)
-              :miss
-            end
-
-          [] ->
-            :miss
-        end
+        lookup_cached_repos(username)
     end
   end
 
@@ -238,17 +233,7 @@ defmodule Droodotfoo.Github.Client do
       projects =
         repos
         |> Enum.with_index(1)
-        |> Enum.map(fn {repo, idx} ->
-          stars = if repo.stars > 0, do: " [#{repo.stars} stars]", else: ""
-          language = "[#{repo.language}]"
-
-          """
-          #{idx}. #{repo.name} #{language}#{stars}
-             #{repo.description}
-             #{repo.url}
-          """
-        end)
-        |> Enum.join("\n")
+        |> Enum.map_join("\n", &format_repo_entry/1)
 
       footer = """
 
@@ -272,6 +257,38 @@ defmodule Droodotfoo.Github.Client do
     terminal-ui         - Raxol terminal UI library (Elixir)
 
     Visit https://github.com/hydepwns for all projects.
+    """
+  end
+
+  # Private helper functions
+
+  defp lookup_cached_repos(username) do
+    case :ets.lookup(:github_cache, username) do
+      [{^username, repos, cached_at}] ->
+        check_cache_validity(username, repos, cached_at)
+
+      [] ->
+        :miss
+    end
+  end
+
+  defp check_cache_validity(username, repos, cached_at) do
+    if System.system_time(:millisecond) - cached_at < @cache_ttl do
+      {:ok, repos}
+    else
+      :ets.delete(:github_cache, username)
+      :miss
+    end
+  end
+
+  defp format_repo_entry({repo, idx}) do
+    stars = if repo.stars > 0, do: " [#{repo.stars} stars]", else: ""
+    language = "[#{repo.language}]"
+
+    """
+    #{idx}. #{repo.name} #{language}#{stars}
+       #{repo.description}
+       #{repo.url}
     """
   end
 end

@@ -65,7 +65,9 @@ defmodule Droodotfoo.Github.API do
     per_page = Keyword.get(opts, :per_page, 20)
 
     encoded_query = URI.encode(query)
-    endpoint = "/search/repositories?q=#{encoded_query}&sort=#{sort}&order=#{order}&per_page=#{per_page}"
+
+    endpoint =
+      "/search/repositories?q=#{encoded_query}&sort=#{sort}&order=#{order}&per_page=#{per_page}"
 
     case make_request(:get, endpoint) do
       {:ok, %{body: %{"items" => items}}} ->
@@ -126,7 +128,10 @@ defmodule Droodotfoo.Github.API do
     state = Keyword.get(opts, :state, "open")
     per_page = Keyword.get(opts, :per_page, 30)
 
-    case make_request(:get, "/repos/#{owner}/#{repo_name}/issues?state=#{state}&per_page=#{per_page}") do
+    case make_request(
+           :get,
+           "/repos/#{owner}/#{repo_name}/issues?state=#{state}&per_page=#{per_page}"
+         ) do
       {:ok, %{body: issues_data}} ->
         issues = Enum.map(issues_data, &parse_issue/1)
         {:ok, issues}
@@ -143,7 +148,10 @@ defmodule Droodotfoo.Github.API do
     state = Keyword.get(opts, :state, "open")
     per_page = Keyword.get(opts, :per_page, 30)
 
-    case make_request(:get, "/repos/#{owner}/#{repo_name}/pulls?state=#{state}&per_page=#{per_page}") do
+    case make_request(
+           :get,
+           "/repos/#{owner}/#{repo_name}/pulls?state=#{state}&per_page=#{per_page}"
+         ) do
       {:ok, %{body: pulls_data}} ->
         pulls = Enum.map(pulls_data, &parse_pull/1)
         {:ok, pulls}

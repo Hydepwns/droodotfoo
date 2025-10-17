@@ -124,10 +124,7 @@ defmodule Droodotfoo.Spotify.Cache do
   def handle_call(:stats, _from, state) do
     now = System.monotonic_time(:millisecond)
 
-    active_keys =
-      state.expiry_times
-      |> Enum.filter(fn {_key, expiry} -> expiry > now end)
-      |> Enum.count()
+    active_keys = Enum.count(state.expiry_times, fn {_key, expiry} -> expiry > now end)
 
     stats = %{
       total_keys: map_size(state.data),

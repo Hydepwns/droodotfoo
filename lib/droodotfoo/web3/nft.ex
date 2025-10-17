@@ -19,7 +19,8 @@ defmodule Droodotfoo.Web3.NFT do
         }
 
   @opensea_api_base "https://api.opensea.io/api/v2"
-  @alchemy_api_base "https://eth-mainnet.g.alchemy.com/v2"
+  # Reserved for future Alchemy API integration
+  # @alchemy_api_base "https://eth-mainnet.g.alchemy.com/v2"
 
   # Alchemy API key should be in config or env
   # For now, using OpenSea's public API which doesn't require auth for basic queries
@@ -46,13 +47,13 @@ defmodule Droodotfoo.Web3.NFT do
     chain = Keyword.get(opts, :chain, "ethereum")
 
     # Validate address format
-    if not valid_address?(address) do
-      {:error, :invalid_address}
-    else
+    if valid_address?(address) do
       case fetch_from_opensea(address, limit, chain) do
         {:ok, nfts} -> {:ok, nfts}
         {:error, _reason} -> {:error, :api_error}
       end
+    else
+      {:error, :invalid_address}
     end
   end
 
@@ -67,13 +68,13 @@ defmodule Droodotfoo.Web3.NFT do
   """
   @spec fetch_nft(String.t(), String.t()) :: {:ok, nft()} | {:error, atom()}
   def fetch_nft(contract_address, token_id) do
-    if not valid_address?(contract_address) do
-      {:error, :invalid_contract_address}
-    else
+    if valid_address?(contract_address) do
       case fetch_nft_from_opensea(contract_address, token_id) do
         {:ok, nft} -> {:ok, nft}
         {:error, _reason} -> {:error, :api_error}
       end
+    else
+      {:error, :invalid_contract_address}
     end
   end
 
@@ -139,42 +140,37 @@ defmodule Droodotfoo.Web3.NFT do
 
   defp parse_opensea_nft(nft_data) do
     %{
-      contract_address: get_in(nft_data, ["contract"]) || "Unknown",
-      token_id: get_in(nft_data, ["identifier"]) || "Unknown",
-      name: get_in(nft_data, ["name"]) || "Unnamed NFT",
-      description: get_in(nft_data, ["description"]) || "",
-      image_url: get_in(nft_data, ["image_url"]) || get_in(nft_data, ["display_image_url"]) || "",
-      collection_name: get_in(nft_data, ["collection"]) || "Unknown Collection",
-      token_standard: get_in(nft_data, ["token_standard"]) || "unknown",
-      properties: get_in(nft_data, ["traits"]) || []
+      contract_address: extract_contract_address(nft_data),
+      token_id: extract_token_id(nft_data),
+      name: extract_name(nft_data),
+      description: extract_description(nft_data),
+      image_url: extract_image_url(nft_data),
+      collection_name: extract_collection_name(nft_data),
+      token_standard: extract_token_standard(nft_data),
+      properties: extract_properties(nft_data)
     }
   end
 
+  defp extract_contract_address(data), do: get_in(data, ["contract"]) || "Unknown"
+  defp extract_token_id(data), do: get_in(data, ["identifier"]) || "Unknown"
+  defp extract_name(data), do: get_in(data, ["name"]) || "Unnamed NFT"
+  defp extract_description(data), do: get_in(data, ["description"]) || ""
+
+  defp extract_image_url(data) do
+    get_in(data, ["image_url"]) || get_in(data, ["display_image_url"]) || ""
+  end
+
+  defp extract_collection_name(data), do: get_in(data, ["collection"]) || "Unknown Collection"
+  defp extract_token_standard(data), do: get_in(data, ["token_standard"]) || "unknown"
+  defp extract_properties(data), do: get_in(data, ["traits"]) || []
+
   defp http_get(url) do
-    # Use :httpc (built-in Erlang HTTP client)
-    # Ensure :inets and :ssl applications are started
-    Application.ensure_all_started(:inets)
-    Application.ensure_all_started(:ssl)
+    # Use consolidated HttpClient for consistent error handling
+    client = Droodotfoo.HttpClient.new(url, [{"Accept", "application/json"}])
 
-    url_charlist = String.to_charlist(url)
-
-    headers = [
-      {'Accept', 'application/json'},
-      {'X-API-KEY', ''}  # OpenSea public API doesn't require key for basic queries
-    ]
-
-    request = {url_charlist, headers}
-
-    case :httpc.request(:get, request, [{:timeout, 10000}], []) do
-      {:ok, {{_, 200, _}, _headers, body}} ->
-        case Jason.decode(body) do
-          {:ok, json} -> {:ok, json}
-          {:error, _} -> {:error, :invalid_json}
-        end
-
-      {:ok, {{_, status_code, _}, _headers, _body}} ->
-        Logger.error("HTTP request failed with status: #{status_code}")
-        {:error, :http_error}
+    case Droodotfoo.HttpClient.get(client, "") do
+      {:ok, %{body: json}} ->
+        {:ok, json}
 
       {:error, reason} ->
         {:error, reason}

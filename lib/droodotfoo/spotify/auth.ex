@@ -141,27 +141,25 @@ defmodule Droodotfoo.Spotify.Auth do
   Refreshes the access token using the refresh token.
   """
   def refresh_access_token(refresh_token) do
-    try do
-      client = client()
+    client = client()
 
-      client =
-        Client.get_token!(client, refresh_token: refresh_token, grant_type: "refresh_token")
+    client =
+      Client.get_token!(client, refresh_token: refresh_token, grant_type: "refresh_token")
 
-      token_data = %{
-        access_token: client.token.access_token,
-        refresh_token: client.token.refresh_token || refresh_token,
-        expires_at: calculate_expiry(client.token.expires_at),
-        token_type: client.token.token_type || "Bearer"
-      }
+    token_data = %{
+      access_token: client.token.access_token,
+      refresh_token: client.token.refresh_token || refresh_token,
+      expires_at: calculate_expiry(client.token.expires_at),
+      token_type: client.token.token_type || "Bearer"
+    }
 
-      store_tokens(token_data)
+    store_tokens(token_data)
 
-      {:ok, token_data.access_token}
-    rescue
-      error ->
-        Logger.error("Error refreshing token: #{inspect(error)}")
-        {:error, :token_refresh_failed}
-    end
+    {:ok, token_data.access_token}
+  rescue
+    error ->
+      Logger.error("Error refreshing token: #{inspect(error)}")
+      {:error, :token_refresh_failed}
   end
 
   @doc """
@@ -224,10 +222,8 @@ defmodule Droodotfoo.Spotify.Auth do
   end
 
   defp clear_stored_tokens do
-    try do
-      :ets.delete(:spotify_tokens, :tokens)
-    rescue
-      _ -> :ok
-    end
+    :ets.delete(:spotify_tokens, :tokens)
+  rescue
+    _ -> :ok
   end
 end

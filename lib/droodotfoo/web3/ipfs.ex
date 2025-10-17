@@ -42,7 +42,7 @@ defmodule Droodotfoo.Web3.IPFS do
   - `cid`: IPFS Content Identifier (CIDv0 or CIDv1)
   - `opts`: Keyword list of options
     - `:gateway` - Specific gateway URL to use
-    - `:timeout` - Request timeout in milliseconds (default: 30000)
+    - `:timeout` - Request timeout in milliseconds (default: 30_000)
 
   ## Examples
 
@@ -52,13 +52,13 @@ defmodule Droodotfoo.Web3.IPFS do
   """
   @spec cat(cid(), keyword()) :: {:ok, content()} | {:error, atom()}
   def cat(cid, opts \\ []) do
-    if not valid_cid?(cid) do
-      {:error, :invalid_cid}
-    else
+    if valid_cid?(cid) do
       gateway = Keyword.get(opts, :gateway)
-      timeout = Keyword.get(opts, :timeout, 30000)
+      timeout = Keyword.get(opts, :timeout, 30_000)
 
       fetch_with_fallback(cid, gateway, timeout)
+    else
+      {:error, :invalid_cid}
     end
   end
 
@@ -72,13 +72,13 @@ defmodule Droodotfoo.Web3.IPFS do
 
   """
   @spec ls(cid(), keyword()) :: {:ok, [directory_entry()]} | {:error, atom()}
-  def ls(cid, opts \\ []) do
-    if not valid_cid?(cid) do
-      {:error, :invalid_cid}
-    else
+  def ls(cid, _opts \\ []) do
+    if valid_cid?(cid) do
       # For now, return error - full directory listing requires IPFS API
       # This would normally use /api/v0/ls endpoint
       {:error, :not_implemented}
+    else
+      {:error, :invalid_cid}
     end
   end
 
@@ -93,12 +93,12 @@ defmodule Droodotfoo.Web3.IPFS do
   """
   @spec stat(cid()) :: {:ok, map()} | {:error, atom()}
   def stat(cid) do
-    if not valid_cid?(cid) do
-      {:error, :invalid_cid}
-    else
+    if valid_cid?(cid) do
       # For now, we'd need to fetch headers only
       # This would use HEAD request to gateway
       {:error, :not_implemented}
+    else
+      {:error, :invalid_cid}
     end
   end
 
@@ -203,17 +203,18 @@ defmodule Droodotfoo.Web3.IPFS do
   end
 
   defp http_get(url, timeout) do
-    Application.ensure_all_started(:inets)
-    Application.ensure_all_started(:ssl)
+    # Use consolidated HttpClient for consistent error handling
+    client =
+      Droodotfoo.HttpClient.new(
+        url,
+        [
+          {"Accept", "application/octet-stream, text/plain, application/json, */*"}
+        ],
+        timeout: timeout
+      )
 
-    url_charlist = String.to_charlist(url)
-    headers = [{'Accept', 'application/octet-stream, text/plain, application/json, */*'}]
-    request = {url_charlist, headers}
-    http_options = [{:timeout, timeout}, {:autoredirect, true}]
-    options = [{:body_format, :binary}]
-
-    case :httpc.request(:get, request, http_options, options) do
-      {:ok, {{_, 200, _}, response_headers, body}} ->
+    case Droodotfoo.HttpClient.get(client, "") do
+      {:ok, %{body: body, headers: response_headers}} ->
         # Check content size
         if byte_size(body) > @max_content_size do
           {:error, :content_too_large}
@@ -222,24 +223,14 @@ defmodule Droodotfoo.Web3.IPFS do
           {:ok, {content_type, body}}
         end
 
-      {:ok, {{_, 404, _}, _headers, _body}} ->
-        {:error, :not_found}
-
-      {:ok, {{_, 429, _}, _headers, _body}} ->
-        {:error, :rate_limit}
-
-      {:ok, {{_, status_code, _}, _headers, _body}} ->
-        Logger.error("HTTP request failed with status: #{status_code}")
-        {:error, :http_error}
-
       {:error, reason} ->
         {:error, reason}
     end
   end
 
   defp get_content_type(headers) do
-    case List.keyfind(headers, 'content-type', 0) do
-      {'content-type', content_type} ->
+    case List.keyfind(headers, ~c"content-type", 0) do
+      {~c"content-type", content_type} ->
         content_type
         |> to_string()
         |> String.split(";")
@@ -317,6 +308,9 @@ defmodule Droodotfoo.Web3.IPFS do
 
   defp format_bytes(bytes) when bytes < 1024, do: "#{bytes} B"
   defp format_bytes(bytes) when bytes < 1_048_576, do: "#{Float.round(bytes / 1024, 2)} KB"
-  defp format_bytes(bytes) when bytes < 1_073_741_824, do: "#{Float.round(bytes / 1_048_576, 2)} MB"
+
+  defp format_bytes(bytes) when bytes < 1_073_741_824,
+    do: "#{Float.round(bytes / 1_048_576, 2)} MB"
+
   defp format_bytes(bytes), do: "#{Float.round(bytes / 1_073_741_824, 2)} GB"
 end

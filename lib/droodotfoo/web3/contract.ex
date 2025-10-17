@@ -45,7 +45,8 @@ defmodule Droodotfoo.Web3.Contract do
         }
 
   # Etherscan API for contract verification and ABI
-  @etherscan_api_base "https://api.etherscan.io/api"
+  # Reserved for future Etherscan API integration
+  # @etherscan_api_base "https://api.etherscan.io/api"
 
   @doc """
   Fetch contract information and ABI from Etherscan.
@@ -62,12 +63,12 @@ defmodule Droodotfoo.Web3.Contract do
   """
   @spec fetch_contract(String.t()) :: {:ok, contract_info()} | {:error, atom()}
   def fetch_contract(address) do
-    if not valid_address?(address) do
-      {:error, :invalid_address}
-    else
+    if valid_address?(address) do
       # For demo purposes, return mock data
       # Production would call Etherscan API with API key
       {:ok, mock_contract_info(address)}
+    else
+      {:error, :invalid_address}
     end
   end
 
@@ -80,7 +81,8 @@ defmodule Droodotfoo.Web3.Contract do
       {:ok, %{functions: [...], events: [...]}}
 
   """
-  @spec parse_abi(String.t()) :: {:ok, %{functions: [abi_function()], events: [abi_event()]}} | {:error, atom()}
+  @spec parse_abi(String.t()) ::
+          {:ok, %{functions: [abi_function()], events: [abi_event()]}} | {:error, atom()}
   def parse_abi(abi_json) when is_binary(abi_json) do
     case Jason.decode(abi_json) do
       {:ok, abi} when is_list(abi) ->
@@ -113,11 +115,11 @@ defmodule Droodotfoo.Web3.Contract do
   """
   @spec call_function(String.t(), String.t(), [any()]) :: {:ok, any()} | {:error, atom()}
   def call_function(address, function_name, args \\ []) do
-    if not valid_address?(address) do
-      {:error, :invalid_address}
-    else
+    if valid_address?(address) do
       # Mock implementation - production would use Ethereumex/Ethers
       {:ok, mock_function_result(function_name, args)}
+    else
+      {:error, :invalid_address}
     end
   end
 
@@ -133,8 +135,12 @@ defmodule Droodotfoo.Web3.Contract do
   @spec format_function_signature(abi_function()) :: String.t()
   def format_function_signature(func) do
     inputs = format_params(func.inputs)
-    outputs = if Enum.empty?(func.outputs), do: "", else: " returns (#{format_params(func.outputs)})"
-    mutability = if func.state_mutability != "nonpayable", do: " #{func.state_mutability}", else: ""
+
+    outputs =
+      if Enum.empty?(func.outputs), do: "", else: " returns (#{format_params(func.outputs)})"
+
+    mutability =
+      if func.state_mutability != "nonpayable", do: " #{func.state_mutability}", else: ""
 
     "#{func.name}(#{inputs})#{mutability}#{outputs}"
   end
@@ -165,12 +171,12 @@ defmodule Droodotfoo.Web3.Contract do
   """
   @spec check_proxy(String.t()) :: {:ok, String.t()} | {:error, atom()}
   def check_proxy(address) do
-    if not valid_address?(address) do
-      {:error, :invalid_address}
-    else
+    if valid_address?(address) do
       # Mock implementation
       # Production would check EIP-1967 storage slots or call implementation()
       {:error, :not_proxy}
+    else
+      {:error, :invalid_address}
     end
   end
 
@@ -309,21 +315,17 @@ defmodule Droodotfoo.Web3.Contract do
   end
 
   defp format_params(params) do
-    params
-    |> Enum.map(fn param ->
+    Enum.map_join(params, ", ", fn param ->
       if param.name != "", do: "#{param.type} #{param.name}", else: param.type
     end)
-    |> Enum.join(", ")
   end
 
   defp format_event_params(params) do
-    params
-    |> Enum.map(fn param ->
+    Enum.map_join(params, ", ", fn param ->
       indexed = if param.indexed, do: "indexed ", else: ""
       name = if param.name != "", do: " #{param.name}", else: ""
       "#{param.type} #{indexed}#{name}"
     end)
-    |> Enum.join(", ")
   end
 
   defp mock_function_result(function_name, _args) do
