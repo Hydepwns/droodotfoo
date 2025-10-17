@@ -350,13 +350,19 @@ export SPOTIFY_REDIRECT_URI="https://yourapp.com/auth/spotify/callback"
 ### Test Infrastructure
 
 **Current Stats**:
-- 390 total tests (100% pass rate)
-- Core modules: 129 tests
-- Plugin unit tests: 85 tests
+- 836 total tests (~96% pass rate, 35 failures)
 - Property tests: 9 properties
+- Core modules: Extensive coverage
+- Plugin unit tests: Comprehensive
 - Performance tests: AdaptiveRefresh, InputDebouncer, PerformanceMonitor
 - Load tests: 100+ concurrent connections, 1000+ key sequences
-- Execution time: <5 seconds for full suite
+- Execution time: ~22 seconds for full suite
+
+**Note on Test Failures**:
+- 35 failures are Spotify-related (missing SPOTIFY_CLIENT_ID/SECRET in test env)
+- Tests run against production API without mocks
+- Expected failures in CI/CD environments without credentials
+- Core functionality: 100% passing
 
 **Testing Approach**:
 - Real implementations only (no mocks)
@@ -575,5 +581,5 @@ refactor(raxol): extract renderer to separate module
 
 ---
 
-**Last Updated**: October 4, 2025
+**Last Updated**: October 16, 2025
 **Maintained by**: Drew (@Hydepwns)
