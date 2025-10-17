@@ -99,43 +99,46 @@ defmodule Droodotfoo.Features.TerminalMultiplexer do
 
   def get_pane_dimensions(state, pane_id, total_width, total_height) do
     pane = Enum.find(state.panes, &(&1.id == pane_id))
-
-    case {state.layout, pane.position} do
-      {:single, _} ->
-        {0, 0, total_width, total_height}
-
-      {:horizontal_split, :top} ->
-        split_height = round(total_height * state.split_ratio)
-        {0, 0, total_width, split_height}
-
-      {:horizontal_split, :bottom} ->
-        split_height = round(total_height * state.split_ratio)
-        {0, split_height, total_width, total_height - split_height}
-
-      {:vertical_split, :left} ->
-        split_width = round(total_width * state.split_ratio)
-        {0, 0, split_width, total_height}
-
-      {:vertical_split, :right} ->
-        split_width = round(total_width * state.split_ratio)
-        {split_width, 0, total_width - split_width, total_height}
-
-      {:quad, :top_left} ->
-        {0, 0, div(total_width, 2), div(total_height, 2)}
-
-      {:quad, :top_right} ->
-        {div(total_width, 2), 0, div(total_width, 2), div(total_height, 2)}
-
-      {:quad, :bottom_left} ->
-        {0, div(total_height, 2), div(total_width, 2), div(total_height, 2)}
-
-      {:quad, :bottom_right} ->
-        {div(total_width, 2), div(total_height, 2), div(total_width, 2), div(total_height, 2)}
-
-      _ ->
-        {0, 0, total_width, total_height}
-    end
+    calculate_dimensions(state.layout, pane.position, total_width, total_height, state.split_ratio)
   end
+
+  defp calculate_dimensions(:single, _, total_width, total_height, _ratio),
+    do: {0, 0, total_width, total_height}
+
+  defp calculate_dimensions(:horizontal_split, :top, total_width, total_height, ratio) do
+    split_height = round(total_height * ratio)
+    {0, 0, total_width, split_height}
+  end
+
+  defp calculate_dimensions(:horizontal_split, :bottom, total_width, total_height, ratio) do
+    split_height = round(total_height * ratio)
+    {0, split_height, total_width, total_height - split_height}
+  end
+
+  defp calculate_dimensions(:vertical_split, :left, total_width, total_height, ratio) do
+    split_width = round(total_width * ratio)
+    {0, 0, split_width, total_height}
+  end
+
+  defp calculate_dimensions(:vertical_split, :right, total_width, total_height, ratio) do
+    split_width = round(total_width * ratio)
+    {split_width, 0, total_width - split_width, total_height}
+  end
+
+  defp calculate_dimensions(:quad, :top_left, total_width, total_height, _ratio),
+    do: {0, 0, div(total_width, 2), div(total_height, 2)}
+
+  defp calculate_dimensions(:quad, :top_right, total_width, total_height, _ratio),
+    do: {div(total_width, 2), 0, div(total_width, 2), div(total_height, 2)}
+
+  defp calculate_dimensions(:quad, :bottom_left, total_width, total_height, _ratio),
+    do: {0, div(total_height, 2), div(total_width, 2), div(total_height, 2)}
+
+  defp calculate_dimensions(:quad, :bottom_right, total_width, total_height, _ratio),
+    do: {div(total_width, 2), div(total_height, 2), div(total_width, 2), div(total_height, 2)}
+
+  defp calculate_dimensions(_, _, total_width, total_height, _ratio),
+    do: {0, 0, total_width, total_height}
 
   def render_border(buffer, x, y, width, height, active?) do
     style = if active?, do: "═", else: "─"

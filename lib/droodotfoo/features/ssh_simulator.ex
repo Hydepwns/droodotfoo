@@ -82,25 +82,37 @@ defmodule Droodotfoo.Features.SSHSimulator do
   end
 
   defp handle_command(session, command) do
-    output =
-      case command do
-        "ls" -> "README.md  projects/  skills/  experience/  contact/"
-        "pwd" -> "/home/#{session.username}"
-        "whoami" -> session.username
-        "uname -a" -> "Linux droo 5.15.0-91-generic #101-Ubuntu SMP x86_64 GNU/Linux"
-        "cat README.md" -> get_readme_content()
-        "exit" -> "logout\nConnection to droo.foo closed."
-        "help" -> get_help_content()
-        _ -> "#{command}: command not found"
-      end
+    output = execute_ssh_command(command, session)
 
     if command == "exit" do
-      %{session | state: :connecting, authenticated: false}
-      |> with_output(output <> "\n")
+      disconnect_session(session, output)
     else
-      session
-      |> with_output(output <> "\n[#{session.username}@droo ~]$ ")
+      continue_session(session, output)
     end
+  end
+
+  defp execute_ssh_command("ls", _session),
+    do: "README.md  projects/  skills/  experience/  contact/"
+
+  defp execute_ssh_command("pwd", session), do: "/home/#{session.username}"
+  defp execute_ssh_command("whoami", session), do: session.username
+
+  defp execute_ssh_command("uname -a", _session),
+    do: "Linux droo 5.15.0-91-generic #101-Ubuntu SMP x86_64 GNU/Linux"
+
+  defp execute_ssh_command("cat README.md", _session), do: get_readme_content()
+  defp execute_ssh_command("exit", _session), do: "logout\nConnection to droo.foo closed."
+  defp execute_ssh_command("help", _session), do: get_help_content()
+  defp execute_ssh_command(cmd, _session), do: "#{cmd}: command not found"
+
+  defp disconnect_session(session, output) do
+    %{session | state: :connecting, authenticated: false}
+    |> with_output(output <> "\n")
+  end
+
+  defp continue_session(session, output) do
+    session
+    |> with_output(output <> "\n[#{session.username}@droo ~]$ ")
   end
 
   defp with_output(session, output) do

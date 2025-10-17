@@ -16,12 +16,12 @@ defmodule Droodotfoo.AdvancedSearch do
 
   @type search_mode :: :fuzzy | :exact | :regex
   @type search_result :: %{
-    section: atom(),
-    line: String.t(),
-    line_number: integer(),
-    match_positions: [integer()],
-    score: float()
-  }
+          section: atom(),
+          line: String.t(),
+          line_number: integer(),
+          match_positions: [integer()],
+          score: float()
+        }
 
   @doc """
   Creates a new search state
@@ -52,11 +52,12 @@ defmodule Droodotfoo.AdvancedSearch do
 
     new_history = add_to_history(state.history, query, state.max_history)
 
-    %{state |
-      query: query,
-      results: results |> Enum.sort_by(&(-&1.score)),
-      history: new_history,
-      current_match_index: 0
+    %{
+      state
+      | query: query,
+        results: results |> Enum.sort_by(&(-&1.score)),
+        history: new_history,
+        current_match_index: 0
     }
   end
 
@@ -68,24 +69,7 @@ defmodule Droodotfoo.AdvancedSearch do
 
     content_map
     |> Enum.flat_map(fn {section, content} ->
-      content
-      |> String.split("\n")
-      |> Enum.with_index(1)
-      |> Enum.map(fn {line, line_num} ->
-        case fuzzy_match(query_chars, line, case_sensitive) do
-          {true, positions, score} ->
-            %{
-              section: section,
-              line: line,
-              line_number: line_num,
-              match_positions: positions,
-              score: score
-            }
-          {false, _, _} ->
-            nil
-        end
-      end)
-      |> Enum.reject(&is_nil/1)
+      search_lines_fuzzy(content, section, query_chars, case_sensitive)
     end)
   end
 
@@ -97,26 +81,7 @@ defmodule Droodotfoo.AdvancedSearch do
 
     content_map
     |> Enum.flat_map(fn {section, content} ->
-      content
-      |> String.split("\n")
-      |> Enum.with_index(1)
-      |> Enum.map(fn {line, line_num} ->
-        search_line = prepare_query(line, case_sensitive)
-
-        if String.contains?(search_line, search_query) do
-          positions = find_all_positions(search_line, search_query)
-          %{
-            section: section,
-            line: line,
-            line_number: line_num,
-            match_positions: positions,
-            score: calculate_exact_score(positions, String.length(line))
-          }
-        else
-          nil
-        end
-      end)
-      |> Enum.reject(&is_nil/1)
+      search_lines_exact(content, section, search_query, case_sensitive)
     end)
   end
 
@@ -128,25 +93,7 @@ defmodule Droodotfoo.AdvancedSearch do
       {:ok, regex} ->
         content_map
         |> Enum.flat_map(fn {section, content} ->
-          content
-          |> String.split("\n")
-          |> Enum.with_index(1)
-          |> Enum.map(fn {line, line_num} ->
-            case Regex.run(regex, line, return: :index) do
-              nil ->
-                nil
-              matches ->
-                positions = extract_match_positions(matches)
-                %{
-                  section: section,
-                  line: line,
-                  line_number: line_num,
-                  match_positions: positions,
-                  score: calculate_regex_score(positions, String.length(line))
-                }
-            end
-          end)
-          |> Enum.reject(&is_nil/1)
+          search_lines_regex(content, section, regex)
         end)
 
       {:error, _} ->
@@ -201,23 +148,23 @@ defmodule Droodotfoo.AdvancedSearch do
   @doc """
   Navigates to the next match (n key)
   """
+  def next_match(%{results: []} = state), do: state
+
   def next_match(state) do
-    if length(state.results) == 0 do
-      state
-    else
-      new_index = rem(state.current_match_index + 1, length(state.results))
-      %{state | current_match_index: new_index}
-    end
+    new_index = rem(state.current_match_index + 1, length(state.results))
+    %{state | current_match_index: new_index}
   end
 
   @doc """
   Navigates to the previous match (N key)
   """
   def previous_match(state) do
-    if length(state.results) == 0 do
+    if Enum.empty?(state.results) do
       state
     else
-      new_index = rem(state.current_match_index - 1 + length(state.results), length(state.results))
+      new_index =
+        rem(state.current_match_index - 1 + length(state.results), length(state.results))
+
       %{state | current_match_index: new_index}
     end
   end
@@ -238,6 +185,7 @@ defmodule Droodotfoo.AdvancedSearch do
   """
   def match_counter(state) do
     total = length(state.results)
+
     if total == 0 do
       "No matches"
     else
@@ -261,6 +209,7 @@ defmodule Droodotfoo.AdvancedSearch do
         case find_char_position(line_to_search, char, last_pos) do
           nil ->
             {:halt, :no_match}
+
           pos ->
             {:cont, {[pos | positions], pos + 1}}
         end
@@ -269,6 +218,7 @@ defmodule Droodotfoo.AdvancedSearch do
     case result do
       :no_match ->
         {false, [], 0.0}
+
       {positions, _} ->
         positions_list = Enum.reverse(positions)
         score = calculate_fuzzy_score(positions_list, String.length(line))
@@ -278,6 +228,7 @@ defmodule Droodotfoo.AdvancedSearch do
 
   defp find_char_position(text, char, start_from) do
     substring = String.slice(text, start_from..-1//1)
+
     case :binary.match(substring, char) do
       {pos, _} -> start_from + pos
       :nomatch -> nil
@@ -293,6 +244,7 @@ defmodule Droodotfoo.AdvancedSearch do
       {pos, len} ->
         new_positions = Enum.to_list(pos..(pos + len - 1)) ++ positions
         find_all_positions(text, substring, pos + len, new_positions)
+
       :nomatch ->
         Enum.reverse(positions)
     end
@@ -321,7 +273,6 @@ defmodule Droodotfoo.AdvancedSearch do
   end
 
   defp calculate_fuzzy_score_impl(positions, line_length) do
-
     # Score based on:
     # 1. Compactness of matches (closer together is better)
     # 2. Early matches (matches near beginning are better)
@@ -330,15 +281,15 @@ defmodule Droodotfoo.AdvancedSearch do
     compactness =
       if length(positions) > 1 do
         range = Enum.max(positions) - Enum.min(positions)
-        1.0 - (range / line_length)
+        1.0 - range / line_length
       else
         1.0
       end
 
-    earliness = 1.0 - (Enum.min(positions) / line_length)
+    earliness = 1.0 - Enum.min(positions) / line_length
     density = length(positions) / line_length
 
-    (compactness * 0.4 + earliness * 0.4 + density * 0.2)
+    compactness * 0.4 + earliness * 0.4 + density * 0.2
   end
 
   defp calculate_exact_score(positions, line_length) do
@@ -346,12 +297,11 @@ defmodule Droodotfoo.AdvancedSearch do
   end
 
   defp calculate_exact_score_impl(positions, line_length) do
-
     # Exact matches score higher based on position and frequency
-    position_score = 1.0 - (Enum.min(positions) / line_length)
+    position_score = 1.0 - Enum.min(positions) / line_length
     frequency_score = length(positions) / line_length
 
-    (position_score * 0.7 + frequency_score * 0.3)
+    position_score * 0.7 + frequency_score * 0.3
   end
 
   defp calculate_regex_score(positions, line_length) do
@@ -359,12 +309,11 @@ defmodule Droodotfoo.AdvancedSearch do
   end
 
   defp calculate_regex_score_impl(positions, line_length) do
-
     # Regex matches score based on coverage and position
     coverage = length(positions) / line_length
-    position_score = 1.0 - (Enum.min(positions) / line_length)
+    position_score = 1.0 - Enum.min(positions) / line_length
 
-    (coverage * 0.5 + position_score * 0.5)
+    coverage * 0.5 + position_score * 0.5
   end
 
   defp add_to_history(history, query, max_history) do
@@ -386,5 +335,87 @@ defmodule Droodotfoo.AdvancedSearch do
       end
 
     "\e[#{color_code};1m#{text}\e[0m"
+  end
+
+  defp search_lines_fuzzy(content, section, query_chars, case_sensitive) do
+    content
+    |> String.split("\n")
+    |> Enum.with_index(1)
+    |> Enum.map(fn {line, line_num} ->
+      build_fuzzy_result(section, line, line_num, query_chars, case_sensitive)
+    end)
+    |> Enum.reject(&is_nil/1)
+  end
+
+  defp build_fuzzy_result(section, line, line_num, query_chars, case_sensitive) do
+    case fuzzy_match(query_chars, line, case_sensitive) do
+      {true, positions, score} ->
+        %{
+          section: section,
+          line: line,
+          line_number: line_num,
+          match_positions: positions,
+          score: score
+        }
+
+      {false, _, _} ->
+        nil
+    end
+  end
+
+  defp search_lines_exact(content, section, search_query, case_sensitive) do
+    content
+    |> String.split("\n")
+    |> Enum.with_index(1)
+    |> Enum.map(fn {line, line_num} ->
+      build_exact_result(section, line, line_num, search_query, case_sensitive)
+    end)
+    |> Enum.reject(&is_nil/1)
+  end
+
+  defp build_exact_result(section, line, line_num, search_query, case_sensitive) do
+    search_line = prepare_query(line, case_sensitive)
+
+    if String.contains?(search_line, search_query) do
+      positions = find_all_positions(search_line, search_query)
+
+      %{
+        section: section,
+        line: line,
+        line_number: line_num,
+        match_positions: positions,
+        score: calculate_exact_score(positions, String.length(line))
+      }
+    else
+      nil
+    end
+  end
+
+  defp search_lines_regex(content, section, regex) do
+    content
+    |> String.split("\n")
+    |> Enum.with_index(1)
+    |> Enum.map(fn {line, line_num} ->
+      build_regex_result(section, line, line_num, regex)
+    end)
+    |> Enum.reject(&is_nil/1)
+  end
+
+  defp build_regex_result(section, line, line_num, regex) do
+    case Regex.run(regex, line, return: :index) do
+      nil ->
+        nil
+
+      matches ->
+        positions = extract_match_positions(matches)
+
+        %{
+          section: section,
+          line: line,
+          line_number: line_num,
+          match_positions: positions,
+          score: calculate_regex_score(positions, String.length(line))
+        }
+    end
   end
 end

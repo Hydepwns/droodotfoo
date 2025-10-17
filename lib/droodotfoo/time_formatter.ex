@@ -68,8 +68,8 @@ defmodule Droodotfoo.TimeFormatter do
   """
   def format_relative_time(seconds) when seconds < 60, do: "#{seconds}s ago"
   def format_relative_time(seconds) when seconds < 3600, do: "#{div(seconds, 60)}m ago"
-  def format_relative_time(seconds) when seconds < 86400, do: "#{div(seconds, 3600)}h ago"
-  def format_relative_time(seconds), do: "#{div(seconds, 86400)}d ago"
+  def format_relative_time(seconds) when seconds < 86_400, do: "#{div(seconds, 3600)}h ago"
+  def format_relative_time(seconds), do: "#{div(seconds, 86_400)}d ago"
 
   @doc """
   Formats a DateTime to relative time from now.

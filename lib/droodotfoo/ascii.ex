@@ -1,4 +1,4 @@
-defmodule Droodotfoo.AsciiHelpers do
+defmodule Droodotfoo.Ascii do
   @moduledoc """
   Shared ASCII art and text formatting utilities.
   Used across plugins and display modules for consistent text handling.
@@ -11,16 +11,16 @@ defmodule Droodotfoo.AsciiHelpers do
 
   ## Examples
 
-      iex> Droodotfoo.AsciiHelpers.format_number(999)
+      iex> Droodotfoo.Ascii.format_number(999)
       "999"
 
-      iex> Droodotfoo.AsciiHelpers.format_number(5_432)
+      iex> Droodotfoo.Ascii.format_number(5_432)
       "5.4K"
 
-      iex> Droodotfoo.AsciiHelpers.format_number(2_500_000)
+      iex> Droodotfoo.Ascii.format_number(2_500_000)
       "2.5M"
 
-      iex> Droodotfoo.AsciiHelpers.format_number(nil)
+      iex> Droodotfoo.Ascii.format_number(nil)
       "0"
   """
   def format_number(nil), do: "0"
@@ -39,13 +39,13 @@ defmodule Droodotfoo.AsciiHelpers do
 
   ## Examples
 
-      iex> Droodotfoo.AsciiHelpers.truncate_text("short", 10)
+      iex> Droodotfoo.Ascii.truncate_text("short", 10)
       "short"
 
-      iex> Droodotfoo.AsciiHelpers.truncate_text("this is a very long text", 15)
+      iex> Droodotfoo.Ascii.truncate_text("this is a very long text", 15)
       "this is a ve..."
 
-      iex> Droodotfoo.AsciiHelpers.truncate_text(nil, 10)
+      iex> Droodotfoo.Ascii.truncate_text(nil, 10)
       ""
   """
   def truncate_text(nil, _max_length), do: ""
@@ -60,10 +60,10 @@ defmodule Droodotfoo.AsciiHelpers do
 
   ## Examples
 
-      iex> Droodotfoo.AsciiHelpers.wrap_text("short", 10)
+      iex> Droodotfoo.Ascii.wrap_text("short", 10)
       ["short"]
 
-      iex> Droodotfoo.AsciiHelpers.wrap_text("this is a very long line", 10)
+      iex> Droodotfoo.Ascii.wrap_text("this is a very long line", 10)
       ["this is a ", "very long ", "line"]
   """
   def wrap_text(text, max_width) do
@@ -87,13 +87,13 @@ defmodule Droodotfoo.AsciiHelpers do
 
   ## Examples
 
-      iex> Droodotfoo.AsciiHelpers.format_duration_ms(65_000)
+      iex> Droodotfoo.Ascii.format_duration_ms(65_000)
       "1:05"
 
-      iex> Droodotfoo.AsciiHelpers.format_duration_ms(3_661_000)
+      iex> Droodotfoo.Ascii.format_duration_ms(3_661_000)
       "61:01"
 
-      iex> Droodotfoo.AsciiHelpers.format_duration_ms(nil)
+      iex> Droodotfoo.Ascii.format_duration_ms(nil)
       "--:--"
   """
   defdelegate format_duration_ms(ms), to: TimeFormatter
@@ -104,13 +104,13 @@ defmodule Droodotfoo.AsciiHelpers do
 
   ## Examples
 
-      iex> Droodotfoo.AsciiHelpers.format_relative_time(45)
+      iex> Droodotfoo.Ascii.format_relative_time(45)
       "45s ago"
 
-      iex> Droodotfoo.AsciiHelpers.format_relative_time(3600)
+      iex> Droodotfoo.Ascii.format_relative_time(3600)
       "1h ago"
 
-      iex> Droodotfoo.AsciiHelpers.format_relative_time(86400)
+      iex> Droodotfoo.Ascii.format_relative_time(86400)
       "1d ago"
   """
   defdelegate format_relative_time(seconds), to: TimeFormatter
@@ -120,10 +120,10 @@ defmodule Droodotfoo.AsciiHelpers do
 
   ## Examples
 
-      iex> Droodotfoo.AsciiHelpers.box_line("Hello", 20)
+      iex> Droodotfoo.Ascii.box_line("Hello", 20)
       "│ Hello              │"
 
-      iex> Droodotfoo.AsciiHelpers.box_line("Text", 15, "║")
+      iex> Droodotfoo.Ascii.box_line("Text", 15, "║")
       "║ Text         ║"
   """
   def box_line(text, width, border_char \\ "│") do
@@ -137,11 +137,11 @@ defmodule Droodotfoo.AsciiHelpers do
   ## Examples
 
       iex> render_fn = fn item -> "Item: \#{item}" end
-      iex> Droodotfoo.AsciiHelpers.render_list_or_empty([1, 2], "No items", 30, render_fn)
+      iex> Droodotfoo.Ascii.render_list_or_empty([1, 2], "No items", 30, render_fn)
       ["Item: 1", "Item: 2"]
 
       iex> render_fn = fn item -> "Item: \#{item}" end
-      iex> Droodotfoo.AsciiHelpers.render_list_or_empty([], "No items", 30, render_fn)
+      iex> Droodotfoo.Ascii.render_list_or_empty([], "No items", 30, render_fn)
       ["│ No items                   │"]
   """
   def render_list_or_empty(list, empty_msg, width, render_fn) do
@@ -157,10 +157,10 @@ defmodule Droodotfoo.AsciiHelpers do
 
   ## Examples
 
-      iex> Droodotfoo.AsciiHelpers.box_header("Title", 30)
+      iex> Droodotfoo.Ascii.box_header("Title", 30)
       "┌─ Title ────────────────────┐"
 
-      iex> Droodotfoo.AsciiHelpers.box_header("Test", 20, :simple)
+      iex> Droodotfoo.Ascii.box_header("Test", 20, :simple)
       "+-- Test --------------+"
   """
   def box_header(title, width, style \\ :rounded) do
@@ -182,10 +182,10 @@ defmodule Droodotfoo.AsciiHelpers do
 
   ## Examples
 
-      iex> Droodotfoo.AsciiHelpers.box_footer(30)
+      iex> Droodotfoo.Ascii.box_footer(30)
       "└────────────────────────────┘"
 
-      iex> Droodotfoo.AsciiHelpers.box_footer(20, :simple)
+      iex> Droodotfoo.Ascii.box_footer(20, :simple)
       "+------------------+"
   """
   def box_footer(width, style \\ :rounded) do
@@ -204,10 +204,10 @@ defmodule Droodotfoo.AsciiHelpers do
 
   ## Examples
 
-      iex> Droodotfoo.AsciiHelpers.box_content("Hello world", 30)
+      iex> Droodotfoo.Ascii.box_content("Hello world", 30)
       "│ Hello world                 │"
 
-      iex> Droodotfoo.AsciiHelpers.box_content("Test", 20, :simple)
+      iex> Droodotfoo.Ascii.box_content("Test", 20, :simple)
       "| Test               |"
   """
   def box_content(text, width, style \\ :rounded) do

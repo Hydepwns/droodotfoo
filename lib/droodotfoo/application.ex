@@ -19,13 +19,17 @@ defmodule Droodotfoo.Application do
       Droodotfoo.RaxolApp,
       # Start Spotify services
       Droodotfoo.Spotify.Cache,
-      Droodotfoo.Spotify.Manager,
-      # Start Web3 manager
-      Droodotfoo.Web3.Manager,
-      # Start plugin system manager
-      Droodotfoo.PluginSystem.Manager,
-      # Start blog post manager
-      Droodotfoo.Content.PostManager,
+      Droodotfoo.Spotify,
+      # Start Web3 server
+      Droodotfoo.Web3,
+      # Start plugin system
+      Droodotfoo.PluginSystem,
+      # Start blog post system
+      Droodotfoo.Content.Posts,
+      # Start Portal presence server
+      Droodotfoo.Fileverse.Portal.PresenceServer,
+      # Start contact form rate limiter
+      Droodotfoo.Contact.RateLimiter,
       # Start a worker by calling: Droodotfoo.Worker.start_link(arg)
       # {Droodotfoo.Worker, arg},
       # Start to serve requests, typically the last entry

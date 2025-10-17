@@ -5,7 +5,7 @@ defmodule Droodotfoo.CursorTrail do
   """
 
   @max_trail_length 8
-  @trail_chars ["█", "▓", "▒", "░", "·", "·", ".", "."]
+  @trail_chars ["█", "▒", "░", "·", "·", "·", ".", "."]
 
   defstruct trail: [],
             last_position: nil,

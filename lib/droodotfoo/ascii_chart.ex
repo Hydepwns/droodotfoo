@@ -31,8 +31,7 @@ defmodule Droodotfoo.AsciiChart do
     normalized = normalize_data(sampled_data, 7)
 
     # Convert to block characters
-    Enum.map(normalized, &value_to_block/1)
-    |> Enum.join()
+    Enum.map_join(normalized, "", &value_to_block/1)
   end
 
   @doc """
@@ -85,18 +84,20 @@ defmodule Droodotfoo.AsciiChart do
     bar = bar_chart(value, max: 100, width: width, gradient: gradient)
 
     # Handle both integers and floats
-    percent = if is_float(value) do
-      :erlang.float_to_binary(value, decimals: 1)
-    else
-      "#{value}.0"
-    end
+    percent =
+      if is_float(value) do
+        :erlang.float_to_binary(value, decimals: 1)
+      else
+        "#{value}.0"
+      end
 
-    {left, right} = case style do
-      :rounded -> {"╭", "╮"}
-      :square -> {"[", "]"}
-      :double -> {"╔", "╗"}
-      _ -> {"[", "]"}
-    end
+    {left, right} =
+      case style do
+        :rounded -> {"╭", "╮"}
+        :square -> {"[", "]"}
+        :double -> {"╔", "╗"}
+        _ -> {"[", "]"}
+      end
 
     "#{padded_label} #{left}#{bar}#{right} #{percent}%"
   end
@@ -113,80 +114,103 @@ defmodule Droodotfoo.AsciiChart do
     height = Keyword.get(opts, :height, 8)
     frame = Keyword.get(opts, :frame, false)
 
-    sampled = sample_data(data, width)
-    normalized = normalize_data(sampled, height - 1)
+    data
+    |> sample_data(width)
+    |> normalize_data(height - 1)
+    |> build_chart_rows(width, height, frame)
+    |> maybe_add_frame(width, frame)
+  end
 
-    # Build chart from top to bottom with gradient effect
-    rows = for y <- (height - 1)..0 do
-      row = for x <- 0..(width - 1) do
-        point_value = Enum.at(normalized, x, 0)
-        cond do
-          point_value > y -> "█"
-          point_value == y -> "▓"
-          point_value == y - 1 -> "▒"
-          point_value == y - 2 -> "░"
-          true -> " "
-        end
-      end
-
-      if frame do
-        "│ " <> Enum.join(row) <> " │"
-      else
-        Enum.join(row)
-      end
-    end
-
-    if frame do
-      top = "╭─" <> String.duplicate("─", width) <> "─╮"
-      bottom = "╰─" <> String.duplicate("─", width) <> "─╯"
-      [top] ++ rows ++ [bottom]
-    else
-      rows
+  defp build_chart_rows(normalized, width, height, frame) do
+    for y <- (height - 1)..0 do
+      row = build_chart_row(normalized, width, y)
+      format_chart_row(row, frame)
     end
   end
+
+  defp build_chart_row(normalized, width, y) do
+    for x <- 0..(width - 1) do
+      point_value = Enum.at(normalized, x, 0)
+      gradient_char_for_point(point_value, y)
+    end
+  end
+
+  defp gradient_char_for_point(point_value, y) do
+    cond do
+      point_value > y -> "█"
+      point_value == y -> "▓"
+      point_value == y - 1 -> "▒"
+      point_value == y - 2 -> "░"
+      true -> " "
+    end
+  end
+
+  defp format_chart_row(row, true), do: "│ " <> Enum.join(row) <> " │"
+  defp format_chart_row(row, false), do: Enum.join(row)
+
+  defp maybe_add_frame(rows, width, true) do
+    top = "╭─" <> String.duplicate("─", width) <> "─╮"
+    bottom = "╰─" <> String.duplicate("─", width) <> "─╯"
+    [top] ++ rows ++ [bottom]
+  end
+
+  defp maybe_add_frame(rows, _width, false), do: rows
 
   @doc """
   Create a threshold indicator with visual symbols.
   Returns a character indicating status based on thresholds.
   """
   def threshold_indicator(value, opts \\ []) do
-    good = Keyword.get(opts, :good, 0)
-    warning = Keyword.get(opts, :warning, 50)
-    critical = Keyword.get(opts, :critical, 80)
+    thresholds = extract_thresholds(opts)
     style = Keyword.get(opts, :style, :symbols)
 
-    case style do
-      :symbols ->
-        cond do
-          value >= critical -> "!"
-          value >= warning -> "*"
-          value >= good -> "+"
-          true -> "-"
-        end
+    apply_threshold_style(value, thresholds, style)
+  end
 
-      :blocks ->
-        cond do
-          value >= critical -> "█"
-          value >= warning -> "▓"
-          value >= good -> "▒"
-          true -> "░"
-        end
+  defp extract_thresholds(opts) do
+    %{
+      good: Keyword.get(opts, :good, 0),
+      warning: Keyword.get(opts, :warning, 50),
+      critical: Keyword.get(opts, :critical, 80)
+    }
+  end
 
-      :dots ->
-        cond do
-          value >= critical -> "●"
-          value >= warning -> "◐"
-          value >= good -> "◔"
-          true -> "○"
-        end
+  defp apply_threshold_style(value, thresholds, :symbols),
+    do: threshold_symbols(value, thresholds)
 
-      _ ->
-        cond do
-          value >= critical -> "!"
-          value >= warning -> "*"
-          value >= good -> "+"
-          true -> "-"
-        end
+  defp apply_threshold_style(value, thresholds, :blocks),
+    do: threshold_blocks(value, thresholds)
+
+  defp apply_threshold_style(value, thresholds, :dots),
+    do: threshold_dots(value, thresholds)
+
+  defp apply_threshold_style(value, thresholds, _),
+    do: threshold_symbols(value, thresholds)
+
+  defp threshold_symbols(value, %{critical: critical, warning: warning, good: good}) do
+    cond do
+      value >= critical -> "!"
+      value >= warning -> "*"
+      value >= good -> "+"
+      true -> "-"
+    end
+  end
+
+  defp threshold_blocks(value, %{critical: critical, warning: warning, good: good}) do
+    cond do
+      value >= critical -> "█"
+      value >= warning -> "▓"
+      value >= good -> "▒"
+      true -> "░"
+    end
+  end
+
+  defp threshold_dots(value, %{critical: critical, warning: warning, good: good}) do
+    cond do
+      value >= critical -> "●"
+      value >= warning -> "◐"
+      value >= good -> "◔"
+      true -> "○"
     end
   end
 
@@ -209,11 +233,12 @@ defmodule Droodotfoo.AsciiChart do
     bar = bar_chart(value, max: max_value, width: bar_width, gradient: true)
 
     # Format percentage
-    percent = if is_float(value) do
-      :erlang.float_to_binary(value, decimals: 1)
-    else
-      "#{value}.0"
-    end
+    percent =
+      if is_float(value) do
+        :erlang.float_to_binary(value, decimals: 1)
+      else
+        "#{value}.0"
+      end
 
     # Build the meter
     title_padding = max(0, width - String.length(title) - 6)
@@ -318,21 +343,26 @@ defmodule Droodotfoo.AsciiChart do
   def message_box(message, severity \\ :info, opts \\ []) do
     width = Keyword.get(opts, :width, 60)
 
-    {icon, label} = case severity do
-      :error -> {"█", "ERROR"}
-      :warning -> {"▓", "WARNING"}
-      :info -> {"░", "INFO"}
-      :success -> {"▓", "SUCCESS"}
-    end
+    {icon, label} =
+      case severity do
+        :error -> {"█", "ERROR"}
+        :warning -> {"▓", "WARNING"}
+        :info -> {"░", "INFO"}
+        :success -> {"▓", "SUCCESS"}
+      end
 
     # Wrap message text if needed
     message_lines = wrap_message(message, width - 6)
 
     # Build box
-    top = "╭─ #{icon} #{label} #{String.duplicate("─", max(0, width - String.length(label) - 7))}╮"
-    content = Enum.map(message_lines, fn line ->
-      "│ #{String.pad_trailing(line, width - 2)} │"
-    end)
+    top =
+      "╭─ #{icon} #{label} #{String.duplicate("─", max(0, width - String.length(label) - 7))}╮"
+
+    content =
+      Enum.map(message_lines, fn line ->
+        "│ #{String.pad_trailing(line, width - 2)} │"
+      end)
+
     bottom = "╰#{String.duplicate("─", width)}╯"
 
     [top] ++ content ++ [bottom]
@@ -400,9 +430,12 @@ defmodule Droodotfoo.AsciiChart do
     message_lines = wrap_message(message, width - 6)
 
     top = "╭─ #{icon} Hint #{String.duplicate("─", max(0, width - 10))}╮"
-    content = Enum.map(message_lines, fn line ->
-      "│ #{String.pad_trailing(line, width - 2)} │"
-    end)
+
+    content =
+      Enum.map(message_lines, fn line ->
+        "│ #{String.pad_trailing(line, width - 2)} │"
+      end)
+
     bottom = "╰#{String.duplicate("─", width)}╯"
 
     [top] ++ content ++ [bottom]
@@ -433,12 +466,12 @@ defmodule Droodotfoo.AsciiChart do
   ## Examples
 
       section_indicator(:home, :projects)
-      # => "░▒▓ Home → Projects ▓▒░"
+      # => "▸ Home → Projects"
   """
   def section_indicator(from_section, to_section) do
     from_name = format_section_name(from_section)
     to_name = format_section_name(to_section)
-    "░▒▓ #{from_name} → #{to_name} ▓▒░"
+    "▸ #{from_name} → #{to_name}"
   end
 
   @doc """
@@ -447,14 +480,14 @@ defmodule Droodotfoo.AsciiChart do
   ## Examples
 
       breadcrumb(:projects)
-      # => "╭─ █▓▒░ Projects ░▒▓█ ─╮"
+      # => "╭─ ▸ Projects ─╮"
   """
   def breadcrumb(current_section, opts \\ []) do
     width = Keyword.get(opts, :width, 60)
     section_name = format_section_name(current_section)
 
     # Calculate padding for centered section name
-    content = " █▓▒░ #{section_name} ░▒▓█ "
+    content = " ▸ #{section_name} "
     padding_needed = max(0, width - String.length(content) - 4)
     left_pad = div(padding_needed, 2)
     right_pad = padding_needed - left_pad
@@ -463,16 +496,16 @@ defmodule Droodotfoo.AsciiChart do
   end
 
   @doc """
-  Create a navigation hint bar with gradient styling.
+  Create a navigation hint bar.
 
   ## Examples
 
       nav_hint("↑↓ Navigate  Enter Select  : Command")
-      # => "│ ▒ ↑↓ Navigate  Enter Select  : Command          │"
+      # => "│ ▸ ↑↓ Navigate  Enter Select  : Command          │"
   """
   def nav_hint(text, opts \\ []) do
     width = Keyword.get(opts, :width, 60)
-    content = " ▒ #{text}"
+    content = " ▸ #{text}"
     padded = String.pad_trailing(content, width - 2)
     "│#{padded}│"
   end
