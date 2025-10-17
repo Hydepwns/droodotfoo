@@ -4,7 +4,7 @@ defmodule DroodotfooWeb.PostController do
   """
 
   use DroodotfooWeb, :controller
-  alias Droodotfoo.Content.PostManager
+  alias Droodotfoo.Content.Posts
 
   @doc """
   Create a new blog post from Obsidian.
@@ -18,7 +18,7 @@ defmodule DroodotfooWeb.PostController do
   def create(conn, params) do
     with :ok <- verify_api_token(conn),
          {:ok, post_params} <- validate_params(params),
-         {:ok, post} <- PostManager.save_post(post_params["content"], post_params["metadata"]) do
+         {:ok, post} <- Posts.save_post(post_params["content"], post_params["metadata"]) do
       conn
       |> put_status(:created)
       |> json(%{
@@ -54,17 +54,21 @@ defmodule DroodotfooWeb.PostController do
       # No token configured, allow access (dev mode)
       :ok
     else
-      case get_req_header(conn, "authorization") do
-        ["Bearer " <> token] ->
-          if Plug.Crypto.secure_compare(token, expected_token) do
-            :ok
-          else
-            {:error, :unauthorized}
-          end
+      verify_bearer_token(conn, expected_token)
+    end
+  end
 
-        _ ->
+  defp verify_bearer_token(conn, expected_token) do
+    case get_req_header(conn, "authorization") do
+      ["Bearer " <> token] ->
+        if Plug.Crypto.secure_compare(token, expected_token) do
+          :ok
+        else
           {:error, :unauthorized}
-      end
+        end
+
+      _ ->
+        {:error, :unauthorized}
     end
   end
 
