@@ -104,7 +104,7 @@ defmodule DroodotfooWeb.Live.ConnectionRecovery do
   @doc """
   Checks if connection is healthy
   """
-  def is_connected?(state), do: state.status == :connected
+  def connected?(state), do: state.status == :connected
 
   @doc """
   Gets time since last disconnect
