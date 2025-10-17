@@ -136,6 +136,7 @@ defmodule Droodotfoo.PerformanceMonitor do
       report_timer: state.report_timer,
       metrics_timer: state.metrics_timer
     }
+
     {:reply, :ok, new_state}
   end
 

@@ -1,6 +1,6 @@
-defmodule Droodotfoo.Content.PostManager do
+defmodule Droodotfoo.Content.Posts do
   @moduledoc """
-  File-based blog post management system.
+  File-based blog post system.
 
   Posts are stored as markdown files in `priv/posts/` with YAML frontmatter.
   Metadata is cached in ETS for performance.
@@ -22,7 +22,8 @@ defmodule Droodotfoo.Content.PostManager do
       :tags,
       :content,
       :html,
-      :read_time
+      :read_time,
+      :author
     ]
 
     @type t :: %__MODULE__{
@@ -33,7 +34,8 @@ defmodule Droodotfoo.Content.PostManager do
             tags: list(String.t()),
             content: String.t(),
             html: String.t(),
-            read_time: integer()
+            read_time: integer(),
+            author: String.t() | nil
           }
   end
 
@@ -159,6 +161,7 @@ defmodule Droodotfoo.Content.PostManager do
           date: parse_date(Map.get(frontmatter, "date")),
           description: Map.get(frontmatter, "description", ""),
           tags: Map.get(frontmatter, "tags", []),
+          author: Map.get(frontmatter, "author"),
           content: markdown,
           html: html,
           read_time: calculate_read_time(markdown)
