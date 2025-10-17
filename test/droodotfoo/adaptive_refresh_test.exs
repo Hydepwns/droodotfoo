@@ -111,6 +111,7 @@ defmodule Droodotfoo.AdaptiveRefreshTest do
     test "transitions to idle mode after inactivity" do
       # Create state with very old activity timestamp
       old_time = System.monotonic_time(:millisecond) - 4000
+
       state = %{
         AdaptiveRefresh.new()
         | last_activity: old_time,
@@ -123,7 +124,8 @@ defmodule Droodotfoo.AdaptiveRefreshTest do
       interval = AdaptiveRefresh.get_interval_ms(state)
 
       # Idle mode should have 200ms interval (5 FPS)
-      assert interval == 33  # Normal mode is still 30 FPS
+      # Normal mode is still 30 FPS
+      assert interval == 33
 
       # Verify that recording activity would update the mode
       updated = AdaptiveRefresh.record_activity(state)
@@ -297,7 +299,7 @@ defmodule Droodotfoo.AdaptiveRefreshTest do
 
       # Record many render times
       final_state =
-        Enum.reduce(1..10000, state, fn i, acc ->
+        Enum.reduce(1..10_000, state, fn i, acc ->
           AdaptiveRefresh.record_render(acc, i * 1.0)
         end)
 

@@ -3,12 +3,10 @@ defmodule DroodotfooWeb.PluginLiveIntegrationTest do
 
   import Phoenix.LiveViewTest
 
-  alias Droodotfoo.PluginSystem.Manager
-
   setup do
     # Clean up any active plugins before each test
     try do
-      Manager.stop_plugin()
+      Droodotfoo.PluginSystem.stop_plugin()
     rescue
       _ -> :ok
     catch
@@ -274,7 +272,7 @@ defmodule DroodotfooWeb.PluginLiveIntegrationTest do
       # Start a plugin through the manager
       terminal_state = %{width: 80, height: 24}
 
-      case Manager.start_plugin("calc", terminal_state) do
+      case Droodotfoo.PluginSystem.start_plugin("calc", terminal_state) do
         {:ok, _output} ->
           {:ok, view, _html} = live(conn, "/")
 
@@ -288,7 +286,7 @@ defmodule DroodotfooWeb.PluginLiveIntegrationTest do
           # Should handle input appropriately
           assert is_binary(html)
 
-          Manager.stop_plugin()
+          Droodotfoo.PluginSystem.stop_plugin()
 
         {:error, _} ->
           # Plugin not available, just test normal operation

@@ -12,7 +12,7 @@ defmodule Droodotfoo.GenServerCase do
       {Droodotfoo.RaxolApp, []},
       {Droodotfoo.TerminalBridge, []},
       {Droodotfoo.PerformanceMonitor, []},
-      {Droodotfoo.PluginSystem.Manager, []}
+      {Droodotfoo.PluginSystem, []}
     ]
 
     # Stop any existing instances
@@ -30,13 +30,15 @@ defmodule Droodotfoo.GenServerCase do
     Process.sleep(20)
 
     # Start fresh instances using start_supervised
-    started_pids = for {module, opts} <- genservers do
-      case start_supervised({module, opts}, restart: :temporary) do
-        {:ok, pid} -> {module, pid}
-        {:error, {:already_started, pid}} -> {module, pid}
-        _ -> nil
+    started_pids =
+      for {module, opts} <- genservers do
+        case start_supervised({module, opts}, restart: :temporary) do
+          {:ok, pid} -> {module, pid}
+          {:error, {:already_started, pid}} -> {module, pid}
+          _ -> nil
+        end
       end
-    end |> Enum.filter(&(&1))
+      |> Enum.filter(& &1)
 
     # Reset any state if modules support it
     if Process.whereis(Droodotfoo.PerformanceMonitor) do

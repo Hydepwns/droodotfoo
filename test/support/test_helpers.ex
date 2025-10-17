@@ -30,20 +30,18 @@ defmodule Droodotfoo.TestHelpers do
   end
 
   defp do_eventually(assertion_fn, deadline, delay) do
-    try do
-      assertion_fn.()
-    rescue
-      error in [ExUnit.AssertionError] ->
-        now = System.monotonic_time(:millisecond)
+    assertion_fn.()
+  rescue
+    error in [ExUnit.AssertionError] ->
+      now = System.monotonic_time(:millisecond)
 
-        if now < deadline do
-          Process.sleep(delay)
-          do_eventually(assertion_fn, deadline, delay)
-        else
-          # Re-raise the last error if we've timed out
-          reraise error, __STACKTRACE__
-        end
-    end
+      if now < deadline do
+        Process.sleep(delay)
+        do_eventually(assertion_fn, deadline, delay)
+      else
+        # Re-raise the last error if we've timed out
+        reraise error, __STACKTRACE__
+      end
   end
 
   @doc """
@@ -55,6 +53,7 @@ defmodule Droodotfoo.TestHelpers do
         case Process.whereis(name) do
           nil ->
             flunk("GenServer #{inspect(name)} is not running")
+
           pid ->
             assert Process.alive?(pid)
             # Try a simple call to ensure it's responsive
@@ -63,6 +62,7 @@ defmodule Droodotfoo.TestHelpers do
             catch
               :exit, {:timeout, _} ->
                 flunk("GenServer #{inspect(name)} is not responding")
+
               :exit, {:noproc, _} ->
                 flunk("GenServer #{inspect(name)} died")
             end

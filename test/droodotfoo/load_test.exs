@@ -1,16 +1,18 @@
 defmodule Droodotfoo.LoadTest do
   use ExUnit.Case, async: false
-  alias Droodotfoo.{RaxolApp, InputRateLimiter, InputDebouncer, AdaptiveRefresh}
+  alias Droodotfoo.{AdaptiveRefresh, InputDebouncer, InputRateLimiter, RaxolApp}
 
   setup do
     # Ensure RaxolApp is running for load tests
-    raxol_pid = case Process.whereis(RaxolApp) do
-      nil ->
-        {:ok, pid} = start_supervised(RaxolApp)
-        pid
-      pid ->
-        pid
-    end
+    raxol_pid =
+      case Process.whereis(RaxolApp) do
+        nil ->
+          {:ok, pid} = start_supervised(RaxolApp)
+          pid
+
+        pid ->
+          pid
+      end
 
     # Reset all shared state to prevent test interference
     Droodotfoo.StateResetHelper.reset_all_state()
@@ -383,7 +385,8 @@ defmodule Droodotfoo.LoadTest do
       {:message_queue_len, final_queue_len} = Process.info(raxol_pid, :message_queue_len)
 
       # Queue should be decreasing (being processed), not growing
-      assert final_queue_len < initial_queue_len, "Queue is not being processed (initial: #{initial_queue_len}, final: #{final_queue_len})"
+      assert final_queue_len < initial_queue_len,
+             "Queue is not being processed (initial: #{initial_queue_len}, final: #{final_queue_len})"
 
       # Queue should be bounded (not growing unbounded) - realistic threshold for cast messages
       # GenServer.cast is asynchronous, so some backlog is expected under load
@@ -424,9 +427,9 @@ defmodule Droodotfoo.LoadTest do
 
       start_time = System.monotonic_time(:microsecond)
 
-      # Process 10000 events
+      # Process 10_000 events
       {_final_limiter, _} =
-        Enum.reduce(1..10000, {limiter, nil}, fn _, {lim, _} ->
+        Enum.reduce(1..10_000, {limiter, nil}, fn _, {lim, _} ->
           {_, new_lim} = InputRateLimiter.allow_event?(lim)
           {new_lim, nil}
         end)
@@ -434,7 +437,7 @@ defmodule Droodotfoo.LoadTest do
       end_time = System.monotonic_time(:microsecond)
       duration_us = end_time - start_time
 
-      # Should process 10000 events in under 100ms
+      # Should process 10_000 events in under 100ms
       assert duration_us < 100_000
 
       # Calculate throughput (events per second)

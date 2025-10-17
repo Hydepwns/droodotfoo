@@ -31,7 +31,8 @@ defmodule Droodotfoo.Plugins.TetrisTest do
     test "piece starts at top center" do
       {:ok, state} = Tetris.init(%{})
 
-      assert state.piece_x == 4  # Center of 10-wide board
+      # Center of 10-wide board
+      assert state.piece_x == 4
       assert state.piece_y == 0
     end
 
@@ -205,8 +206,10 @@ defmodule Droodotfoo.Plugins.TetrisTest do
     test "board has correct dimensions" do
       {:ok, state} = Tetris.init(%{})
 
-      assert length(state.board) == 20  # Height
-      assert Enum.all?(state.board, fn row -> length(row) == 10 end)  # Width
+      # Height
+      assert length(state.board) == 20
+      # Width
+      assert Enum.all?(state.board, fn row -> length(row) == 10 end)
     end
   end
 

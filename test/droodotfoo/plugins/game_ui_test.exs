@@ -136,11 +136,12 @@ defmodule Droodotfoo.Plugins.GameUITest do
     end
 
     test "formats multiple control pairs" do
-      result = GameUI.controls_help([
-        {"Arrow Keys", "Move"},
-        {"Space", "Jump"},
-        {"Q", "Quit"}
-      ])
+      result =
+        GameUI.controls_help([
+          {"Arrow Keys", "Move"},
+          {"Space", "Jump"},
+          {"Q", "Quit"}
+        ])
 
       assert result == ["Arrow Keys: Move  Space: Jump  Q: Quit"]
     end

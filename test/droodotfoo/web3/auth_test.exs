@@ -68,11 +68,14 @@ defmodule Droodotfoo.Web3.AuthTest do
 
     test "rejects address with invalid length" do
       assert {:error, :invalid_length} = Auth.validate_address("0x123")
-      assert {:error, :invalid_length} = Auth.validate_address("0x123456789012345678901234567890123456789012")
+
+      assert {:error, :invalid_length} =
+               Auth.validate_address("0x123456789012345678901234567890123456789012")
     end
 
     test "rejects address with invalid characters" do
-      assert {:error, :invalid_format} = Auth.validate_address("0x123456789012345678901234567890123456zzzz")
+      assert {:error, :invalid_format} =
+               Auth.validate_address("0x123456789012345678901234567890123456zzzz")
     end
 
     test "rejects non-binary input" do

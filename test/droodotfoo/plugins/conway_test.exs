@@ -156,7 +156,8 @@ defmodule Droodotfoo.Plugins.ConwayTest do
       assert gen4.generation == 4
       # Grid should still have some alive cells (glider persists)
       alive_count = count_alive_cells(gen4.grid)
-      assert alive_count == 5  # Glider is 5 cells
+      # Glider is 5 cells
+      assert alive_count == 5
     end
 
     test "blinker pattern oscillates" do

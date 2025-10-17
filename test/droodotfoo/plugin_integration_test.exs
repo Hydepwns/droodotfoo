@@ -1,20 +1,21 @@
 defmodule Droodotfoo.PluginIntegrationTest do
   use ExUnit.Case, async: false
 
-  alias Droodotfoo.Terminal.Commands
-  alias Droodotfoo.Terminal.CommandParser
-  alias Droodotfoo.PluginSystem.Manager
+  alias Droodotfoo.PluginSystem
   alias Droodotfoo.Raxol.Command, as: RaxolCommand
+  alias Droodotfoo.Terminal.CommandParser
+  alias Droodotfoo.Terminal.Commands
 
   setup do
-    # Ensure Manager is running
-    case Process.whereis(Manager) do
+    # Ensure PluginSystem is running
+    case Process.whereis(PluginSystem) do
       nil ->
-        {:ok, _pid} = start_supervised(Manager)
+        {:ok, _pid} = start_supervised(PluginSystem)
+
       pid when is_pid(pid) ->
-        # Manager is running, clean up any active plugin
+        # PluginSystem is running, clean up any active plugin
         try do
-          Manager.stop_plugin()
+          Droodotfoo.PluginSystem.stop_plugin()
         rescue
           _ -> :ok
         catch
@@ -124,13 +125,14 @@ defmodule Droodotfoo.PluginIntegrationTest do
 
     test "spotify command starts spotify plugin", %{terminal_state: terminal_state} do
       case Commands.spotify([], terminal_state) do
-        {:plugin, "spotify", output} ->
-          assert is_list(output)
-          # Should contain spotify UI (might show authentication required)
-          assert is_list(output)
+        {:ok, message, new_state} ->
+          # Spotify command navigates to spotify section instead of launching plugin
+          assert is_binary(message)
+          assert String.contains?(message, "Spotify")
+          assert new_state.section_change == :spotify
 
         {:error, reason} ->
-          # Plugin might not be registered yet, which is acceptable
+          # Error case is acceptable
           assert String.contains?(reason, "not found")
       end
     end
@@ -139,14 +141,14 @@ defmodule Droodotfoo.PluginIntegrationTest do
   describe "plugin lifecycle integration" do
     test "can start and stop plugins through manager", %{terminal_state: terminal_state} do
       # Try to start a plugin
-      case Manager.start_plugin("snake", terminal_state) do
+      case Droodotfoo.PluginSystem.start_plugin("snake", terminal_state) do
         {:ok, initial_render} ->
           assert is_list(initial_render)
-          assert Manager.get_active_plugin() == "snake"
+          assert Droodotfoo.PluginSystem.get_active_plugin() == "snake"
 
           # Stop the plugin
-          assert :ok = Manager.stop_plugin()
-          assert Manager.get_active_plugin() == nil
+          assert :ok = Droodotfoo.PluginSystem.stop_plugin()
+          assert Droodotfoo.PluginSystem.get_active_plugin() == nil
 
         {:error, "Plugin not found: snake"} ->
           # Plugin not registered, skip this test
@@ -156,10 +158,10 @@ defmodule Droodotfoo.PluginIntegrationTest do
 
     test "plugin input handling", %{terminal_state: terminal_state} do
       # Try to start a plugin and send input
-      case Manager.start_plugin("calc", terminal_state) do
+      case Droodotfoo.PluginSystem.start_plugin("calc", terminal_state) do
         {:ok, _initial_render} ->
           # Send input to calculator
-          case Manager.handle_input("2 + 2", terminal_state) do
+          case Droodotfoo.PluginSystem.handle_input("2 + 2", terminal_state) do
             {:continue, output} ->
               assert is_list(output)
 
@@ -168,7 +170,7 @@ defmodule Droodotfoo.PluginIntegrationTest do
               :ok
           end
 
-          Manager.stop_plugin()
+          Droodotfoo.PluginSystem.stop_plugin()
 
         {:error, "Plugin not found: calc"} ->
           # Plugin not registered, skip this test
@@ -178,18 +180,18 @@ defmodule Droodotfoo.PluginIntegrationTest do
 
     test "multiple plugins cannot be active simultaneously", %{terminal_state: terminal_state} do
       # Try to start first plugin
-      case Manager.start_plugin("snake", terminal_state) do
+      case Droodotfoo.PluginSystem.start_plugin("snake", terminal_state) do
         {:ok, _} ->
-          assert Manager.get_active_plugin() == "snake"
+          assert Droodotfoo.PluginSystem.get_active_plugin() == "snake"
 
           # Try to start second plugin - should replace first
-          case Manager.start_plugin("calc", terminal_state) do
+          case Droodotfoo.PluginSystem.start_plugin("calc", terminal_state) do
             {:ok, _} ->
-              assert Manager.get_active_plugin() == "calc"
-              Manager.stop_plugin()
+              assert Droodotfoo.PluginSystem.get_active_plugin() == "calc"
+              Droodotfoo.PluginSystem.stop_plugin()
 
             {:error, _} ->
-              Manager.stop_plugin()
+              Droodotfoo.PluginSystem.stop_plugin()
           end
 
         {:error, _} ->
@@ -202,12 +204,12 @@ defmodule Droodotfoo.PluginIntegrationTest do
   describe "plugin error handling" do
     test "handles non-existent plugin gracefully", %{terminal_state: terminal_state} do
       assert {:error, "Plugin not found: nonexistent"} =
-               Manager.start_plugin("nonexistent", terminal_state)
+               Droodotfoo.PluginSystem.start_plugin("nonexistent", terminal_state)
     end
 
     test "handles input when no plugin is active", %{terminal_state: terminal_state} do
       assert {:error, "No active plugin"} =
-               Manager.handle_input("test", terminal_state)
+               Droodotfoo.PluginSystem.handle_input("test", terminal_state)
     end
 
     test "handles plugin commands with arguments gracefully", %{terminal_state: terminal_state} do
@@ -319,7 +321,7 @@ defmodule Droodotfoo.PluginIntegrationTest do
   describe "plugin render integration" do
     test "plugin output is list of strings", %{terminal_state: terminal_state} do
       # Ensure plugin outputs are compatible with terminal rendering
-      case Manager.start_plugin("calc", terminal_state) do
+      case Droodotfoo.PluginSystem.start_plugin("calc", terminal_state) do
         {:ok, output} ->
           assert is_list(output)
 
@@ -327,7 +329,7 @@ defmodule Droodotfoo.PluginIntegrationTest do
             assert is_binary(line)
           end)
 
-          Manager.stop_plugin()
+          Droodotfoo.PluginSystem.stop_plugin()
 
         {:error, _} ->
           # Plugin not available, skip test
@@ -336,7 +338,7 @@ defmodule Droodotfoo.PluginIntegrationTest do
     end
 
     test "plugin output fits terminal dimensions", %{terminal_state: terminal_state} do
-      case Manager.start_plugin("snake", terminal_state) do
+      case Droodotfoo.PluginSystem.start_plugin("snake", terminal_state) do
         {:ok, output} ->
           assert is_list(output)
 
@@ -351,7 +353,7 @@ defmodule Droodotfoo.PluginIntegrationTest do
             assert String.length(clean_line) <= terminal_state.width + 10
           end)
 
-          Manager.stop_plugin()
+          Droodotfoo.PluginSystem.stop_plugin()
 
         {:error, _} ->
           # Plugin not available, skip test
@@ -370,14 +372,14 @@ defmodule Droodotfoo.PluginIntegrationTest do
       case Commands.calc([], terminal_state) do
         {:plugin, "calc", _output} ->
           # Plugin started successfully
-          assert Manager.get_active_plugin() == "calc"
+          assert Droodotfoo.PluginSystem.get_active_plugin() == "calc"
 
           # Send some input
-          Manager.handle_input("2 + 2", terminal_state)
+          Droodotfoo.PluginSystem.handle_input("2 + 2", terminal_state)
 
           # Stop plugin
-          Manager.stop_plugin()
-          assert Manager.get_active_plugin() == nil
+          Droodotfoo.PluginSystem.stop_plugin()
+          assert Droodotfoo.PluginSystem.get_active_plugin() == nil
 
         {:error, _} ->
           # Plugin not available, test still passes
@@ -389,17 +391,17 @@ defmodule Droodotfoo.PluginIntegrationTest do
       # Try to start first plugin
       case Commands.snake([], terminal_state) do
         {:plugin, "snake", _} ->
-          assert Manager.get_active_plugin() == "snake"
+          assert Droodotfoo.PluginSystem.get_active_plugin() == "snake"
 
           # Switch to another plugin
           case Commands.calc([], terminal_state) do
             {:plugin, "calc", _} ->
               # Should have switched
-              assert Manager.get_active_plugin() == "calc"
-              Manager.stop_plugin()
+              assert Droodotfoo.PluginSystem.get_active_plugin() == "calc"
+              Droodotfoo.PluginSystem.stop_plugin()
 
             {:error, _} ->
-              Manager.stop_plugin()
+              Droodotfoo.PluginSystem.stop_plugin()
           end
 
         {:error, _} ->
@@ -410,13 +412,13 @@ defmodule Droodotfoo.PluginIntegrationTest do
 
     test "terminal command execution while plugin is active", %{terminal_state: terminal_state} do
       # Start a plugin
-      case Manager.start_plugin("calc", terminal_state) do
+      case Droodotfoo.PluginSystem.start_plugin("calc", terminal_state) do
         {:ok, _} ->
           # Terminal commands should still work
           assert {:ok, output} = Commands.pwd(terminal_state)
           assert String.contains?(output, "/home/user")
 
-          Manager.stop_plugin()
+          Droodotfoo.PluginSystem.stop_plugin()
 
         {:error, _} ->
           # Plugin not available, just test terminal command

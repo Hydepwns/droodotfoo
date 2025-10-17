@@ -32,7 +32,9 @@ defmodule Droodotfoo.Plugins.MatrixRainTest do
       assert map_size(state.columns) > 0
 
       # Each column should have proper structure
-      state.columns |> Map.values() |> Enum.each(fn col ->
+      state.columns
+      |> Map.values()
+      |> Enum.each(fn col ->
         assert Map.has_key?(col, :chars)
         assert Map.has_key?(col, :y)
         assert Map.has_key?(col, :speed)
@@ -51,7 +53,8 @@ defmodule Droodotfoo.Plugins.MatrixRainTest do
       {:ok, state} = MatrixRain.init(terminal_state)
 
       # Should create columns based on width (now creates one per column)
-      expected_columns = 80  # Plugin now uses fixed width
+      # Plugin now uses fixed width
+      expected_columns = 80
       assert map_size(state.columns) == expected_columns
     end
   end
@@ -170,10 +173,14 @@ defmodule Droodotfoo.Plugins.MatrixRainTest do
       {:ok, state} = MatrixRain.init(terminal_state)
 
       # Check trail length variation
-      trail_lengths = state.columns |> Map.values() |> Enum.map(fn col ->
-        # Use char list length as proxy for trail effect
-        length(col.chars)
-      end)
+      trail_lengths =
+        state.columns
+        |> Map.values()
+        |> Enum.map(fn col ->
+          # Use char list length as proxy for trail effect
+          length(col.chars)
+        end)
+
       unique_lengths = Enum.uniq(trail_lengths)
 
       # Should have variation in trail lengths
@@ -182,7 +189,8 @@ defmodule Droodotfoo.Plugins.MatrixRainTest do
       # Trail lengths should be reasonable
       Enum.each(trail_lengths, fn len ->
         assert len >= 3
-        assert len <= 20  # Allow longer trails since implementation changed
+        # Allow longer trails since implementation changed
+        assert len <= 20
       end)
     end
 

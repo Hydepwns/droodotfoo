@@ -156,7 +156,7 @@ defmodule Droodotfoo.Plugins.WordleTest do
 
       {:continue, new_state, _output} = Wordle.handle_input("Enter", state_with_guess, %{})
 
-      assert length(new_state.guesses) == 0
+      assert new_state.guesses == []
       assert new_state.current_guess == "wor"
     end
 
@@ -166,7 +166,7 @@ defmodule Droodotfoo.Plugins.WordleTest do
       {:continue, new_state, _output} = Wordle.handle_input("Enter", state_with_guess, %{})
 
       # Should not add to guesses
-      assert length(new_state.guesses) == 0
+      assert new_state.guesses == []
       assert new_state.current_guess == "zzzzz"
     end
 

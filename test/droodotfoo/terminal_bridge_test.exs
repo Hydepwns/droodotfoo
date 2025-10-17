@@ -17,6 +17,7 @@ defmodule Droodotfoo.TerminalBridgeTest do
 
   # Helper functions for working with the new buffer structure
   defp get_buffer_line(buffer, n), do: Enum.at(buffer.lines, n)
+
   defp get_cell(buffer, x, y) do
     buffer.lines
     |> Enum.at(y)
@@ -25,6 +26,7 @@ defmodule Droodotfoo.TerminalBridgeTest do
       line -> Enum.at(line.cells, x)
     end
   end
+
   defp default_style do
     %{
       bold: false,
@@ -66,7 +68,7 @@ defmodule Droodotfoo.TerminalBridgeTest do
       buffer = TerminalBridge.write_at(buffer, 5, 2, "Hello")
 
       line = get_buffer_line(buffer, 2)
-      chars = line.cells |> Enum.drop(5) |> Enum.take(5) |> Enum.map(& &1.char) |> Enum.join()
+      chars = line.cells |> Enum.drop(5) |> Enum.take(5) |> Enum.map_join("", & &1.char)
       assert chars == "Hello"
     end
 
@@ -75,7 +77,7 @@ defmodule Droodotfoo.TerminalBridgeTest do
       buffer = TerminalBridge.write_at(buffer, 8, 2, "Testing")
 
       line = get_buffer_line(buffer, 2)
-      visible_chars = line.cells |> Enum.drop(8) |> Enum.map(& &1.char) |> Enum.join()
+      visible_chars = line.cells |> Enum.drop(8) |> Enum.map_join("", & &1.char)
       # Only "Te" should fit
       assert String.length(visible_chars) == 2
     end
@@ -110,8 +112,9 @@ defmodule Droodotfoo.TerminalBridgeTest do
       # Clear cache to ensure fresh state
       TerminalBridge.invalidate_cache()
 
-      buffer = TerminalBridge.create_blank_buffer(5, 3)
-      |> TerminalBridge.write_at(0, 1, "Test")
+      buffer =
+        TerminalBridge.create_blank_buffer(5, 3)
+        |> TerminalBridge.write_at(0, 1, "Test")
 
       html = TerminalBridge.terminal_to_html(buffer)
 
@@ -133,16 +136,20 @@ defmodule Droodotfoo.TerminalBridgeTest do
       buffer = TerminalBridge.create_blank_buffer(10, 2)
 
       # Update first cell with bold style using functional approach
-      buffer = %{buffer |
-        lines: buffer.lines
-        |> List.update_at(0, fn line ->
-          %{line |
-            cells: line.cells
-            |> List.update_at(0, fn _cell ->
-              %{char: "B", style: %{default_style() | bold: true}}
+      buffer = %{
+        buffer
+        | lines:
+            buffer.lines
+            |> List.update_at(0, fn line ->
+              %{
+                line
+                | cells:
+                    line.cells
+                    |> List.update_at(0, fn _cell ->
+                      %{char: "B", style: %{default_style() | bold: true}}
+                    end)
+              }
             end)
-          }
-        end)
       }
 
       html = TerminalBridge.terminal_to_html(buffer)

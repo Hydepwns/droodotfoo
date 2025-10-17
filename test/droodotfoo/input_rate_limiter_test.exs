@@ -102,7 +102,7 @@ defmodule Droodotfoo.InputRateLimiterTest do
 
       # Set last_refill to very long ago
       # 10 seconds ago
-      past_time = System.monotonic_time(:millisecond) - 10000
+      past_time = System.monotonic_time(:millisecond) - 10_000
       limiter = %{limiter | last_refill: past_time}
 
       # Should refill to max tokens only

@@ -36,11 +36,12 @@ defmodule Droodotfoo.AdvancedSearchTest do
     end
 
     test "accepts custom options" do
-      search = AdvancedSearch.new(
-        mode: :exact,
-        max_history: 100,
-        case_sensitive: true
-      )
+      search =
+        AdvancedSearch.new(
+          mode: :exact,
+          max_history: 100,
+          case_sensitive: true
+        )
 
       assert search.mode == :exact
       assert search.max_history == 100
@@ -55,8 +56,8 @@ defmodule Droodotfoo.AdvancedSearchTest do
       assert length(results) > 0
       # Should match "Elixir" in multiple places
       assert Enum.any?(results, fn r ->
-        String.contains?(String.downcase(r.line), "elixir")
-      end)
+               String.contains?(String.downcase(r.line), "elixir")
+             end)
     end
 
     test "scores closer matches higher" do
@@ -75,7 +76,7 @@ defmodule Droodotfoo.AdvancedSearchTest do
       results_sensitive = AdvancedSearch.fuzzy_search("ELIXIR", @sample_content, true)
 
       assert length(results_insensitive) > 0
-      assert length(results_sensitive) == 0
+      assert results_sensitive == []
     end
   end
 
@@ -110,20 +111,22 @@ defmodule Droodotfoo.AdvancedSearchTest do
 
       # Should match lines starting with capital letters
       assert length(results) > 0
+
       assert Enum.all?(results, fn r ->
-        String.match?(r.line, ~r/^[A-Z]/)
-      end)
+               String.match?(r.line, ~r/^[A-Z]/)
+             end)
     end
 
     test "handles complex regex patterns" do
       results = AdvancedSearch.regex_search("(Elixir|Ruby|JavaScript)", @sample_content, false)
 
       assert length(results) > 0
+
       assert Enum.any?(results, fn r ->
-        String.contains?(r.line, "Elixir") or
-        String.contains?(r.line, "Ruby") or
-        String.contains?(r.line, "JavaScript")
-      end)
+               String.contains?(r.line, "Elixir") or
+                 String.contains?(r.line, "Ruby") or
+                 String.contains?(r.line, "JavaScript")
+             end)
     end
 
     test "returns empty list for invalid regex" do
@@ -168,7 +171,8 @@ defmodule Droodotfoo.AdvancedSearchTest do
   describe "highlight_line/3" do
     test "highlights matched positions in text" do
       line = "Elixir programming language"
-      positions = [0, 1, 2, 3, 4, 5]  # "Elixir"
+      # "Elixir"
+      positions = [0, 1, 2, 3, 4, 5]
 
       highlighted = AdvancedSearch.highlight_line(line, positions)
 
@@ -179,13 +183,15 @@ defmodule Droodotfoo.AdvancedSearchTest do
 
     test "highlights multiple separate matches" do
       line = "Elixir and Erlang are great"
-      positions = [0, 1, 2, 3, 4, 5, 11, 12, 13, 14, 15, 16]  # "Elixir" and "Erlang"
+      # "Elixir" and "Erlang"
+      positions = [0, 1, 2, 3, 4, 5, 11, 12, 13, 14, 15, 16]
 
       highlighted = AdvancedSearch.highlight_line(line, positions)
 
       # Should contain multiple escape sequences
       escape_count = highlighted |> String.graphemes() |> Enum.count(&(&1 == "\e"))
-      assert escape_count >= 4  # At least 2 highlights (start and end for each)
+      # At least 2 highlights (start and end for each)
+      assert escape_count >= 4
     end
   end
 
@@ -296,7 +302,10 @@ defmodule Droodotfoo.AdvancedSearchTest do
       # Wrap around to beginning - call next_match enough times to cycle back
       # From index 2, we need (total_results - 2) more calls to get back to 0
       remaining_steps = total_results - 2
-      search = Enum.reduce(1..remaining_steps, search, fn _, s -> AdvancedSearch.next_match(s) end)
+
+      search =
+        Enum.reduce(1..remaining_steps, search, fn _, s -> AdvancedSearch.next_match(s) end)
+
       assert search.current_match_index == 0
     end
 
@@ -395,9 +404,10 @@ defmodule Droodotfoo.AdvancedSearchTest do
       # Switch to exact mode
       search = AdvancedSearch.set_mode(search, :exact)
       search = AdvancedSearch.search(search, "Elixir", @sample_content)
+
       assert Enum.all?(search.results, fn r ->
-        String.contains?(r.line, "Elixir")
-      end)
+               String.contains?(r.line, "Elixir")
+             end)
 
       # Try regex search
       search = AdvancedSearch.set_mode(search, :regex)

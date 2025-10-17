@@ -1,7 +1,7 @@
-defmodule Droodotfoo.Spotify.ManagerTest do
+defmodule Droodotfoo.SpotifyTest do
   use ExUnit.Case, async: false
 
-  alias Droodotfoo.Spotify.Manager
+  alias Droodotfoo.Spotify
 
   setup do
     # Clean up any existing ETS tables
@@ -13,24 +13,24 @@ defmodule Droodotfoo.Spotify.ManagerTest do
       :ets.delete(:spotify_tokens)
     end
 
-    # Start a test instance of the Manager
-    # The actual Manager is started in the application supervision tree
+    # Start a test instance of the Spotify
+    # The actual Spotify is started in the application supervision tree
     # For testing, we verify it responds correctly
     :ok
   end
 
   describe "start_link/1" do
     test "starts the GenServer successfully" do
-      # Manager is already started in supervision tree
+      # Spotify is already started in supervision tree
       # Just verify it's running
-      assert Process.whereis(Manager) != nil
+      assert Process.whereis(Spotify) != nil
     end
   end
 
   describe "auth_status/0" do
     test "returns valid auth status" do
       # Auth status can be :not_authenticated, :pending, or :authenticated
-      status = Manager.auth_status()
+      status = Spotify.auth_status()
       assert status in [:not_authenticated, :pending, :authenticated]
     end
   end
@@ -41,7 +41,7 @@ defmodule Droodotfoo.Spotify.ManagerTest do
       Application.put_env(:droodotfoo, :spotify_client_id, "")
       Application.put_env(:droodotfoo, :spotify_client_secret, "")
 
-      assert {:error, :missing_credentials} = Manager.start_auth()
+      assert {:error, :missing_credentials} = Spotify.start_auth()
     end
 
     test "returns authorization URL when credentials are present" do
@@ -49,7 +49,7 @@ defmodule Droodotfoo.Spotify.ManagerTest do
       Application.put_env(:droodotfoo, :spotify_client_id, "test_client_id")
       Application.put_env(:droodotfoo, :spotify_client_secret, "test_client_secret")
 
-      case Manager.start_auth() do
+      case Spotify.start_auth() do
         {:ok, url} ->
           assert is_binary(url)
           assert url =~ "spotify.com"
@@ -64,38 +64,38 @@ defmodule Droodotfoo.Spotify.ManagerTest do
   describe "current_user/0" do
     test "returns nil when not authenticated" do
       # Without authentication, should return nil
-      user = Manager.current_user()
+      user = Spotify.current_user()
       assert user == nil || is_map(user)
     end
   end
 
   describe "current_track/0" do
     test "returns nil when not authenticated" do
-      track = Manager.current_track()
+      track = Spotify.current_track()
       assert track == nil || is_map(track)
     end
   end
 
   describe "playback_state/0" do
     test "returns nil when not authenticated" do
-      state = Manager.playback_state()
+      state = Spotify.playback_state()
       assert state == nil || is_map(state)
     end
   end
 
   describe "playlists/0" do
     test "returns empty list when not authenticated" do
-      playlists = Manager.playlists()
+      playlists = Spotify.playlists()
       assert is_list(playlists)
     end
   end
 
   describe "control_playback/1" do
     test "returns error when not authenticated" do
-      assert {:error, :not_authenticated} = Manager.control_playback(:play)
-      assert {:error, :not_authenticated} = Manager.control_playback(:pause)
-      assert {:error, :not_authenticated} = Manager.control_playback(:next)
-      assert {:error, :not_authenticated} = Manager.control_playback(:previous)
+      assert {:error, :not_authenticated} = Spotify.control_playback(:play)
+      assert {:error, :not_authenticated} = Spotify.control_playback(:pause)
+      assert {:error, :not_authenticated} = Spotify.control_playback(:next)
+      assert {:error, :not_authenticated} = Spotify.control_playback(:previous)
     end
 
     test "validates action parameter" do
@@ -103,7 +103,7 @@ defmodule Droodotfoo.Spotify.ManagerTest do
       valid_actions = [:play, :pause, :next, :previous]
 
       Enum.each(valid_actions, fn action ->
-        result = Manager.control_playback(action)
+        result = Spotify.control_playback(action)
         assert result in [:ok, {:error, :not_authenticated}, {:error, :no_auth_token}]
       end)
     end
@@ -112,7 +112,7 @@ defmodule Droodotfoo.Spotify.ManagerTest do
   describe "refresh_now_playing/0" do
     test "sends cast to refresh playback data" do
       # Should not crash
-      assert :ok = Manager.refresh_now_playing()
+      assert :ok = Spotify.refresh_now_playing()
     end
   end
 end
