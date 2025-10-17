@@ -2,7 +2,7 @@ defmodule DroodotfooWeb.DroodotfooLiveTest do
   use DroodotfooWeb.ConnCase, async: false
   import Phoenix.LiveViewTest
 
-  alias Droodotfoo.{RaxolApp, PerformanceMonitor}
+  alias Droodotfoo.{PerformanceMonitor, RaxolApp}
 
   setup do
     # Ensure the application and all dependencies are started
@@ -12,6 +12,7 @@ defmodule DroodotfooWeb.DroodotfooLiveTest do
     case Process.whereis(RaxolApp) do
       nil ->
         {:ok, _} = RaxolApp.start_link([])
+
       pid when is_pid(pid) ->
         :ok
     end
@@ -20,6 +21,7 @@ defmodule DroodotfooWeb.DroodotfooLiveTest do
     case Process.whereis(PerformanceMonitor) do
       nil ->
         {:ok, _} = PerformanceMonitor.start_link([])
+
       pid when is_pid(pid) ->
         # Reset metrics for clean state
         try do
@@ -33,6 +35,7 @@ defmodule DroodotfooWeb.DroodotfooLiveTest do
     case Process.whereis(Droodotfoo.TerminalBridge) do
       nil ->
         {:ok, _} = Droodotfoo.TerminalBridge.start_link([])
+
       pid when is_pid(pid) ->
         :ok
     end
@@ -286,7 +289,8 @@ defmodule DroodotfooWeb.DroodotfooLiveTest do
       Process.sleep(10)
       # Rate limiting prevents all inputs from being processed
       # We can't check exact count without assigns access
-      processed = 25  # Approximate based on rate limiting
+      # Approximate based on rate limiting
+      processed = 25
 
       # Some should be processed, but not all due to rate limiting
       assert processed > 0

@@ -6,6 +6,8 @@ defmodule Droodotfoo.TerminalTestHelpers do
   rather than exact string matches, making tests less brittle when UI text changes.
   """
 
+  alias Droodotfoo.Raxol.Config
+
   @doc """
   Checks if buffer or HTML contains status bar hints (help, cmd, search).
   """
@@ -45,13 +47,9 @@ defmodule Droodotfoo.TerminalTestHelpers do
   Extracts buffer text from a buffer struct.
   """
   def buffer_to_text(%{lines: lines}) when is_list(lines) do
-    lines
-    |> Enum.map(fn line ->
-      line.cells
-      |> Enum.map(& &1.char)
-      |> Enum.join()
+    Enum.map_join(lines, "\n", fn line ->
+      Enum.map_join(line.cells, "", & &1.char)
     end)
-    |> Enum.join("\n")
   end
 
   def buffer_to_text(_), do: ""
@@ -60,7 +58,7 @@ defmodule Droodotfoo.TerminalTestHelpers do
   Checks if buffer dimensions match expected terminal size.
   """
   def has_correct_dimensions?(%{lines: lines}) when is_list(lines) do
-    config = Droodotfoo.Raxol.Config.dimensions()
+    config = Config.dimensions()
 
     length(lines) == config.height and
       Enum.all?(lines, fn line ->
@@ -97,7 +95,7 @@ defmodule Droodotfoo.TerminalTestHelpers do
   """
   def has_success?(content) when is_binary(content) do
     String.contains?(content, "SUCCESS") or
-      String.contains?(content, "*") and String.contains?(content, "success")
+      (String.contains?(content, "*") and String.contains?(content, "success"))
   end
 
   @doc """
@@ -106,7 +104,7 @@ defmodule Droodotfoo.TerminalTestHelpers do
   """
   def has_warning?(content) when is_binary(content) do
     String.contains?(content, "WARNING") or
-      String.contains?(content, "!") and String.contains?(content, "warning")
+      (String.contains?(content, "!") and String.contains?(content, "warning"))
   end
 
   @doc """

@@ -6,13 +6,15 @@ defmodule Droodotfoo.RaxolAppTest do
   setup do
     # Use the existing RaxolApp from the application supervisor
     # or start a supervised one if it doesn't exist
-    pid = case Process.whereis(RaxolApp) do
-      nil ->
-        {:ok, pid} = start_supervised(RaxolApp)
-        pid
-      existing_pid ->
-        existing_pid
-    end
+    pid =
+      case Process.whereis(RaxolApp) do
+        nil ->
+          {:ok, pid} = start_supervised(RaxolApp)
+          pid
+
+        existing_pid ->
+          existing_pid
+      end
 
     # Reset all shared state to prevent test interference
     Droodotfoo.StateResetHelper.reset_all_state()
@@ -20,7 +22,6 @@ defmodule Droodotfoo.RaxolAppTest do
     # Verify the process is alive
     {:ok, pid: pid}
   end
-
 
   describe "start_link/1" do
     test "starts the GenServer with default state", %{pid: pid} do
@@ -489,12 +490,8 @@ defmodule Droodotfoo.RaxolAppTest do
   # Helper functions
 
   defp buffer_to_text(buffer) do
-    buffer.lines
-    |> Enum.map(fn line ->
-      line.cells
-      |> Enum.map(& &1.char)
-      |> Enum.join()
+    Enum.map_join(buffer.lines, "\n", fn line ->
+      Enum.map_join(line.cells, "", & &1.char)
     end)
-    |> Enum.join("\n")
   end
 end

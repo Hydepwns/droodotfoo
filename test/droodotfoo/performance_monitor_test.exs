@@ -4,14 +4,16 @@ defmodule Droodotfoo.PerformanceMonitorTest do
 
   setup do
     # Ensure PerformanceMonitor is running
-    monitor_pid = case Process.whereis(PerformanceMonitor) do
-      nil ->
-        # Start it if not running
-        {:ok, pid} = start_supervised(PerformanceMonitor)
-        pid
-      pid ->
-        pid
-    end
+    monitor_pid =
+      case Process.whereis(PerformanceMonitor) do
+        nil ->
+          # Start it if not running
+          {:ok, pid} = start_supervised(PerformanceMonitor)
+          pid
+
+        pid ->
+          pid
+      end
 
     # Reset metrics before each test to ensure isolation
     PerformanceMonitor.reset_metrics()

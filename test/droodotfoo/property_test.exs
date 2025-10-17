@@ -1,8 +1,8 @@
 defmodule Droodotfoo.PropertyTest do
   use ExUnit.Case
   use ExUnitProperties
-  alias Droodotfoo.{InputRateLimiter, InputDebouncer, AdaptiveRefresh}
-  alias Droodotfoo.Raxol.{Navigation, Command}
+  alias Droodotfoo.{AdaptiveRefresh, InputDebouncer, InputRateLimiter, RaxolApp, TerminalBridge}
+  alias Droodotfoo.Raxol.{Command, Navigation, State}
 
   @moduledoc """
   Property-based tests for droodotfoo components.
@@ -12,7 +12,7 @@ defmodule Droodotfoo.PropertyTest do
 
   property "RaxolApp handles any sequence of valid keys without crashing" do
     check all(key_sequence <- list_of(valid_key_gen(), min_length: 1, max_length: 100)) do
-      raxol_pid = Process.whereis(Droodotfoo.RaxolApp)
+      raxol_pid = Process.whereis(RaxolApp)
       initial_alive = Process.alive?(raxol_pid)
 
       # Send all keys in sequence
@@ -51,7 +51,7 @@ defmodule Droodotfoo.PropertyTest do
 
   property "state transitions preserve invariants" do
     check all(transitions <- list_of(state_transition_gen(), max_length: 100)) do
-      initial_state = Droodotfoo.Raxol.State.initial(80, 24)
+      initial_state = State.initial(80, 24)
 
       final_state =
         Enum.reduce(transitions, initial_state, fn transition, state ->
@@ -154,7 +154,8 @@ defmodule Droodotfoo.PropertyTest do
         | current_fps: initial_fps,
           target_fps: target_fps,
           mode: initial_mode,
-          activity_count: 0  # Reset to ensure we start from 0
+          # Reset to ensure we start from 0
+          activity_count: 0
       }
 
       initial_count = state.activity_count
@@ -191,16 +192,19 @@ defmodule Droodotfoo.PropertyTest do
       buffer_lines =
         Enum.map(content, fn line ->
           chars = String.graphemes(String.pad_trailing(line, 80))
-          cells = Enum.map(Enum.take(chars, 80), fn char ->
-            %{char: char, style: %{}}
-          end)
+
+          cells =
+            Enum.map(Enum.take(chars, 80), fn char ->
+              %{char: char, style: %{}}
+            end)
+
           %{cells: cells}
         end)
 
       buffer = %{lines: buffer_lines}
 
       # Generate HTML
-      html = Droodotfoo.TerminalBridge.terminal_to_html(buffer)
+      html = TerminalBridge.terminal_to_html(buffer)
 
       # HTML should be valid
       assert is_binary(html)
@@ -218,11 +222,8 @@ defmodule Droodotfoo.PropertyTest do
             width <- integer(10..200),
             height <- integer(10..100)
           ) do
-      initial_state = Droodotfoo.Raxol.State.initial(width, height)
-      initial_state = %{initial_state |
-        cursor_y: div(height, 2),
-        cursor_x: div(width, 2)
-      }
+      initial_state = State.initial(width, height)
+      initial_state = %{initial_state | cursor_y: div(height, 2), cursor_x: div(width, 2)}
 
       final_state =
         Enum.reduce(nav_commands, initial_state, fn cmd, state ->
@@ -246,11 +247,8 @@ defmodule Droodotfoo.PropertyTest do
 
   property "command parsing handles any input" do
     check all(command_str <- string(:utf8, max_length: 100)) do
-      state = Droodotfoo.Raxol.State.initial(80, 24)
-      state = %{state |
-        command_mode: true,
-        command_buffer: command_str
-      }
+      state = State.initial(80, 24)
+      state = %{state | command_mode: true, command_buffer: command_str}
 
       # Command.handle_input doesn't handle "Enter" - that's done at State level
       # Test other inputs that Command.handle_input does handle
@@ -337,41 +335,49 @@ defmodule Droodotfoo.PropertyTest do
   defp create_empty_buffer(width, height) do
     %{
       width: width,
-      lines: for _ <- 1..height do
-        %{
-          cells: (for _ <- 1..width do
-            %{char: " ", style: %{}}
-          end)
-        }
-      end
+      lines:
+        for _ <- 1..height do
+          %{
+            cells:
+              for _ <- 1..width do
+                %{char: " ", style: %{}}
+              end
+          }
+        end
     }
   end
 
   defp apply_buffer_operation(buffer, {:write, row, col, char}) do
     if row < length(buffer.lines) do
-      lines = List.update_at(buffer.lines, row, fn line ->
-        if col < length(line.cells) do
-          cells = List.update_at(line.cells, col, fn _ ->
-            %{char: char, style: %{}}
-          end)
-          %{line | cells: cells}
-        else
-          line
-        end
-      end)
+      lines = List.update_at(buffer.lines, row, fn line -> update_line_cell(line, col, char) end)
       %{buffer | lines: lines}
     else
       buffer
     end
   end
 
+  defp update_line_cell(line, col, char) do
+    if col < length(line.cells) do
+      cells =
+        List.update_at(line.cells, col, fn _ ->
+          %{char: char, style: %{}}
+        end)
+
+      %{line | cells: cells}
+    else
+      line
+    end
+  end
+
   defp apply_buffer_operation(buffer, {:clear, row}) do
     if row < length(buffer.lines) do
-      lines = List.update_at(buffer.lines, row, fn _line ->
-        %{
-          cells: (for _ <- 1..80, do: %{char: " ", style: %{}})
-        }
-      end)
+      lines =
+        List.update_at(buffer.lines, row, fn _line ->
+          %{
+            cells: for(_ <- 1..80, do: %{char: " ", style: %{}})
+          }
+        end)
+
       %{buffer | lines: lines}
     else
       buffer
@@ -379,25 +385,28 @@ defmodule Droodotfoo.PropertyTest do
   end
 
   defp apply_buffer_operation(buffer, {:scroll, :up}) do
-    new_line = %{cells: (for _ <- 1..80, do: %{char: " ", style: %{}})}
+    new_line = %{cells: for(_ <- 1..80, do: %{char: " ", style: %{}})}
     lines = tl(buffer.lines) ++ [new_line]
     %{buffer | lines: lines}
   end
 
   defp apply_buffer_operation(buffer, {:scroll, :down}) do
-    new_line = %{cells: (for _ <- 1..80, do: %{char: " ", style: %{}})}
+    new_line = %{cells: for(_ <- 1..80, do: %{char: " ", style: %{}})}
     lines = [new_line] ++ Enum.take(buffer.lines, length(buffer.lines) - 1)
     %{buffer | lines: lines}
   end
 
   defp apply_buffer_operation(buffer, {:fill, char}) do
-    lines = for _ <- 1..length(buffer.lines) do
-      %{
-        cells: for _ <- 1..80 do
-          %{char: char, style: %{}}
-        end
-      }
-    end
+    lines =
+      for _ <- 1..length(buffer.lines) do
+        %{
+          cells:
+            for _ <- 1..80 do
+              %{char: char, style: %{}}
+            end
+        }
+      end
+
     %{buffer | lines: lines}
   end
 

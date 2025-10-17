@@ -227,7 +227,10 @@ defmodule Droodotfoo.Plugins.SpotifyTest do
 
     test "decreases volume", %{state: state, terminal_state: terminal_state} do
       state_with_volume = %{state | volume: 50}
-      {:continue, new_state, _output} = Spotify.handle_input("-", state_with_volume, terminal_state)
+
+      {:continue, new_state, _output} =
+        Spotify.handle_input("-", state_with_volume, terminal_state)
+
       # Volume should attempt to decrease (may fail if not authenticated)
       assert new_state.volume <= 50 || new_state.message != nil
     end

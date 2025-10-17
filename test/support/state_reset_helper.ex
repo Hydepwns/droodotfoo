@@ -16,8 +16,8 @@ defmodule Droodotfoo.StateResetHelper do
     end
 
     # Reset PluginSystem.Manager (clear active plugin)
-    if Process.whereis(Droodotfoo.PluginSystem.Manager) do
-      Droodotfoo.PluginSystem.Manager.reset_state()
+    if Process.whereis(Droodotfoo.PluginSystem) do
+      Droodotfoo.PluginSystem.reset_state()
     end
 
     # Reset PerformanceMonitor metrics

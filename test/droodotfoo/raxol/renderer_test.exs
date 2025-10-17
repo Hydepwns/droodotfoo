@@ -1,8 +1,8 @@
 defmodule Droodotfoo.Raxol.RendererTest do
   use ExUnit.Case, async: true
 
-  alias Droodotfoo.Raxol.Renderer
   alias Droodotfoo.CursorTrail
+  alias Droodotfoo.Raxol.Renderer
 
   describe "render/1" do
     test "creates a valid buffer with correct dimensions" do
@@ -15,7 +15,11 @@ defmodule Droodotfoo.Raxol.RendererTest do
         cursor_trail: nil,
         terminal_output: "",
         prompt: "",
-        help_modal_open: false
+        help_modal_open: false,
+        privacy_mode: false,
+        encryption_keys: %{},
+        encryption_sessions: %{},
+        web3_wallet_connected: false
       }
 
       buffer = Renderer.render(state)
@@ -52,14 +56,18 @@ defmodule Droodotfoo.Raxol.RendererTest do
         cursor_trail: nil,
         terminal_output: "",
         prompt: "",
-        help_modal_open: false
+        help_modal_open: false,
+        privacy_mode: false,
+        encryption_keys: %{},
+        encryption_sessions: %{},
+        web3_wallet_connected: false
       }
 
       buffer = Renderer.render(state)
 
       # Check for DROO text in logo
       line_3 = Enum.at(buffer.lines, 2)
-      line_text = line_3.cells |> Enum.map(& &1.char) |> Enum.join()
+      line_text = Enum.map_join(line_3.cells, "", & &1.char)
       assert String.contains?(line_text, "██████╗")
       assert String.contains?(line_text, "██████╗")
       assert String.contains?(line_text, "██████╗")
@@ -69,24 +77,28 @@ defmodule Droodotfoo.Raxol.RendererTest do
     test "renders navigation with correct cursor position" do
       state = %{
         cursor_y: 2,
-        current_section: :skills,
+        current_section: :contact,
         command_mode: false,
         command_buffer: "",
         trail_enabled: false,
         cursor_trail: nil,
         terminal_output: "",
         prompt: "",
-        help_modal_open: false
+        help_modal_open: false,
+        privacy_mode: false,
+        encryption_keys: %{},
+        encryption_sessions: %{},
+        web3_wallet_connected: false
       }
 
       buffer = Renderer.render(state)
 
-      # Check that cursor is on the skills line (index 2)
+      # Check that cursor is on the contact line (index 2)
       # nav_y + 2 + cursor_y
       nav_line = Enum.at(buffer.lines, 15 + 2)
-      line_text = nav_line.cells |> Enum.map(& &1.char) |> Enum.join()
+      line_text = Enum.map_join(nav_line.cells, "", & &1.char)
       assert String.contains?(line_text, "█")
-      assert String.contains?(line_text, "Skills")
+      assert String.contains?(line_text, "Contact")
     end
 
     test "displays command mode prompt correctly" do
@@ -99,14 +111,18 @@ defmodule Droodotfoo.Raxol.RendererTest do
         cursor_trail: nil,
         terminal_output: "",
         prompt: "",
-        help_modal_open: false
+        help_modal_open: false,
+        privacy_mode: false,
+        encryption_keys: %{},
+        encryption_sessions: %{},
+        web3_wallet_connected: false
       }
 
       buffer = Renderer.render(state)
 
       # Check last line for command prompt
       last_line = List.last(buffer.lines)
-      line_text = last_line.cells |> Enum.map(& &1.char) |> Enum.join()
+      line_text = Enum.map_join(last_line.cells, "", & &1.char)
       assert String.contains?(line_text, ":help_")
     end
 
@@ -120,14 +136,18 @@ defmodule Droodotfoo.Raxol.RendererTest do
         cursor_trail: nil,
         terminal_output: "",
         prompt: "",
-        help_modal_open: false
+        help_modal_open: false,
+        privacy_mode: false,
+        encryption_keys: %{},
+        encryption_sessions: %{},
+        web3_wallet_connected: false
       }
 
       buffer = Renderer.render(state)
 
       # Check last line for hint
       last_line = List.last(buffer.lines)
-      line_text = last_line.cells |> Enum.map(& &1.char) |> Enum.join()
+      line_text = Enum.map_join(last_line.cells, "", & &1.char)
       assert String.contains?(line_text, ": cmd") or String.contains?(line_text, "? help")
     end
   end
@@ -149,7 +169,11 @@ defmodule Droodotfoo.Raxol.RendererTest do
         cursor_trail: trail,
         terminal_output: "",
         prompt: "",
-        help_modal_open: false
+        help_modal_open: false,
+        privacy_mode: false,
+        encryption_keys: %{},
+        encryption_sessions: %{},
+        web3_wallet_connected: false
       }
 
       buffer = Renderer.render(state)
@@ -171,7 +195,11 @@ defmodule Droodotfoo.Raxol.RendererTest do
         cursor_trail: nil,
         terminal_output: "",
         prompt: "",
-        help_modal_open: false
+        help_modal_open: false,
+        privacy_mode: false,
+        encryption_keys: %{},
+        encryption_sessions: %{},
+        web3_wallet_connected: false
       }
 
       # Should not crash
@@ -194,7 +222,11 @@ defmodule Droodotfoo.Raxol.RendererTest do
         cursor_trail: trail,
         terminal_output: "",
         prompt: "",
-        help_modal_open: false
+        help_modal_open: false,
+        privacy_mode: false,
+        encryption_keys: %{},
+        encryption_sessions: %{},
+        web3_wallet_connected: false
       }
 
       buffer = Renderer.render(state)
@@ -229,7 +261,11 @@ defmodule Droodotfoo.Raxol.RendererTest do
         cursor_trail: trail,
         terminal_output: "",
         prompt: "",
-        help_modal_open: false
+        help_modal_open: false,
+        privacy_mode: false,
+        encryption_keys: %{},
+        encryption_sessions: %{},
+        web3_wallet_connected: false
       }
 
       # Create another trail with out-of-bounds positions
@@ -255,7 +291,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
 
       content_text = extract_content_area(buffer)
       assert String.contains?(content_text, "Multi Disciplinary Engineer")
-      assert String.contains?(content_text, "Recent Activity")
+      assert String.contains?(content_text, "Site Structure")
     end
 
     test "renders projects section content" do
@@ -341,13 +377,14 @@ defmodule Droodotfoo.Raxol.RendererTest do
       buffer = Renderer.render(state)
 
       # Extract all buffer text for more flexibility
-      buffer_text = buffer.lines
-        |> Enum.map(fn line ->
-          line.cells |> Enum.map(& &1.char) |> Enum.join()
+      buffer_text =
+        Enum.map_join(buffer.lines, "\n", fn line ->
+          Enum.map_join(line.cells, "", & &1.char)
         end)
-        |> Enum.join("\n")
 
-      assert String.contains?(buffer_text, "PERFORMANCE") or String.contains?(buffer_text, "Render")
+      assert String.contains?(buffer_text, "PERFORMANCE") or
+               String.contains?(buffer_text, "Render")
+
       assert String.contains?(buffer_text, "Memory") or String.contains?(buffer_text, "Uptime")
     end
 
@@ -371,7 +408,11 @@ defmodule Droodotfoo.Raxol.RendererTest do
         cursor_trail: nil,
         terminal_output: "$ ls\nfile1.txt\nfile2.txt\n$ pwd\n/home/droo",
         prompt: "[droo@droo ~]$ ",
-        help_modal_open: false
+        help_modal_open: false,
+        privacy_mode: false,
+        encryption_keys: %{},
+        encryption_sessions: %{},
+        web3_wallet_connected: false
       }
 
       buffer = Renderer.render(state)
@@ -398,7 +439,11 @@ defmodule Droodotfoo.Raxol.RendererTest do
         current_section: :home,
         command_mode: false,
         command_buffer: "",
-        help_modal_open: false
+        help_modal_open: false,
+        privacy_mode: false,
+        encryption_keys: %{},
+        encryption_sessions: %{},
+        web3_wallet_connected: false
         # Missing other optional fields
       }
 
@@ -417,7 +462,11 @@ defmodule Droodotfoo.Raxol.RendererTest do
         cursor_trail: nil,
         terminal_output: nil,
         prompt: nil,
-        help_modal_open: false
+        help_modal_open: false,
+        privacy_mode: false,
+        encryption_keys: %{},
+        encryption_sessions: %{},
+        web3_wallet_connected: false
       }
 
       # Should not crash
@@ -437,19 +486,23 @@ defmodule Droodotfoo.Raxol.RendererTest do
         cursor_trail: nil,
         terminal_output: "",
         prompt: "",
-        help_modal_open: false
+        help_modal_open: false,
+        privacy_mode: false,
+        encryption_keys: %{},
+        encryption_sessions: %{},
+        web3_wallet_connected: false
       }
 
       buffer = Renderer.render(state)
 
       # Should truncate or handle gracefully
       last_line = List.last(buffer.lines)
-      line_text = last_line.cells |> Enum.map(& &1.char) |> Enum.join()
+      line_text = Enum.map_join(last_line.cells, "", & &1.char)
       assert String.length(line_text) <= 110
     end
 
     test "handles very long terminal output" do
-      long_output = Enum.map(1..100, &"Line #{&1}") |> Enum.join("\n")
+      long_output = Enum.map_join(1..100, "\n", &"Line #{&1}")
 
       state = %{
         cursor_y: 0,
@@ -460,7 +513,11 @@ defmodule Droodotfoo.Raxol.RendererTest do
         cursor_trail: nil,
         terminal_output: long_output,
         prompt: "[droo@droo ~]$ ",
-        help_modal_open: false
+        help_modal_open: false,
+        privacy_mode: false,
+        encryption_keys: %{},
+        encryption_sessions: %{},
+        web3_wallet_connected: false
       }
 
       buffer = Renderer.render(state)
@@ -483,7 +540,11 @@ defmodule Droodotfoo.Raxol.RendererTest do
           cursor_trail: nil,
           terminal_output: "",
           prompt: "",
-          help_modal_open: false
+          help_modal_open: false,
+          privacy_mode: false,
+          encryption_keys: %{},
+          encryption_sessions: %{},
+          web3_wallet_connected: false
         }
 
         # Should not crash
@@ -505,7 +566,11 @@ defmodule Droodotfoo.Raxol.RendererTest do
       cursor_trail: nil,
       terminal_output: "",
       prompt: if(section == :terminal, do: "[droo@droo ~]$", else: ""),
-      help_modal_open: false
+      help_modal_open: false,
+      privacy_mode: false,
+      encryption_keys: %{},
+      encryption_sessions: %{},
+      web3_wallet_connected: false
     }
 
     # Add search_state for search_results section
@@ -530,13 +595,10 @@ defmodule Droodotfoo.Raxol.RendererTest do
 
   defp extract_content_area(buffer) do
     # Extract text from the content area (right side, starting at column 32)
-    buffer.lines
-    |> Enum.map(fn line ->
+    Enum.map_join(buffer.lines, "\n", fn line ->
       line.cells
       |> Enum.drop(32)
-      |> Enum.map(& &1.char)
-      |> Enum.join()
+      |> Enum.map_join("", & &1.char)
     end)
-    |> Enum.join("\n")
   end
 end

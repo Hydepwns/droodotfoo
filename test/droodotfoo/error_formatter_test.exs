@@ -45,9 +45,10 @@ defmodule Droodotfoo.ErrorFormatterTest do
     end
 
     test "includes suggestions when provided" do
-      result = ErrorFormatter.format("error occurred",
-        suggestions: ["try this", "or that"]
-      )
+      result =
+        ErrorFormatter.format("error occurred",
+          suggestions: ["try this", "or that"]
+        )
 
       assert result =~ "Did you mean:"
       assert result =~ "try this"
@@ -55,9 +56,10 @@ defmodule Droodotfoo.ErrorFormatterTest do
     end
 
     test "includes context when provided" do
-      result = ErrorFormatter.format("error occurred",
-        context: "Type 'help' for more info"
-      )
+      result =
+        ErrorFormatter.format("error occurred",
+          context: "Type 'help' for more info"
+        )
 
       assert result =~ "Type 'help' for more info"
     end
@@ -154,6 +156,7 @@ defmodule Droodotfoo.ErrorFormatterTest do
       result = ErrorFormatter.wrap_text(text, 20)
 
       assert length(result) > 1
+
       Enum.each(result, fn line ->
         assert String.length(line) <= 20
       end)

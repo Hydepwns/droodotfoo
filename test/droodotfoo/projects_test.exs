@@ -51,7 +51,14 @@ defmodule Droodotfoo.ProjectsTest do
     end
 
     test "can retrieve all projects by their IDs" do
-      project_ids = [:droodotfoo, :raxol_web, :crdt_collab, :obsidian_blog, :fintech_payments, :event_microservices]
+      project_ids = [
+        :droodotfoo,
+        :raxol_web,
+        :crdt_collab,
+        :obsidian_blog,
+        :fintech_payments,
+        :event_microservices
+      ]
 
       Enum.each(project_ids, fn id ->
         project = Projects.get(id)
@@ -99,9 +106,10 @@ defmodule Droodotfoo.ProjectsTest do
       elixir_projects = Projects.filter_by_tech("Elixir")
 
       assert length(elixir_projects) > 0
+
       assert Enum.all?(elixir_projects, fn p ->
-        Enum.any?(p.tech_stack, &(&1 == "Elixir"))
-      end)
+               Enum.any?(p.tech_stack, &(&1 == "Elixir"))
+             end)
     end
 
     test "filters are case-insensitive" do
@@ -122,9 +130,10 @@ defmodule Droodotfoo.ProjectsTest do
       phoenix_projects = Projects.filter_by_tech("Phoenix")
 
       assert length(phoenix_projects) > 0
+
       assert Enum.all?(phoenix_projects, fn p ->
-        Enum.any?(p.tech_stack, &(&1 == "Phoenix"))
-      end)
+               Enum.any?(p.tech_stack, &(&1 == "Phoenix"))
+             end)
     end
   end
 
@@ -161,9 +170,10 @@ defmodule Droodotfoo.ProjectsTest do
       active_and_completed = Enum.filter(projects, &(&1.status in [:active, :completed]))
 
       # At least some projects should have URLs
-      with_urls = Enum.filter(active_and_completed, fn p ->
-        p.github_url != nil or p.demo_url != nil
-      end)
+      with_urls =
+        Enum.filter(active_and_completed, fn p ->
+          p.github_url != nil or p.demo_url != nil
+        end)
 
       assert length(with_urls) > 0
     end

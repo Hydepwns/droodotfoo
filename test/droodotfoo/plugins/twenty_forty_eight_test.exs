@@ -101,9 +101,11 @@ defmodule Droodotfoo.Plugins.TwentyFortyEightTest do
         [nil, nil, nil, nil],
         [nil, nil, nil, nil]
       ]
+
       state_with_grid = %{state | grid: test_grid}
 
-      {:continue, new_state, _output} = TwentyFortyEight.handle_input("ArrowRight", state_with_grid, %{})
+      {:continue, new_state, _output} =
+        TwentyFortyEight.handle_input("ArrowRight", state_with_grid, %{})
 
       # After moving right, the 2 should move and a new tile should appear
       new_tile_count = count_non_nil_tiles(new_state.grid)
@@ -114,7 +116,8 @@ defmodule Droodotfoo.Plugins.TwentyFortyEightTest do
       game_over_state = %{state | game_over: true}
       initial_grid = game_over_state.grid
 
-      {:continue, new_state, _output} = TwentyFortyEight.handle_input("ArrowLeft", game_over_state, %{})
+      {:continue, new_state, _output} =
+        TwentyFortyEight.handle_input("ArrowLeft", game_over_state, %{})
 
       assert new_state.grid == initial_grid
     end
@@ -144,9 +147,11 @@ defmodule Droodotfoo.Plugins.TwentyFortyEightTest do
         [nil, nil, nil, nil],
         [nil, nil, nil, nil]
       ]
+
       state_with_grid = %{state | grid: test_grid}
 
-      {:continue, after_move, _output} = TwentyFortyEight.handle_input("ArrowRight", state_with_grid, %{})
+      {:continue, after_move, _output} =
+        TwentyFortyEight.handle_input("ArrowRight", state_with_grid, %{})
 
       # Undo should be possible now
       assert after_move.can_undo == true
@@ -240,9 +245,11 @@ defmodule Droodotfoo.Plugins.TwentyFortyEightTest do
         [nil, nil, nil, nil],
         [nil, nil, nil, nil]
       ]
+
       state_with_grid = %{state | grid: test_grid}
 
-      {:continue, new_state, _output} = TwentyFortyEight.handle_input("ArrowLeft", state_with_grid, %{})
+      {:continue, new_state, _output} =
+        TwentyFortyEight.handle_input("ArrowLeft", state_with_grid, %{})
 
       # Should have merged into a 4
       first_row = Enum.at(new_state.grid, 0)
@@ -259,9 +266,11 @@ defmodule Droodotfoo.Plugins.TwentyFortyEightTest do
         [nil, nil, nil, nil],
         [nil, nil, nil, nil]
       ]
+
       state_with_grid = %{state | grid: test_grid}
 
-      {:continue, new_state, _output} = TwentyFortyEight.handle_input("ArrowLeft", state_with_grid, %{})
+      {:continue, new_state, _output} =
+        TwentyFortyEight.handle_input("ArrowLeft", state_with_grid, %{})
 
       # Score should increase by 4 (the merged value)
       assert new_state.score == 4
@@ -277,9 +286,11 @@ defmodule Droodotfoo.Plugins.TwentyFortyEightTest do
         [nil, nil, nil, nil],
         [nil, nil, nil, nil]
       ]
+
       state_with_grid = %{state | grid: test_grid}
 
-      {:continue, new_state, _output} = TwentyFortyEight.handle_input("ArrowLeft", state_with_grid, %{})
+      {:continue, new_state, _output} =
+        TwentyFortyEight.handle_input("ArrowLeft", state_with_grid, %{})
 
       # Should still have both 2 and 4
       first_row = Enum.at(new_state.grid, 0)
@@ -299,9 +310,11 @@ defmodule Droodotfoo.Plugins.TwentyFortyEightTest do
         [nil, nil, nil, nil],
         [nil, nil, nil, nil]
       ]
+
       state_with_grid = %{state | grid: test_grid}
 
-      {:continue, new_state, _output} = TwentyFortyEight.handle_input("ArrowLeft", state_with_grid, %{})
+      {:continue, new_state, _output} =
+        TwentyFortyEight.handle_input("ArrowLeft", state_with_grid, %{})
 
       # Should have won
       assert new_state.won == true
@@ -316,9 +329,11 @@ defmodule Droodotfoo.Plugins.TwentyFortyEightTest do
         [nil, nil, nil, nil],
         [nil, nil, nil, nil]
       ]
+
       state_with_grid = %{state | grid: test_grid, best_score: 0}
 
-      {:continue, new_state, _output} = TwentyFortyEight.handle_input("ArrowLeft", state_with_grid, %{})
+      {:continue, new_state, _output} =
+        TwentyFortyEight.handle_input("ArrowLeft", state_with_grid, %{})
 
       assert new_state.best_score >= new_state.score
     end
@@ -334,9 +349,11 @@ defmodule Droodotfoo.Plugins.TwentyFortyEightTest do
         [nil, nil, nil, nil],
         [nil, nil, nil, nil]
       ]
+
       state_with_grid = %{state | grid: test_grid}
 
-      {:continue, new_state, _output} = TwentyFortyEight.handle_input("ArrowRight", state_with_grid, %{})
+      {:continue, new_state, _output} =
+        TwentyFortyEight.handle_input("ArrowRight", state_with_grid, %{})
 
       # Should have move history now
       assert length(new_state.move_history) > 0
@@ -347,10 +364,13 @@ defmodule Droodotfoo.Plugins.TwentyFortyEightTest do
       {:ok, state} = TwentyFortyEight.init(%{})
 
       # Make 15 moves
-      final_state = Enum.reduce(1..15, state, fn _i, acc_state ->
-        {:continue, new_state, _output} = TwentyFortyEight.handle_input("ArrowLeft", acc_state, %{})
-        new_state
-      end)
+      final_state =
+        Enum.reduce(1..15, state, fn _i, acc_state ->
+          {:continue, new_state, _output} =
+            TwentyFortyEight.handle_input("ArrowLeft", acc_state, %{})
+
+          new_state
+        end)
 
       # Should only keep last 10
       assert length(final_state.move_history) <= 10
