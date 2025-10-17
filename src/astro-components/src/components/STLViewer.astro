@@ -1,0 +1,77 @@
+---
+// STL Viewer Astro Component
+// Converts the LiveView hook to an Astro component with client-side hydration
+export interface Props {
+  componentId?: string;
+  initialModel?: string;
+}
+
+const { componentId = 'default', initialModel = '/models/cube.stl' } = Astro.props;
+---
+
+<div id="stl-viewer-wrapper" class="stl-viewer" data-component-id={componentId}>
+  <div id="stl-canvas-container" class="canvas-container"></div>
+</div>
+
+<script define:vars={{ componentId, initialModel }}>
+  import STLViewerClient from './STLViewer.ts';
+  import LiveViewBridge from '../integrations/liveview-bridge.ts';
+  
+  // Initialize the STL viewer when the component mounts
+  document.addEventListener('DOMContentLoaded', () => {
+    const wrapper = document.getElementById('stl-viewer-wrapper');
+    if (wrapper) {
+      // Create LiveView bridge
+      const bridge = new LiveViewBridge({
+        componentId: componentId,
+        onModelLoaded: (info) => {
+          console.log('Model loaded:', info);
+          // Dispatch event for LiveView to handle
+          window.dispatchEvent(new CustomEvent('stl-model-loaded', { detail: info }));
+        },
+        onModelError: (error) => {
+          console.error('Model error:', error);
+          // Dispatch event for LiveView to handle
+          window.dispatchEvent(new CustomEvent('stl-model-error', { detail: { error } }));
+        }
+      });
+      
+      // Initialize STL viewer with bridge
+      bridge.initializeSTLViewer(wrapper);
+      
+      // Load initial model if provided
+      if (initialModel) {
+        setTimeout(() => {
+          const loadEvent = new CustomEvent('phx:stl_command', {
+            detail: { command: { type: 'load', url: initialModel } }
+          });
+          document.dispatchEvent(loadEvent);
+        }, 100);
+      }
+    }
+  });
+</script>
+
+<style>
+  .stl-viewer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+  }
+
+  .canvas-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: auto;
+  }
+
+  #stl-canvas {
+    background: transparent !important;
+    display: block;
+    pointer-events: auto !important;
+  }
+</style>

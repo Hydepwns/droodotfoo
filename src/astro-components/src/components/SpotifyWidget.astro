@@ -1,0 +1,214 @@
+---
+// Spotify Widget Astro Component
+// Converts the Web Component to Astro with React integration
+export interface Props {
+  playlistId?: string;
+  theme?: 'dark' | 'light' | 'gradient';
+  autoPlay?: boolean;
+  showVolume?: boolean;
+  showProgress?: boolean;
+}
+
+const { 
+  playlistId = '', 
+  theme = 'gradient', 
+  autoPlay = false, 
+  showVolume = true, 
+  showProgress = true 
+} = Astro.props;
+---
+
+<div 
+  id="spotify-widget-container" 
+  class={`spotify-widget spotify-widget--${theme}`}
+  data-playlist-id={playlistId}
+  data-auto-play={autoPlay}
+  data-show-volume={showVolume}
+  data-show-progress={showProgress}
+>
+  <!-- React component will be hydrated here -->
+  <div id="spotify-react-root"></div>
+</div>
+
+<script>
+  import SpotifyBridge from '../integrations/spotify-bridge.ts';
+  
+  // Initialize the Spotify widget when the component mounts
+  document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('spotify-widget-container');
+    if (container) {
+      const reactRoot = container.querySelector('#spotify-react-root');
+      if (reactRoot) {
+        // Create Spotify bridge
+        const bridge = new SpotifyBridge({
+          containerId: 'spotify-react-root',
+          onTrackChange: (track) => {
+            console.log('Track changed:', track);
+            // Dispatch event for LiveView to handle
+            window.dispatchEvent(new CustomEvent('spotify-track-changed', { detail: track }));
+          },
+          onStateChange: (state) => {
+            console.log('State changed:', state);
+            // Dispatch event for LiveView to handle
+            window.dispatchEvent(new CustomEvent('spotify-state-changed', { detail: state }));
+          },
+          onError: (error) => {
+            console.error('Spotify error:', error);
+            // Dispatch event for LiveView to handle
+            window.dispatchEvent(new CustomEvent('spotify-error', { detail: { error } }));
+          }
+        });
+        
+        // Initialize widget with bridge
+        bridge.initializeWidget(reactRoot, {
+          playlistId: container.dataset.playlistId || '',
+          theme: container.dataset.theme || 'gradient',
+          autoPlay: container.dataset.autoPlay === 'true',
+          showVolume: container.dataset.showVolume === 'true',
+          showProgress: container.dataset.showProgress === 'true'
+        });
+        
+        console.log('Spotify Widget initialized with bridge');
+      }
+    }
+  });
+</script>
+
+<style>
+  .spotify-widget {
+    display: block;
+    font-family: system-ui, -apple-system, sans-serif;
+    border-radius: 12px;
+    padding: 20px;
+    color: white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .spotify-widget--gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .spotify-widget--dark {
+    background: #1a1a1a;
+    border: 1px solid #333;
+  }
+
+  .spotify-widget--light {
+    background: #ffffff;
+    color: #333;
+    border: 1px solid #e0e0e0;
+  }
+
+  .spotify-widget__container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .spotify-widget__track-info {
+    text-align: center;
+  }
+
+  .spotify-widget__track-name {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+
+  .spotify-widget__artist-name {
+    font-size: 14px;
+    opacity: 0.9;
+  }
+
+  .spotify-widget__controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .spotify-widget__button {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 16px;
+  }
+
+  .spotify-widget__button:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .spotify-widget__button--play-pause {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+
+  .spotify-widget__progress-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .spotify-widget__progress-fill {
+    height: 100%;
+    background: white;
+    transition: width 0.1s linear;
+  }
+
+  .spotify-widget__time-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    opacity: 0.8;
+  }
+
+  .spotify-widget__volume-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .spotify-widget__volume-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  .spotify-widget__volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .spotify-widget__error {
+    text-align: center;
+    color: #ff6b6b;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+  }
+
+  .spotify-widget__loading {
+    text-align: center;
+    padding: 20px;
+  }
+</style>

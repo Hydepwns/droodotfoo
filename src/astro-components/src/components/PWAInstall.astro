@@ -1,0 +1,382 @@
+---
+// PWA Install Astro Component
+// Provides PWA installation functionality with modern UI
+export interface Props {
+  theme?: 'default' | 'minimal' | 'banner';
+  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center';
+  showUpdateBanner?: boolean;
+  autoShow?: boolean;
+  customText?: {
+    install?: string;
+    update?: string;
+    installed?: string;
+  };
+}
+
+const { 
+  theme = 'default',
+  position = 'top-right',
+  showUpdateBanner = true,
+  autoShow = true,
+  customText = {}
+} = Astro.props;
+
+const defaultText = {
+  install: 'Install App',
+  update: 'Update Available',
+  installed: 'App Installed',
+  ...customText
+};
+---
+
+<div 
+  id="pwa-install-container" 
+  class={`pwa-install pwa-install--${theme} pwa-install--${position}`}
+  data-auto-show={autoShow}
+>
+  <!-- Install Button -->
+  <div id="pwa-install-button" class="pwa-install__button" style="display: none;">
+    <button id="pwa-install-btn" class="pwa-install__btn">
+      <span class="pwa-install__icon">📱</span>
+      <span class="pwa-install__text">{defaultText.install}</span>
+    </button>
+  </div>
+
+  <!-- Update Banner -->
+  {showUpdateBanner && (
+    <div id="pwa-update-banner" class="pwa-install__update" style="display: none;">
+      <div class="pwa-install__update-content">
+        <span class="pwa-install__update-text">{defaultText.update}</span>
+        <button id="pwa-update-btn" class="pwa-install__update-btn">
+          Update
+        </button>
+        <button id="pwa-update-dismiss" class="pwa-install__dismiss-btn">
+          ×
+        </button>
+      </div>
+    </div>
+  )}
+
+  <!-- Installed Confirmation -->
+  <div id="pwa-installed-confirmation" class="pwa-install__installed" style="display: none;">
+    <div class="pwa-install__installed-content">
+      <span class="pwa-install__installed-icon">✅</span>
+      <span class="pwa-install__installed-text">{defaultText.installed}</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  import PWAManager from '../utils/PWAManager.ts';
+  
+  // Initialize PWA functionality when the component mounts
+  document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('pwa-install-container');
+    if (!container) return;
+
+    // Create PWA Manager instance
+    const pwaManager = new PWAManager({
+      onInstall: () => {
+        showInstalledConfirmation();
+      },
+      onUpdate: () => {
+        showUpdateBanner();
+      },
+      onError: (error) => {
+        console.error('PWA Error:', error);
+      }
+    });
+
+    // Initialize PWA Manager
+    pwaManager.init();
+
+    // Set up event listeners
+    setupEventListeners(pwaManager);
+  });
+
+  function setupEventListeners(pwaManager) {
+    // Install button click
+    const installBtn = document.getElementById('pwa-install-btn');
+    if (installBtn) {
+      installBtn.addEventListener('click', () => {
+        pwaManager.promptInstall();
+      });
+    }
+
+    // Update button click
+    const updateBtn = document.getElementById('pwa-update-btn');
+    if (updateBtn) {
+      updateBtn.addEventListener('click', () => {
+        pwaManager.applyUpdate();
+        hideUpdateBanner();
+      });
+    }
+
+    // Dismiss update banner
+    const dismissBtn = document.getElementById('pwa-update-dismiss');
+    if (dismissBtn) {
+      dismissBtn.addEventListener('click', () => {
+        hideUpdateBanner();
+      });
+    }
+
+    // Listen for PWA events
+    document.addEventListener('pwa-install-available', (event) => {
+      showInstallButton();
+    });
+
+    document.addEventListener('pwa-installed', (event) => {
+      hideInstallButton();
+      showInstalledConfirmation();
+    });
+
+    document.addEventListener('pwa-update-available', (event) => {
+      showUpdateBanner();
+    });
+
+    document.addEventListener('pwa-status-changed', (event) => {
+      const { isInstalled } = event.detail;
+      if (isInstalled) {
+        hideInstallButton();
+      }
+    });
+  }
+
+  function showInstallButton() {
+    const button = document.getElementById('pwa-install-button');
+    if (button) {
+      button.style.display = 'block';
+    }
+  }
+
+  function hideInstallButton() {
+    const button = document.getElementById('pwa-install-button');
+    if (button) {
+      button.style.display = 'none';
+    }
+  }
+
+  function showUpdateBanner() {
+    const banner = document.getElementById('pwa-update-banner');
+    if (banner) {
+      banner.style.display = 'block';
+    }
+  }
+
+  function hideUpdateBanner() {
+    const banner = document.getElementById('pwa-update-banner');
+    if (banner) {
+      banner.style.display = 'none';
+    }
+  }
+
+  function showInstalledConfirmation() {
+    const confirmation = document.getElementById('pwa-installed-confirmation');
+    if (confirmation) {
+      confirmation.style.display = 'block';
+      
+      // Auto-hide after 3 seconds
+      setTimeout(() => {
+        confirmation.style.display = 'none';
+      }, 3000);
+    }
+  }
+</script>
+
+<style>
+  .pwa-install {
+    position: fixed;
+    z-index: 1000;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+
+  /* Position variants */
+  .pwa-install--top-right {
+    top: 20px;
+    right: 20px;
+  }
+
+  .pwa-install--top-left {
+    top: 20px;
+    left: 20px;
+  }
+
+  .pwa-install--bottom-right {
+    bottom: 20px;
+    right: 20px;
+  }
+
+  .pwa-install--bottom-left {
+    bottom: 20px;
+    left: 20px;
+  }
+
+  .pwa-install--center {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* Install Button */
+  .pwa-install__button {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .pwa-install__btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s ease;
+  }
+
+  .pwa-install__btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+  }
+
+  .pwa-install__icon {
+    font-size: 16px;
+  }
+
+  /* Update Banner */
+  .pwa-install__update {
+    background: #1a1a1a;
+    color: white;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .pwa-install__update-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .pwa-install__update-text {
+    flex: 1;
+    font-size: 14px;
+  }
+
+  .pwa-install__update-btn {
+    background: #007acc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+
+  .pwa-install__update-btn:hover {
+    background: #005a9e;
+  }
+
+  .pwa-install__dismiss-btn {
+    background: transparent;
+    color: #ccc;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+  }
+
+  .pwa-install__dismiss-btn:hover {
+    color: white;
+  }
+
+  /* Installed Confirmation */
+  .pwa-install__installed {
+    background: #10b981;
+    color: white;
+    border-radius: 8px;
+    padding: 12px 16px;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .pwa-install__installed-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .pwa-install__installed-icon {
+    font-size: 16px;
+  }
+
+  .pwa-install__installed-text {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  /* Theme variants */
+  .pwa-install--minimal .pwa-install__btn {
+    background: #f8f9fa;
+    color: #333;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .pwa-install--minimal .pwa-install__btn:hover {
+    background: #e9ecef;
+  }
+
+  .pwa-install--banner {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .pwa-install--banner .pwa-install__update {
+    width: 100%;
+  }
+
+  /* Animations */
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .pwa-install--top-right,
+    .pwa-install--top-left {
+      top: 10px;
+    }
+
+    .pwa-install--bottom-right,
+    .pwa-install--bottom-left {
+      bottom: 10px;
+    }
+
+    .pwa-install__btn {
+      padding: 10px 16px;
+      font-size: 13px;
+    }
+  }
+</style>
