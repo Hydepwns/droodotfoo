@@ -7,8 +7,8 @@
   font-size: 16px;
   line-height: var(--line-height);
 
-  /* Fill available width */
-  width: 110ch;
+  /* Fill available width - responsive sizing */
+  width: min(110ch, 100%);
   max-width: 100%;
   min-height: 100%; /* Fill parent height */
   flex: 1; /* Grow to fill space */
@@ -186,8 +186,8 @@
   justify-content: flex-start;
   align-items: center;
 
-  /* Sizing */
-  width: 95vw;
+  /* Sizing - responsive width */
+  width: min(95vw, 1400px);
   max-width: 1400px;
   min-height: 0; /* Allow flexbox shrinking */
 
