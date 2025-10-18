@@ -24,6 +24,7 @@ defmodule Droodotfoo.Raxol.Renderer do
     Portal,
     Projects,
     Spotify,
+    STL,
     Web3
   }
 
@@ -195,8 +196,8 @@ defmodule Droodotfoo.Raxol.Renderer do
   defp draw_status_bar(buffer, state) do
     y_pos = Config.status_bar_y()
 
-    section_name = format_section_name(state.current_section)
-    breadcrumb = " ▸ #{section_name}"
+    # Breadcrumb removed - tree view at top left already shows current section
+    breadcrumb = ""
 
     vim_indicator = if State.vim_mode?(state), do: " [VIM]", else: ""
     cmd_indicator = if state.command_mode, do: " [CMD]", else: ""
@@ -245,19 +246,6 @@ defmodule Droodotfoo.Raxol.Renderer do
     status_line = String.pad_trailing(String.slice(status_line, 0, total_width), total_width)
 
     TerminalBridge.write_at(buffer, 0, y_pos, status_line)
-  end
-
-  defp format_section_name(:home), do: "Home"
-  defp format_section_name(:terminal), do: "Terminal"
-  defp format_section_name(:performance), do: "Performance"
-  defp format_section_name(:stl_viewer), do: "STL Viewer"
-  defp format_section_name(:search_results), do: "Search Results"
-
-  defp format_section_name(section) do
-    section
-    |> Atom.to_string()
-    |> String.split("_")
-    |> Enum.map_join(" ", &String.capitalize/1)
   end
 
   defp draw_command_line(buffer, %{command_mode: true} = state) do
@@ -407,6 +395,11 @@ defmodule Droodotfoo.Raxol.Renderer do
   defp draw_content(buffer, :games, state) do
     games_lines = Games.draw_games_menu(state)
     Helpers.draw_box_at(buffer, games_lines, 35, 13)
+  end
+
+  defp draw_content(buffer, :stl_viewer, state) do
+    stl_lines = STL.draw_viewer(state)
+    Helpers.draw_box_at(buffer, stl_lines, 35, 13)
   end
 
   defp draw_content(buffer, :web3, state) do
