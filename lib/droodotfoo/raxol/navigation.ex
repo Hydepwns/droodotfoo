@@ -358,19 +358,11 @@ defmodule Droodotfoo.Raxol.Navigation do
     end
   end
 
-  # Toggle trail with 't' key
-  def handle_input("t", state) do
-    trail =
-      if state.trail_enabled do
-        CursorTrail.clear_trail(state.cursor_trail)
-      else
-        state.cursor_trail
-      end
+  # Trail toggle removed to avoid conflict with command typing
+  # Cursor trail is still active but cannot be toggled via 't' key
+  # This prevents 't' from interfering when typing commands like ':tetris'
 
-    %{state | trail_enabled: !state.trail_enabled, cursor_trail: trail}
-  end
-
-  # Clear trail with 'T' key
+  # Clear trail with 'T' key (kept for manual clearing if needed)
   def handle_input("T", state) do
     %{state | cursor_trail: CursorTrail.clear_trail(state.cursor_trail)}
   end

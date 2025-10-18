@@ -6,6 +6,8 @@ defmodule Droodotfoo.Raxol.Config do
   # Terminal dimensions
   @width 110
   @height 45
+  # Maximum height for scrollable content (experience, projects, etc.)
+  @max_scrollable_height 200
 
   # Layout positions
   @nav_y 13
@@ -35,6 +37,12 @@ defmodule Droodotfoo.Raxol.Config do
   Returns the terminal height in characters.
   """
   def height, do: @height
+
+  @doc """
+  Returns the maximum scrollable height for content sections.
+  Used when rendering sections that may exceed viewport height.
+  """
+  def max_scrollable_height, do: @max_scrollable_height
 
   @doc """
   Returns the navigation panel Y position.

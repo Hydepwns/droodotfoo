@@ -13,30 +13,40 @@ defmodule Droodotfoo.Raxol.Renderer.Content do
   def draw_skills do
     [
       "╭─ Technical Skills ──────────────────────────────────────────────────╮",
-      "│                                                                    │",
-      "│  Languages:                                                        │",
+      "│                                                                     │",
+      "│  Languages:                                                         │",
       "│  #{Droodotfoo.AsciiChart.percent_bar("Elixir", 90, width: 35, label_width: 12, gradient: true, style: :rounded)}        │",
       "│  #{Droodotfoo.AsciiChart.percent_bar("Phoenix", 85, width: 35, label_width: 12, gradient: true, style: :rounded)}       │",
       "│  #{Droodotfoo.AsciiChart.percent_bar("JavaScript", 75, width: 35, label_width: 12, gradient: true, style: :rounded)}    │",
       "│  #{Droodotfoo.AsciiChart.percent_bar("TypeScript", 70, width: 35, label_width: 12, gradient: true, style: :rounded)}    │",
-      "│                                                                   │",
-      "│  Frameworks & Libraries:                                          │",
+      "│                                                                     │",
+      "│  Frameworks & Libraries:                                            │",
       "│  #{Droodotfoo.AsciiChart.percent_bar("LiveView", 95, width: 35, label_width: 12, gradient: true, style: :rounded)}      │",
       "│  #{Droodotfoo.AsciiChart.percent_bar("React", 80, width: 35, label_width: 12, gradient: true, style: :rounded)}         │",
       "│  #{Droodotfoo.AsciiChart.percent_bar("GraphQL", 75, width: 35, label_width: 12, gradient: true, style: :rounded)}       │",
-      "│                                                                   │",
-      "│  Infrastructure & Tools:                                          │",
+      "│                                                                     │",
+      "│  Infrastructure & Tools:                                            │",
       "│  #{Droodotfoo.AsciiChart.percent_bar("Docker", 85, width: 35, label_width: 12, gradient: true, style: :rounded)}        │",
       "│  #{Droodotfoo.AsciiChart.percent_bar("PostgreSQL", 90, width: 35, label_width: 12, gradient: true, style: :rounded)}    │",
-      "│                                                                   │",
+      "│                                                                     │",
       "╰─────────────────────────────────────────────────────────────────────╯"
     ]
   end
 
   @doc """
   Draw the work experience section.
+  Accepts optional state parameter to use uploaded resume data.
   """
-  def draw_experience do
+  def draw_experience(state \\ nil) do
+    if state && state.resume_data && map_size(state.resume_data) > 0 do
+      draw_experience_from_resume(state.resume_data)
+    else
+      draw_experience_default()
+    end
+  end
+
+  # Default experience content (when no resume uploaded)
+  defp draw_experience_default do
     BoxBuilder.build("Experience", [
       "",
       "▪ Senior Backend Engineer",
@@ -52,8 +62,31 @@ defmodule Droodotfoo.Raxol.Renderer.Content do
       "▪ Full Stack Developer",
       "  Digital Agency | 2017 - 2019",
       "  • Built web applications for diverse clients",
+      "",
+      "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+      "",
+      "Upload a resume to auto-populate this section",
+      "Press 'u' to upload resume (JSON format)",
       ""
     ])
+  end
+
+  # Generate experience from uploaded resume data
+  defp draw_experience_from_resume(resume_data) do
+    experience_items = Map.get(resume_data, :experiences, [])
+
+    content_lines =
+      experience_items
+      |> Enum.flat_map(fn exp ->
+        [
+          "",
+          "▪ #{exp.title}",
+          "  #{exp.company} | #{exp.start_date} - #{exp.end_date}",
+          ""
+        ] ++ Enum.map(exp.highlights || [], &("  • #{&1}"))
+      end)
+
+    BoxBuilder.build("Experience (Resume)", [""] ++ content_lines ++ [""])
   end
 
   @doc """
@@ -61,32 +94,32 @@ defmodule Droodotfoo.Raxol.Renderer.Content do
   """
   def draw_contact do
     [
-      "╭─ Contact ───────────────────────────────────────────────────────────╮",
-      "│                                                                   │",
-      "│  Let's connect:                                                   │",
-      "│                                                                   │",
-      "│  ╭─ Email ──────────────────────────────────────────────────────╮   │",
-      "│  │ → drew@axol.io                                             │   │",
-      "│  ╰──────────────────────────────────────────────────────────────╯   │",
-      "│                                                                   │",
-      "│  ╭─ GitHub ────────────────────────────────────────────────────╮    │",
-      "│  │ → github.com/hydepwns                                      │   │",
-      "│  ╰─────────────────────────────────────────────────────────────╯    │",
-      "│                                                                   │",
-      "│  ╭─ LinkedIn ──────────────────────────────────────────────────╮    │",
-      "│  │ → linkedin.com/in/drew-hiro                                │   │",
-      "│  ╰─────────────────────────────────────────────────────────────╯    │",
-      "│                                                                   │",
-      "│  ╭─ X/Twitter ─────────────────────────────────────────────────╮    │",
-      "│  │ → @MF_DROO                                                 │   │",
-      "│  ╰─────────────────────────────────────────────────────────────╯    │",
-      "│                                                                   │",
+      "╭─ Contact ──────────────────────────────────────────────────────────╮",
+      "│                                                                    │",
+      "│  Let's connect:                                                    │",
+      "│                                                                    │",
+      "│  ╭─ Email ──────────────────────────────────────────────────────╮  │",
+      "│  │ → drew@axol.io                                               │  │",
+      "│  ╰──────────────────────────────────────────────────────────────╯  │",
+      "│                                                                    │",
+      "│  ╭─ GitHub ────────────────────────────────────────────────────╮   │",
+      "│  │ → github.com/hydepwns                                       │   │",
+      "│  ╰─────────────────────────────────────────────────────────────╯   │",
+      "│                                                                    │",
+      "│  ╭─ LinkedIn ──────────────────────────────────────────────────╮   │",
+      "│  │ → linkedin.com/in/drew-hiro                                 │   │",
+      "│  ╰─────────────────────────────────────────────────────────────╯   │",
+      "│                                                                    │",
+      "│  ╭─ X/Twitter ─────────────────────────────────────────────────╮   │",
+      "│  │ → @MF_DROO                                                  │   │",
+      "│  ╰─────────────────────────────────────────────────────────────╯   │",
+      "│                                                                    │",
       "│  ╭─ Availability ──────────────────────────────────────────────╮   │",
-      "│  │ ● Available for consulting on Elixir, Phoenix, LiveView,   │   │",
-      "│  │   and distributed systems architecture                     │   │",
-      "│  ╰─────────────────────────────────────────────────────────────╯    │",
-      "│                                                                   │",
-      "╰─────────────────────────────────────────────────────────────────────╯"
+      "│  │ ● Available for consulting on Elixir, Phoenix, LiveView,    │   │",
+      "│  │   and distributed systems architecture                      │   │",
+      "│  ╰─────────────────────────────────────────────────────────────╯   │",
+      "│                                                                    │",
+      "╰────────────────────────────────────────────────────────────────────╯"
     ]
   end
 
@@ -201,8 +234,8 @@ defmodule Droodotfoo.Raxol.Renderer.Content do
 
     footer = [
       "├────────────────────────────────────────────────┤",
-      "│ n/N: next/prev  --fuzzy --exact --regex       │",
-      "│ Press ESC to exit search                      │",
+      "│ n/N: next/prev  --fuzzy --exact --regex        │",
+      "│ Press ESC to exit search                       │",
       "└────────────────────────────────────────────────┘"
     ]
 
@@ -261,27 +294,27 @@ defmodule Droodotfoo.Raxol.Renderer.Content do
 
     [
       "╔══════════════════════════════════════════════════════════════════════════════╗",
-      "║ PERFORMANCE DASHBOARD                                    [Updated: now]    ║",
+      "║ PERFORMANCE DASHBOARD                                      [Updated: now]    ║",
       "╠══════════════════════════════════════════════════════════════════════════════╣",
-      "║                                                                            ║",
-      "║  Render Time (ms)              Memory (MB)              Request Rate       ║",
+      "║                                                                              ║",
+      "║  Render Time (ms)              Memory (MB)              Request Rate         ║",
       "║  ┌─────────────────┐          ┌──────────────┐         ┌─────────────────┐   ║",
       "║  │ #{String.pad_trailing(render_sparkline, 15)} │          │ #{String.pad_trailing(memory_sparkline, 12)} │         │    #{String.pad_trailing(req_rate, 13)}│  ║",
       "║  └─────────────────┘          └──────────────┘         └─────────────────┘   ║",
       "║    Avg: #{String.pad_trailing("#{summary.avg_render_time}ms", 18)}   Cur: #{String.pad_trailing("#{summary.current_memory}MB", 18)}   Total: #{String.pad_trailing("#{summary.total_requests}", 10)}    ║",
-      "║                                                                            ║",
-      "║  System Status                                                             ║",
+      "║                                                                              ║",
+      "║  System Status                                                               ║",
       "║  ──────────────────────────────────────────────────────────────────────────  ║",
-      "║                                                                            ║",
+      "║                                                                              ║",
       "║  Uptime:         #{String.pad_trailing(uptime_str, 15)}  Errors:       #{String.pad_trailing("#{summary.total_errors} (#{summary.error_rate}%)", 20)}  ║",
       "║  Processes:      #{String.pad_trailing("#{summary.current_processes}", 15)}  Avg Memory:  #{String.pad_trailing("#{summary.avg_memory}MB", 20)}  ║",
       "║  P95 Render:     #{String.pad_trailing("#{summary.p95_render_time}ms", 15)}  Max Render:  #{String.pad_trailing("#{summary.max_render_time}ms", 20)}  ║",
-      "║                                                                            ║",
-      "║  Performance Indicators:                                                   ║",
-      "║                                                                            ║",
+      "║                                                                              ║",
+      "║  Performance Indicators:                                                     ║",
+      "║                                                                              ║",
       "║  #{Droodotfoo.AsciiChart.percent_bar("Render", min(summary.avg_render_time * 10, 100), width: 30, label_width: 10, gradient: true, style: :rounded)}                    ║",
       "║  #{Droodotfoo.AsciiChart.percent_bar("Memory", min(summary.current_memory * 2, 100), width: 30, label_width: 10, gradient: true, style: :rounded)}                    ║",
-      "║                                                                            ║",
+      "║                                                                              ║",
       "╚══════════════════════════════════════════════════════════════════════════════╝"
     ]
   end

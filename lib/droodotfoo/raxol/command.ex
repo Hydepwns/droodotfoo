@@ -385,6 +385,22 @@ defmodule Droodotfoo.Raxol.Command do
     %{state | current_section: section}
   end
 
+  defp run_command({"loadresume", args}, state) do
+    # Load sample resume data or parse JSON from args
+    resume_data =
+      if args && String.trim(args) != "" do
+        # Try to parse JSON from args
+        case Jason.decode(args, keys: :atoms) do
+          {:ok, data} -> data
+          {:error, _} -> load_sample_resume()
+        end
+      else
+        load_sample_resume()
+      end
+
+    %{state | resume_data: resume_data, current_section: :experience}
+  end
+
   defp run_command(_, state), do: state
 
   # Helper functions for advanced search
@@ -468,4 +484,84 @@ defmodule Droodotfoo.Raxol.Command do
   # Helper to conditionally put a value in a map if the value is not nil
   defp maybe_put(map, _key, nil), do: map
   defp maybe_put(map, key, value), do: Map.put(map, key, value)
+
+  # Load sample resume data for testing scrollable content
+  defp load_sample_resume do
+    %{
+      experiences: [
+        %{
+          title: "Senior Software Engineer",
+          company: "axol.io",
+          start_date: "2023",
+          end_date: "Present",
+          highlights: [
+            "Architected and built event-driven microservices platform",
+            "Reduced API response time by 70% through optimization",
+            "Led team of 5 engineers in building real-time features",
+            "Implemented comprehensive test suite with 95% coverage"
+          ]
+        },
+        %{
+          title: "Staff Engineer",
+          company: "TechCorp",
+          start_date: "2021",
+          end_date: "2023",
+          highlights: [
+            "Designed distributed system handling 10M+ requests/day",
+            "Mentored junior engineers and conducted code reviews",
+            "Built real-time collaboration features using Phoenix LiveView",
+            "Reduced infrastructure costs by 40% through optimization"
+          ]
+        },
+        %{
+          title: "Senior Elixir Developer",
+          company: "FinTech Startup",
+          start_date: "2019",
+          end_date: "2021",
+          highlights: [
+            "Implemented real-time payment processing system",
+            "Handled 1M+ transactions daily with 99.9% uptime",
+            "Built fraud detection system using machine learning",
+            "Designed and implemented API gateway for microservices"
+          ]
+        },
+        %{
+          title: "Full Stack Developer",
+          company: "Digital Agency",
+          start_date: "2017",
+          end_date: "2019",
+          highlights: [
+            "Built web applications for Fortune 500 clients",
+            "Developed e-commerce platforms handling $10M+ in sales",
+            "Created custom CMS solutions using Phoenix and React",
+            "Implemented CI/CD pipelines and automated testing"
+          ]
+        },
+        %{
+          title: "Backend Developer",
+          company: "Startup Inc",
+          start_date: "2015",
+          end_date: "2017",
+          highlights: [
+            "Developed RESTful APIs using Elixir and Phoenix",
+            "Built real-time chat system with presence tracking",
+            "Optimized database queries reducing load time by 60%",
+            "Implemented OAuth2 authentication and authorization"
+          ]
+        },
+        %{
+          title: "Junior Developer",
+          company: "Tech Solutions",
+          start_date: "2013",
+          end_date: "2015",
+          highlights: [
+            "Maintained and enhanced legacy Rails applications",
+            "Built internal tools to improve team productivity",
+            "Contributed to open source Elixir libraries",
+            "Learned functional programming and OTP principles"
+          ]
+        }
+      ]
+    }
+  end
 end
