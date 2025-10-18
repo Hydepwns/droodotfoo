@@ -47,7 +47,7 @@
 
 /* === THEMING & VISUAL EFFECTS === */
 @import "./themes.css";            /* 7 terminal color themes */
-@import "./crt_effects.css";       /* Vintage CRT effects */
+/* @import "./crt_effects.css"; */  /* Vintage CRT effects - DISABLED */
 @import "./accessibility.css";     /* A11y overrides */
 
 /* === UI COMPONENTS === */
