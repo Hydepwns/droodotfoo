@@ -7,15 +7,19 @@
     
 <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#00ff00" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="droo.foo" />
     <link rel="manifest" href="/manifest.json" />
     
-<!-- iOS Icons -->
-    <link rel="apple-touch-icon" href="/images/icon-192x192.png" />
+<!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png" />
+    <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
 
-    <.live_title default="droo.foo" suffix=" · Terminal Interface">
+    <.live_title default="DROO.FOO" suffix=" · Engineer building his Gundam">
       {assigns[:page_title]}
     </.live_title>
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
@@ -23,17 +27,88 @@
     </script>
   </head>
   <body>
-    <!-- Theme Toggle Button (site-wide) -->
+    <!-- Theme Toggle Button (desktop only) -->
     <button
       class="theme-toggle"
       id="theme-toggle"
-      data-tooltip="Theme (T)"
-      aria-label="Cycle Theme (capital-T)"
+      data-tooltip="Theme (t)"
+      aria-label="Cycle Theme (t key)"
     >
       T
     </button>
 
+    <!-- Music Toggle Button (desktop only) -->
+    <button
+      class="music-toggle"
+      id="music-toggle"
+      data-tooltip="Music Player"
+      aria-label="Toggle Music Player"
+    >
+      ♫
+    </button>
+
+    <!-- Hamburger Menu (mobile only) -->
+    <button class="hamburger-toggle" id="hamburger-toggle" aria-label="Open menu">
+      <span class="hamburger-icon">☰</span>
+    </button>
+
+    <div class="hamburger-menu" id="hamburger-menu">
+      <button class="menu-close" id="menu-close" aria-label="Close menu">×</button>
+
+      <div class="menu-items">
+        <button id="menu-terminal-toggle" class="menu-item" data-tooltip="Terminal (`)">
+          <span class="menu-icon">`</span>
+          <span class="menu-label">Terminal</span>
+        </button>
+
+        <button id="menu-theme-toggle" class="menu-item" data-tooltip="Cycle Theme (t)">
+          <span class="menu-icon">T</span>
+          <span class="menu-label">Theme</span>
+        </button>
+
+        <button id="menu-music-toggle" class="menu-item" data-tooltip="Toggle Music Player">
+          <span class="menu-icon">♫</span>
+          <span class="menu-label">Music</span>
+        </button>
+      </div>
+    </div>
+
     {@inner_content}
+
+    <!-- Music Player (Spotify with YouTube fallback) - Site-wide, persists across pages -->
+    <div id="music-player-widget" phx-update="ignore" class="music-player-persistent music-player-expanded">
+      <div class="music-player-content">
+        <!-- Spotify embed (primary) -->
+        <iframe
+          id="spotify-player"
+          class="music-iframe spotify-iframe"
+          style="border-radius:8px;"
+          src="https://open.spotify.com/embed/playlist/6qfswybTWZ4FtWACSJVSPT?utm_source=generator&theme=0&autoplay=false"
+          width="100%"
+          height="152"
+          frameBorder="0"
+          allowfullscreen=""
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy"
+          onerror="document.getElementById('spotify-player').style.display='none';document.getElementById('youtube-fallback').style.display='block';"
+        >
+        </iframe>
+        <!-- YouTube fallback -->
+        <iframe
+          id="youtube-fallback"
+          class="music-iframe youtube-iframe"
+          style="display:none;border-radius:8px;"
+          src="https://www.youtube.com/embed/-7umv_1WYDI?start=208&autoplay=1&mute=1"
+          width="100%"
+          height="152"
+          frameBorder="0"
+          allowfullscreen=""
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          loading="lazy"
+        >
+        </iframe>
+      </div>
+    </div>
 
     <script>
       // Theme cycling functionality
@@ -64,6 +139,14 @@
         localStorage.setItem('phx:theme', themes[0]);
       }
 
+      // Set music player to minimized on mobile by default (run immediately)
+      const isMobile = window.innerWidth <= 768;
+      const musicPlayerWidget = document.getElementById('music-player-widget');
+      if (isMobile && musicPlayerWidget) {
+        musicPlayerWidget.classList.remove('music-player-expanded');
+        musicPlayerWidget.classList.add('music-player-minimized');
+      }
+
       // Theme toggle button click handler
       document.addEventListener('DOMContentLoaded', () => {
         const button = document.getElementById('theme-toggle');
@@ -86,17 +169,17 @@
         }
       });
 
-      // Keyboard shortcut 'T' for theme toggle
+      // Keyboard shortcut 't' or 'T' for theme toggle
       // Use capturing phase to intercept before LiveView processes it
       let lastThemeChange = 0;
       const themeChangeDelay = 100; // Minimum 100ms between theme changes
 
       document.addEventListener('keydown', (e) => {
-        // Allow T key for theme toggle from anywhere except regular input fields
+        // Allow t/T key for theme toggle from anywhere except regular input fields
         // Terminal input (id="terminal-input") is allowed to trigger theme toggle
         const isRegularInput = e.target.matches('input, textarea, select') && e.target.id !== 'terminal-input';
 
-        if (e.key === 'T' && !isRegularInput && !e.repeat) {
+        if ((e.key === 't' || e.key === 'T') && !isRegularInput && !e.repeat) {
           const now = Date.now();
           if (now - lastThemeChange >= themeChangeDelay) {
             lastThemeChange = now;
@@ -120,6 +203,87 @@
           }
         }
       }, true); // true = use capturing phase
+
+      // Hamburger Menu functionality
+      document.addEventListener('DOMContentLoaded', () => {
+        const hamburgerToggle = document.getElementById('hamburger-toggle');
+        const hamburgerMenu = document.getElementById('hamburger-menu');
+        const menuClose = document.getElementById('menu-close');
+        const menuTerminalToggle = document.getElementById('menu-terminal-toggle');
+        const menuThemeToggle = document.getElementById('menu-theme-toggle');
+        const menuMusicToggle = document.getElementById('menu-music-toggle');
+        const musicPlayer = document.getElementById('music-player-widget');
+
+        // Open hamburger menu
+        if (hamburgerToggle) {
+          hamburgerToggle.addEventListener('click', () => {
+            hamburgerMenu.classList.add('menu-open');
+          });
+        }
+
+        // Close hamburger menu
+        if (menuClose) {
+          menuClose.addEventListener('click', () => {
+            hamburgerMenu.classList.remove('menu-open');
+          });
+        }
+
+        // Close menu when clicking outside
+        hamburgerMenu.addEventListener('click', (e) => {
+          if (e.target === hamburgerMenu) {
+            hamburgerMenu.classList.remove('menu-open');
+          }
+        });
+
+        // Terminal toggle from menu
+        if (menuTerminalToggle) {
+          menuTerminalToggle.addEventListener('click', () => {
+            // Find and click the terminal toggle button (if it exists)
+            const terminalToggle = document.querySelector('.terminal-toggle');
+            if (terminalToggle) {
+              terminalToggle.click();
+            } else {
+              // If no terminal toggle exists, toggle the overlay directly
+              const terminalOverlay = document.querySelector('.terminal-overlay');
+              if (terminalOverlay) {
+                terminalOverlay.classList.toggle('active');
+              }
+            }
+            hamburgerMenu.classList.remove('menu-open');
+          });
+        }
+
+        // Theme toggle from menu
+        if (menuThemeToggle) {
+          menuThemeToggle.addEventListener('click', () => {
+            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+            const newTheme = themes[currentThemeIndex];
+            themes.forEach(t => document.documentElement.classList.remove(t));
+            document.documentElement.classList.add(newTheme);
+            localStorage.setItem('phx:theme', newTheme);
+            console.log('Theme changed to:', themeNames[currentThemeIndex]);
+            hamburgerMenu.classList.remove('menu-open');
+          });
+        }
+
+        // Music player minimize/maximize toggle (mobile hamburger menu)
+        if (menuMusicToggle && musicPlayer) {
+          menuMusicToggle.addEventListener('click', () => {
+            musicPlayer.classList.toggle('music-player-minimized');
+            musicPlayer.classList.toggle('music-player-expanded');
+            hamburgerMenu.classList.remove('menu-open');
+          });
+        }
+
+        // Music player minimize/maximize toggle (desktop button)
+        const desktopMusicToggle = document.getElementById('music-toggle');
+        if (desktopMusicToggle && musicPlayer) {
+          desktopMusicToggle.addEventListener('click', () => {
+            musicPlayer.classList.toggle('music-player-minimized');
+            musicPlayer.classList.toggle('music-player-expanded');
+          });
+        }
+      });
     </script>
   </body>
 </html>

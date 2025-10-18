@@ -91,34 +91,53 @@ defmodule DroodotfooWeb.DroodotfooLive.EventHandlers do
     # Debug logging
     Logger.debug("Cell clicked at row=#{row}, col=#{col}")
 
-    # Handle cell click - navigation menu is at rows 15-20, cols 0-29
-    # Row 15 = Home (idx 0)
-    # Row 16 = Projects (idx 1)
-    # Row 17 = Skills (idx 2)
-    # Row 18 = Experience (idx 3)
-    # Row 19 = Contact (idx 4)
-    # Row 20 = STL Viewer (idx 5)
+    # Handle cell click - navigation menu is at rows 15-22, cols 0-29
+    # Navigation layout (after removing Tools section):
+    # Row 15 (offset 0) = Home (idx 0)
+    # Row 16 (offset 1) = Experience (idx 1)
+    # Row 17 (offset 2) = Contact (idx 2)
+    # Row 18 (offset 3) = "─ Fun ───" (section header - SKIP)
+    # Row 19 (offset 4) = Games (idx 3)
+    # Row 20 (offset 5) = Spotify (idx 4)
+    # Row 21 (offset 6) = STL Viewer (idx 5)
+    # Row 22 (offset 7) = Web3 (idx 6)
 
     nav_start_row = 15
-    nav_end_row = 20
+    nav_end_row = 22
     nav_start_col = 0
     nav_end_col = 29
 
     if row >= nav_start_row and row <= nav_end_row and
          col >= nav_start_col and col <= nav_end_col do
-      # Calculate which menu item was clicked
-      menu_idx = row - nav_start_row
-      Logger.debug("Navigation clicked at menu_idx=#{menu_idx}")
+      # Calculate which menu item was clicked, accounting for section header at offset 3
+      offset = row - nav_start_row
 
-      # Send cursor movement and selection to RaxolApp
-      # First move cursor to the item
-      RaxolApp.send_input(socket.assigns.raxol_pid, "cursor_set:#{menu_idx}")
-      # Then select it
-      RaxolApp.send_input(socket.assigns.raxol_pid, "Enter")
+      menu_idx =
+        cond do
+          # Rows 0-2: Direct mapping
+          offset <= 2 -> offset
+          # Row 3: Section header - ignore click
+          offset == 3 -> nil
+          # Rows 4-7: Subtract 1 to account for section header
+          offset >= 4 -> offset - 1
+        end
 
-      # Mark as dirty for immediate render
-      adaptive = AdaptiveRefresh.mark_dirty(socket.assigns.adaptive_refresh)
-      {:noreply, assign(socket, :adaptive_refresh, adaptive)}
+      if menu_idx do
+        Logger.debug("Navigation clicked at offset=#{offset}, menu_idx=#{menu_idx}")
+
+        # Send cursor movement and selection to RaxolApp
+        # First move cursor to the item
+        RaxolApp.send_input(socket.assigns.raxol_pid, "cursor_set:#{menu_idx}")
+        # Then select it
+        RaxolApp.send_input(socket.assigns.raxol_pid, "Enter")
+
+        # Mark as dirty for immediate render
+        adaptive = AdaptiveRefresh.mark_dirty(socket.assigns.adaptive_refresh)
+        {:noreply, assign(socket, :adaptive_refresh, adaptive)}
+      else
+        Logger.debug("Section header clicked at offset=#{offset} - ignoring")
+        {:noreply, socket}
+      end
     else
       {:noreply, socket}
     end
@@ -139,10 +158,16 @@ defmodule DroodotfooWeb.DroodotfooLive.EventHandlers do
 
   def handle_event("key_press", %{"key" => key}, socket) do
     # Backtick always toggles terminal, even during boot
-    if key == "`" do
-      handle_backtick_key(socket)
-    else
-      handle_other_key(key, socket)
+    # Escape always closes terminal if visible
+    cond do
+      key == "`" ->
+        handle_backtick_key(socket)
+
+      key == "Escape" and socket.assigns.terminal_visible ->
+        handle_escape_key(socket)
+
+      true ->
+        handle_other_key(key, socket)
     end
   end
 
@@ -185,6 +210,14 @@ defmodule DroodotfooWeb.DroodotfooLive.EventHandlers do
      socket
      |> assign(:terminal_visible, new_state)
      |> push_event("save_terminal_pref", %{visible: new_state})}
+  end
+
+  defp handle_escape_key(socket) do
+    # Escape closes the terminal if it's visible
+    {:noreply,
+     socket
+     |> assign(:terminal_visible, false)
+     |> push_event("save_terminal_pref", %{visible: false})}
   end
 
   defp handle_other_key(key, socket) do

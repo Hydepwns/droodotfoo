@@ -32,7 +32,7 @@ defmodule DroodotfooWeb.Plugs.ContentSecurityPolicy do
       "font-src 'self' #{host}/fonts data:",
       "img-src 'self' data: blob: #{host}",
       "connect-src 'self' ws: wss: #{host} chrome-extension: moz-extension:",
-      "frame-src 'self' #{host} chrome-extension: moz-extension:",
+      "frame-src 'self' #{host} https://www.youtube.com https://www.youtube-nocookie.com https://open.spotify.com chrome-extension: moz-extension:",
       "worker-src 'self' blob:",
       "object-src 'none'",
       "base-uri 'self'",
