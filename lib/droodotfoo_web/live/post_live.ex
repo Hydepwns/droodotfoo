@@ -34,18 +34,17 @@ defmodule DroodotfooWeb.PostLive do
         <a href="/" class="back-link">{PostFormatter.back_link()}</a>
       </nav>
 
-      <header class="post-header" style="margin-bottom: 2rem;">
+      <header class="post-header" style="margin-bottom: 1.5rem; padding: 0rem;">
         <div class="post-header-grid">
           <div class="post-header-content">
-            <h1 class="post-title">{@header.title}</h1>
+            <h1
+              class="post-title"
+              style="font-size: 3rem; margin-top: 0.25rem; margin-bottom: 0.25rem; text-align: left;"
+            >
+              {@header.title}
+            </h1>
             <%= if @header.description do %>
-              <p class="post-description">{@header.description}</p>
-            <% end %>
-            <%= if @header.author do %>
-              <div class="post-author">
-                <span>Author</span>
-                <span class="author-name">{@header.author}</span>
-              </div>
+              <p class="post-description" style="margin: 0; padding: 0;">{@header.description}</p>
             <% end %>
           </div>
           <div class="post-header-meta">
