@@ -79,7 +79,13 @@
       "Bash(\"$file\")",
       "Bash(for file in test/droodotfoo/raxol/renderer_test.exs test/droodotfoo/plugin_integration_test.exs test/droodotfoo/load_test.exs lib/droodotfoo_web/live/post_live.ex)",
       "Bash(head:*)",
-      "Bash(mix clean:*)"
+      "Bash(mix clean:*)",
+      "Bash(convert foxmask.png -resize 16x16 priv/static/images/favicon-16x16.png)",
+      "Bash(convert foxmask.png -resize 32x32 priv/static/images/favicon-32x32.png)",
+      "Bash(convert foxmask.png -resize 180x180 priv/static/images/apple-touch-icon.png)",
+      "Bash(convert foxmask.png -define icon:auto-resize=16,32,48,64 priv/static/images/favicon.ico)",
+      "Bash(magick foxmask.png -resize 192x192 priv/static/images/icon-192x192.png)",
+      "Bash(magick foxmask.png -resize 512x512 priv/static/images/icon-512x512.png)"
     ],
     "deny": [],
     "ask": []
