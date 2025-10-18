@@ -2,9 +2,17 @@
 
 /* Base mobile adjustments */
 @media screen and (max-width: 768px) {
+  /* Add bottom padding to prevent Spotify player from covering content */
+  .site-container,
+  .monospace-container,
+  body {
+    padding-bottom: 190px !important;
+  }
+
   /* Adjust terminal container for mobile */
   .monospace-web-container {
     padding: 4px;
+    padding-bottom: 190px !important;
     margin: 0;
     height: 100vh;
     display: flex;
