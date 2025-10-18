@@ -352,7 +352,7 @@ table.header .width-auto {
 
 /* Highlight status bar mode indicators */
 .terminal-line:nth-child(34) .cell {
-  opacity: 0.9;
+  /* opacity: 0.9; REMOVED - caused contrast to drop from 21:1 to 16.74:1 */
 }
 /* STL Viewer Canvas - positioned inside terminal-wrapper */
 #stl-viewer-container {
