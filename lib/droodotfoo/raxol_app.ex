@@ -17,10 +17,10 @@ defmodule Droodotfoo.RaxolApp do
 
   use GenServer
   alias Droodotfoo.CursorTrail
-  alias Droodotfoo.Raxol.{Renderer, State}
+  alias Droodotfoo.Raxol.{Config, Renderer, State}
 
-  @width 80
-  @height 24
+  @width Config.width()
+  @height Config.height()
 
   # Type definitions
 
@@ -56,7 +56,7 @@ defmodule Droodotfoo.RaxolApp do
   @doc """
   Get the current terminal buffer for rendering.
 
-  Returns a 2D grid of cells (80x24) representing the terminal display.
+  Returns a 2D grid of cells (110x45 or larger for scrollable sections) representing the terminal display.
   Each cell contains a character and styling information.
 
   Falls back to an empty buffer if the GenServer is unavailable or times out.
@@ -66,8 +66,6 @@ defmodule Droodotfoo.RaxolApp do
       iex> buffer = Droodotfoo.RaxolApp.get_buffer()
       iex> is_list(buffer)
       true
-      iex> length(buffer)
-      24
 
   """
   @spec get_buffer(pid_or_name()) :: buffer()

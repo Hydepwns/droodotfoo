@@ -4,6 +4,7 @@ defmodule Droodotfoo.Raxol.Renderer do
 
   This module has been refactored into focused submodules:
   - Renderer.Helpers - Shared utility functions
+  - Renderer.Games - Games menu and selection
   - Renderer.Spotify - Spotify UI components
   - Renderer.Web3 - Web3 wallet UI
   - Renderer.Portal - Portal P2P status displays
@@ -14,13 +15,31 @@ defmodule Droodotfoo.Raxol.Renderer do
 
   alias Droodotfoo.{CursorTrail, TerminalBridge}
   alias Droodotfoo.Raxol.{BoxConfig, Config, State}
-  alias Droodotfoo.Raxol.Renderer.{Content, Helpers, Home, Portal, Projects, Spotify, Web3}
+
+  alias Droodotfoo.Raxol.Renderer.{
+    Content,
+    Games,
+    Helpers,
+    Home,
+    Portal,
+    Projects,
+    Spotify,
+    Web3
+  }
 
   @doc """
   Main render function that orchestrates all drawing operations
   """
   def render(state) do
-    buffer = TerminalBridge.create_blank_buffer(Config.width(), Config.height())
+    # Use dynamic height for scrollable sections (experience, projects)
+    buffer_height =
+      if state.current_section in [:experience, :projects] and has_scrollable_content?(state) do
+        Config.max_scrollable_height()
+      else
+        Config.height()
+      end
+
+    buffer = TerminalBridge.create_blank_buffer(Config.width(), buffer_height)
 
     buffer
     |> draw_ascii_logo()
@@ -33,6 +52,13 @@ defmodule Droodotfoo.Raxol.Renderer do
     |> draw_command_line(state)
     |> draw_help_modal(state)
   end
+
+  # Check if current section has scrollable content
+  defp has_scrollable_content?(%{current_section: :experience, resume_data: resume_data})
+       when is_map(resume_data) and resume_data != %{},
+       do: true
+
+  defp has_scrollable_content?(_state), do: false
 
   # Core UI Functions
 
@@ -74,13 +100,14 @@ defmodule Droodotfoo.Raxol.Renderer do
       {" Home                    ", :home, 0},
       {" Experience              ", :experience, 1},
       {" Contact                 ", :contact, 2},
-      {:section_header, "Tools", nil},
-      {" Spotify                 ", :spotify, 3},
-      {" STL Viewer              ", :stl_viewer, 4},
-      {" Web3                    ", :web3, 5}
+      {:section_header, "Fun", nil},
+      {" Games                   ", :games, 3},
+      {" Spotify                 ", :spotify, 4},
+      {" STL Viewer              ", :stl_viewer, 5},
+      {" Web3                    ", :web3, 6}
     ]
 
-    buffer = TerminalBridge.draw_box(buffer, 0, nav_y, 30, 10, :single)
+    buffer = TerminalBridge.draw_box(buffer, 0, nav_y, 30, 13, :single)
     buffer = TerminalBridge.write_at(buffer, 2, nav_y, "─ Navigation ──────────────")
 
     nav_items
@@ -313,8 +340,8 @@ defmodule Droodotfoo.Raxol.Renderer do
     Helpers.draw_box_at(buffer, Content.draw_skills(), 35, 13)
   end
 
-  defp draw_content(buffer, :experience, _state) do
-    Helpers.draw_box_at(buffer, Content.draw_experience(), 35, 13)
+  defp draw_content(buffer, :experience, state) do
+    Helpers.draw_box_at(buffer, Content.draw_experience(state), 35, 13)
   end
 
   defp draw_content(buffer, :contact, _state) do
@@ -375,6 +402,11 @@ defmodule Droodotfoo.Raxol.Renderer do
       end
 
     Helpers.draw_box_at(buffer, spotify_lines, 35, 13)
+  end
+
+  defp draw_content(buffer, :games, state) do
+    games_lines = Games.draw_games_menu(state)
+    Helpers.draw_box_at(buffer, games_lines, 35, 13)
   end
 
   defp draw_content(buffer, :web3, state) do

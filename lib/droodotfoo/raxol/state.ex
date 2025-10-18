@@ -60,13 +60,18 @@ defmodule Droodotfoo.Raxol.State do
     :portal_transfers,
     :portal_activity,
     :portal_notifications,
-    :current_portal_id
+    :current_portal_id,
+    :resume_data
   ]
 
   # Type definitions
 
   @type section ::
-          :home | :experience | :contact | :spotify | :stl_viewer | :tools | :projects | :web3
+          :home
+          | :experience
+          | :contact
+          | :games
+          | :projects
   @type t :: %__MODULE__{
           buffer: [[map()]],
           current_section: section(),
@@ -107,7 +112,8 @@ defmodule Droodotfoo.Raxol.State do
           portal_transfers: [map()],
           portal_activity: [map()],
           portal_notifications: [map()],
-          current_portal_id: String.t() | nil
+          current_portal_id: String.t() | nil,
+          resume_data: map() | nil
         }
 
   @type input_action :: {:input, String.t()}
@@ -152,12 +158,12 @@ defmodule Droodotfoo.Raxol.State do
 
   ## Parameters
 
-  - `width`: Terminal width in characters (typically 80)
-  - `height`: Terminal height in rows (typically 24)
+  - `width`: Terminal width in characters (typically 110)
+  - `height`: Terminal height in rows (typically 45)
 
   ## Examples
 
-      iex> state = Droodotfoo.Raxol.State.initial(80, 24)
+      iex> state = Droodotfoo.Raxol.State.initial(110, 45)
       iex> state.current_section
       :home
       iex> state.command_mode
@@ -175,6 +181,7 @@ defmodule Droodotfoo.Raxol.State do
         :home,
         :experience,
         :contact,
+        :games,
         :spotify,
         :stl_viewer,
         :web3
@@ -213,7 +220,8 @@ defmodule Droodotfoo.Raxol.State do
       portal_transfers: [],
       portal_activity: [],
       portal_notifications: [],
-      current_portal_id: nil
+      current_portal_id: nil,
+      resume_data: nil
     }
   end
 
