@@ -13,7 +13,6 @@ defmodule Droodotfoo.Content.PostFormatter do
     %{
       title: String.upcase(post.title),
       description: post.description,
-      author: post.author,
       metadata:
         [
           {"Published", Date.to_string(post.date)},
