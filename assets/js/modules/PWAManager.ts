@@ -4,7 +4,7 @@
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
 export class PWAManager {
@@ -30,18 +30,19 @@ export class PWAManager {
       // Monitor installation status
       this.monitorInstallStatus();
 
-      // For testing: always show uninstall button
-      // In production, this should only show when installed
-      this.showUninstallButton();
+      // Show uninstall button only if app is already installed
+      if (this.isInstalled) {
+        this.showUninstallButton();
+      }
 
-      console.log('[PWA] Manager initialized');
-      console.log('[PWA] Install status:', {
+      console.log("[PWA] Manager initialized");
+      console.log("[PWA] Install status:", {
         isInstalled: this.isInstalled,
         hasServiceWorker: !!this.serviceWorkerRegistration,
-        canInstall: !!this.deferredPrompt
+        canInstall: !!this.deferredPrompt,
       });
     } catch (error) {
-      console.error('[PWA] Initialization failed:', error);
+      console.error("[PWA] Initialization failed:", error);
     }
   }
 
@@ -49,27 +50,36 @@ export class PWAManager {
    * Register the service worker
    */
   private async registerServiceWorker(): Promise<void> {
-    if (!('serviceWorker' in navigator)) {
-      console.log('[PWA] Service Workers not supported');
+    if (!("serviceWorker" in navigator)) {
+      console.log("[PWA] Service Workers not supported");
       return;
     }
 
     try {
-      this.serviceWorkerRegistration = await navigator.serviceWorker.register('/sw.js', {
-        scope: '/'
-      });
+      this.serviceWorkerRegistration = await navigator.serviceWorker.register(
+        "/sw.js",
+        {
+          scope: "/",
+        },
+      );
 
-      console.log('[PWA] Service Worker registered:', this.serviceWorkerRegistration);
+      console.log(
+        "[PWA] Service Worker registered:",
+        this.serviceWorkerRegistration,
+      );
 
       // Check for updates periodically
-      setInterval(() => {
-        this.serviceWorkerRegistration?.update();
-      }, 60 * 60 * 1000); // Check every hour
+      setInterval(
+        () => {
+          this.serviceWorkerRegistration?.update();
+        },
+        60 * 60 * 1000,
+      ); // Check every hour
 
       // Handle updates
       this.handleServiceWorkerUpdates();
     } catch (error) {
-      console.error('[PWA] Service Worker registration failed:', error);
+      console.error("[PWA] Service Worker registration failed:", error);
     }
   }
 
@@ -79,13 +89,16 @@ export class PWAManager {
   private handleServiceWorkerUpdates(): void {
     if (!this.serviceWorkerRegistration) return;
 
-    this.serviceWorkerRegistration.addEventListener('updatefound', () => {
+    this.serviceWorkerRegistration.addEventListener("updatefound", () => {
       const newWorker = this.serviceWorkerRegistration!.installing;
 
       if (!newWorker) return;
 
-      newWorker.addEventListener('statechange', () => {
-        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+      newWorker.addEventListener("statechange", () => {
+        if (
+          newWorker.state === "installed" &&
+          navigator.serviceWorker.controller
+        ) {
           // New service worker available
           this.notifyUpdateAvailable();
         }
@@ -97,8 +110,8 @@ export class PWAManager {
    * Notify user that an update is available
    */
   private notifyUpdateAvailable(): void {
-    const updateBanner = document.createElement('div');
-    updateBanner.className = 'pwa-update-banner';
+    const updateBanner = document.createElement("div");
+    updateBanner.className = "pwa-update-banner";
     updateBanner.innerHTML = `
       <span>A new version is available!</span>
       <button id="pwa-update-btn" class="pwa-update-btn">Update</button>
@@ -106,7 +119,7 @@ export class PWAManager {
 
     document.body.appendChild(updateBanner);
 
-    document.getElementById('pwa-update-btn')?.addEventListener('click', () => {
+    document.getElementById("pwa-update-btn")?.addEventListener("click", () => {
       this.applyUpdate();
     });
   }
@@ -118,10 +131,12 @@ export class PWAManager {
     if (!this.serviceWorkerRegistration?.waiting) return;
 
     // Tell waiting service worker to take control
-    this.serviceWorkerRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+    this.serviceWorkerRegistration.waiting.postMessage({
+      type: "SKIP_WAITING",
+    });
 
     // Reload once the new service worker takes control
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
       window.location.reload();
     });
   }
@@ -131,7 +146,7 @@ export class PWAManager {
    */
   private setupInstallPrompt(): void {
     // Listen for beforeinstallprompt event
-    window.addEventListener('beforeinstallprompt', (event: Event) => {
+    window.addEventListener("beforeinstallprompt", (event: Event) => {
       event.preventDefault();
       this.deferredPrompt = event as BeforeInstallPromptEvent;
 
@@ -140,12 +155,12 @@ export class PWAManager {
         this.showInstallButton();
       }
 
-      console.log('[PWA] Install prompt captured');
+      console.log("[PWA] Install prompt captured");
     });
 
     // Listen for app installed event
-    window.addEventListener('appinstalled', () => {
-      console.log('[PWA] App installed');
+    window.addEventListener("appinstalled", () => {
+      console.log("[PWA] App installed");
       this.isInstalled = true;
       this.hideInstallButton();
       this.showUninstallButton();
@@ -158,24 +173,24 @@ export class PWAManager {
    */
   private checkIfInstalled(): void {
     // Check if running in standalone mode
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    if (window.matchMedia("(display-mode: standalone)").matches) {
       this.isInstalled = true;
-      console.log('[PWA] Already running in standalone mode');
+      console.log("[PWA] Already running in standalone mode");
       return;
     }
 
     // Check if launched from home screen (iOS)
     if ((navigator as any).standalone) {
       this.isInstalled = true;
-      console.log('[PWA] Already running as iOS standalone');
+      console.log("[PWA] Already running as iOS standalone");
       return;
     }
 
     // Check URL parameters
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('mode') === 'standalone') {
+    if (urlParams.get("mode") === "standalone") {
       this.isInstalled = true;
-      console.log('[PWA] Launched in standalone mode');
+      console.log("[PWA] Launched in standalone mode");
     }
   }
 
@@ -184,14 +199,14 @@ export class PWAManager {
    */
   private monitorInstallStatus(): void {
     // Monitor display mode changes
-    const displayModeQuery = window.matchMedia('(display-mode: standalone)');
+    const displayModeQuery = window.matchMedia("(display-mode: standalone)");
 
-    displayModeQuery.addEventListener('change', (event) => {
+    displayModeQuery.addEventListener("change", (event) => {
       if (event.matches) {
         this.isInstalled = true;
         this.hideInstallButton();
         this.showUninstallButton();
-        console.log('[PWA] Changed to standalone mode');
+        console.log("[PWA] Changed to standalone mode");
       }
     });
   }
@@ -201,47 +216,54 @@ export class PWAManager {
    */
   private showInstallButton(): void {
     // Check if button already exists
-    if (document.getElementById('pwa-install-btn')) return;
+    if (document.getElementById("pwa-install-btn")) return;
 
-    const footer = document.getElementById('site-footer');
+    const footer = document.getElementById("site-footer");
     if (!footer) return;
 
     // Add separator if footer has content
     if (footer.textContent && footer.textContent.trim().length > 0) {
-      footer.appendChild(document.createTextNode(' • '));
+      footer.appendChild(document.createTextNode(" • "));
     }
 
-    const installButton = document.createElement('a');
-    installButton.id = 'pwa-install-btn';
-    installButton.className = 'pwa-install-link';
-    installButton.innerHTML = 'Install app';
-    installButton.setAttribute('href', '#');
-    installButton.setAttribute('aria-label', 'Install droo.foo as an app');
-    installButton.setAttribute('data-tooltip', '+ Works offline\n+ Faster loading\n+ Desktop app\n+ Auto updates');
+    const installButton = document.createElement("a");
+    installButton.id = "pwa-install-btn";
+    installButton.className = "pwa-install-link";
+    installButton.innerHTML = "Install app";
+    installButton.setAttribute("href", "#");
+    installButton.setAttribute("aria-label", "Install droo.foo as an app");
+    installButton.setAttribute(
+      "data-tooltip",
+      "+ Terminal works offline\n+ Desktop app\n+ More coming soon",
+    );
 
-    installButton.addEventListener('click', (e) => {
+    installButton.addEventListener("click", (e) => {
       e.preventDefault();
       this.promptInstall();
     });
 
     footer.appendChild(installButton);
 
-    console.log('[PWA] Install link shown in footer');
+    console.log("[PWA] Install link shown in footer");
   }
 
   /**
    * Hide install button from UI
    */
   private hideInstallButton(): void {
-    const button = document.getElementById('pwa-install-btn');
+    const button = document.getElementById("pwa-install-btn");
     if (button) {
       // Remove the separator before it too
       const previousNode = button.previousSibling;
-      if (previousNode && previousNode.nodeType === Node.TEXT_NODE && previousNode.textContent === ' • ') {
+      if (
+        previousNode &&
+        previousNode.nodeType === Node.TEXT_NODE &&
+        previousNode.textContent === " • "
+      ) {
         previousNode.remove();
       }
       button.remove();
-      console.log('[PWA] Install button hidden');
+      console.log("[PWA] Install button hidden");
     }
   }
 
@@ -250,47 +272,54 @@ export class PWAManager {
    */
   private showUninstallButton(): void {
     // Check if button already exists
-    if (document.getElementById('pwa-uninstall-btn')) return;
+    if (document.getElementById("pwa-uninstall-btn")) return;
 
-    const footer = document.getElementById('site-footer');
+    const footer = document.getElementById("site-footer");
     if (!footer) return;
 
     // Add separator if footer has content
     if (footer.textContent && footer.textContent.trim().length > 0) {
-      footer.appendChild(document.createTextNode(' • '));
+      footer.appendChild(document.createTextNode(" • "));
     }
 
-    const uninstallButton = document.createElement('a');
-    uninstallButton.id = 'pwa-uninstall-btn';
-    uninstallButton.className = 'pwa-install-link';
-    uninstallButton.innerHTML = 'Uninstall app';
-    uninstallButton.setAttribute('href', '#');
-    uninstallButton.setAttribute('aria-label', 'Uninstall droo.foo app');
-    uninstallButton.setAttribute('data-tooltip', 'Clear caches\nReset app state\nFor testing');
+    const uninstallButton = document.createElement("a");
+    uninstallButton.id = "pwa-uninstall-btn";
+    uninstallButton.className = "pwa-install-link";
+    uninstallButton.innerHTML = "Uninstall app";
+    uninstallButton.setAttribute("href", "#");
+    uninstallButton.setAttribute("aria-label", "Uninstall droo.foo app");
+    uninstallButton.setAttribute(
+      "data-tooltip",
+      "Clear caches\nReset app state\nFor testing",
+    );
 
-    uninstallButton.addEventListener('click', (e) => {
+    uninstallButton.addEventListener("click", (e) => {
       e.preventDefault();
       this.uninstall();
     });
 
     footer.appendChild(uninstallButton);
 
-    console.log('[PWA] Uninstall link shown in footer');
+    console.log("[PWA] Uninstall link shown in footer");
   }
 
   /**
    * Hide uninstall button from UI
    */
   private hideUninstallButton(): void {
-    const button = document.getElementById('pwa-uninstall-btn');
+    const button = document.getElementById("pwa-uninstall-btn");
     if (button) {
       // Remove the separator before it too
       const previousNode = button.previousSibling;
-      if (previousNode && previousNode.nodeType === Node.TEXT_NODE && previousNode.textContent === ' • ') {
+      if (
+        previousNode &&
+        previousNode.nodeType === Node.TEXT_NODE &&
+        previousNode.textContent === " • "
+      ) {
         previousNode.remove();
       }
       button.remove();
-      console.log('[PWA] Uninstall button hidden');
+      console.log("[PWA] Uninstall button hidden");
     }
   }
 
@@ -299,7 +328,7 @@ export class PWAManager {
    */
   async promptInstall(): Promise<void> {
     if (!this.deferredPrompt) {
-      console.log('[PWA] No install prompt available');
+      console.log("[PWA] No install prompt available");
       return;
     }
 
@@ -312,7 +341,7 @@ export class PWAManager {
 
       console.log(`[PWA] User ${outcome} the install prompt`);
 
-      if (outcome === 'accepted') {
+      if (outcome === "accepted") {
         // Track installation
         this.trackInstallation();
       }
@@ -320,7 +349,7 @@ export class PWAManager {
       // Clear the deferred prompt
       this.deferredPrompt = null;
     } catch (error) {
-      console.error('[PWA] Install prompt error:', error);
+      console.error("[PWA] Install prompt error:", error);
     }
   }
 
@@ -329,14 +358,14 @@ export class PWAManager {
    */
   private trackInstallation(): void {
     // Send installation event to analytics if available
-    if (typeof gtag !== 'undefined') {
-      gtag('event', 'pwa_install', {
-        event_category: 'PWA',
-        event_label: 'Installation'
+    if (typeof gtag !== "undefined") {
+      gtag("event", "pwa_install", {
+        event_category: "PWA",
+        event_label: "Installation",
       });
     }
 
-    console.log('[PWA] Installation tracked');
+    console.log("[PWA] Installation tracked");
   }
 
   /**
@@ -344,21 +373,24 @@ export class PWAManager {
    */
   async uninstall(): Promise<void> {
     try {
-      console.log('[PWA] Starting uninstall process...');
+      console.log("[PWA] Starting uninstall process...");
 
       // Clear all caches
       try {
         await this.clearCaches();
       } catch (error) {
-        console.log('[PWA] Cache clearing failed (may not be registered):', error);
+        console.log(
+          "[PWA] Cache clearing failed (may not be registered):",
+          error,
+        );
       }
 
       // Unregister all service workers
-      if ('serviceWorker' in navigator) {
+      if ("serviceWorker" in navigator) {
         const registrations = await navigator.serviceWorker.getRegistrations();
         for (const registration of registrations) {
           await registration.unregister();
-          console.log('[PWA] Service worker unregistered');
+          console.log("[PWA] Service worker unregistered");
         }
       }
 
@@ -371,16 +403,18 @@ export class PWAManager {
       // Update UI
       this.hideUninstallButton();
 
-      console.log('[PWA] Uninstall complete. Reloading...');
+      console.log("[PWA] Uninstall complete. Reloading...");
 
       // Show brief message before reload
-      alert('PWA uninstalled! Caches cleared and service worker removed.\n\nTo complete removal from your system:\n- Chrome: chrome://apps, right-click droo.foo, Remove\n- Edge: edge://apps\n- Safari: Delete from Applications folder');
+      alert(
+        "PWA uninstalled! Caches cleared and service worker removed.\n\nTo complete removal from your system:\n- Chrome: chrome://apps, right-click droo.foo, Remove\n- Edge: edge://apps\n- Safari: Delete from Applications folder",
+      );
 
       // Reload to reset state
       window.location.reload();
     } catch (error) {
-      console.error('[PWA] Uninstall failed:', error);
-      alert('Uninstall failed. Check console for details.');
+      console.error("[PWA] Uninstall failed:", error);
+      alert("Uninstall failed. Check console for details.");
     }
   }
 
@@ -389,7 +423,7 @@ export class PWAManager {
    */
   async clearCaches(): Promise<void> {
     if (!navigator.serviceWorker.controller) {
-      console.log('[PWA] No active service worker');
+      console.log("[PWA] No active service worker");
       return;
     }
 
@@ -398,17 +432,16 @@ export class PWAManager {
     return new Promise((resolve, reject) => {
       messageChannel.port1.onmessage = (event) => {
         if (event.data.success) {
-          console.log('[PWA] Caches cleared');
+          console.log("[PWA] Caches cleared");
           resolve();
         } else {
           reject(new Error(event.data.error));
         }
       };
 
-      navigator.serviceWorker.controller.postMessage(
-        { type: 'CLEAR_CACHE' },
-        [messageChannel.port2]
-      );
+      navigator.serviceWorker.controller.postMessage({ type: "CLEAR_CACHE" }, [
+        messageChannel.port2,
+      ]);
     });
   }
 
@@ -423,7 +456,7 @@ export class PWAManager {
     return {
       isInstalled: this.isInstalled,
       hasServiceWorker: !!this.serviceWorkerRegistration,
-      canInstall: !!this.deferredPrompt
+      canInstall: !!this.deferredPrompt,
     };
   }
 }
