@@ -1,0 +1,267 @@
+{
+  "personal_info": {
+    "name": "DROO AMOR",
+    "title": "Blockchain Infrastructure Engineer",
+    "location": "Remote",
+    "timezone": "Europe/Madrid",
+    "website": "https://droo.foo",
+    "languages": {
+      "english": "native",
+      "spanish": "learning",
+      "german": "learning",
+      "russian": "learning",
+      "catalan": "learning"
+    }
+  },
+  "summary": "Blockchain infrastructure engineer with 3+ years in Web3 and 5+ years in defense R&D. Nuclear submarine background with track record of delivering measurable impact and optimizing complex systems.",
+  "availability": "open_to_consulting",
+  "focus_areas": [
+    "Cosmos SDK",
+    "Ethereum Protocol",
+    "Validator Infrastructure"
+  ],
+  "experience": [
+    {
+      "company": "axol.io",
+      "position": "CEO",
+      "location": "Remote",
+      "employment_type": "full-time",
+      "start_date": "2024-05",
+      "end_date": "Present",
+      "description": "Lead blockchain infrastructure company building production-grade FOSS tooling for Cosmos and EVM ecosystems. Direct technical leadership across protocol design, distributed systems architecture, and open-source community development.",
+      "achievements": [
+        "Founded axol.io, developing mana Ethereum client and raxol terminal UI framework as production-grade FOSS tools",
+        "Built and maintain open-source blockchain infrastructure community with active contributor base"
+      ],
+      "technologies": {
+        "languages": ["Elixir", "TypeScript", "Rust", "C"],
+        "internal-products": ["Solvers", "Validators", "RPCs", "APIs"],
+        "tools": ["Ansible", "AI"]
+      }
+    },
+    {
+      "company": "LidoDAO",
+      "position": "NOM Protocol Specialist",
+      "location": "Remote",
+      "employment_type": "contract",
+      "start_date": "2023-03",
+      "end_date": "2024-05",
+      "description": "Led Node Operations Mechanisms (NOM) strategy for LidoDAO, the largest liquid staking protocol ($34B TVL). Led competitive intelligence and ecosystem research, delivering strategic analyses to DAO leadership.",
+      "achievements": [
+        "Delivered 60+ weekly Competition & Ecosystem Landscape reports providing strategic insights to inform product decisions",
+        "Built competitive intelligence tool, beachpatrol, for monitoring competitor protocols using OSINT methodologies",
+        "Analyzed node operator economics and performance metrics across multiple blockchain networks"
+      ],
+      "technologies": {
+        "languages": ["Python"],
+        "methodologies": ["OSINT"]
+      }
+    },
+    {
+      "company": "Blockdaemon",
+      "position": "R&D Protocol Research Specialist",
+      "location": "Remote",
+      "employment_type": "full-time",
+      "start_date": "2022-01",
+      "end_date": "2023-03",
+      "description": "Technical evaluation and integration of blockchain protocol prototypes for venture investment, product development, and node infrastructure deployment.",
+      "achievements": [
+        "Created governance framework and implemented voting system using Cosmos SDK authz module with Go, Ansible, and Bash scripting",
+        "Conducted code analysis and prototype deployment to evaluate blockchain project software infrastructure requirements"
+      ],
+      "technologies": {
+        "languages": ["JavaScript", "Rust", "Go", "Move"],
+        "frameworks": ["Cosmos SDK"],
+        "tools": ["Ansible", "Terraform", "Docker", "Grafana", "Prometheus"]
+      }
+    },
+    {
+      "company": "General Dynamics Electric Boat",
+      "position": "Mechanical & Electrical Test Engineer",
+      "location": "Groton, CT",
+      "employment_type": "full-time",
+      "start_date": "2020-10",
+      "end_date": "2022-01",
+      "description": "Engineering Lead of JTG HM&E Engineering for $9B+ of nuclear submarine PSA projects.",
+      "achievements": [
+        "Accelerated engineering deliverables by 11% vs previous PSA projects through systematic troubleshooting and cross-functional consultation",
+        "Led Program Management & QA of underway Sea Trials for testing and certification process, meeting stringent customer and contractual requirements",
+        "Managed high-risk re-entry controls, roadmap and product liability tracking for PSA & NEWCON nuclear submarines"
+      ],
+      "technologies": {
+        "languages": ["MATLAB"],
+        "tools": [
+          "Git",
+          "MRPII",
+          "ELCADD",
+          "LabView",
+          "AutoCAD",
+          "Figma",
+          "Teamcenter",
+          "Trello"
+        ]
+      }
+    },
+    {
+      "company": "General Dynamics Electric Boat",
+      "position": "R&D Engineer",
+      "location": "Groton, CT",
+      "employment_type": "full-time",
+      "start_date": "2018-12",
+      "end_date": "2020-11",
+      "description": "Technical Lead for cross-department rapid prototyping inventions (Mech/Elec), managing 5-10 person teams with budgeting up to $15M monthly per project for US warfare components.",
+      "achievements": [
+        "Developed calibration and repair process for precision instruments, eliminating $20M in replacement costs",
+        "Invented mechanical/electrical system reducing submarine tactical weapon launch cycle by 14% (timing details classified)",
+        "Designed specialized tooling and procedures reducing personnel exposure in radioactive zones by 34%"
+      ],
+      "technologies": {
+        "languages": ["MATLAB"],
+        "tools": [
+          "Git",
+          "MRPII",
+          "ELCADD",
+          "LabView",
+          "AutoCAD",
+          "Figma",
+          "Teamcenter",
+          "Trello"
+        ]
+      }
+    },
+    {
+      "company": "General Dynamics Electric Boat",
+      "position": "Shipyard Test Organization Specialist",
+      "location": "Groton, CT",
+      "employment_type": "full-time",
+      "start_date": "2017-06",
+      "end_date": "2018-12",
+      "description": "Field engineering and troubleshooting of mechanical and electrical submarine systems, material strength, and operation.",
+      "achievements": [
+        "Performed QA/QC for classified, NOFORN, DSS-SOC, and SUBSAFE systems",
+        "Led operational programs and maintained relationships between US Navy customer, private vendors, and shipyard personnel",
+        "Conducted hydrostatic tests, Lockout/Tag-out, shipboard troubleshooting, high-risk operations, and material strength tests"
+      ],
+      "technologies": {
+        "methodologies": [
+          "Quality Assurance",
+          "Quality Control",
+          "Hydrostatic Testing",
+          "Lockout/Tag-out",
+          "SUBSAFE",
+          "Material Testing",
+          "Hydraulics",
+          "HVAC"
+        ]
+      }
+    }
+  ],
+  "education": [
+    {
+      "institution": "SUNY Maritime College",
+      "degree": "Bachelor of Science",
+      "field": "Marine Operations",
+      "concentration": "Engineering",
+      "start_date": "2013-09",
+      "end_date": "2017-05",
+      "location": "Bronx, NYC",
+      "minor": "Pre-law & Management",
+      "achievements": {
+        "leadership": [
+          "SGA & Student Body Vice President 2013",
+          "SGA & Student Body Secretary 2012",
+          "Maritime Pre-Law Society Co-founder"
+        ],
+        "academic": [
+          "Licensed USCG Deck Officer, Third Mates Unlimited Tonnage Program",
+          "Tutor & Coach for all Navigation and Seamanship classes during tenure"
+        ],
+        "athletics": [
+          "All-American Skipper/Crew for Competitive Dinghy and Offshore Sailing"
+        ]
+      }
+    }
+  ],
+  "defense_projects": [
+    {
+      "name": "Nuclear Submarine Tactical R&D Systems",
+      "description": "Invented mechanical/electrical system reducing submarine tactical weapon launch cycle by 14% (timing details classified). Designed specialized tooling and procedures reducing personnel exposure in radioactive zones by 34% across Columbia and Virginia-class submarine programs.",
+      "technologies": {
+        "domains": ["Mechanical Engineering", "Electrical Engineering"],
+        "systems": ["Nuclear Systems", "Precision Manufacturing"]
+      },
+      "url": "Classified",
+      "status": "Completed",
+      "role": "Technical Lead",
+      "start_date": "2018-12",
+      "end_date": "2020-11"
+    },
+    {
+      "name": "Precision Instrument Calibration System",
+      "description": "Developed comprehensive calibration and repair protocols for submarine precision instruments, eliminating $20M in anticipated replacement costs. Standardized maintenance procedures across test equipment inventory, extending service life while maintaining classification-level accuracy requirements.",
+      "technologies": {
+        "methodologies": [
+          "Precision Calibration",
+          "Maintenance Protocols",
+          "Quality Control"
+        ],
+        "impact": ["Cost Optimization"]
+      },
+      "url": "Proprietary",
+      "status": "Completed",
+      "role": "R&D Engineer",
+      "start_date": "2019-01",
+      "end_date": "2020-11"
+    }
+  ],
+  "portfolio": {
+    "organization": {
+      "name": "axol.io",
+      "url": "https://github.com/axol-io",
+      "description": "Open source blockchain infrastructure and tooling"
+    },
+    "projects": [
+      {
+        "name": "mana",
+        "url": "https://github.com/axol-io/mana",
+        "description": "Ethereum protocol implementation in Elixir",
+        "language": "Elixir",
+        "status": "active"
+      },
+      {
+        "name": "raxol",
+        "url": "https://github.com/Hydepwns/raxol",
+        "description": "Terminal UI framework for Elixir applications",
+        "language": "Elixir",
+        "status": "active"
+      }
+    ]
+  },
+  "certifications": [
+    {
+      "name": "Secret Security Clearance",
+      "issuer": "United States Government",
+      "date": "Active",
+      "credential_id": "SECRET-CLEARANCE"
+    },
+    {
+      "name": "Steam & Electric Plant S9G Reactor Qualified",
+      "issuer": "US Navy Nuclear Program",
+      "date": "Active",
+      "credential_id": "S9G-REACTOR-QUALIFIED"
+    },
+    {
+      "name": "USCG Third Mate Unlimited Tonnage License",
+      "issuer": "United States Coast Guard",
+      "date": "Inactive",
+      "credential_id": "USCG-3RD-MATE-UNLIMITED"
+    }
+  ],
+  "contact": {
+    "email": "drew@axol.io",
+    "website": "https://droo.foo",
+    "github": "https://github.com/hydepwns",
+    "linkedin": "https://linkedin.com/in/drew-hiro",
+    "twitter": "https://twitter.com/MF_DROO"
+  }
+}
