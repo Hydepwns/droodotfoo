@@ -18,11 +18,16 @@ defmodule DroodotfooWeb.Router do
     pipe_through :browser
 
     live "/", DroodotfooLive
+    live "/about", AboutLive
+    live "/projects", ProjectsLive
+    live "/web3", Web3Live
     live "/contact", ContactLive
     live "/resume", ResumeLive
+    get "/resume/download", PageController, :download_resume
     live "/stl-viewer", STLViewerLive
     live "/spotify", SpotifyLive
-    live "/pwa", PWALive
+    # PWA archived - see .archived_pwa/README.md
+    # live "/pwa", PWALive
     live "/posts/:slug", PostLive
     # Test route for Astro STL viewer
     get "/astro-test", PageController, :astro_test

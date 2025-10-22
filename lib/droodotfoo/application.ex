@@ -11,12 +11,18 @@ defmodule Droodotfoo.Application do
       DroodotfooWeb.Telemetry,
       {DNSCluster, query: Application.get_env(:droodotfoo, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Droodotfoo.PubSub},
+      # Start ChromicPDF
+      {ChromicPDF, chromic_pdf_opts()},
       # Start performance monitoring
       Droodotfoo.PerformanceMonitor,
-      # Start terminal bridge
-      Droodotfoo.TerminalBridge,
-      # Start Raxol terminal app
-      Droodotfoo.RaxolApp,
+      # Start performance cache and metrics
+      Droodotfoo.Performance.Cache,
+      Droodotfoo.Performance.Metrics,
+      # Start resume preset manager
+      Droodotfoo.Resume.PresetManager,
+      # Terminal services archived - see .archived_terminal/README.md
+      # Droodotfoo.TerminalBridge,
+      # Droodotfoo.RaxolApp,
       # Start Spotify services
       Droodotfoo.Spotify.Cache,
       Droodotfoo.Spotify,
@@ -48,5 +54,28 @@ defmodule Droodotfoo.Application do
   def config_change(changed, _new, removed) do
     DroodotfooWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  defp chromic_pdf_opts do
+    # Try to find Chrome/Chromium in common locations
+    chrome_path =
+      [
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/Applications/Chromium.app/Contents/MacOS/Chromium",
+        "/usr/bin/chromium",
+        "/usr/bin/chromium-browser",
+        "/usr/bin/google-chrome"
+      ]
+      |> Enum.find(&File.exists?/1)
+
+    if chrome_path do
+      [
+        chrome_executable: chrome_path,
+        discard_utility_output: true
+      ]
+    else
+      # Let ChromicPDF try to find Chrome automatically
+      [discard_utility_output: true]
+    end
   end
 end

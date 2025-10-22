@@ -64,4 +64,21 @@ defmodule DroodotfooWeb.PageController do
       |> text("Service worker not found")
     end
   end
+
+  def download_resume(conn, %{"format" => format}) do
+    alias Droodotfoo.Resume.PDFGenerator
+
+    pdf_content = PDFGenerator.generate_pdf(format)
+    filename = "resume_#{format}_#{Date.utc_today()}.pdf"
+
+    conn
+    |> put_resp_content_type("application/pdf")
+    |> put_resp_header("content-disposition", "attachment; filename=\"#{filename}\"")
+    |> send_resp(200, pdf_content)
+  end
+
+  def download_resume(conn, _params) do
+    # Default to technical format if not specified
+    download_resume(conn, %{"format" => "technical"})
+  end
 end
