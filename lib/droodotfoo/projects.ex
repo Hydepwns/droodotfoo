@@ -1,8 +1,10 @@
 defmodule Droodotfoo.Projects do
   @moduledoc """
   Portfolio project data management.
-  Stores and retrieves project information for showcase.
+  Dynamically loads from ResumeData (defense_projects + portfolio.projects).
   """
+
+  alias Droodotfoo.Resume.ResumeData
 
   defstruct [
     :id,
@@ -35,227 +37,154 @@ defmodule Droodotfoo.Projects do
         }
 
   @doc """
-  Returns all projects in the portfolio
+  Returns all projects from resume data (defense_projects + portfolio.projects).
   """
   @spec all() :: list(t())
   def all do
-    [
+    resume = ResumeData.get_resume_data()
+
+    # Convert defense projects
+    defense = convert_defense_projects(resume[:defense_projects] || [])
+
+    # Convert portfolio projects
+    portfolio = convert_portfolio_projects(resume[:portfolio][:projects] || [])
+
+    # Combine and return
+    portfolio ++ defense
+  end
+
+  # Convert defense projects to Projects struct format
+  defp convert_defense_projects(defense_projects) do
+    defense_projects
+    |> Enum.map(fn project ->
+      tech_stack = extract_tech_stack(project[:technologies] || %{})
+
       %__MODULE__{
-        id: :droodotfoo,
-        name: "droo.foo Terminal Portfolio",
-        tagline: "This site! Real-time terminal UI in the browser",
-        description:
-          "A unique portfolio website built as a terminal interface using Phoenix LiveView and the Raxol framework. Features real-time rendering at 60fps, vim-style navigation, plugin system, and integrations with Spotify and GitHub.",
-        tech_stack: ["Elixir", "Phoenix", "LiveView", "Raxol", "WebSockets", "JavaScript"],
-        github_url: "https://github.com/hydepwns/droodotfoo",
-        demo_url: "https://droo.foo",
-        live_demo: true,
-        status: :active,
-        highlights: [
-          "60fps terminal rendering with virtual DOM",
-          "Vim keybindings and command mode",
-          "Plugin system (Tetris, 2048, Wordle, Conway)",
-          "Spotify & GitHub API integrations",
-          "CRT effects and accessibility features",
-          "665 passing tests, 100% pass rate"
-        ],
-        year: 2025,
-        ascii_thumbnail: [
-          "╭──────────────────────╮",
-          "│ ░▒▓ Terminal UI ▓▒░ │",
-          "│                     │",
-          "│ [drew@droo.foo ~]$  │",
-          "│ > ls -la            │",
-          "│ ░░░░░░░░░░░░░░░░░░░ │",
-          "│ ╭─ Navigation ────╮ │",
-          "│ │ ▓ Home          │ │",
-          "│ │ ░ Projects      │ │",
-          "╰─│ ░ Skills        │─╯",
-          "  ╰─────────────────╯  "
-        ]
-      },
-      %__MODULE__{
-        id: :raxol_web,
-        name: "RaxolWeb Framework",
-        tagline: "Web rendering components for Raxol terminal UI",
-        description:
-          "Extracted from droo.foo and contributed to the Raxol project. Provides Phoenix LiveView components for rendering terminal UIs in the browser with theme support and performance optimization.",
-        tech_stack: ["Elixir", "Phoenix LiveView", "Virtual DOM", "CSS"],
-        github_url: "https://github.com/Hydepwns/raxol",
+        id:
+          project.name
+          |> String.downcase()
+          |> String.replace(~r/[^a-z0-9]+/, "_")
+          |> String.to_atom(),
+        name: project.name,
+        tagline: extract_tagline(project.description),
+        description: project.description,
+        tech_stack: tech_stack,
+        github_url:
+          if(project[:url] in ["Classified", "Proprietary"], do: nil, else: project[:url]),
         demo_url: nil,
         live_demo: false,
-        status: :completed,
-        highlights: [
-          "Buffer to HTML rendering engine",
-          "7 built-in terminal themes",
-          "Virtual DOM diffing for performance",
-          "67 comprehensive tests",
-          "60fps capable rendering",
-          "90%+ cache hit ratio"
-        ],
-        year: 2025,
-        ascii_thumbnail: [
-          "╭──────────────────────╮",
-          "│ defmodule RaxolWeb  │",
-          "│   use Phoenix.      │",
-          "│       LiveView      │",
-          "│                     │",
-          "│  Buffer ░▒▓ HTML    │",
-          "│         ░▒▓         │",
-          "│  ▓▓▓▓▓▓▓▓▓▓ 60fps   │",
-          "│  ░░░░░░░░░░ render  │",
-          "╰──────────────────────╯"
-        ]
-      },
-      %__MODULE__{
-        id: :crdt_collab,
-        name: "Real-time Collaboration Platform",
-        tagline: "Distributed systems with CRDT-based sync",
-        description:
-          "A real-time collaborative editing platform using Conflict-free Replicated Data Types (CRDTs) for distributed synchronization. Built with Elixir's OTP for fault tolerance and Phoenix Channels for real-time communication.",
-        tech_stack: ["Elixir", "Phoenix", "CRDTs", "OTP", "WebSockets", "PostgreSQL"],
-        github_url: nil,
-        demo_url: nil,
-        live_demo: false,
-        status: :active,
-        highlights: [
-          "CRDT-based conflict resolution",
-          "Distributed state synchronization",
-          "OTP supervision trees for fault tolerance",
-          "Phoenix Channels for real-time updates",
-          "Handles 1000+ concurrent users",
-          "Sub-100ms latency for sync operations"
-        ],
-        year: 2024,
-        ascii_thumbnail: [
-          "╭──────────────────────╮",
-          "│  ░ Real-time Sync ░  │",
-          "│                     │",
-          "│     ▓━━━━━━━▓       │",
-          "│    ╱ ░░░░░░ ╲      │",
-          "│   ╱  ░░░░░░  ╲     │",
-          "│  ▓   ░░░░░░   ▓    │",
-          "│   ╲  ▒▒▒▒▒▒  ╱     │",
-          "│    ╲ ▒▒▒▒▒▒ ╱      │",
-          "│     ▓━━━━━━━▓       │",
-          "╰─── CRDT Network ────╯"
-        ]
-      },
-      %__MODULE__{
-        id: :obsidian_blog,
-        name: "Obsidian Publishing Pipeline",
-        tagline: "Obsidian -> Phoenix publishing system",
-        description:
-          "A content management system that transforms Obsidian markdown notes into a Phoenix-powered blog. Features automatic deployment, markdown processing, and content API.",
-        tech_stack: ["Elixir", "Phoenix", "Markdown", "File System", "API", "GitHub Actions"],
-        github_url: nil,
-        demo_url: nil,
-        live_demo: false,
-        status: :completed,
-        highlights: [
-          "Automated markdown processing pipeline",
-          "Obsidian vault integration",
-          "Full-text search with PostgreSQL",
-          "RESTful API for content access",
-          "Continuous deployment via GitHub Actions",
-          "Support for frontmatter and wikilinks"
-        ],
-        year: 2023,
-        ascii_thumbnail: [
-          "╭──────────────────────╮",
-          "│ # Notes.md          │",
-          "│ ══════════════════  │",
-          "│ ▓▓ Obsidian Vault   │",
-          "│        ║            │",
-          "│      ░▒▓▒░          │",
-          "│        ║            │",
-          "│ ╭──────────────╮    │",
-          "│ │  Transform   │    │",
-          "│ ╰──────║───────╯    │",
-          "│   ░▒▓ Phoenix Blog  │",
-          "╰──────────────────────╯"
-        ]
-      },
-      %__MODULE__{
-        id: :fintech_payments,
-        name: "Real-time Payment Processing System",
-        tagline: "High-throughput financial transaction engine",
-        description:
-          "Built at a FinTech startup to handle millions of daily transactions. Designed for fault tolerance, compliance, and real-time processing with comprehensive audit trails.",
-        tech_stack: ["Elixir", "PostgreSQL", "Broadway", "Telemetry", "Kafka", "Redis"],
-        github_url: nil,
-        demo_url: nil,
-        live_demo: false,
-        status: :archived,
-        highlights: [
-          "Processes 1M+ transactions daily",
-          "99.9% uptime SLA maintained",
-          "Broadway for event-driven processing",
-          "Comprehensive audit logging",
-          "PCI DSS compliance implementation",
-          "Real-time fraud detection"
-        ],
-        year: 2021,
-        ascii_thumbnail: [
-          "╭──────────────────────╮",
-          "│  ░▒▓ Payment Flow   │",
-          "│                     │",
-          "│  ╭────────────╮     │",
-          "│  │ Validate   │     │",
-          "│  ╰──────▓─────╯     │",
-          "│      ░░▒▒▓▓         │",
-          "│  ╭────────────╮     │",
-          "│  │  Process   │     │",
-          "│  ╰──────▓─────╯     │",
-          "│                     │",
-          "│  ████████ 1M+/day   │",
-          "╰──────────────────────╯"
-        ]
-      },
-      %__MODULE__{
-        id: :event_microservices,
-        name: "Event-Driven Microservices Platform",
-        tagline: "Scalable backend architecture at axol.io",
-        description:
-          "Architected and built a microservices platform using event sourcing and CQRS patterns. Reduced API response times by 70% through optimization and caching strategies.",
-        tech_stack: [
-          "Elixir",
-          "Phoenix",
-          "Event Sourcing",
-          "CQRS",
-          "Docker",
-          "Kubernetes",
-          "Redis"
-        ],
-        github_url: nil,
-        demo_url: nil,
-        live_demo: false,
-        status: :active,
-        highlights: [
-          "70% reduction in API response time",
-          "Event sourcing with audit trails",
-          "CQRS pattern implementation",
-          "Docker/K8s deployment",
-          "Redis caching layer",
-          "GraphQL API gateway"
-        ],
-        year: 2023,
-        ascii_thumbnail: [
-          "╭──────────────────────╮",
-          "│ ╭───╮  ╭───╮  ╭───╮ │",
-          "│ │API│  │DB │  │SVC│ │",
-          "│ ╰─▓─╯  ╰─▓─╯  ╰─▓─╯ │",
-          "│   ║      ║      ║   │",
-          "│   ╚══════╬══════╝   │",
-          "│       ░▒▓▒░         │",
-          "│     Event Bus       │",
-          "│       ░▒▓▒░         │",
-          "│   ╭──────────────╮  │",
-          "│   │ ▓▓ Cache ░░  │  │",
-          "│   │ -70% latency │  │",
-          "╰───╰──────────────╯──╯"
-        ]
+        status: parse_status(project[:status] || "Completed"),
+        highlights: [project.description],
+        year: extract_year(project[:start_date]),
+        ascii_thumbnail: generate_defense_thumbnail(project.name)
       }
+    end)
+  end
+
+  # Convert portfolio projects to Projects struct format
+  defp convert_portfolio_projects(portfolio_projects) do
+    portfolio_projects
+    |> Enum.map(fn project ->
+      %__MODULE__{
+        id:
+          project.name
+          |> String.downcase()
+          |> String.replace(~r/[^a-z0-9]+/, "_")
+          |> String.to_atom(),
+        name: project.name,
+        tagline: project.description,
+        description: project.description,
+        tech_stack: [project[:language] || "N/A"],
+        github_url: project.url,
+        demo_url: if(project[:status] == "active", do: project.url, else: nil),
+        live_demo: project[:status] == "active",
+        status: parse_status(project[:status] || "active"),
+        highlights: [project.description],
+        year: extract_current_year(),
+        ascii_thumbnail: generate_portfolio_thumbnail(project.name)
+      }
+    end)
+  end
+
+  # Extract tech stack from nested technologies structure
+  defp extract_tech_stack(technologies) when is_map(technologies) do
+    technologies
+    |> Enum.reject(fn {_k, v} -> is_nil(v) || v == [] end)
+    |> Enum.flat_map(fn {_category, items} -> items end)
+    |> Enum.uniq()
+  end
+
+  defp extract_tech_stack(_), do: []
+
+  # Extract first sentence as tagline
+  defp extract_tagline(description) do
+    description
+    |> String.split(". ")
+    |> List.first()
+    |> String.slice(0..60)
+  end
+
+  # Parse status string to atom
+  defp parse_status(status) when is_binary(status) do
+    case String.downcase(status) do
+      "active" -> :active
+      "completed" -> :completed
+      "archived" -> :archived
+      _ -> :completed
+    end
+  end
+
+  defp parse_status(_), do: :completed
+
+  # Extract year from ISO date format (YYYY-MM)
+  defp extract_year(date) when is_binary(date) do
+    date
+    |> String.split("-")
+    |> List.first()
+    |> String.to_integer()
+  rescue
+    _ -> extract_current_year()
+  end
+
+  defp extract_year(_), do: extract_current_year()
+
+  defp extract_current_year do
+    DateTime.utc_now().year
+  end
+
+  # Generate ASCII thumbnails for defense projects
+  defp generate_defense_thumbnail(name) do
+    [
+      "╭──────────────────────╮",
+      "│  #{String.pad_trailing("DEFENSE PROJECT", 21)}│",
+      "│  #{String.pad_trailing("═══════════════", 21)}│",
+      "│                     │",
+      "│  ╔═══════════════╗  │",
+      "│  ║  CLASSIFIED   ║  │",
+      "│  ║   █████████   ║  │",
+      "│  ║   ░░░░░░░░░   ║  │",
+      "│  ╚═══════════════╝  │",
+      "│                     │",
+      "│  #{String.pad_trailing(String.slice(name, 0..19), 21)}│",
+      "╰──────────────────────╯"
+    ]
+  end
+
+  # Generate ASCII thumbnails for portfolio projects
+  defp generate_portfolio_thumbnail(name) do
+    [
+      "╭──────────────────────╮",
+      "│  #{String.pad_trailing("OPEN SOURCE", 21)}│",
+      "│  #{String.pad_trailing("═══════════", 21)}│",
+      "│                     │",
+      "│      ╭─────────╮    │",
+      "│      │  CODE   │    │",
+      "│      │  ░▒▓▒░  │    │",
+      "│      │  ░▒▓▒░  │    │",
+      "│      ╰─────────╯    │",
+      "│                     │",
+      "│  #{String.pad_trailing(String.slice(name, 0..19), 21)}│",
+      "╰──────────────────────╯"
     ]
   end
 

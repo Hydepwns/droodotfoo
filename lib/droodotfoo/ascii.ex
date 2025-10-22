@@ -57,6 +57,7 @@ defmodule Droodotfoo.Ascii do
 
   @doc """
   Wraps text to fit within maximum width, splitting on word boundaries when possible.
+  Preserves existing line breaks.
 
   ## Examples
 
@@ -64,21 +65,38 @@ defmodule Droodotfoo.Ascii do
       ["short"]
 
       iex> Droodotfoo.Ascii.wrap_text("this is a very long line", 10)
-      ["this is a ", "very long ", "line"]
+      ["this is a", "very long", "line"]
+
+      iex> Droodotfoo.Ascii.wrap_text("Line 1\\nLine 2", 20)
+      ["Line 1", "Line 2"]
   """
   def wrap_text(text, max_width) do
     text
     |> String.split("\n")
-    |> Enum.flat_map(&wrap_line(&1, max_width))
+    |> Enum.flat_map(fn line ->
+      if String.length(line) <= max_width do
+        [line]
+      else
+        wrap_line_by_words(line, max_width)
+      end
+    end)
   end
 
-  defp wrap_line(line, max_width) when byte_size(line) <= max_width, do: [line]
+  defp wrap_line_by_words(line, max_width) do
+    words = String.split(line, " ")
 
-  defp wrap_line(line, max_width) do
-    line
-    |> String.graphemes()
-    |> Enum.chunk_every(max_width)
-    |> Enum.map(&Enum.join/1)
+    {lines, current} =
+      Enum.reduce(words, {[], ""}, fn word, {lines, current} ->
+        test_line = if current == "", do: word, else: "#{current} #{word}"
+
+        if String.length(test_line) <= max_width do
+          {lines, test_line}
+        else
+          {lines ++ [current], word}
+        end
+      end)
+
+    if current == "", do: lines, else: lines ++ [current]
   end
 
   @doc """

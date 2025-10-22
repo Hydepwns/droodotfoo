@@ -17,14 +17,22 @@ defmodule Droodotfoo.HttpClient do
   - `:timeout` - Request timeout in milliseconds (default: 10_000)
   """
   def new(base_url, headers, opts \\ []) do
+    # Extract known options and remove them from opts to avoid passing unknown keys to Req
+    timeout = Keyword.get(opts, :timeout, 10_000)
+    retry = Keyword.get(opts, :retry, :transient)
+    max_retries = Keyword.get(opts, :max_retries, 2)
+
+    # Remove options we've already extracted to avoid duplication
+    remaining_opts = Keyword.drop(opts, [:timeout, :retry, :max_retries])
+
     Req.new(
       [
         base_url: base_url,
         headers: headers,
-        retry: Keyword.get(opts, :retry, :transient),
-        max_retries: Keyword.get(opts, :max_retries, 2),
-        receive_timeout: Keyword.get(opts, :timeout, 10_000)
-      ] ++ opts
+        retry: retry,
+        max_retries: max_retries,
+        receive_timeout: timeout
+      ] ++ remaining_opts
     )
   end
 

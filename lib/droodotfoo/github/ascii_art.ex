@@ -72,13 +72,15 @@ defmodule Droodotfoo.Github.AsciiArt do
     |> maybe_add_blog(user, width)
   end
 
-  defp maybe_add_location(lines, %{location: location}, width) when not is_nil(location) and location != "" do
+  defp maybe_add_location(lines, %{location: location}, width)
+       when not is_nil(location) and location != "" do
     lines ++ ["| #{String.pad_trailing(" Location: #{location}", width - 4)}|"]
   end
 
   defp maybe_add_location(lines, _, _), do: lines
 
-  defp maybe_add_company(lines, %{company: company}, width) when not is_nil(company) and company != "" do
+  defp maybe_add_company(lines, %{company: company}, width)
+       when not is_nil(company) and company != "" do
     lines ++ ["| #{String.pad_trailing(" Company: #{company}", width - 4)}|"]
   end
 
