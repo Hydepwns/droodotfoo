@@ -30,21 +30,18 @@ defmodule DroodotfooWeb.PostLive do
 
     ~H"""
     <div class="monospace-container">
-      <nav style="margin-bottom: 2rem;">
+      <nav class="post-nav">
         <a href="/" class="back-link">{PostFormatter.back_link()}</a>
       </nav>
 
-      <header class="post-header" style="margin-bottom: 1.5rem; padding: 0rem;">
+      <header class="post-header post-header-large">
         <div class="post-header-grid">
           <div class="post-header-content">
-            <h1
-              class="post-title"
-              style="font-size: 3rem; margin-top: 0.25rem; margin-bottom: 0.25rem; text-align: left;"
-            >
+            <h1 class="post-title post-title-large">
               {@header.title}
             </h1>
             <%= if @header.description do %>
-              <p class="post-description" style="margin: 0; padding: 0;">{@header.description}</p>
+              <p class="post-description">{@header.description}</p>
             <% end %>
           </div>
           <div class="post-header-meta">
@@ -58,11 +55,11 @@ defmodule DroodotfooWeb.PostLive do
         </div>
       </header>
 
-      <article class="box-single" style="margin-top: 2rem;">
+      <article class="box-single article-spaced">
         {raw(@post.html)}
       </article>
 
-      <footer style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+      <footer class="post-footer">
         <a href="/" class="back-link">{PostFormatter.back_link()}</a>
       </footer>
     </div>
