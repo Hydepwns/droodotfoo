@@ -86,6 +86,39 @@ defmodule Droodotfoo.TimeFormatter do
   end
 
   @doc """
+  Formats a millisecond timestamp as relative time ago string.
+
+  ## Examples
+
+      iex> ts = System.system_time(:millisecond) - 3600_000
+      iex> Droodotfoo.TimeFormatter.format_timestamp_ago(ts)
+      "1h ago"
+  """
+  def format_timestamp_ago(timestamp) when is_integer(timestamp) do
+    now = System.system_time(:millisecond)
+    diff_ms = now - timestamp
+    diff_seconds = div(diff_ms, 1000)
+
+    cond do
+      diff_seconds < 10 ->
+        "just now"
+
+      diff_seconds < 60 ->
+        "#{diff_seconds}s ago"
+
+      diff_seconds < 3600 ->
+        minutes = div(diff_seconds, 60)
+        "#{minutes}m ago"
+
+      true ->
+        hours = div(diff_seconds, 3600)
+        "#{hours}h ago"
+    end
+  end
+
+  def format_timestamp_ago(_), do: "never"
+
+  @doc """
   Parses ISO8601 datetime string and formats as relative time.
 
   ## Examples
