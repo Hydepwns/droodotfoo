@@ -153,19 +153,19 @@ defmodule Droodotfoo.BootSequenceTest do
         |> Enum.map(&BootSequence.delay_for_step/1)
         |> Enum.sum()
 
-      # Boot should complete in under 2 seconds
-      assert total_time < 2000
-      # But should take at least 1 second for good effect
-      assert total_time >= 1000
+      # Boot should complete in under 3 seconds (doubled from original 2s)
+      assert total_time < 3000
+      # But should take at least 2 seconds for good effect (doubled from 1s)
+      assert total_time >= 2000
     end
 
     test "delays are progressive and reasonable" do
       delays = Enum.map(1..6, &BootSequence.delay_for_step/1)
 
-      # Each delay should be between 100ms and 500ms
+      # Each delay should be between 200ms and 600ms (doubled from 100-500ms)
       Enum.each(delays, fn delay ->
-        assert delay >= 100
-        assert delay <= 500
+        assert delay >= 200
+        assert delay <= 600
       end)
     end
   end

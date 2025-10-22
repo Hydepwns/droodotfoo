@@ -22,7 +22,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
         web3_wallet_connected: false
       }
 
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       assert is_map(buffer)
       assert Map.has_key?(buffer, :lines)
@@ -63,7 +63,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
         web3_wallet_connected: false
       }
 
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       # Check for DROO text in logo
       line_3 = Enum.at(buffer.lines, 2)
@@ -91,7 +91,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
         web3_wallet_connected: false
       }
 
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       # Check that cursor is on the contact line (index 2)
       # nav_y + 2 + cursor_y
@@ -118,7 +118,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
         web3_wallet_connected: false
       }
 
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       # Check last line for command prompt
       last_line = List.last(buffer.lines)
@@ -143,7 +143,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
         web3_wallet_connected: false
       }
 
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       # Check last line for hint
       last_line = List.last(buffer.lines)
@@ -176,7 +176,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
         web3_wallet_connected: false
       }
 
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       assert is_map(buffer)
       assert Map.has_key?(buffer, :lines)
@@ -203,7 +203,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
       }
 
       # Should not crash
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
       assert is_map(buffer)
     end
 
@@ -229,7 +229,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
         web3_wallet_connected: false
       }
 
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       # Trail should not be drawn when disabled
       line = Enum.at(buffer.lines, 10)
@@ -275,11 +275,11 @@ defmodule Droodotfoo.Raxol.RendererTest do
       state_with_oob = %{state | cursor_trail: trail_with_oob}
 
       # Should not crash with valid positions
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
       assert is_map(buffer)
 
       # Should not crash with out-of-bounds positions
-      buffer_oob = Renderer.render(state_with_oob)
+      {buffer_oob, _regions_oob, _content_height_oob} = Renderer.render(state_with_oob)
       assert is_map(buffer_oob)
     end
   end
@@ -287,16 +287,16 @@ defmodule Droodotfoo.Raxol.RendererTest do
   describe "render/1 with different sections" do
     test "renders home section content" do
       state = create_state(:home)
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       content_text = extract_content_area(buffer)
-      assert String.contains?(content_text, "Multi Disciplinary Engineer")
+      assert String.contains?(content_text, "Blockchain Infrastructure Engineer")
       assert String.contains?(content_text, "Site Structure")
     end
 
     test "renders projects section content" do
       state = create_state(:projects)
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       content_text = extract_content_area(buffer)
       assert String.contains?(content_text, "Project Showcase")
@@ -306,7 +306,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
 
     test "renders skills section content" do
       state = create_state(:skills)
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       content_text = extract_content_area(buffer)
       assert String.contains?(content_text, "Technical Skills")
@@ -316,16 +316,16 @@ defmodule Droodotfoo.Raxol.RendererTest do
 
     test "renders experience section content" do
       state = create_state(:experience)
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       content_text = extract_content_area(buffer)
       assert String.contains?(content_text, "Experience")
-      assert String.contains?(content_text, "Senior Backend Engineer")
+      assert String.contains?(content_text, "CEO") || String.contains?(content_text, "axol.io")
     end
 
     test "renders contact section content" do
       state = create_state(:contact)
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       content_text = extract_content_area(buffer)
       assert String.contains?(content_text, "Contact")
@@ -335,7 +335,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
 
     test "renders matrix section content" do
       state = create_state(:matrix)
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       content_text = extract_content_area(buffer)
       assert String.contains?(content_text, "Matrix Rain")
@@ -344,7 +344,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
 
     test "renders ssh section content" do
       state = create_state(:ssh)
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       content_text = extract_content_area(buffer)
       assert String.contains?(content_text, "SSH Session")
@@ -353,7 +353,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
 
     test "renders help section content" do
       state = create_state(:help)
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       content_text = extract_content_area(buffer)
       assert String.contains?(content_text, "Available Commands")
@@ -365,7 +365,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
 
     test "renders ls section content" do
       state = create_state(:ls)
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       content_text = extract_content_area(buffer)
       assert String.contains?(content_text, "Directory Listing")
@@ -374,7 +374,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
 
     test "renders performance section content" do
       state = create_state(:performance)
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       # Extract all buffer text for more flexibility
       buffer_text =
@@ -390,7 +390,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
 
     test "renders analytics section content" do
       state = create_state(:analytics)
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       content_text = extract_content_area(buffer)
       assert String.contains?(content_text, "Analytics Dashboard")
@@ -415,7 +415,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
         web3_wallet_connected: false
       }
 
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       content_text = extract_content_area(buffer)
       assert String.contains?(content_text, "Terminal")
@@ -426,7 +426,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
       state = create_state(:unknown_section)
 
       # Should not crash
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
       assert is_map(buffer)
     end
   end
@@ -448,7 +448,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
       }
 
       # Should not crash, uses defaults
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
       assert is_map(buffer)
     end
 
@@ -470,7 +470,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
       }
 
       # Should not crash
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
       assert is_map(buffer)
     end
 
@@ -493,7 +493,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
         web3_wallet_connected: false
       }
 
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       # Should truncate or handle gracefully
       last_line = List.last(buffer.lines)
@@ -520,7 +520,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
         web3_wallet_connected: false
       }
 
-      buffer = Renderer.render(state)
+      {buffer, _clickable_regions, _content_height} = Renderer.render(state)
 
       # Should only show last 8 lines (as per renderer implementation)
       content_text = extract_content_area(buffer)
@@ -548,7 +548,7 @@ defmodule Droodotfoo.Raxol.RendererTest do
         }
 
         # Should not crash
-        buffer = Renderer.render(state)
+        {buffer, _clickable_regions, _content_height} = Renderer.render(state)
         assert is_map(buffer)
       end
     end
@@ -570,7 +570,12 @@ defmodule Droodotfoo.Raxol.RendererTest do
       privacy_mode: false,
       encryption_keys: %{},
       encryption_sessions: %{},
-      web3_wallet_connected: false
+      web3_wallet_connected: false,
+      resume_data: Droodotfoo.Resume.ResumeData.get_resume_data(),
+      scroll_positions: %{},
+      scroll_offset: 0,
+      content_height: 0,
+      viewport_height: 28
     }
 
     # Add search_state for search_results section

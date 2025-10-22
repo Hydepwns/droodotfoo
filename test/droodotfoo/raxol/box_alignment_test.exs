@@ -24,11 +24,9 @@ defmodule Droodotfoo.Raxol.BoxAlignmentTest do
     "lib/droodotfoo/raxol/renderer.ex",
     "lib/droodotfoo/raxol/renderer/home.ex",
     "lib/droodotfoo/raxol/renderer/spotify.ex",
-    "lib/droodotfoo/raxol/renderer/web3.ex",
     "lib/droodotfoo/raxol/renderer/portal.ex",
-    "lib/droodotfoo/raxol/renderer/projects.ex",
-    "lib/droodotfoo/raxol/renderer/content.ex",
-    "lib/droodotfoo/raxol/renderer/helpers.ex"
+    "lib/droodotfoo/raxol/renderer/helpers.ex",
+    "lib/droodotfoo/raxol/renderer/games.ex"
   ]
 
   # Known intentional exceptions (with rationale)
