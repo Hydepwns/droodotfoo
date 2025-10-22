@@ -6,11 +6,19 @@ defmodule Droodotfoo.Contact.Validator do
   import Ecto.Changeset
   alias Droodotfoo.Forms.Constants
 
+  @types %{
+    name: :string,
+    email: :string,
+    subject: :string,
+    message: :string,
+    honeypot: :string
+  }
+
   @doc """
   Validates contact form data with comprehensive checks.
   """
   def validate_contact_form(params) do
-    %{}
+    {%{}, @types}
     |> cast(params, Constants.form_fields())
     |> validate_required(Constants.required_fields())
     |> validate_length(:name, max: Constants.max_name_length())
@@ -31,12 +39,14 @@ defmodule Droodotfoo.Contact.Validator do
   Validates honeypot field to catch bots.
   """
   def validate_honeypot(changeset) do
-    honeypot = get_field(changeset, :honeypot)
+    changeset
+    |> get_field(:honeypot)
+    |> case do
+      honeypot when is_binary(honeypot) and honeypot != "" ->
+        add_error(changeset, :honeypot, Constants.get_error_message(:honeypot_triggered))
 
-    if honeypot && honeypot != "" do
-      add_error(changeset, :honeypot, Constants.get_error_message(:honeypot_triggered))
-    else
-      changeset
+      _ ->
+        changeset
     end
   end
 
@@ -47,12 +57,10 @@ defmodule Droodotfoo.Contact.Validator do
     message = get_field(changeset, :message)
     subject = get_field(changeset, :subject)
     content = "#{subject} #{message}" |> String.downcase()
-    spam_detected = Constants.spam_keyword?(content)
 
-    if spam_detected do
-      add_error(changeset, :message, Constants.get_error_message(:spam_detected))
-    else
-      changeset
+    case Constants.spam_keyword?(content) do
+      true -> add_error(changeset, :message, Constants.get_error_message(:spam_detected))
+      false -> changeset
     end
   end
 
@@ -60,16 +68,17 @@ defmodule Droodotfoo.Contact.Validator do
   Validates email domain against known disposable email providers.
   """
   def validate_email_domain(changeset) do
-    email = get_field(changeset, :email)
-
-    if email do
-      if Constants.blocked_domain?(email) do
-        add_error(changeset, :email, Constants.get_error_message(:blocked_domain))
-      else
+    changeset
+    |> get_field(:email)
+    |> case do
+      nil ->
         changeset
-      end
-    else
-      changeset
+
+      email ->
+        case Constants.blocked_domain?(email) do
+          true -> add_error(changeset, :email, Constants.get_error_message(:blocked_domain))
+          false -> changeset
+        end
     end
   end
 
@@ -82,14 +91,11 @@ defmodule Droodotfoo.Contact.Validator do
     # In a real implementation, you'd check against a database
     # For now, we'll use a simple in-memory check
     case :ets.lookup(:contact_rate_limit, ip_address) do
-      [{^ip_address, count, last_submission}] ->
-        if count >= 3 and DateTime.compare(last_submission, one_hour_ago) == :gt do
-          {:error, "Rate limit exceeded. Please try again later."}
-        else
-          {:ok, :allowed}
-        end
+      [{^ip_address, count, last_submission}]
+      when count >= 3 and last_submission > one_hour_ago ->
+        {:error, "Rate limit exceeded. Please try again later."}
 
-      [] ->
+      _ ->
         {:ok, :allowed}
     end
   end

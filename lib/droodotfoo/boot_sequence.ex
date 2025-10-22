@@ -8,12 +8,12 @@ defmodule Droodotfoo.BootSequence do
   @version Mix.Project.config()[:version] || "1.0.0"
 
   @boot_steps [
-    {"RAXOL TERMINAL v#{@version}", 100},
-    {"[OK] Initializing kernel...", 150},
-    {"[OK] Loading modules...", 250},
-    {"[OK] Starting Phoenix LiveView...", 275},
-    {"[OK] Connecting WebSocket...", 300},
-    {"[OK] Ready.", 200}
+    {"RAXOL TERMINAL v#{@version}", 200},
+    {"[OK] Initializing kernel...", 300},
+    {"[OK] Loading modules...", 500},
+    {"[OK] Starting Phoenix LiveView...", 550},
+    {"[OK] Connecting WebSocket...", 600},
+    {"[OK] Ready.", 400}
   ]
 
   @total_steps length(@boot_steps)

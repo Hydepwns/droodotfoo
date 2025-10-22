@@ -4,47 +4,48 @@ defmodule Droodotfoo.Core.Utilities do
   Provides common helper functions to reduce duplication.
   """
 
+  alias Droodotfoo.TimeFormatter
+
   @doc """
   Formats a timestamp as a relative time string.
+  Delegates to TimeFormatter for consistent time formatting.
 
   ## Examples
 
       iex> format_relative_time(~U[2023-01-01 12:00:00Z])
       "2h ago"
-      
+
       iex> format_relative_time(~U[2023-01-01 10:00:00Z])
       "4h ago"
   """
-  def format_relative_time(timestamp) do
-    now = DateTime.utc_now()
-    diff_seconds = DateTime.diff(now, timestamp, :second)
-
-    cond do
-      diff_seconds < 60 -> "#{diff_seconds}s ago"
-      diff_seconds < 3600 -> "#{div(diff_seconds, 60)}m ago"
-      diff_seconds < 86_400 -> "#{div(diff_seconds, 3600)}h ago"
-      diff_seconds < 604_800 -> "#{div(diff_seconds, 86_400)}d ago"
-      true -> "#{div(diff_seconds, 604_800)}w ago"
-    end
-  end
+  defdelegate format_relative_time(timestamp), to: TimeFormatter, as: :format_datetime_relative
 
   @doc """
   Abbreviates an Ethereum address to the format 0x1234...5678.
+  Returns "Unknown" for invalid or non-string input.
 
   ## Examples
 
       iex> abbreviate_address("0x1234567890abcdef1234567890abcdef12345678")
       "0x1234...5678"
+
+      iex> abbreviate_address(nil)
+      "Unknown"
+
+      iex> abbreviate_address("0x12")
+      "0x12"
   """
   def abbreviate_address(address) when is_binary(address) do
-    if String.length(address) >= 10 do
-      prefix = String.slice(address, 0, 6)
-      suffix = String.slice(address, -4, 4)
+    if String.length(address) > 12 do
+      prefix = String.slice(address, 0..5)
+      suffix = String.slice(address, -4..-1)
       "#{prefix}...#{suffix}"
     else
       address
     end
   end
+
+  def abbreviate_address(_), do: "Unknown"
 
   @doc """
   Validates an Ethereum address format.

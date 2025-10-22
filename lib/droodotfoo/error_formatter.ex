@@ -183,34 +183,8 @@ defmodule Droodotfoo.ErrorFormatter do
 
   @doc """
   Wraps text to fit within a specified width.
+  Delegates to Ascii for consistent text wrapping.
   """
   @spec wrap_text(String.t(), pos_integer()) :: [String.t()]
-  def wrap_text(text, max_width) do
-    text
-    |> String.split("\n")
-    |> Enum.flat_map(fn line ->
-      if String.length(line) <= max_width do
-        [line]
-      else
-        wrap_line(line, max_width)
-      end
-    end)
-  end
-
-  defp wrap_line(line, max_width) do
-    words = String.split(line, " ")
-
-    {lines, current} =
-      Enum.reduce(words, {[], ""}, fn word, {lines, current} ->
-        test_line = if current == "", do: word, else: "#{current} #{word}"
-
-        if String.length(test_line) <= max_width do
-          {lines, test_line}
-        else
-          {lines ++ [current], word}
-        end
-      end)
-
-    if current == "", do: lines, else: lines ++ [current]
-  end
+  defdelegate wrap_text(text, max_width), to: Droodotfoo.Ascii
 end
