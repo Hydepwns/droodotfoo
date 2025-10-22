@@ -36,14 +36,13 @@ defmodule Droodotfoo.Plugins.Wordle do
 
   @impl true
   def metadata do
-    %{
-      name: "wordle",
-      version: "1.0.0",
-      description: "Wordle - Guess the 5-letter word in 6 attempts",
-      author: "droo.foo",
-      commands: ["wordle"],
-      category: :game
-    }
+    game_metadata(
+      "wordle",
+      "1.0.0",
+      "Wordle - Guess the 5-letter word in 6 attempts",
+      "droo.foo",
+      ["wordle"]
+    )
   end
 
   @impl true

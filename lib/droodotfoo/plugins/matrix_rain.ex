@@ -30,6 +30,8 @@ defmodule Droodotfoo.Plugins.MatrixRain do
 
   @behaviour Droodotfoo.PluginSystem.Plugin
 
+  alias Droodotfoo.Plugins.GameBase
+
   @type column :: %{
           y: float(),
           speed: float(),
@@ -59,14 +61,14 @@ defmodule Droodotfoo.Plugins.MatrixRain do
   @impl true
   @spec metadata() :: map()
   def metadata do
-    %{
-      name: "matrix",
-      version: "1.0.0",
-      description: "Matrix rain effect - Press any key to exit",
-      author: "droo.foo",
-      commands: ["matrix", "rain"],
-      category: :fun
-    }
+    GameBase.game_metadata(
+      "matrix",
+      "1.0.0",
+      "Matrix rain effect - Press any key to exit",
+      "droo.foo",
+      ["matrix", "rain"],
+      :fun
+    )
   end
 
   @impl true

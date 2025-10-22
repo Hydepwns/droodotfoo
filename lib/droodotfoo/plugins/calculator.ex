@@ -30,6 +30,10 @@ defmodule Droodotfoo.Plugins.Calculator do
 
   @behaviour Droodotfoo.PluginSystem.Plugin
 
+  alias Droodotfoo.Plugins.GameBase
+
+  import Droodotfoo.Plugins.UIHelpers
+
   @type mode :: :standard | :rpn
   @type state :: %__MODULE__{
           mode: mode(),
@@ -58,14 +62,14 @@ defmodule Droodotfoo.Plugins.Calculator do
   @impl true
   @spec metadata() :: map()
   def metadata do
-    %{
-      name: "calc",
-      version: "1.0.0",
-      description: "Calculator with standard and RPN modes",
-      author: "droo.foo",
-      commands: ["calc", "calculator"],
-      category: :tool
-    }
+    GameBase.game_metadata(
+      "calc",
+      "1.0.0",
+      "Calculator with standard and RPN modes",
+      "droo.foo",
+      ["calc", "calculator"],
+      :tool
+    )
   end
 
   @impl true
@@ -117,11 +121,8 @@ defmodule Droodotfoo.Plugins.Calculator do
   @impl true
   @spec render(state(), terminal_state()) :: render_output()
   def render(state, _terminal_state) do
-    header = [
-      "=" |> String.duplicate(50),
-      "  CALCULATOR - Mode: #{state.mode |> to_string() |> String.upcase()}  ",
-      "=" |> String.duplicate(50)
-    ]
+    title = "CALCULATOR - Mode: #{state.mode |> to_string() |> String.upcase()}"
+    header = header_left(title, 50)
 
     display_section = [
       "",
@@ -365,28 +366,26 @@ defmodule Droodotfoo.Plugins.Calculator do
   defp format_number(num), do: to_string(num)
 
   defp render_help do
-    [
-      "=" |> String.duplicate(50),
-      "CALCULATOR HELP",
-      "=" |> String.duplicate(50),
-      "",
-      "STANDARD MODE:",
-      "  Enter expressions like: 2 + 2, 10 * 5, 100 / 4",
-      "  Operators: + - * / ^",
-      "",
-      "RPN MODE (Reverse Polish Notation):",
-      "  Enter numbers to push onto stack",
-      "  Enter operators to perform operations",
-      "  Example: '5' '3' '+' results in 8",
-      "",
-      "COMMANDS:",
-      "  rpn    - Switch to RPN mode",
-      "  std    - Switch to standard mode",
-      "  clear  - Clear display and stack",
-      "  help   - Show this help",
-      "  q      - Quit calculator",
-      "",
-      "=" |> String.duplicate(50)
-    ]
+    header_left("CALCULATOR HELP", 50) ++
+      [
+        "",
+        "STANDARD MODE:",
+        "  Enter expressions like: 2 + 2, 10 * 5, 100 / 4",
+        "  Operators: + - * / ^",
+        "",
+        "RPN MODE (Reverse Polish Notation):",
+        "  Enter numbers to push onto stack",
+        "  Enter operators to perform operations",
+        "  Example: '5' '3' '+' results in 8",
+        "",
+        "COMMANDS:",
+        "  rpn    - Switch to RPN mode",
+        "  std    - Switch to standard mode",
+        "  clear  - Clear display and stack",
+        "  help   - Show this help",
+        "  q      - Quit calculator",
+        "",
+        divider(50)
+      ]
   end
 end

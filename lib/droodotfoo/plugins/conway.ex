@@ -36,14 +36,13 @@ defmodule Droodotfoo.Plugins.Conway do
 
   @impl true
   def metadata do
-    %{
-      name: "conway",
-      version: "1.0.0",
-      description: "Conway's Game of Life - cellular automaton simulation",
-      author: "droo.foo",
-      commands: ["conway", "life", "game of life"],
-      category: :game
-    }
+    game_metadata(
+      "conway",
+      "1.0.0",
+      "Conway's Game of Life - cellular automaton simulation",
+      "droo.foo",
+      ["conway", "life", "game of life"]
+    )
   end
 
   @impl true
