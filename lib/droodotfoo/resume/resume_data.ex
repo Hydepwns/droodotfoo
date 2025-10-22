@@ -1,15 +1,46 @@
 defmodule Droodotfoo.Resume.ResumeData do
   @moduledoc """
   Resume data structure and content management.
+
+  ## Single Source of Truth
+
+  **`priv/resume.json` is the authoritative source** for all resume data. This JSON file
+  is included in the application release and should always be available in production.
+
+  ## Loading Resume Data
+
+  The module loads resume data in this priority order:
+
+  1. **Primary source**: `priv/resume.json` (always used in production)
+  2. **Fallback**: Hardcoded data (primarily for testing when JSON unavailable)
+
+  ### Data Consistency
+
+  The hardcoded fallback data in `get_hardcoded_resume_data/0` is kept in sync with
+  `priv/resume.json` to ensure test compatibility. When updating resume data:
+
+  1. Update `priv/resume.json` (the authoritative source)
+  2. Update hardcoded data in this module (for test compatibility)
+  3. Verify both sources match
+
+  ### Production Usage
+
+  In production, the application always loads from `priv/resume.json`. The hardcoded
+  fallback exists primarily for testing scenarios where the file system may not be
+  fully initialized.
   """
+
+  require Logger
 
   defstruct [
     :personal_info,
     :summary,
+    :availability,
+    :focus_areas,
     :experience,
     :education,
-    :skills,
-    :projects,
+    :defense_projects,
+    :portfolio,
     :certifications,
     :contact
   ]
@@ -17,277 +48,341 @@ defmodule Droodotfoo.Resume.ResumeData do
   @type t :: %__MODULE__{
           personal_info: map(),
           summary: String.t(),
+          availability: String.t(),
+          focus_areas: list(String.t()),
           experience: list(map()),
           education: list(map()),
-          skills: list(map()),
-          projects: list(map()),
+          defense_projects: list(map()),
+          portfolio: map(),
           certifications: list(map()),
           contact: map()
         }
 
+  @cache_key {__MODULE__, :resume_data}
+
+  @doc """
+  Gets resume data, checking sources in order:
+  1. Cache (persistent_term for fast access)
+  2. Local file at priv/resume.json (if exists)
+  3. Hardcoded fallback data
+
+  Returns a map (not struct) for compatibility with existing code.
+  """
   def get_resume_data do
+    case :persistent_term.get(@cache_key, nil) do
+      nil ->
+        # Cache miss - load and cache
+        data = load_and_cache_resume()
+        data
+
+      cached_data ->
+        # Cache hit
+        cached_data
+    end
+  end
+
+  @doc """
+  Clears the cached resume data and reloads from source.
+  Useful when resume data has been updated.
+  """
+  def refresh_resume_data do
+    :persistent_term.erase(@cache_key)
+    load_and_cache_resume()
+  end
+
+  # Private function to load resume data and store in cache
+  defp load_and_cache_resume do
+    data =
+      case load_from_local_file() do
+        {:ok, data} ->
+          Logger.info("Loaded resume from local file (priv/resume.json)")
+          data
+
+        {:error, _local_reason} ->
+          Logger.debug("Using hardcoded resume data (no local file available)")
+          get_hardcoded_resume_data()
+      end
+
+    :persistent_term.put(@cache_key, data)
+    data
+  end
+
+  @doc """
+  Loads resume data from local file at priv/resume.json.
+  """
+  def load_from_local_file do
+    resume_path = Application.app_dir(:droodotfoo, "priv/resume.json")
+
+    case File.read(resume_path) do
+      {:ok, json_content} ->
+        case Jason.decode(json_content, keys: :atoms) do
+          {:ok, data} ->
+            {:ok, data}
+
+          {:error, reason} ->
+            Logger.error("Failed to decode JSON from #{resume_path}: #{inspect(reason)}")
+            {:error, :json_decode_error}
+        end
+
+      {:error, reason} ->
+        Logger.debug("Could not read local resume file at #{resume_path}: #{inspect(reason)}")
+        {:error, :file_not_found}
+    end
+  end
+
+  @doc """
+  Gets the hardcoded resume data (fallback for testing).
+
+  This data is kept in sync with `priv/resume.json` to ensure test compatibility.
+  It serves as a fallback when the JSON file is unavailable, primarily during testing.
+
+  **Note**: This is not the primary data source. Always update `priv/resume.json` first,
+  then sync changes here for test compatibility.
+  """
+  def get_hardcoded_resume_data do
     %__MODULE__{
       personal_info: %{
         name: "DROO AMOR",
-        title: "Blockchain Researcher & R&D Engineer",
+        title: "Blockchain Infrastructure Engineer",
         location: "Remote",
-        website: "https://droo.foo"
+        timezone: "Europe/Madrid",
+        website: "https://droo.foo",
+        languages: %{
+          english: "native",
+          spanish: "learning",
+          german: "learning",
+          russian: "learning",
+          catalan: "learning"
+        }
       },
-      summary: """
-      Blockchain researcher and R&D engineer, previously with several years of
-      experience as a multidisciplinary engineer in the defense industry
-      building nuclear submarines. My motivation is to take ownership in an
-      environment that empowers and rewards initiative. I look forward to
-      seeking out technical challenges and affecting meaningful change to grow
-      as an engineer and technical advisor.
-      """,
+      summary:
+        "Blockchain infrastructure engineer with 3+ years in Web3 and 5+ years in defense R&D. Nuclear submarine background with track record of delivering measurable impact and optimizing complex systems.",
+      availability: "open_to_consulting",
+      focus_areas: ["Cosmos SDK", "Ethereum Protocol", "Validator Infrastructure"],
       experience: [
         %{
           company: "axol.io",
-          position: "Founder & Developer",
+          position: "CEO",
           location: "Remote",
-          start_date: "2024",
+          employment_type: "full-time",
+          start_date: "2024-05",
           end_date: "Present",
-          description: """
-          • Lead architecture, product, and engineering for axol.io
-          • Build real-time systems, distributed services, and developer tooling
-          • Ship production Elixir/Phoenix services with strict reliability targets
-          """,
-          technologies: [
-            "Elixir",
-            "Phoenix",
-            "LiveView",
-            "PostgreSQL",
-            "WebRTC",
-            "Rust",
-            "Terraform",
-            "Docker"
-          ]
+          description:
+            "Lead blockchain infrastructure company building production-grade FOSS tooling for Cosmos and EVM ecosystems. Direct technical leadership across protocol design, distributed systems architecture, and open-source community development.",
+          achievements: [
+            "Founded axol.io, developing mana Ethereum client and raxol terminal UI framework as production-grade FOSS tools",
+            "Built and maintain open-source blockchain infrastructure community with active contributor base"
+          ],
+          technologies: %{
+            languages: ["Elixir", "TypeScript", "Rust", "C"],
+            "internal-products": ["Solvers", "Validators", "RPCs", "APIs"],
+            tools: ["Ansible", "AI"]
+          }
+        },
+        %{
+          company: "LidoDAO",
+          position: "NOM Protocol Specialist",
+          location: "Remote",
+          employment_type: "contract",
+          start_date: "2023-03",
+          end_date: "2024-05",
+          description:
+            "Led Node Operations Mechanisms (NOM) strategy for LidoDAO, the largest liquid staking protocol ($34B TVL). Led competitive intelligence and ecosystem research, delivering strategic analyses to DAO leadership.",
+          achievements: [
+            "Delivered 60+ weekly Competition & Ecosystem Landscape reports providing strategic insights to inform product decisions",
+            "Built competitive intelligence tool, beachpatrol, for monitoring competitor protocols using OSINT methodologies",
+            "Analyzed node operator economics and performance metrics across multiple blockchain networks"
+          ],
+          technologies: %{
+            languages: ["Python"],
+            methodologies: ["OSINT"]
+          }
         },
         %{
           company: "Blockdaemon",
           position: "R&D Protocol Research Specialist",
           location: "Remote",
-          start_date: "January 2022",
-          end_date: "Present",
-          description: """
-          • Blockdaemon is one of the top blockchain infrastructure companies that provides "nodes-as-a-service"
-          • Code analysis and prototype deployment to evaluate blockchain project software infrastructure requirements
-          • Examining JavaScript, Rust, and Go code repositories for code quality
-          • Running & troubleshooting node infrastructure and monitoring network performance
-          • Economic & Tokenomic analysis of blockchain projects for determining product feasibility and profitability
-          • Engineering and Product Consulting for onboarding new blockchain protocols with Ansible, Terraform, Docker, Grafana, & Prometheus
-          • Governance: Internal strategy and voting, and development of voting scripts using Authz module in Cosmos SDK
-          """,
-          technologies: [
-            "JavaScript",
-            "Rust",
-            "Go",
-            "Ansible",
-            "Terraform",
-            "Docker",
-            "Grafana",
-            "Prometheus",
-            "Cosmos SDK"
-          ]
+          employment_type: "full-time",
+          start_date: "2022-01",
+          end_date: "2023-03",
+          description:
+            "Technical evaluation and integration of blockchain protocol prototypes for venture investment, product development, and node infrastructure deployment.",
+          achievements: [
+            "Created governance framework and implemented voting system using Cosmos SDK authz module with Go, Ansible, and Bash scripting",
+            "Conducted code analysis and prototype deployment to evaluate blockchain project software infrastructure requirements"
+          ],
+          technologies: %{
+            languages: ["JavaScript", "Rust", "Go", "Move"],
+            frameworks: ["Cosmos SDK"],
+            tools: ["Ansible", "Terraform", "Docker", "Grafana", "Prometheus"]
+          }
         },
         %{
           company: "General Dynamics Electric Boat",
-          position: "Mechanical & Electrical Test Engineering",
+          position: "Mechanical & Electrical Test Engineer",
           location: "Groton, CT",
-          start_date: "October 2020",
-          end_date: "Present",
-          description: """
-          • Engineering Lead of JTG HM&E Engineering for $9bn+ of nuclear submarine PSA projects
-          • Provided engineering consultation and troubleshooting that expedited engineering products deliveries by 11% compared to previous PSA projects
-          • Program Management & QA of underway Sea Trials for leading testing & sales/certification process
-          • Risk management: Handle high-risk re-entry controls, roadmap and product liability tracking for PSA & NEWCON nuclear submarines
-          """,
-          technologies: [
-            "MATLAB",
-            "Git",
-            "MRPII",
-            "ELCADD",
-            "LabView",
-            "AutoCAD",
-            "Figma",
-            "Teamcenter",
-            "Trello"
-          ]
+          employment_type: "full-time",
+          start_date: "2020-10",
+          end_date: "2022-01",
+          description:
+            "Engineering Lead of JTG HM&E Engineering for $9B+ of nuclear submarine PSA projects.",
+          achievements: [
+            "Accelerated engineering deliverables by 11% vs previous PSA projects through systematic troubleshooting and cross-functional consultation",
+            "Led Program Management & QA of underway Sea Trials for testing and certification process, meeting stringent customer and contractual requirements",
+            "Managed high-risk re-entry controls, roadmap and product liability tracking for PSA & NEWCON nuclear submarines"
+          ],
+          technologies: %{
+            languages: ["MATLAB"],
+            tools: [
+              "Git",
+              "MRPII",
+              "ELCADD",
+              "LabView",
+              "AutoCAD",
+              "Figma",
+              "Teamcenter",
+              "Trello"
+            ]
+          }
         },
         %{
           company: "General Dynamics Electric Boat",
-          position: "R&D Engineering",
+          position: "R&D Engineer",
           location: "Groton, CT",
-          start_date: "December 2018",
-          end_date: "November 2020",
-          description: """
-          • Technical Lead for cross-department design/develop, manufacture, and test of rapid prototyping inventions (Mech/Elec)
-          • Project Management of 5-10 person teams, managing budgeting (up to $15m monthly per project) and materials
-          • Calibration and repair process, saving ~$20mm of mechanical and electrical precision instruments replacement costs
-          • Mechanical/Electrical invention for expediting submarine tactical weapon launch by 14%
-          • Tools & Assembly for remote welding assembly to reduce manhours spent in radioactive zone by 34%
-          """,
-          technologies: [
-            "MATLAB",
-            "Git",
-            "MRPII",
-            "ELCADD",
-            "LabView",
-            "AutoCAD",
-            "Figma",
-            "Teamcenter",
-            "Trello"
-          ]
+          employment_type: "full-time",
+          start_date: "2018-12",
+          end_date: "2020-11",
+          description:
+            "Technical Lead for cross-department rapid prototyping inventions (Mech/Elec), managing 5-10 person teams with budgeting up to $15M monthly per project for US warfare components.",
+          achievements: [
+            "Developed calibration and repair process for precision instruments, eliminating $20M in replacement costs",
+            "Invented mechanical/electrical system reducing submarine tactical weapon launch cycle by 14% (timing details classified)",
+            "Designed specialized tooling and procedures reducing personnel exposure in radioactive zones by 34%"
+          ],
+          technologies: %{
+            languages: ["MATLAB"],
+            tools: [
+              "Git",
+              "MRPII",
+              "ELCADD",
+              "LabView",
+              "AutoCAD",
+              "Figma",
+              "Teamcenter",
+              "Trello"
+            ]
+          }
         },
         %{
           company: "General Dynamics Electric Boat",
           position: "Shipyard Test Organization Specialist",
           location: "Groton, CT",
-          start_date: "June 2017",
-          end_date: "December 2018",
-          description: """
-          • Field engineering and troubleshooting of mechanical and electrical submarine systems, material strength, and operation
-          • Quality Assurance & Quality Control of Classified, NOFORN, DSS-SOC, and SUBSAFE systems
-          • Operational Program Leadership and relationships between US Navy customer, private vendors, and shipyard personnel
-          • Conducted hydrostatic tests, Lockout/Tag-out, shipboard troubleshooting, high-risk operations, and material strength tests
-          """,
-          technologies: [
-            "Quality Assurance",
-            "Quality Control",
-            "Hydrostatic Testing",
-            "Lockout/Tag-out",
-            "Material Testing"
-          ]
+          employment_type: "full-time",
+          start_date: "2017-06",
+          end_date: "2018-12",
+          description:
+            "Field engineering and troubleshooting of mechanical and electrical submarine systems, material strength, and operation.",
+          achievements: [
+            "Performed QA/QC for classified, NOFORN, DSS-SOC, and SUBSAFE systems",
+            "Led operational programs and maintained relationships between US Navy customer, private vendors, and shipyard personnel",
+            "Conducted hydrostatic tests, Lockout/Tag-out, shipboard troubleshooting, high-risk operations, and material strength tests"
+          ],
+          technologies: %{
+            methodologies: [
+              "Quality Assurance",
+              "Quality Control",
+              "Hydrostatic Testing",
+              "Lockout/Tag-out",
+              "SUBSAFE",
+              "Material Testing",
+              "Hydraulics",
+              "HVAC"
+            ]
+          }
         }
       ],
       education: [
         %{
           institution: "SUNY Maritime College",
           degree: "Bachelor of Science",
-          field: "Marine Operations, Concentration in Engineering",
-          year: "2013-2017",
+          field: "Marine Operations",
+          concentration: "Engineering",
+          start_date: "2013-09",
+          end_date: "2017-05",
           location: "Bronx, NYC",
           minor: "Pre-law & Management",
-          achievements: [
-            "Licensed USCG Deck Officer, Third Mates Unlimited Tonnage Program",
-            "SGA & Student Body Vice President 2013",
-            "SGA & Student Body Secretary 2012",
-            "Maritime Pre-Law Society Co-founder",
-            "Tutor & Coach for all Navigation and Seamanship classes during tenure",
-            "All-American Skipper/Crew for Competitive Dinghy and Offshore Sailing"
-          ]
+          achievements: %{
+            leadership: [
+              "SGA & Student Body Vice President 2013",
+              "SGA & Student Body Secretary 2012",
+              "Maritime Pre-Law Society Co-founder"
+            ],
+            academic: [
+              "Licensed USCG Deck Officer, Third Mates Unlimited Tonnage Program",
+              "Tutor & Coach for all Navigation and Seamanship classes during tenure"
+            ],
+            athletics: [
+              "All-American Skipper/Crew for Competitive Dinghy and Offshore Sailing"
+            ]
+          }
         }
       ],
-      skills: [
+      defense_projects: [
         %{
-          category: "Programming Languages",
-          items: ["JavaScript", "Rust", "Go", "MATLAB", "Python"]
-        },
-        %{
-          category: "Blockchain & Web3",
-          items: [
-            "Cosmos SDK",
-            "Authz Module",
-            "Tokenomics",
-            "Node Infrastructure",
-            "Protocol Research"
-          ]
-        },
-        %{
-          category: "Infrastructure & DevOps",
-          items: ["Ansible", "Terraform", "Docker", "Grafana", "Prometheus", "Git", "CI/CD"]
-        },
-        %{
-          category: "Engineering Tools",
-          items: [
-            "MATLAB",
-            "LabView",
-            "AutoCAD",
-            "Figma",
-            "Teamcenter",
-            "Trello",
-            "MRPII",
-            "ELCADD"
-          ]
-        },
-        %{
-          category: "Project Management",
-          items: [
-            "Team Leadership",
-            "Budget Management",
-            "Risk Management",
-            "Quality Assurance",
-            "Process Optimization"
-          ]
-        },
-        %{
-          category: "Maritime & Defense",
-          items: [
-            "USCG License",
-            "Nuclear Submarine Systems",
-            "Hydrostatic Testing",
-            "Lockout/Tag-out",
-            "Material Testing"
-          ]
-        }
-      ],
-      projects: [
-        %{
-          name: "SCRT Network",
+          name: "Nuclear Submarine Tactical R&D Systems",
           description:
-            "Secret Agent – DeveloperDAO project focused on decentralized privacy and blockchain infrastructure",
-          technologies: ["Blockchain", "Privacy", "Decentralized Networks"],
-          url: "https://scrt.network",
-          status: "Active",
-          role: "Developer"
-        },
-        %{
-          name: "Hiro LaunchDAO",
-          description:
-            "Co-founder & Operations Lead of a decentralized venture funding platform built on Solana. Led a team of five developers in two hackathons pre-seed funding to bring novel approaches to decentralized decision making within DAOs, backed by c-suite advisors.",
-          technologies: [
-            "Solana",
-            "DAO Governance",
-            "Venture Funding",
-            "Decentralized Decision Making"
-          ],
-          url: "https://hiro.xyz",
-          status: "Completed",
-          role: "Co-founder & Operations Lead"
-        },
-        %{
-          name: "Nuclear Submarine Tactical Systems",
-          description:
-            "Mechanical/Electrical invention for expediting submarine tactical weapon launch by 14% (direct timing classified). Tools & Assembly for remote welding assembly to reduce manhours spent in radioactive zone by 34%.",
-          technologies: [
-            "Mechanical Engineering",
-            "Electrical Engineering",
-            "Nuclear Systems",
-            "Precision Manufacturing"
-          ],
+            "Invented mechanical/electrical system reducing submarine tactical weapon launch cycle by 14% (timing details classified). Designed specialized tooling and procedures reducing personnel exposure in radioactive zones by 34% across Columbia and Virginia-class submarine programs.",
+          technologies: %{
+            domains: ["Mechanical Engineering", "Electrical Engineering"],
+            systems: ["Nuclear Systems", "Precision Manufacturing"]
+          },
           url: "Classified",
           status: "Completed",
-          role: "Technical Lead"
+          role: "Technical Lead",
+          start_date: "2018-12",
+          end_date: "2020-11"
         },
         %{
           name: "Precision Instrument Calibration System",
           description:
-            "Calibration and repair process, saving ~$20mm of mechanical and electrical precision instruments replacement costs through innovative maintenance protocols.",
-          technologies: [
-            "Precision Calibration",
-            "Cost Optimization",
-            "Maintenance Protocols",
-            "Quality Control"
-          ],
+            "Developed comprehensive calibration and repair protocols for submarine precision instruments, eliminating $20M in anticipated replacement costs. Standardized maintenance procedures across test equipment inventory, extending service life while maintaining classification-level accuracy requirements.",
+          technologies: %{
+            methodologies: ["Precision Calibration", "Maintenance Protocols", "Quality Control"],
+            impact: ["Cost Optimization"]
+          },
           url: "Proprietary",
           status: "Completed",
-          role: "R&D Engineer"
+          role: "R&D Engineer",
+          start_date: "2019-01",
+          end_date: "2020-11"
         }
       ],
+      portfolio: %{
+        organization: %{
+          name: "axol.io",
+          url: "https://github.com/axol-io",
+          description: "Open source blockchain infrastructure and tooling"
+        },
+        projects: [
+          %{
+            name: "mana",
+            url: "https://github.com/axol-io/mana",
+            description: "Ethereum protocol implementation in Elixir",
+            language: "Elixir",
+            status: "active"
+          },
+          %{
+            name: "raxol",
+            url: "https://github.com/Hydepwns/raxol",
+            description: "Terminal UI framework for Elixir applications",
+            language: "Elixir",
+            status: "active"
+          }
+        ]
+      },
       certifications: [
         %{
-          name: "USGOV (R) Classified Secret Security Clearance",
+          name: "Secret Security Clearance",
           issuer: "United States Government",
           date: "Active",
           credential_id: "SECRET-CLEARANCE"
@@ -301,7 +396,7 @@ defmodule Droodotfoo.Resume.ResumeData do
         %{
           name: "USCG Third Mate Unlimited Tonnage License",
           issuer: "United States Coast Guard",
-          date: "Active",
+          date: "Inactive",
           credential_id: "USCG-3RD-MATE-UNLIMITED"
         }
       ],
@@ -313,6 +408,12 @@ defmodule Droodotfoo.Resume.ResumeData do
         twitter: "https://twitter.com/MF_DROO"
       }
     }
+    |> struct_to_map()
+  end
+
+  # Convert struct to plain map for compatibility
+  defp struct_to_map(%__MODULE__{} = struct) do
+    Map.from_struct(struct)
   end
 
   def get_resume_formats do

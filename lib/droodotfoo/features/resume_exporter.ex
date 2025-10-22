@@ -1,213 +1,265 @@
 defmodule Droodotfoo.Features.ResumeExporter do
   @moduledoc """
   Export resume data in various formats.
+  Dynamically generates exports from ResumeData.
   """
 
-  def export_markdown do
-    """
-    # Droo - Senior Software Engineer
+  alias Droodotfoo.Resume.ResumeData
 
-    **Email:** drew@axol.io
-    **GitHub:** github.com/hydepwns
-    **LinkedIn:** linkedin.com/in/drew-hiro
-    **Twitter:** @MF_DROO
+  def export_markdown do
+    resume = ResumeData.get_resume_data()
+
+    experience_section = format_experience_section(resume.experience)
+    projects_section = format_defense_projects_section(resume)
+    portfolio_section = format_portfolio_section(resume)
+    skills_by_category = aggregate_skills(resume)
+
+    skills_section =
+      skills_by_category
+      |> Enum.map_join("\n\n", fn {category, items} ->
+        category_name = category |> to_string() |> String.capitalize()
+        "### #{category_name}\n- #{Enum.join(items, ", ")}"
+      end)
+
+    """
+    # #{resume.personal_info.name} - #{resume.personal_info.title}
+
+    **Email:** #{resume.contact.email}
+    **GitHub:** #{resume.contact.github}
+    **LinkedIn:** #{resume.contact.linkedin}
+    **Twitter:** #{resume.contact.twitter}
+    **Website:** #{resume.contact.website}
 
     ## Summary
 
-    Senior Software Engineer with expertise in distributed systems and real-time applications.
-    8+ years building scalable platforms with Elixir, Phoenix, and LiveView.
-    Terminal UI and CLI enthusiast.
+    #{resume.summary}
+
+    #{if resume[:focus_areas] && length(resume.focus_areas) > 0 do
+      "**Focus Areas:** #{Enum.join(resume.focus_areas, ", ")}"
+    else
+      ""
+    end}
 
     ## Technical Skills
 
-    ### Languages
-    - **Elixir** (90%) - Primary expertise
-    - **Phoenix** (85%) - Web framework
-    - **JavaScript** (75%) - Frontend development
-    - **TypeScript** (70%) - Type-safe JS
-
-    ### Frameworks & Libraries
-    - Phoenix, LiveView, Ecto, Broadway
-    - React, Vue.js, Node.js, Express
-    - GraphQL, REST APIs, WebSockets
-
-    ### Infrastructure
-    - Docker, Kubernetes, AWS, Fly.io
-    - PostgreSQL, Redis, Kafka, ClickHouse
+    #{skills_section}
 
     ## Experience
 
-    ### Senior Backend Engineer
-    **Scale-up SaaS** | 2021 - Present
-    - Built event-driven microservices architecture
-    - Reduced API response time by 70%
-    - Led team initiatives for system optimization
+    #{experience_section}
 
-    ### Elixir Developer
-    **FinTech Startup** | 2019 - 2021
-    - Designed real-time payment processing system
-    - Handled 1M+ transactions daily
-    - Implemented fault-tolerant distributed systems
+    ## Defense Projects
 
-    ### Full Stack Developer
-    **Digital Agency** | 2017 - 2019
-    - Developed client web applications
-    - Worked with modern JavaScript frameworks
-    - Delivered projects on time and budget
+    #{projects_section}
 
-    ## Projects
+    ## Portfolio
 
-    ### Terminal droo.foo System
-    This droo.foo! Built with Raxol terminal UI framework.
-    Technologies: Elixir, Phoenix, LiveView, 60fps rendering
+    #{portfolio_section}
 
-    ### Real-time Collaboration Platform
-    WebRTC-based pair programming tool for remote teams.
-    Technologies: Elixir, Phoenix Channels, WebRTC
+    ## Education
 
-    ### Distributed Event Processing
-    High-throughput event stream processor handling millions of events.
-    Technologies: Elixir, Broadway, Kafka, ClickHouse
+    #{resume.education |> Enum.map_join("\n", fn edu -> """
+      ### #{edu.degree} - #{edu.field}
+      **#{edu.institution}** | #{edu.start_date} - #{edu.end_date}
+      #{if edu[:concentration], do: "Concentration: #{edu.concentration}", else: ""}
+      """ end)}
 
-    ## Recent Activity
+    ## Certifications
 
-    - **2025-09:** Building terminal droo.foo with Raxol + Phoenix LiveView
-    - **2025-08:** Optimized real-time data pipeline
-    - **2025-07:** Open sourced Elixir telemetry library
+    #{resume.certifications |> Enum.map_join("\n", fn cert -> "- **#{cert.name}** - #{cert.issuer} (#{cert.date})" end)}
 
     ---
     *Generated from droo.foo terminal*
     """
   end
 
+  defp format_experience_section(experience) do
+    experience
+    |> Enum.map_join("\n", fn exp ->
+      achievements =
+        (exp[:achievements] || [])
+        |> Enum.map_join("\n", &"- #{&1}")
+
+      """
+      ### #{exp.position}
+      **#{exp.company}** | #{exp.start_date} - #{exp.end_date}
+      #{achievements}
+      """
+    end)
+  end
+
+  defp format_defense_projects_section(%{defense_projects: projects})
+       when is_list(projects) and length(projects) > 0 do
+    projects
+    |> Enum.map_join("\n", fn project ->
+      """
+      ### #{project.name}
+      #{project.description}
+      """
+    end)
+  end
+
+  defp format_defense_projects_section(_), do: ""
+
+  defp format_portfolio_section(%{portfolio: %{projects: projects}}) when is_list(projects) do
+    projects
+    |> Enum.map_join("\n", fn project ->
+      """
+      ### #{project.name}
+      #{project.description}
+      Technologies: #{project[:language] || "N/A"}
+      """
+    end)
+  end
+
+  defp format_portfolio_section(_), do: ""
+
   def export_json do
-    %{
-      name: "Droo",
-      title: "Senior Software Engineer",
-      contact: %{
-        email: "drew@axol.io",
-        github: "github.com/hydepwns",
-        linkedin: "linkedin.com/in/drew-hiro",
-        twitter: "@MF_DROO"
-      },
-      summary: "Senior Software Engineer with expertise in distributed systems...",
-      skills: %{
-        languages: [
-          %{name: "Elixir", proficiency: 90},
-          %{name: "Phoenix", proficiency: 85},
-          %{name: "JavaScript", proficiency: 75},
-          %{name: "TypeScript", proficiency: 70}
-        ],
-        frameworks: [
-          "Phoenix",
-          "LiveView",
-          "Ecto",
-          "Broadway",
-          "React",
-          "Vue.js",
-          "Node.js",
-          "Express"
-        ],
-        infrastructure: [
-          "Docker",
-          "Kubernetes",
-          "AWS",
-          "Fly.io",
-          "PostgreSQL",
-          "Redis",
-          "Kafka"
-        ]
-      },
-      experience: [
-        %{
-          title: "Senior Backend Engineer",
-          company: "Scale-up SaaS",
-          period: "2021 - Present",
-          achievements: [
-            "Built event-driven microservices",
-            "Reduced API response time by 70%"
-          ]
-        },
-        %{
-          title: "Elixir Developer",
-          company: "FinTech Startup",
-          period: "2019 - 2021",
-          achievements: [
-            "Designed real-time payment processing",
-            "Handled 1M+ transactions daily"
-          ]
-        }
-      ],
-      projects: [
-        %{
-          name: "Terminal droo.foo System",
-          description: "Interactive terminal droo.foo",
-          technologies: ["Elixir", "Phoenix", "LiveView"]
-        },
-        %{
-          name: "Real-time Collaboration Platform",
-          description: "WebRTC pair programming tool",
-          technologies: ["Elixir", "Phoenix Channels", "WebRTC"]
-        }
-      ]
+    resume = ResumeData.get_resume_data()
+
+    # Convert to exportable format
+    export_data = %{
+      personal_info: resume.personal_info,
+      summary: resume.summary,
+      availability: resume[:availability],
+      focus_areas: resume[:focus_areas] || [],
+      experience:
+        Enum.map(resume.experience, fn exp ->
+          %{
+            company: exp.company,
+            position: exp.position,
+            location: exp[:location],
+            employment_type: exp[:employment_type],
+            start_date: exp.start_date,
+            end_date: exp.end_date,
+            description: exp[:description],
+            achievements: exp[:achievements] || [],
+            technologies: exp[:technologies] || %{}
+          }
+        end),
+      education:
+        Enum.map(resume.education, fn edu ->
+          %{
+            institution: edu.institution,
+            degree: edu.degree,
+            field: edu.field,
+            concentration: edu[:concentration],
+            start_date: edu.start_date,
+            end_date: edu.end_date,
+            achievements: edu[:achievements] || %{}
+          }
+        end),
+      defense_projects: resume[:defense_projects] || [],
+      portfolio: resume[:portfolio] || %{},
+      certifications: resume.certifications,
+      contact: resume.contact
     }
-    |> Jason.encode!(pretty: true)
+
+    Jason.encode!(export_data, pretty: true)
   end
 
   def export_text do
+    resume = ResumeData.get_resume_data()
+
+    experience_text =
+      resume.experience
+      |> Enum.map_join("\n", fn exp ->
+        achievements =
+          (exp[:achievements] || [])
+          |> Enum.map_join("\n", &"- #{&1}")
+
+        """
+        #{exp.position} | #{exp.company} | #{exp.start_date} - #{exp.end_date}
+        #{achievements}
+        """
+      end)
+
+    skills_text =
+      aggregate_skills(resume)
+      |> Enum.map_join("\n", fn {category, items} ->
+        category_name = category |> to_string() |> String.capitalize()
+        "#{String.pad_trailing(category_name <> ":", 15)} #{Enum.join(items, ", ")}"
+      end)
+
+    projects_text =
+      if resume[:defense_projects] && length(resume.defense_projects) > 0 do
+        resume.defense_projects
+        |> Enum.map_join("\n", fn project ->
+          "* #{project.name} - #{project.description}"
+        end)
+      else
+        ""
+      end
+
     """
     ================================================================================
                                       RESUME
     ================================================================================
 
-    DROO
-    Senior Software Engineer
+    #{String.upcase(resume.personal_info.name)}
+    #{resume.personal_info.title}
 
     Contact:
-    - Email: drew@axol.io
-    - GitHub: github.com/hydepwns
-    - LinkedIn: linkedin.com/in/drew-hiro
-    - Twitter: @MF_DROO
+    - Email: #{resume.contact.email}
+    - GitHub: #{resume.contact.github}
+    - LinkedIn: #{resume.contact.linkedin}
+    - Twitter: #{resume.contact.twitter}
+    - Website: #{resume.contact.website}
 
     --------------------------------------------------------------------------------
     SUMMARY
     --------------------------------------------------------------------------------
-    Senior Software Engineer with expertise in distributed systems and real-time
-    applications. 8+ years building scalable platforms with Elixir, Phoenix, and
-    LiveView. Terminal UI and CLI enthusiast.
+    #{resume.summary}
+
+    #{if resume[:focus_areas] && length(resume.focus_areas) > 0 do
+      "Focus Areas: #{Enum.join(resume.focus_areas, ", ")}"
+    else
+      ""
+    end}
 
     --------------------------------------------------------------------------------
     TECHNICAL SKILLS
     --------------------------------------------------------------------------------
-    Languages:     Elixir (90%), Phoenix (85%), JavaScript (75%), TypeScript (70%)
-    Frameworks:    Phoenix, LiveView, Ecto, Broadway, React, Vue.js, Node.js
-    Infrastructure: Docker, Kubernetes, AWS, Fly.io, PostgreSQL, Redis, Kafka
+    #{skills_text}
 
     --------------------------------------------------------------------------------
     EXPERIENCE
     --------------------------------------------------------------------------------
-    Senior Backend Engineer | Scale-up SaaS | 2021 - Present
-    - Built event-driven microservices architecture
-    - Reduced API response time by 70%
-
-    Elixir Developer | FinTech Startup | 2019 - 2021
-    - Designed real-time payment processing system
-    - Handled 1M+ transactions daily
-
-    Full Stack Developer | Digital Agency | 2017 - 2019
-    - Developed client web applications
-    - Delivered projects on time and budget
+    #{experience_text}
 
     --------------------------------------------------------------------------------
-    PROJECTS
+    DEFENSE PROJECTS
     --------------------------------------------------------------------------------
-    * Terminal droo.foo System - Interactive terminal UI droo.foo
-    * Real-time Collaboration Platform - WebRTC pair programming tool
-    * Distributed Event Processing - High-throughput event processor
+    #{projects_text}
+
+    --------------------------------------------------------------------------------
+    EDUCATION
+    --------------------------------------------------------------------------------
+    #{resume.education |> Enum.map_join("\n", fn edu -> "#{edu.degree} - #{edu.field} | #{edu.institution} | #{edu.start_date} - #{edu.end_date}" end)}
+
+    --------------------------------------------------------------------------------
+    CERTIFICATIONS
+    --------------------------------------------------------------------------------
+    #{resume.certifications |> Enum.map_join("\n", fn cert -> "* #{cert.name} - #{cert.issuer} (#{cert.date})" end)}
 
     ================================================================================
     Generated from droo.foo terminal
     ================================================================================
     """
+  end
+
+  # Aggregate skills from all experience items
+  defp aggregate_skills(resume) do
+    resume.experience
+    |> Enum.flat_map(fn exp ->
+      (exp[:technologies] || %{})
+      |> Enum.reject(fn {_k, v} -> is_nil(v) || v == [] end)
+      |> Enum.to_list()
+    end)
+    |> Enum.group_by(fn {category, _items} -> category end, fn {_category, items} -> items end)
+    |> Enum.map(fn {category, items_lists} ->
+      all_items = items_lists |> List.flatten() |> Enum.uniq() |> Enum.sort()
+      {category, all_items}
+    end)
   end
 end
