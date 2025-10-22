@@ -10,6 +10,17 @@ defmodule Droodotfoo.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
+      test_coverage: [
+        tool: ExCoveralls,
+        summary: [threshold: 85]
+      ],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test,
+        "coveralls.github": :test
+      ],
       docs: [
         main: "readme",
         name: "droo.foo Terminal",
@@ -18,7 +29,9 @@ defmodule Droodotfoo.MixProject do
         extras: [
           "README.md",
           "docs/DEVELOPMENT.md",
-          "docs/TODO.md"
+          "docs/TODO.md",
+          "docs/architecture.md",
+          "docs/deployment.md"
         ],
         groups_for_modules: [
           Core: [
@@ -56,7 +69,12 @@ defmodule Droodotfoo.MixProject do
           ]
         ],
         groups_for_extras: [
-          Guides: ["README.md", "docs/DEVELOPMENT.md"],
+          Guides: [
+            "README.md",
+            "docs/DEVELOPMENT.md",
+            "docs/architecture.md",
+            "docs/deployment.md"
+          ],
           Planning: ["docs/TODO.md"]
         ]
       ],
@@ -111,6 +129,7 @@ defmodule Droodotfoo.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
+      {:tzdata, "~> 1.1"},
       # Portal P2P dependencies
       {:phoenix_pubsub, "~> 2.0"},
       {:raxol, "~> 1.4.1", runtime: false},
@@ -120,6 +139,7 @@ defmodule Droodotfoo.MixProject do
       # Property-based testing
       {:stream_data, "~> 1.0", only: [:test, :dev]},
       # Code quality tools
+      {:excoveralls, "~> 0.18", only: :test},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:ex_check, "~> 0.16.0", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},

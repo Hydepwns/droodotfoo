@@ -7,6 +7,9 @@
 # General application configuration
 import Config
 
+# Configure timezone database
+config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
+
 config :droodotfoo,
   generators: [timestamp_type: :utc_datetime]
 
@@ -66,6 +69,13 @@ config :phoenix, :json_library, Jason
 
 # Configure Swoosh for email functionality
 config :droodotfoo, Droodotfoo.Mailer, adapter: Swoosh.Adapters.Local
+
+# Configure ChromicPDF
+config :chromic_pdf,
+  # Use offline mode (don't spawn browser automatically)
+  offline: false,
+  # Disable telemetry
+  discard_utility_output: true
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

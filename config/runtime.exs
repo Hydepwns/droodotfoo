@@ -23,6 +23,20 @@ end
 # Blog API token for Obsidian publishing (all environments)
 config :droodotfoo, :blog_api_token, System.get_env("BLOG_API_TOKEN")
 
+# Resume source configuration (all environments)
+# Load resume from Fileverse/IPFS if configured, otherwise use hardcoded data
+if resume_cid = System.get_env("RESUME_IPFS_CID") do
+  config :droodotfoo, :resume_source,
+    type: :ipfs,
+    cid: resume_cid
+end
+
+if resume_url = System.get_env("RESUME_FILEVERSE_URL") do
+  config :droodotfoo, :resume_source,
+    type: :fileverse,
+    url: resume_url
+end
+
 if config_env() == :prod do
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you
