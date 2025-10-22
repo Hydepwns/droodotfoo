@@ -1,0 +1,127 @@
+[
+  {
+    "name": "tagged_preset",
+    "description": null,
+    "filters": {
+      "technologies": [
+        "Elixir"
+      ]
+    },
+    "tags": [
+      "web3",
+      "functional"
+    ],
+    "created_at": "2025-10-21T20:18:56.435235Z",
+    "updated_at": "2025-10-21T20:18:56.435237Z",
+    "is_system": false
+  },
+  {
+    "name": "test_preset",
+    "description": null,
+    "filters": {
+      "technologies": [
+        "Elixir"
+      ],
+      "text_search": "blockchain"
+    },
+    "tags": [],
+    "created_at": "2025-10-21T20:18:56.443861Z",
+    "updated_at": "2025-10-21T20:18:56.443862Z",
+    "is_system": false
+  },
+  {
+    "name": "test_load",
+    "description": null,
+    "filters": {
+      "technologies": [
+        "Elixir"
+      ]
+    },
+    "tags": [],
+    "created_at": "2025-10-21T20:18:56.451596Z",
+    "updated_at": "2025-10-21T20:18:56.451598Z",
+    "is_system": false
+  },
+  {
+    "name": "elixir_preset",
+    "description": null,
+    "filters": {
+      "technologies": [
+        "Elixir"
+      ]
+    },
+    "tags": [
+      "elixir",
+      "functional"
+    ],
+    "created_at": "2025-10-21T20:18:56.439523Z",
+    "updated_at": "2025-10-21T20:18:56.439526Z",
+    "is_system": false
+  },
+  {
+    "name": "ruby_preset",
+    "description": "Updated description",
+    "filters": {
+      "technologies": [
+        "Ruby"
+      ]
+    },
+    "tags": [],
+    "created_at": "2025-10-21T20:18:56.450362Z",
+    "updated_at": "2025-10-21T20:18:56.450672Z",
+    "is_system": false
+  },
+  {
+    "name": "rust_preset",
+    "description": "Rust experience",
+    "filters": {
+      "technologies": [
+        "Rust"
+      ]
+    },
+    "tags": [],
+    "created_at": "2025-10-21T20:18:56.452223Z",
+    "updated_at": "2025-10-21T20:18:56.452249Z",
+    "is_system": false
+  },
+  {
+    "name": "user_preset",
+    "description": null,
+    "filters": {
+      "technologies": [
+        "Go"
+      ]
+    },
+    "tags": [],
+    "created_at": "2025-10-21T20:18:56.447786Z",
+    "updated_at": "2025-10-21T20:18:56.447789Z",
+    "is_system": false
+  },
+  {
+    "name": "updatable",
+    "description": null,
+    "filters": {
+      "technologies": [
+        "Java",
+        "Kotlin"
+      ]
+    },
+    "tags": [],
+    "created_at": "2025-10-21T20:18:56.444887Z",
+    "updated_at": "2025-10-21T20:18:56.445350Z",
+    "is_system": false
+  },
+  {
+    "name": "import_test",
+    "description": null,
+    "filters": {
+      "technologies": [
+        "TypeScript"
+      ]
+    },
+    "tags": [],
+    "created_at": "2025-10-21T20:18:56.440868Z",
+    "updated_at": "2025-10-21T20:18:56.440871Z",
+    "is_system": false
+  }
+]
