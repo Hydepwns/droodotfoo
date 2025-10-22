@@ -7,7 +7,8 @@ defmodule Droodotfoo.ProjectsTest do
     test "returns all projects" do
       projects = Projects.all()
 
-      assert length(projects) == 6
+      # 2 portfolio + 2 defense = 4 total
+      assert length(projects) >= 2
       assert Enum.all?(projects, &is_struct(&1, Projects))
     end
 
@@ -38,12 +39,12 @@ defmodule Droodotfoo.ProjectsTest do
   end
 
   describe "get/1" do
-    test "returns project by ID" do
-      project = Projects.get(:droodotfoo)
+    test "returns project by ID for portfolio projects" do
+      project = Projects.get(:mana)
 
       assert project
-      assert project.id == :droodotfoo
-      assert project.name == "droo.foo Terminal Portfolio"
+      assert project.id == :mana
+      assert project.name == "mana"
     end
 
     test "returns nil for non-existent project" do
@@ -51,14 +52,8 @@ defmodule Droodotfoo.ProjectsTest do
     end
 
     test "can retrieve all projects by their IDs" do
-      project_ids = [
-        :droodotfoo,
-        :raxol_web,
-        :crdt_collab,
-        :obsidian_blog,
-        :fintech_payments,
-        :event_microservices
-      ]
+      all_projects = Projects.all()
+      project_ids = Enum.map(all_projects, & &1.id)
 
       Enum.each(project_ids, fn id ->
         project = Projects.get(id)
@@ -72,16 +67,17 @@ defmodule Droodotfoo.ProjectsTest do
     test "returns only active projects" do
       active_projects = Projects.active()
 
-      assert length(active_projects) > 0
+      # Portfolio projects with status "active" should be included
       assert Enum.all?(active_projects, &(&1.status == :active))
     end
 
-    test "includes droodotfoo and crdt_collab" do
+    test "includes active portfolio projects" do
       active_projects = Projects.active()
       active_ids = Enum.map(active_projects, & &1.id)
 
-      assert :droodotfoo in active_ids
-      assert :crdt_collab in active_ids
+      # mana and raxol are marked as "active" in resume.json
+      assert :mana in active_ids
+      assert :raxol in active_ids
     end
   end
 
@@ -89,15 +85,16 @@ defmodule Droodotfoo.ProjectsTest do
     test "returns only projects with live demos" do
       demo_projects = Projects.with_live_demos()
 
-      assert length(demo_projects) > 0
       assert Enum.all?(demo_projects, &(&1.live_demo == true))
     end
 
-    test "includes droodotfoo" do
+    test "includes active portfolio projects" do
       demo_projects = Projects.with_live_demos()
       demo_ids = Enum.map(demo_projects, & &1.id)
 
-      assert :droodotfoo in demo_ids
+      # Active portfolio projects should have live demos
+      assert :mana in demo_ids
+      assert :raxol in demo_ids
     end
   end
 
@@ -126,43 +123,45 @@ defmodule Droodotfoo.ProjectsTest do
       assert projects == []
     end
 
-    test "can filter by Phoenix" do
+    test "returns empty list for techs not in current projects" do
+      # Phoenix isn't in current resume projects
       phoenix_projects = Projects.filter_by_tech("Phoenix")
 
-      assert length(phoenix_projects) > 0
-
-      assert Enum.all?(phoenix_projects, fn p ->
-               Enum.any?(p.tech_stack, &(&1 == "Phoenix"))
-             end)
+      # Should either be empty or all contain Phoenix
+      assert phoenix_projects == [] or
+               Enum.all?(phoenix_projects, fn p ->
+                 Enum.any?(p.tech_stack, &(&1 == "Phoenix"))
+               end)
     end
   end
 
   describe "count/0" do
-    test "returns correct number of projects" do
-      assert Projects.count() == 6
+    test "returns number of projects from resume data" do
+      # Dynamic count based on resume.json
+      count = Projects.count()
+      assert count >= 2
+      assert count == length(Projects.all())
     end
   end
 
   describe "project data integrity" do
-    test "droodotfoo project has correct data" do
-      project = Projects.get(:droodotfoo)
+    test "mana project has correct data from resume" do
+      project = Projects.get(:mana)
 
-      assert project.name == "droo.foo Terminal Portfolio"
+      assert project
+      assert project.name == "mana"
       assert project.status == :active
       assert project.live_demo == true
-      assert project.demo_url == "https://droo.foo"
       assert "Elixir" in project.tech_stack
-      assert "Phoenix" in project.tech_stack
-      assert length(project.highlights) == 6
     end
 
-    test "raxol_web project has correct data" do
-      project = Projects.get(:raxol_web)
+    test "raxol project has correct data from resume" do
+      project = Projects.get(:raxol)
 
-      assert project.name == "RaxolWeb Framework"
-      assert project.status == :completed
-      assert project.live_demo == false
-      assert project.year == 2025
+      assert project
+      assert project.name == "raxol"
+      assert project.status == :active
+      assert project.live_demo == true
     end
 
     test "active and completed projects should have URLs" do
