@@ -1,0 +1,94 @@
+/* Technology Tag and Chip Components */
+
+/* =================================================================
+   TECH TAGS - Display-only technology labels
+   Used in AboutLive, ProjectsLive to show tech stacks
+   ================================================================= */
+
+.tech-tags {
+  margin-top: 1rem;
+}
+
+.tech-tag {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--border-color);
+  font-size: 0.875rem;
+}
+
+/* =================================================================
+   TECH CHIPS - Interactive/clickable technology filters
+   Used in ResumeLive for filtering content by technology
+   ================================================================= */
+
+.tech-filters-section h4 {
+  color: var(--accent-color);
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+}
+
+.tech-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+/* Scrollbar styling for tech chips container */
+.tech-chips::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tech-chips::-webkit-scrollbar-track {
+  background: var(--background-color);
+}
+
+.tech-chips::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+.tech-chips::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-color);
+}
+
+/* Individual clickable chip */
+.tech-chip {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--border-color);
+  background: var(--background-color-alt);
+  color: var(--accent-color);
+  font-family: monospace;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tech-chip:hover {
+  border-color: var(--accent-color);
+  background: var(--background-color-alt);
+  transform: scale(1.05);
+}
+
+.tech-chip.selected {
+  background: var(--accent-color);
+  color: var(--background-color);
+  border-color: var(--accent-color);
+  font-weight: bold;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .tech-chips {
+    max-height: 150px;
+  }
+}

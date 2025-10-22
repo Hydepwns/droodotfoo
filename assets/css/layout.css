@@ -7,8 +7,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: calc(100vh - 2.5rem); /* Account for fixed footer */
-  height: calc(100vh - 2.5rem);
+  /* Let terminal dictate height - terminal needs exactly 1080px for 45 rows */
+  min-height: 100vh;
+  height: auto;
 }
 
 /* Header table styling - now inside terminal wrapper */
@@ -27,10 +28,7 @@ table.header {
 
 /* Loading indicator - defined in navigation.css */
 
-/* Terminal wrapper spacing */
-.terminal-wrapper {
-  margin: 0 auto;
-}
+/* Terminal wrapper styling moved to terminal_grid.css for centralization */
 
 /* Instructions box - fixed at bottom */
 .instructions-box {
