@@ -79,7 +79,7 @@ fly secrets set CDN_HOST="your-project.pages.dev"  # Optional CDN
 ### Frontend Architecture
 
 - **Grid System**: CSS uses 1ch units for character-perfect alignment
-- **JavaScript**: `assets/js/terminal_grid.js` enforces grid on resize, `assets/js/hooks.js` handles LiveView integration
+- **JavaScript**: `assets/js/terminal_grid.ts` enforces grid on resize, `assets/js/hooks.ts` handles LiveView integration
 - **Styling**: Monospace-web aesthetic with Monaspace Argon font
 
 ### Routing
@@ -95,6 +95,37 @@ fly secrets set CDN_HOST="your-project.pages.dev"  # Optional CDN
 - Pattern match in function heads over conditionals
 - Keep state immutable except in GenServers
 - Avoid imperative patterns; use functional approaches
+
+### Command Architecture
+
+**Single Source of Truth**: Command metadata is centralized in `Droodotfoo.Terminal.CommandRegistry`.
+
+**Pattern**:
+- `CommandRegistry` (`lib/droodotfoo/terminal/command_registry.ex`) - Central registry with all command definitions (names, aliases, descriptions, categories, usage, examples)
+- `CommandBase` (`lib/droodotfoo/terminal/command_base.ex`) - Behavior providing execution patterns (validation, error handling, result normalization)
+- Command modules (`lib/droodotfoo/terminal/commands/*.ex`) - Implement only execution logic via `execute/3` callback
+
+**Adding a new command**:
+1. Add command metadata to `@commands` list in `CommandRegistry`
+2. Implement `execute/3` in the appropriate command module
+3. Add command routing in `lib/droodotfoo/terminal/commands.ex`
+
+Example:
+```elixir
+# In CommandRegistry
+%{
+  name: "mycommand",
+  aliases: ["mc"],
+  description: "Does something useful",
+  category: :utility
+}
+
+# In Commands.MyModule
+@impl true
+def execute("mycommand", args, state) do
+  {:ok, "Result", state}
+end
+```
 
 ### Terminal Rendering
 - Each character occupies exactly 1ch width
@@ -172,7 +203,7 @@ Main dependencies managed in `mix.exs`:
 
 - No database (Ecto not included)
 - 60fps update cycle via LiveView
-- Terminal size fixed at 80x24 characters
+- Terminal size fixed at 110x45 characters (110 columns × 45 rows)
 - Font files should be in `/priv/static/fonts/`
 - Responsive design snaps to character widths
 
