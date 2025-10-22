@@ -16,7 +16,7 @@
 # If the VM crashes, it generates a dump, let's ignore it too.
 erl_crash.dump
 
-# Also ignore archive artifacts (built via "mix archive.build").
+# Ignore archive artifacts (built via "mix archive.build").
 *.ez
 
 # Temporary files, for example, from tests.
@@ -71,8 +71,6 @@ config/*.secret.exs
 *.art
 *_ascii.txt
 *_art.txt
-ascii_*
-art_*
 
 # Ignore generated documentation with ASCII art
 docs/ascii/
