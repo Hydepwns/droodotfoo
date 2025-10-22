@@ -7,6 +7,9 @@ defmodule Droodotfoo.Plugins.GitHub do
   @behaviour Droodotfoo.PluginSystem.Plugin
 
   alias Droodotfoo.Github.{API, AsciiArt}
+  alias Droodotfoo.Plugins.GameBase
+
+  import Droodotfoo.Plugins.UIHelpers
 
   defstruct [
     :mode,
@@ -29,14 +32,14 @@ defmodule Droodotfoo.Plugins.GitHub do
 
   @impl true
   def metadata do
-    %{
-      name: "github",
-      version: "1.0.0",
-      description: "GitHub activity feed and repository browser",
-      author: "droo.foo",
-      commands: ["github", "gh"],
-      category: :utility
-    }
+    GameBase.game_metadata(
+      "github",
+      "1.0.0",
+      "GitHub activity feed and repository browser",
+      "droo.foo",
+      ["github", "gh"],
+      :utility
+    )
   end
 
   @impl true
@@ -79,11 +82,7 @@ defmodule Droodotfoo.Plugins.GitHub do
 
   @impl true
   def render(state, _terminal_state) do
-    header = [
-      "=" |> String.duplicate(78),
-      String.pad_leading(String.pad_trailing("GITHUB BROWSER", 40), 78),
-      "=" |> String.duplicate(78)
-    ]
+    header = header("GITHUB BROWSER", 78)
 
     mode_indicator = [
       "",
@@ -502,43 +501,41 @@ defmodule Droodotfoo.Plugins.GitHub do
   end
 
   defp render_help do
-    [
-      "=" |> String.duplicate(78),
-      "GITHUB PLUGIN HELP",
-      "=" |> String.duplicate(78),
-      "",
-      "MODES:",
-      "  Input       - Enter username or choose trending/search",
-      "  User        - View user profile and stats",
-      "  Repos       - Browse user repositories",
-      "  Activity    - View user's recent activity",
-      "  Repo        - Repository details with commits/issues/PRs",
-      "  Search      - Search GitHub repositories",
-      "  Trending    - View trending repositories",
-      "",
-      "COMMANDS:",
-      "  Input Mode:",
-      "    <username>  - Load user profile",
-      "    [t]         - View trending",
-      "    [s]         - Search repos",
-      "",
-      "  User Mode:",
-      "    [r] - View repositories",
-      "    [a] - View activity",
-      "    [s] - Search",
-      "    [t] - Trending",
-      "",
-      "  Repo Details:",
-      "    [c] - View commits",
-      "    [i] - View issues",
-      "    [p] - View pull requests",
-      "",
-      "GENERAL:",
-      "  [m] - Back/Main menu",
-      "  [h] - Show this help",
-      "  [q] - Quit plugin",
-      "",
-      "=" |> String.duplicate(78)
-    ]
+    header_left("GITHUB PLUGIN HELP", 78) ++
+      [
+        "",
+        "MODES:",
+        "  Input       - Enter username or choose trending/search",
+        "  User        - View user profile and stats",
+        "  Repos       - Browse user repositories",
+        "  Activity    - View user's recent activity",
+        "  Repo        - Repository details with commits/issues/PRs",
+        "  Search      - Search GitHub repositories",
+        "  Trending    - View trending repositories",
+        "",
+        "COMMANDS:",
+        "  Input Mode:",
+        "    <username>  - Load user profile",
+        "    [t]         - View trending",
+        "    [s]         - Search repos",
+        "",
+        "  User Mode:",
+        "    [r] - View repositories",
+        "    [a] - View activity",
+        "    [s] - Search",
+        "    [t] - Trending",
+        "",
+        "  Repo Details:",
+        "    [c] - View commits",
+        "    [i] - View issues",
+        "    [p] - View pull requests",
+        "",
+        "GENERAL:",
+        "  [m] - Back/Main menu",
+        "  [h] - Show this help",
+        "  [q] - Quit plugin",
+        "",
+        divider(78)
+      ]
   end
 end

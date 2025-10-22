@@ -68,14 +68,13 @@ defmodule Droodotfoo.Plugins.SnakeGame do
   @impl true
   @spec metadata() :: map()
   def metadata do
-    %{
-      name: "snake",
-      version: "1.0.0",
-      description: "Classic Snake game - use WASD or arrow keys to move",
-      author: "droo.foo",
-      commands: ["snake", "play snake"],
-      category: :game
-    }
+    game_metadata(
+      "snake",
+      "1.0.0",
+      "Classic Snake game - use WASD or arrow keys to move",
+      "droo.foo",
+      ["snake", "play snake"]
+    )
   end
 
   @impl true

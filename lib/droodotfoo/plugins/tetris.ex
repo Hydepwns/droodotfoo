@@ -96,14 +96,13 @@ defmodule Droodotfoo.Plugins.Tetris do
   @impl true
   @spec metadata() :: map()
   def metadata do
-    %{
-      name: "tetris",
-      version: "1.0.0",
-      description: "Classic Tetris - Stack blocks and clear lines",
-      author: "droo.foo",
-      commands: ["tetris"],
-      category: :game
-    }
+    game_metadata(
+      "tetris",
+      "1.0.0",
+      "Classic Tetris - Stack blocks and clear lines",
+      "droo.foo",
+      ["tetris"]
+    )
   end
 
   @impl true

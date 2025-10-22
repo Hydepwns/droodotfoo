@@ -71,14 +71,13 @@ defmodule Droodotfoo.Plugins.TwentyFortyEight do
   @impl true
   @spec metadata() :: map()
   def metadata do
-    %{
-      name: "2048",
-      version: "1.0.0",
-      description: "2048 - Sliding tile puzzle game",
-      author: "droo.foo",
-      commands: ["2048", "twenty48"],
-      category: :game
-    }
+    game_metadata(
+      "2048",
+      "1.0.0",
+      "2048 - Sliding tile puzzle game",
+      "droo.foo",
+      ["2048", "twenty48"]
+    )
   end
 
   @impl true

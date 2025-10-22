@@ -88,7 +88,13 @@ defmodule Droodotfoo.Plugins.GameBase do
       defoverridable cleanup: 1
 
       import Droodotfoo.Plugins.GameBase,
-        only: [game_blocked?: 1, handle_restart: 2, create_grid: 3]
+        only: [
+          game_blocked?: 1,
+          handle_restart: 2,
+          create_grid: 3,
+          game_metadata: 5,
+          game_metadata: 6
+        ]
     end
   end
 

@@ -6,8 +6,11 @@ defmodule Droodotfoo.Plugins.Spotify do
 
   @behaviour Droodotfoo.PluginSystem.Plugin
 
+  alias Droodotfoo.Plugins.GameBase
   alias Droodotfoo.Spotify
   alias Droodotfoo.Spotify.{API, AsciiArt}
+
+  import Droodotfoo.Plugins.UIHelpers
 
   defstruct [
     :mode,
@@ -27,14 +30,14 @@ defmodule Droodotfoo.Plugins.Spotify do
 
   @impl true
   def metadata do
-    %{
-      name: "spotify",
-      version: "1.0.0",
-      description: "Spotify music controller and display",
-      author: "droo.foo",
-      commands: ["spotify", "music", "sp"],
-      category: :utility
-    }
+    GameBase.game_metadata(
+      "spotify",
+      "1.0.0",
+      "Spotify music controller and display",
+      "droo.foo",
+      ["spotify", "music", "sp"],
+      :utility
+    )
   end
 
   @impl true
@@ -79,11 +82,7 @@ defmodule Droodotfoo.Plugins.Spotify do
 
   @impl true
   def render(state, _terminal_state) do
-    header = [
-      "=" |> String.duplicate(78),
-      String.pad_leading(String.pad_trailing("SPOTIFY CONTROLLER", 40), 78),
-      "=" |> String.duplicate(78)
-    ]
+    header = header("SPOTIFY CONTROLLER", 78)
 
     mode_indicator = [
       "",
@@ -448,30 +447,28 @@ defmodule Droodotfoo.Plugins.Spotify do
   end
 
   defp render_help do
-    [
-      "=" |> String.duplicate(78),
-      "SPOTIFY PLUGIN HELP",
-      "=" |> String.duplicate(78),
-      "",
-      "MODES:",
-      "  Main      - Overview and current track display",
-      "  Playlists - Browse and select playlists",
-      "  Devices   - View available Spotify devices",
-      "  Search    - Search for tracks, artists, albums",
-      "  Controls  - Playback control interface",
-      "  Volume    - Volume adjustment",
-      "",
-      "MAIN COMMANDS:",
-      "  [p] Playlists    [d] Devices     [s] Search",
-      "  [c] Controls     [v] Volume      [r] Refresh",
-      "  [space] Play/Pause",
-      "",
-      "GENERAL:",
-      "  [m] Return to main mode",
-      "  [h] Show this help",
-      "  [q] Quit plugin",
-      "",
-      "=" |> String.duplicate(78)
-    ]
+    header_left("SPOTIFY PLUGIN HELP", 78) ++
+      [
+        "",
+        "MODES:",
+        "  Main      - Overview and current track display",
+        "  Playlists - Browse and select playlists",
+        "  Devices   - View available Spotify devices",
+        "  Search    - Search for tracks, artists, albums",
+        "  Controls  - Playback control interface",
+        "  Volume    - Volume adjustment",
+        "",
+        "MAIN COMMANDS:",
+        "  [p] Playlists    [d] Devices     [s] Search",
+        "  [c] Controls     [v] Volume      [r] Refresh",
+        "  [space] Play/Pause",
+        "",
+        "GENERAL:",
+        "  [m] Return to main mode",
+        "  [h] Show this help",
+        "  [q] Quit plugin",
+        "",
+        divider(78)
+      ]
   end
 end

@@ -27,6 +27,8 @@ defmodule Droodotfoo.Plugins.TypingTest do
 
   @behaviour Droodotfoo.PluginSystem.Plugin
 
+  alias Droodotfoo.Plugins.GameBase
+
   @type state :: %__MODULE__{
           text: String.t(),
           typed: String.t(),
@@ -65,14 +67,13 @@ defmodule Droodotfoo.Plugins.TypingTest do
   @impl true
   @spec metadata() :: map()
   def metadata do
-    %{
-      name: "typing_test",
-      version: "1.0.0",
-      description: "Typing speed test with WPM and accuracy tracking",
-      author: "droo.foo",
-      commands: ["typing", "type", "wpm", "typing test"],
-      category: :game
-    }
+    GameBase.game_metadata(
+      "typing_test",
+      "1.0.0",
+      "Typing speed test with WPM and accuracy tracking",
+      "droo.foo",
+      ["typing", "type", "wpm", "typing test"]
+    )
   end
 
   @impl true
