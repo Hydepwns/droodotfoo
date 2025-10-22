@@ -2,6 +2,11 @@
 
 Interactive terminal portfolio built with Phoenix LiveView and Raxol terminal UI framework.
 
+![Test Coverage](https://img.shields.io/badge/coverage-40.8%25-orange)
+![Tests](https://img.shields.io/badge/tests-1159%20passing-brightgreen)
+![Elixir](https://img.shields.io/badge/elixir-1.17-purple)
+![Phoenix](https://img.shields.io/badge/phoenix-1.8.1-orange)
+
 **Live Demo**: [droo.foo](https://droo.foo)
 
 > Note: Spotify and Web3 features require additional OAuth/wallet setup (optional). Core terminal, games, and utilities work without configuration.
