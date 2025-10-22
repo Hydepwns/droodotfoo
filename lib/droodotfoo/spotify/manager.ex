@@ -224,7 +224,9 @@ defmodule Droodotfoo.Spotify.Manager do
 
   defp add_query_params(url, params) do
     query_string =
-      Enum.map_join(params, "&", fn {key, value} -> "#{key}=#{URI.encode_www_form("#{value}")}" end)
+      Enum.map_join(params, "&", fn {key, value} ->
+        "#{key}=#{URI.encode_www_form("#{value}")}"
+      end)
 
     "#{url}?#{query_string}"
   end

@@ -6,7 +6,8 @@ defmodule Droodotfoo.Spotify.API do
 
   require Logger
   alias Droodotfoo.HttpClient
-  alias Droodotfoo.Spotify.{Auth, Cache}
+  alias Droodotfoo.Performance.Cache
+  alias Droodotfoo.Spotify.Auth
 
   @base_url "https://api.spotify.com/v1"
 
@@ -32,23 +33,23 @@ defmodule Droodotfoo.Spotify.API do
   Gets the current user's profile information.
   """
   def get_current_user do
-    cache_key = "current_user"
-
-    case Cache.get(cache_key) do
-      {:ok, user} ->
-        {:ok, user}
-
-      {:error, :not_found} ->
+    Cache.fetch(
+      :spotify,
+      "current_user",
+      fn ->
         case make_request(:get, "/me") do
           {:ok, %{body: user_data}} ->
-            user = parse_user(user_data)
-            # Cache for 5 minutes
-            Cache.put(cache_key, user, 300_000)
-            {:ok, user}
+            parse_user(user_data)
 
           {:error, reason} ->
             {:error, reason}
         end
+      end,
+      ttl: 300_000
+    )
+    |> case do
+      {:error, _} = error -> error
+      user -> {:ok, user}
     end
   end
 
@@ -124,23 +125,23 @@ defmodule Droodotfoo.Spotify.API do
   Gets the current user's playlists.
   """
   def get_user_playlists(limit \\ 20) do
-    cache_key = "user_playlists_#{limit}"
-
-    case Cache.get(cache_key) do
-      {:ok, playlists} ->
-        {:ok, playlists}
-
-      {:error, :not_found} ->
+    Cache.fetch(
+      :spotify,
+      "user_playlists_#{limit}",
+      fn ->
         case make_request(:get, "/me/playlists?limit=#{limit}") do
           {:ok, %{body: %{"items" => playlists_data}}} ->
-            playlists = Enum.map(playlists_data, &parse_playlist/1)
-            # Cache for 10 minutes
-            Cache.put(cache_key, playlists, 600_000)
-            {:ok, playlists}
+            Enum.map(playlists_data, &parse_playlist/1)
 
           {:error, reason} ->
             {:error, reason}
         end
+      end,
+      ttl: 600_000
+    )
+    |> case do
+      {:error, _} = error -> error
+      playlists -> {:ok, playlists}
     end
   end
 
@@ -148,29 +149,25 @@ defmodule Droodotfoo.Spotify.API do
   Gets tracks from a specific playlist.
   """
   def get_playlist_tracks(playlist_id, limit \\ 50) do
-    cache_key = "playlist_tracks_#{playlist_id}_#{limit}"
+    Cache.fetch(
+      :spotify,
+      "playlist_tracks_#{playlist_id}_#{limit}",
+      fn ->
+        endpoint = "/playlists/#{playlist_id}/tracks?limit=#{limit}"
 
-    case Cache.get(cache_key) do
-      {:ok, tracks} ->
-        {:ok, tracks}
+        case make_request(:get, endpoint) do
+          {:ok, %{body: %{"items" => tracks_data}}} ->
+            Enum.map(tracks_data, fn item -> parse_track(item["track"]) end)
 
-      {:error, :not_found} ->
-        fetch_and_cache_playlist_tracks(playlist_id, limit, cache_key)
-    end
-  end
-
-  defp fetch_and_cache_playlist_tracks(playlist_id, limit, cache_key) do
-    endpoint = "/playlists/#{playlist_id}/tracks?limit=#{limit}"
-
-    case make_request(:get, endpoint) do
-      {:ok, %{body: %{"items" => tracks_data}}} ->
-        tracks = Enum.map(tracks_data, fn item -> parse_track(item["track"]) end)
-        # Cache for 5 minutes
-        Cache.put(cache_key, tracks, 300_000)
-        {:ok, tracks}
-
-      {:error, reason} ->
-        {:error, reason}
+          {:error, reason} ->
+            {:error, reason}
+        end
+      end,
+      ttl: 300_000
+    )
+    |> case do
+      {:error, _} = error -> error
+      tracks -> {:ok, tracks}
     end
   end
 
@@ -180,16 +177,26 @@ defmodule Droodotfoo.Spotify.API do
   Searches for tracks, artists, albums, or playlists.
   """
   def search(query, type \\ "track", limit \\ 20) do
-    encoded_query = URI.encode(query)
-    endpoint = "/search?q=#{encoded_query}&type=#{type}&limit=#{limit}"
+    Cache.fetch(
+      :spotify,
+      "search_#{query}_#{type}_#{limit}",
+      fn ->
+        encoded_query = URI.encode(query)
+        endpoint = "/search?q=#{encoded_query}&type=#{type}&limit=#{limit}"
 
-    case make_request(:get, endpoint) do
-      {:ok, %{body: results}} ->
-        parsed_results = parse_search_results(results, type)
-        {:ok, parsed_results}
+        case make_request(:get, endpoint) do
+          {:ok, %{body: results}} ->
+            parse_search_results(results, type)
 
-      {:error, reason} ->
-        {:error, reason}
+          {:error, reason} ->
+            {:error, reason}
+        end
+      end,
+      ttl: 600_000
+    )
+    |> case do
+      {:error, _} = error -> error
+      results -> {:ok, results}
     end
   end
 
@@ -199,13 +206,23 @@ defmodule Droodotfoo.Spotify.API do
   Gets the user's available devices.
   """
   def get_devices do
-    case make_request(:get, "/me/player/devices") do
-      {:ok, %{body: %{"devices" => devices_data}}} ->
-        devices = Enum.map(devices_data, &parse_device/1)
-        {:ok, devices}
+    Cache.fetch(
+      :spotify,
+      "devices",
+      fn ->
+        case make_request(:get, "/me/player/devices") do
+          {:ok, %{body: %{"devices" => devices_data}}} ->
+            Enum.map(devices_data, &parse_device/1)
 
-      {:error, reason} ->
-        {:error, reason}
+          {:error, reason} ->
+            {:error, reason}
+        end
+      end,
+      ttl: 180_000
+    )
+    |> case do
+      {:error, _} = error -> error
+      devices -> {:ok, devices}
     end
   end
 

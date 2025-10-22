@@ -32,6 +32,7 @@ defmodule Droodotfoo.Web3.ENS do
   """
 
   require Logger
+  alias Droodotfoo.Performance.Cache
 
   # Reserved for future on-chain ENS lookups
   # @ens_registry_address "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e"
@@ -98,7 +99,15 @@ defmodule Droodotfoo.Web3.ENS do
         {:error, :ens_only_on_mainnet}
 
       true ->
-        do_resolve_name(name)
+        # Cache ENS lookups for 1 hour (they rarely change)
+        Cache.fetch(
+          :web3,
+          "ens_resolve_#{name}",
+          fn ->
+            do_resolve_name(name)
+          end,
+          ttl: 3_600_000
+        )
     end
   end
 
@@ -122,7 +131,15 @@ defmodule Droodotfoo.Web3.ENS do
         {:error, :ens_only_on_mainnet}
 
       true ->
-        do_reverse_resolve(address)
+        # Cache reverse lookups for 1 hour
+        Cache.fetch(
+          :web3,
+          "ens_reverse_#{address}",
+          fn ->
+            do_reverse_resolve(address)
+          end,
+          ttl: 3_600_000
+        )
     end
   end
 
