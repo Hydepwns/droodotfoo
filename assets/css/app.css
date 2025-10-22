@@ -6,6 +6,10 @@
 @source "../js";
 @source "../../lib/droodotfoo_web";
 
+/* === SHARED FORM STYLES === */
+@import "./forms.css";              /* Shared form components and inputs */
+@import "./tech_components.css";    /* Technology tags and chips */
+
 /* === PAGE-SPECIFIC STYLES === */
 @import "./contact_form.css";
 @import "./resume.css";
@@ -40,20 +44,20 @@
   display: contents;
 }
 
-/* === TERMINAL & CORE STYLES === */
+/* === CORE STYLES === */
 @import "./monospace.css";        /* Base typography and monospace grid */
-@import "./terminal_grid.css";     /* Terminal buffer rendering */
+/* @import "./terminal_grid.css"; */     /* Terminal buffer rendering - ARCHIVED */
 @import "./layout.css";            /* Container positioning */
 
 /* === THEMING & VISUAL EFFECTS === */
-@import "./themes.css";            /* 7 terminal color themes */
+@import "./themes.css";            /* 7 minimal variable-based color palettes */
 /* @import "./crt_effects.css"; */  /* Vintage CRT effects - DISABLED */
 @import "./accessibility.css";     /* A11y overrides */
 
 /* === UI COMPONENTS === */
 @import "./navigation.css";        /* Breadcrumbs and loading indicators */
 @import "./connection_status.css"; /* LiveView connection status */
-@import "./pwa.css";              /* PWA UI components */
+/* @import "./pwa.css"; */              /* PWA UI components - ARCHIVED */
 
 /* === RESPONSIVE === */
-@import "./mobile.css";           /* Mobile-specific overrides */
+/* @import "./mobile.css"; */           /* Mobile-specific overrides - ARCHIVED (terminal-focused) */
