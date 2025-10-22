@@ -127,33 +127,33 @@ defmodule Droodotfoo.Web3.Auth do
     # Decode signature (should be 65 bytes: r[32] + s[32] + v[1])
     with {:ok, sig_bytes} <- Base.decode16(clean_signature, case: :mixed),
          true <- byte_size(sig_bytes) == 65 do
-        # Split signature into r, s, v components
-        <<r::binary-size(32), s::binary-size(32), v::integer-8>> = sig_bytes
+      # Split signature into r, s, v components
+      <<r::binary-size(32), s::binary-size(32), v::integer-8>> = sig_bytes
 
-        # Ethereum uses recovery id (v) of 27 or 28, need to subtract 27 for recovery
-        recovery_id = if v >= 27, do: v - 27, else: v
+      # Ethereum uses recovery id (v) of 27 or 28, need to subtract 27 for recovery
+      recovery_id = if v >= 27, do: v - 27, else: v
 
-        # Hash the message using Ethereum's personal_sign format
-        message_hash = ethereum_message_hash(message)
+      # Hash the message using Ethereum's personal_sign format
+      message_hash = ethereum_message_hash(message)
 
-        # Recover public key using secp256k1
-        case ExSecp256k1.recover_compact(message_hash, r <> s, recovery_id) do
-          {:ok, public_key} ->
-            # Public key is 65 bytes (0x04 prefix + 64 bytes), we need the last 64 bytes
-            <<_prefix::8, key::binary-size(64)>> = public_key
+      # Recover public key using secp256k1
+      case ExSecp256k1.recover_compact(message_hash, r <> s, recovery_id) do
+        {:ok, public_key} ->
+          # Public key is 65 bytes (0x04 prefix + 64 bytes), we need the last 64 bytes
+          <<_prefix::8, key::binary-size(64)>> = public_key
 
-            # Ethereum address is last 20 bytes of keccak256 hash of public key
-            address_bytes =
-              ExKeccak.hash_256(key)
-              |> binary_part(12, 20)
+          # Ethereum address is last 20 bytes of keccak256 hash of public key
+          address_bytes =
+            ExKeccak.hash_256(key)
+            |> binary_part(12, 20)
 
-            # Format as 0x-prefixed hex string
-            address = "0x" <> Base.encode16(address_bytes, case: :lower)
-            {:ok, address}
+          # Format as 0x-prefixed hex string
+          address = "0x" <> Base.encode16(address_bytes, case: :lower)
+          {:ok, address}
 
-          {:error, reason} ->
-            {:error, reason}
-        end
+        {:error, reason} ->
+          {:error, reason}
+      end
     else
       false -> {:error, :invalid_signature_length}
       {:error, reason} -> {:error, reason}

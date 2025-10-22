@@ -6,6 +6,7 @@ defmodule Droodotfoo.Web3.IPFS do
   """
 
   require Logger
+  alias Droodotfoo.Performance.Cache
 
   @type cid :: String.t()
   @type content :: %{
@@ -53,10 +54,18 @@ defmodule Droodotfoo.Web3.IPFS do
   @spec cat(cid(), keyword()) :: {:ok, content()} | {:error, atom()}
   def cat(cid, opts \\ []) do
     if valid_cid?(cid) do
-      gateway = Keyword.get(opts, :gateway)
-      timeout = Keyword.get(opts, :timeout, 30_000)
+      # IPFS content is immutable - cache for 24 hours
+      Cache.fetch(
+        :ipfs,
+        "content_#{cid}",
+        fn ->
+          gateway = Keyword.get(opts, :gateway)
+          timeout = Keyword.get(opts, :timeout, 30_000)
 
-      fetch_with_fallback(cid, gateway, timeout)
+          fetch_with_fallback(cid, gateway, timeout)
+        end,
+        ttl: 86_400_000
+      )
     else
       {:error, :invalid_cid}
     end
@@ -215,12 +224,27 @@ defmodule Droodotfoo.Web3.IPFS do
 
     case Droodotfoo.HttpClient.get(client, "") do
       {:ok, %{body: body, headers: response_headers}} ->
+        # Handle both raw binary and auto-decoded JSON responses
+        binary_body =
+          cond do
+            is_binary(body) ->
+              body
+
+            is_map(body) or is_list(body) ->
+              # Req auto-decoded JSON, re-encode it
+              Jason.encode!(body)
+
+            true ->
+              # Fallback: convert to string
+              to_string(body)
+          end
+
         # Check content size
-        if byte_size(body) > @max_content_size do
+        if byte_size(binary_body) > @max_content_size do
           {:error, :content_too_large}
         else
           content_type = get_content_type(response_headers)
-          {:ok, {content_type, body}}
+          {:ok, {content_type, binary_body}}
         end
 
       {:error, reason} ->
@@ -228,7 +252,28 @@ defmodule Droodotfoo.Web3.IPFS do
     end
   end
 
-  defp get_content_type(headers) do
+  defp get_content_type(headers) when is_map(headers) do
+    # Req returns headers as a map
+    case Map.get(headers, "content-type") do
+      [content_type | _] when is_binary(content_type) ->
+        content_type
+        |> String.split(";")
+        |> List.first()
+        |> String.trim()
+
+      content_type when is_binary(content_type) ->
+        content_type
+        |> String.split(";")
+        |> List.first()
+        |> String.trim()
+
+      nil ->
+        "application/octet-stream"
+    end
+  end
+
+  defp get_content_type(headers) when is_list(headers) do
+    # Legacy format: list of tuples
     case List.keyfind(headers, ~c"content-type", 0) do
       {~c"content-type", content_type} ->
         content_type
