@@ -8,6 +8,7 @@ defmodule DroodotfooWeb.ContactLive do
   alias Droodotfoo.Contact.{RateLimiter, Validator}
   alias Droodotfoo.Email.ContactMailer
   alias Droodotfoo.Forms.Constants
+  import DroodotfooWeb.ContentComponents
 
   @impl true
   def mount(_params, _session, socket) do
@@ -167,19 +168,7 @@ defmodule DroodotfooWeb.ContactLive do
   end
 
   # Template helper functions
-  defp render_submission_status(nil), do: ""
-
-  defp render_submission_status({status, message}) do
-    assigns = %{status: status, message: message}
-
-    ~H"""
-    <div class={["submission-status", @status]}>
-      <div class={[@status, "-message"]}>
-        {@message}
-      </div>
-    </div>
-    """
-  end
+  # render_submission_status now uses status_message component from ContentComponents
 
   defp render_rate_limit_info(nil), do: ""
 
@@ -210,11 +199,10 @@ defmodule DroodotfooWeb.ContactLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="contact-form-container">
-      <div class="contact-header">
-        <h1>Contact</h1>
-      </div>
-
+    <.page_layout
+      page_title="Contact"
+      page_description="Get in touch via the form below"
+    >
       <div class="contact-form">
         <.form
           for={%{}}
@@ -228,74 +216,52 @@ defmodule DroodotfooWeb.ContactLive do
             type="text"
             name="contact[honeypot]"
             value={@form_data.honeypot}
-            style="display: none;"
+            class="visually-hidden"
             tabindex="-1"
             autocomplete="off"
           />
 
-          <div class="form-group">
-            <label for="contact_name" class="form-label">Name *</label>
-            <input
-              type="text"
-              id="contact_name"
-              name="contact[name]"
-              value={@form_data.name}
-              class={["form-input", @form_errors[:name] && "error"]}
-              placeholder="Your full name"
-              required
-            />
-            <%= if @form_errors[:name] do %>
-              <div class="error-message">{@form_errors[:name]}</div>
-            <% end %>
-          </div>
+          <.form_input
+            id="contact_name"
+            name="contact[name]"
+            label="Name"
+            value={@form_data.name}
+            error={@form_errors[:name]}
+            placeholder="Your full name"
+            required
+          />
 
-          <div class="form-group">
-            <label for="contact_email" class="form-label">Email *</label>
-            <input
-              type="email"
-              id="contact_email"
-              name="contact[email]"
-              value={@form_data.email}
-              class={["form-input", @form_errors[:email] && "error"]}
-              placeholder="your.email@example.com"
-              required
-            />
-            <%= if @form_errors[:email] do %>
-              <div class="error-message">{@form_errors[:email]}</div>
-            <% end %>
-          </div>
+          <.form_input
+            id="contact_email"
+            name="contact[email]"
+            label="Email"
+            type="email"
+            value={@form_data.email}
+            error={@form_errors[:email]}
+            placeholder="your.email@example.com"
+            required
+          />
 
-          <div class="form-group">
-            <label for="contact_subject" class="form-label">Subject *</label>
-            <input
-              type="text"
-              id="contact_subject"
-              name="contact[subject]"
-              value={@form_data.subject}
-              class={["form-input", @form_errors[:subject] && "error"]}
-              placeholder="What's this about?"
-              required
-            />
-            <%= if @form_errors[:subject] do %>
-              <div class="error-message">{@form_errors[:subject]}</div>
-            <% end %>
-          </div>
+          <.form_input
+            id="contact_subject"
+            name="contact[subject]"
+            label="Subject"
+            value={@form_data.subject}
+            error={@form_errors[:subject]}
+            placeholder="What's this about?"
+            required
+          />
 
-          <div class="form-group">
-            <label for="contact_message" class="form-label">Message *</label>
-            <textarea
-              id="contact_message"
-              name="contact[message]"
-              value={@form_data.message}
-              class={["form-textarea", @form_errors[:message] && "error"]}
-              placeholder="Tell me about your project, idea, or just say hello!"
-              rows="6"
-              required
-            >{@form_data.message}</textarea>
-            <%= if @form_errors[:message] do %>
-              <div class="error-message">{@form_errors[:message]}</div>
-            <% end %>
-          </div>
+          <.form_textarea
+            id="contact_message"
+            name="contact[message]"
+            label="Message"
+            value={@form_data.message}
+            error={@form_errors[:message]}
+            placeholder="Tell me about your project, idea, or just say hello!"
+            rows={6}
+            required
+          />
 
           <div class="form-actions">
             <button
@@ -321,11 +287,13 @@ defmodule DroodotfooWeb.ContactLive do
           </div>
         </.form>
 
-        {render_submission_status(@submission_status)}
+        <%= if @submission_status do %>
+          <.status_message type={elem(@submission_status, 0)} message={elem(@submission_status, 1)} />
+        <% end %>
 
         {render_rate_limit_info(@rate_limit_status)}
       </div>
-    </div>
+    </.page_layout>
     """
   end
 end
