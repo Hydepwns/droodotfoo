@@ -10,10 +10,25 @@ defmodule DroodotfooWeb.PostLive do
   def mount(%{"slug" => slug}, _session, socket) do
     case Posts.get_post(slug) do
       {:ok, post} ->
+        # Generate social sharing image URL (pattern or featured image)
+        social_image_url = Posts.social_image_url(post)
+        full_image_url = URI.merge("https://droo.foo", social_image_url) |> to_string()
+
+        # Published time in ISO8601 format for article metadata
+        published_time = DateTime.new!(post.date, ~T[00:00:00], "Etc/UTC") |> DateTime.to_iso8601()
+
         {:ok,
          socket
          |> assign(:post, post)
-         |> assign(:page_title, post.title)}
+         |> assign(:page_title, post.title)
+         |> assign(:meta_description, post.description)
+         |> assign(:og_title, post.title)
+         |> assign(:og_description, post.description)
+         |> assign(:og_type, "article")
+         |> assign(:og_image, full_image_url)
+         |> assign(:twitter_image, full_image_url)
+         |> assign(:published_time, published_time)
+         |> assign(:current_path, "/posts/#{slug}")}
 
       {:error, :not_found} ->
         {:ok,

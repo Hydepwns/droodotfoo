@@ -11,13 +11,13 @@
   --secondary-color: #cc00cc;
 }
 
-/* Green - Classic terminal green */
-.theme-green {
-  --text-color: #00ff00;
-  --background-color: #000000;
-  --border-color: #00ff00;
-  --accent-color: #00ff00;
-  --secondary-color: #00aa00;
+/* Hotline - Hot pink and electric cyan inspired by Hotline Miami */
+.theme-hotline {
+  --text-color: #ff1493;
+  --background-color: #0a0014;
+  --border-color: #00d9ff;
+  --accent-color: #00d9ff;
+  --secondary-color: #ff69b4;
 }
 
 /* Matrix - Digital rain aesthetic */

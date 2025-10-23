@@ -97,8 +97,7 @@
           "LabView",
           "AutoCAD",
           "Figma",
-          "Teamcenter",
-          "Trello"
+          "Teamcenter"
         ]
       }
     },
@@ -124,8 +123,7 @@
           "LabView",
           "AutoCAD",
           "Figma",
-          "Teamcenter",
-          "Trello"
+          "Teamcenter"
         ]
       }
     },
@@ -169,8 +167,7 @@
       "achievements": {
         "leadership": [
           "SGA & Student Body Vice President 2013",
-          "SGA & Student Body Secretary 2012",
-          "Maritime Pre-Law Society Co-founder"
+          "SGA & Student Body Secretary 2012"
         ],
         "academic": [
           "Licensed USCG Deck Officer, Third Mates Unlimited Tonnage Program",
@@ -226,14 +223,44 @@
         "url": "https://github.com/axol-io/mana",
         "description": "Ethereum protocol implementation in Elixir",
         "language": "Elixir",
-        "status": "active"
+        "status": "active",
+        "topics": ["blockchain", "elixir", "ethereum", "evm", "protocol", "web3"],
+        "highlights": [
+          "Built on the BEAM VM: inherent concurrency, fault tolerance, and hot code reloading",
+          "Functional architecture: immutable state, pattern matching, and pipeline-driven data flow",
+          "Production-grade OTP: supervisors, GenServers, and distributed systems primitives",
+          "Memory efficient: significantly lower resource consumption than Geth or Erigon",
+          "Developer-friendly: readable codebase with clear separation of concerns"
+        ]
       },
       {
         "name": "raxol",
         "url": "https://github.com/Hydepwns/raxol",
         "description": "Terminal UI framework for Elixir applications",
         "language": "Elixir",
-        "status": "active"
+        "status": "active",
+        "topics": ["ansi", "component-based", "elixir", "phoenix-liveview", "terminal-ui", "tui"],
+        "highlights": [
+          "Component-based architecture with declarative markup",
+          "Real-time updates via Phoenix LiveView integration",
+          "ANSI escape sequences for rich terminal rendering",
+          "Event handling system for keyboard and mouse interactions",
+          "Character-perfect grid alignment for monospace displays"
+        ]
+      },
+      {
+        "name": "riddler",
+        "url": "https://github.com/axol-io/riddler",
+        "description": "Cross-chain solver with automated rebalancing system",
+        "language": "Elixir",
+        "status": "active",
+        "topics": ["blockchain", "cross-chain", "defi", "elixir", "solver", "web3"],
+        "highlights": [
+          "Across Protocol integration: multi-chain liquidity optimization",
+          "Wormhole support in development: Solana and Sui bridge connectivity",
+          "Automated rebalancing algorithms for cross-chain inventory management",
+          "Real-time monitoring and execution of profitable solver opportunities"
+        ]
       }
     ]
   },

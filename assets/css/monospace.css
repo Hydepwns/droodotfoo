@@ -340,7 +340,7 @@ nav a:hover {
 .theme-toggle {
   position: fixed;
   top: 5.5rem;
-  left: 1rem;
+  right: max(1rem, calc(50vw - 50ch + 1rem));
   z-index: 10000;
   font-family: var(--font-family);
   font-weight: var(--font-weight-bold);
@@ -374,7 +374,7 @@ nav a:hover {
 .theme-toggle::after {
   content: attr(data-tooltip);
   position: absolute;
-  left: calc(100% + 0.5rem);
+  right: calc(100% + 0.5rem);
   top: 50%;
   transform: translateY(-50%);
   background-color: var(--text-color);
@@ -397,7 +397,7 @@ nav a:hover {
 .debug-toggle {
   position: fixed;
   top: 3rem;
-  left: 1rem;
+  right: max(1rem, calc(50vw - 50ch + 1rem));
   z-index: 10000;
   font-family: var(--font-family);
   font-weight: var(--font-weight-bold);
@@ -431,15 +431,16 @@ nav a:hover {
 .debug-toggle::after {
   content: attr(data-tooltip);
   position: absolute;
-  left: calc(100% + 0.5rem);
+  right: calc(100% + 0.5rem);
   top: 50%;
   transform: translateY(-50%);
-  background-color: var(--background-color);
-  color: var(--text-color);
+  background-color: var(--text-color);
+  color: var(--background-color);
   padding: 0.25rem 0.5rem;
-  border: 1px solid var(--border-color);
-  font-size: 0.75rem;
+  border: var(--border-thickness) solid var(--border-color);
   white-space: nowrap;
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-medium);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.15s ease;
@@ -505,7 +506,7 @@ nav a:hover {
 .music-toggle {
   position: fixed;
   top: 8rem;
-  left: 1rem;
+  right: max(1rem, calc(50vw - 50ch + 1rem));
   z-index: 10000;
   font-family: var(--font-family);
   font-weight: var(--font-weight-bold);
@@ -539,7 +540,7 @@ nav a:hover {
 .music-toggle::after {
   content: attr(data-tooltip);
   position: absolute;
-  left: calc(100% + 0.5rem);
+  right: calc(100% + 0.5rem);
   top: 50%;
   transform: translateY(-50%);
   background-color: var(--text-color);
@@ -1147,8 +1148,8 @@ ol {
 /* Project Cards */
 .project-card {
   border: 1px solid var(--border-color);
-  padding: 1rem;
-  margin-bottom: 1rem;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
 }
 
 .project-title {
@@ -1156,9 +1157,93 @@ ol {
   margin-bottom: 0.5rem;
 }
 
-.project-description {
+.project-details,
+.experience-details {
+  margin-top: 0.5rem;
   margin-bottom: 0.5rem;
+}
+
+.project-summary,
+.experience-summary {
+  cursor: pointer;
+  color: var(--accent-color);
+  font-family: monospace;
+  user-select: none;
+  list-style: none;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.project-summary::-webkit-details-marker,
+.experience-summary::-webkit-details-marker {
+  display: none;
+}
+
+.project-summary::before,
+.experience-summary::before {
+  content: "[+] ";
+  font-weight: bold;
+}
+
+details[open] .project-summary::before,
+details[open] .experience-summary::before {
+  content: "[-] ";
+}
+
+.project-summary:hover,
+.experience-summary:hover {
+  color: var(--highlight-color);
+}
+
+/* Certifications Grid */
+.certifications-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.certification-item {
+  border: 1px solid var(--border-color);
+  padding: 0.75rem;
+}
+
+.cert-name {
+  font-weight: var(--font-weight-bold);
+  margin-bottom: 0.25rem;
+}
+
+.cert-issuer {
   color: var(--text-color-alt);
+  margin-bottom: 0.25rem;
+}
+
+.cert-date {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.project-description {
+  margin-top: 0.5rem;
+  color: var(--text-color-alt);
+}
+
+.github-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+  transition: all 0.2s ease;
+}
+
+.github-link:hover {
+  color: var(--highlight-color);
+  transform: translateY(-2px);
+}
+
+.github-link svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* Responsive adjustments */
@@ -1290,7 +1375,6 @@ ol {
 /* Simple navigation */
 .site-nav-simple {
   margin: 0 0 1rem 0;
-  border-top: 2px solid var(--border-color);
   padding: 0.5ch 0;
   text-align: left;
 }
@@ -1656,4 +1740,74 @@ ol {
 
 .mb-1 {
   margin-bottom: 1rem;
+}
+
+.mb-2 {
+  margin-bottom: 2rem;
+}
+
+/* Tree structure for sitemap - ASCII box-drawing characters */
+ul.tree {
+  list-style: none;
+  padding-left: 0;
+  margin-left: 0;
+}
+
+ul.tree ul {
+  list-style: none;
+  padding-left: 2ch;
+  margin-left: 0;
+}
+
+ul.tree li {
+  position: relative;
+  padding-left: 2ch;
+  margin-bottom: 0.25rem;
+}
+
+ul.tree li::before {
+  content: "├── ";
+  position: absolute;
+  left: 0;
+}
+
+ul.tree li:last-child::before {
+  content: "└── ";
+}
+
+ul.tree > li:first-child {
+  padding-left: 0;
+}
+
+ul.tree > li:first-child::before {
+  content: "";
+}
+
+/* Tree connector lines for nested items */
+ul.tree ul li::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -0.25rem;
+  bottom: 50%;
+  width: 1ch;
+  border-left: 1px solid var(--text-color);
+}
+
+ul.tree details summary {
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+
+ul.tree details summary::-webkit-details-marker {
+  display: none;
+}
+
+ul.tree details[open] > summary::before {
+  content: "▼ ";
+}
+
+ul.tree details:not([open]) > summary::before {
+  content: "▶ ";
 }

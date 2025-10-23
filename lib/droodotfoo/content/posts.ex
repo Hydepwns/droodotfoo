@@ -4,6 +4,34 @@ defmodule Droodotfoo.Content.Posts do
 
   Posts are stored as markdown files in `priv/posts/` with YAML frontmatter.
   Metadata is cached in ETS for performance.
+
+  ## Features
+
+  - **Syntax Highlighting**: Code blocks are automatically highlighted using Autumn (OneDark theme)
+  - **Extended Markdown**: Supports tables, footnotes, strikethrough, task lists, and autolinks
+  - **Images**: Store images in `/priv/static/images/posts/` and reference with `![alt text](/images/posts/filename.png)`
+
+  ## Example Post Structure
+
+      ---
+      title: "My Blog Post"
+      date: "2025-01-18"
+      description: "A brief description"
+      tags: ["elixir", "phoenix"]
+      slug: "my-blog-post"
+      ---
+
+      # Heading
+
+      Content with **bold** and *italic* text.
+
+      ```elixir
+      defmodule Example do
+        def hello, do: "world"
+      end
+      ```
+
+      ![Diagram showing architecture](/images/posts/architecture-diagram.png)
   """
 
   use GenServer
@@ -23,7 +51,10 @@ defmodule Droodotfoo.Content.Posts do
       :content,
       :html,
       :read_time,
-      :author
+      :author,
+      :featured_image,
+      :featured_image_alt,
+      :pattern_style
     ]
 
     @type t :: %__MODULE__{
@@ -35,7 +66,10 @@ defmodule Droodotfoo.Content.Posts do
             content: String.t(),
             html: String.t(),
             read_time: integer(),
-            author: String.t() | nil
+            author: String.t() | nil,
+            featured_image: String.t() | nil,
+            featured_image_alt: String.t() | nil,
+            pattern_style: String.t() | nil
           }
   end
 
@@ -66,6 +100,38 @@ defmodule Droodotfoo.Content.Posts do
   @doc "Reload posts from filesystem"
   def reload do
     GenServer.cast(__MODULE__, :reload)
+  end
+
+  @doc """
+  Get the social sharing image URL for a post.
+  Returns the featured_image if present, otherwise generates a pattern URL.
+  If pattern_style is specified in frontmatter, includes it as a query parameter.
+  """
+  @spec social_image_url(Post.t()) :: String.t()
+  def social_image_url(%Post{featured_image: image}) when is_binary(image) and image != "" do
+    image
+  end
+
+  def social_image_url(%Post{slug: slug, pattern_style: pattern_style})
+      when is_binary(pattern_style) and pattern_style != "" do
+    "/patterns/#{slug}?style=#{pattern_style}"
+  end
+
+  def social_image_url(%Post{slug: slug}) do
+    "/patterns/#{slug}"
+  end
+
+  @doc """
+  Get the social sharing image alt text for a post.
+  Returns the featured_image_alt if present, otherwise generates from title.
+  """
+  @spec social_image_alt(Post.t()) :: String.t()
+  def social_image_alt(%Post{featured_image_alt: alt}) when is_binary(alt) and alt != "" do
+    alt
+  end
+
+  def social_image_alt(%Post{title: title}) do
+    "Visual pattern for: #{title}"
   end
 
   ## Server Callbacks
@@ -153,7 +219,18 @@ defmodule Droodotfoo.Content.Posts do
     case extract_frontmatter(content) do
       {:ok, frontmatter, markdown} ->
         slug = Map.get(frontmatter, "slug", default_slug)
-        html = MDEx.to_html!(markdown)
+
+        # Convert markdown to HTML with syntax highlighting and extended features
+        html = MDEx.to_html!(markdown,
+          extension: [
+            strikethrough: true,
+            table: true,
+            autolink: true,
+            tasklist: true,
+            footnotes: true
+          ],
+          syntax_highlight: [formatter: :html_linked]
+        )
 
         %Post{
           slug: slug,
@@ -162,6 +239,9 @@ defmodule Droodotfoo.Content.Posts do
           description: Map.get(frontmatter, "description", ""),
           tags: Map.get(frontmatter, "tags", []),
           author: Map.get(frontmatter, "author"),
+          featured_image: Map.get(frontmatter, "featured_image"),
+          featured_image_alt: Map.get(frontmatter, "featured_image_alt"),
+          pattern_style: Map.get(frontmatter, "pattern_style"),
           content: markdown,
           html: html,
           read_time: calculate_read_time(markdown)
@@ -220,7 +300,9 @@ defmodule Droodotfoo.Content.Posts do
       "date" => Date.to_string(post.date),
       "description" => post.description,
       "tags" => post.tags,
-      "slug" => post.slug
+      "slug" => post.slug,
+      "featured_image" => post.featured_image,
+      "featured_image_alt" => post.featured_image_alt
     }
 
     content = build_frontmatter(frontmatter) <> "\n" <> post.content
@@ -229,16 +311,26 @@ defmodule Droodotfoo.Content.Posts do
 
   defp build_frontmatter(map) do
     # Manually build YAML frontmatter (YamlElixir is read-only)
-    yaml_lines = [
-      "title: #{inspect(map["title"])}",
-      "date: #{inspect(map["date"])}",
-      "description: #{inspect(map["description"])}",
-      "tags: #{inspect(map["tags"])}",
-      "slug: #{inspect(map["slug"])}"
-    ]
+    yaml_lines =
+      [
+        "title: #{inspect(map["title"])}",
+        "date: #{inspect(map["date"])}",
+        "description: #{inspect(map["description"])}",
+        "tags: #{inspect(map["tags"])}",
+        "slug: #{inspect(map["slug"])}"
+      ] ++
+        optional_field(map, "featured_image") ++
+        optional_field(map, "featured_image_alt")
 
     yaml = Enum.join(yaml_lines, "\n")
     "---\n#{yaml}\n---"
+  end
+
+  defp optional_field(map, key) do
+    case Map.get(map, key) do
+      nil -> []
+      value -> ["#{key}: #{inspect(value)}"]
+    end
   end
 
   defp generate_slug(title) do

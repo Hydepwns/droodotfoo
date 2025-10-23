@@ -1,143 +1,165 @@
 ---
-title: "DROO.FOO: a raxol terminal portfolio"
+title: "DROO.FOO: Architecture & Publishing"
 date: "2025-01-18"
-description: "A deep dive into building DROO.FOO - a terminal-powered portfolio with Phoenix LiveView and Raxol"
+description: "How droo.foo is built: Phoenix LiveView, file-based content, and Obsidian publishing"
 author: "DROO AMOR"
-tags: ["elixir", "raxol", "terminal", "phoenix", "liveview", "meta"]
+tags: ["elixir", "phoenix", "liveview", "obsidian", "architecture"]
 slug: "building-droo-foo"
 ---
 
-# Welcome to droo.foo
+# Building droo.foo
 
-This is droo.foo - a terminal-powered portfolio that brings the aesthetic of retro computing to the modern web. Built with Phoenix LiveView and Raxol, it delivers a full Unix-like terminal experience running at 60fps in your browser.
+A minimalist portfolio built with Phoenix LiveView, emphasizing functional patterns and content-first design.
 
-## The Stack
+## Stack
 
-The site combines several interesting technologies:
-
-- **Elixir + Phoenix 1.8**: Robust backend framework
-- **Phoenix LiveView**: Real-time updates without JavaScript complexity
-- **Raxol**: Terminal UI framework for Elixir
+- **Elixir + Phoenix 1.8 + LiveView**: Server-side rendering with real-time updates
 - **MDEx**: Fast markdown rendering
-- **Monaspace Argon**: Crisp monospace typography
-- **File-based Blog**: Markdown posts in `priv/posts/`
-- **Obsidian Publishing**: Write locally, publish via API
+- **File-based content**: Posts in `priv/posts/`, resume in `priv/resume.json`
+- **Monaspace Argon**: Monospace typography
 
-## Why Terminal UIs?
+## Architecture
 
-Terminal UIs offer several compelling advantages:
+```
+┌─────────────────────────────────────────────────────┐
+│                   Browser                           │
+│  ┌──────────────────────────────────────────────┐  │
+│  │         Phoenix LiveView                     │  │
+│  │  - Real-time rendering                       │  │
+│  │  - WebSocket connection                      │  │
+│  │  - Server-side state                         │  │
+│  └──────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────┐
+│              Phoenix Application                     │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────┐  │
+│  │  LiveViews   │  │  Components  │  │   API    │  │
+│  │              │  │              │  │          │  │
+│  │ - Home       │  │ - Layout     │  │ - Posts  │  │
+│  │ - About      │  │ - Tech Tags  │  │          │  │
+│  │ - Projects   │  │ - Details    │  │          │  │
+│  │ - Posts      │  │              │  │          │  │
+│  └──────────────┘  └──────────────┘  └──────────┘  │
+│                        │                             │
+│                        ▼                             │
+│  ┌──────────────────────────────────────────────┐  │
+│  │           Data Layer                         │  │
+│  │  - priv/resume.json   (resume data)          │  │
+│  │  - priv/posts/*.md    (blog posts)           │  │
+│  └──────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────┘
+```
 
-- **Performance**: Lightweight and blazingly fast
-- **Accessibility**: Works over SSH and low-bandwidth connections
-- **Aesthetics**: That authentic retro computing feel
-- **Efficiency**: Keyboard-first navigation
-- **Portability**: Character-perfect rendering across platforms
+### Key LiveViews
+- `DroodotfooLive` - Homepage
+- `AboutLive` - Resume/experience
+- `ProjectsLive` - Portfolio projects
+- `PostLive` - Blog posts
 
-## Building Terminal UIs with Raxol
+## Obsidian Publishing Workflow
 
-At the heart of droo.foo is Raxol, a terminal UI framework for Elixir. Here's how to build your own terminal interfaces.
+Write posts in Obsidian, publish via API:
 
-### Getting Started
+```
+┌──────────────────────────────────────────────────┐
+│  Obsidian Vault                                  │
+│  ┌────────────────────────────────────┐          │
+│  │  Post.md                           │          │
+│  │  ---                               │          │
+│  │  title: "My Post"                  │          │
+│  │  date: "2025-01-18"                │          │
+│  │  ---                               │          │
+│  │  # Content here                    │          │
+│  └────────────────────────────────────┘          │
+└──────────────────────────────────────────────────┘
+                  │
+                  │ POST /api/posts
+                  ▼
+┌──────────────────────────────────────────────────┐
+│  Phoenix API Endpoint                            │
+│  ┌────────────────────────────────────┐          │
+│  │  POST /api/posts                   │          │
+│  │  - Validates frontmatter           │          │
+│  │  - Generates slug                  │          │
+│  │  - Writes to priv/posts/           │          │
+│  └────────────────────────────────────┘          │
+└──────────────────────────────────────────────────┘
+                  │
+                  ▼
+┌──────────────────────────────────────────────────┐
+│  File System                                     │
+│  priv/posts/my-post.md                           │
+└──────────────────────────────────────────────────┘
+```
 
-Add Raxol to your `mix.exs`:
+Posts are immediately available at `/posts/slug` via LiveView.
+
+## Data Model
 
 ```elixir
-def deps do
-  [
-    {:raxol, "~> 1.0"}
-  ]
+# Single source of truth
+priv/resume.json
+  ├─ personal_info
+  ├─ experience[]
+  ├─ education[]
+  ├─ certifications[]
+  ├─ defense_projects[]
+  └─ portfolio
+      └─ projects[]
+          ├─ mana (Ethereum client)
+          ├─ riddler (Cross-chain solver)
+          └─ ...
+
+# Blog posts
+priv/posts/*.md
+  └─ Frontmatter + Markdown
+```
+
+Projects dynamically load from resume data:
+
+```elixir
+def all do
+  resume = ResumeData.get_resume_data()
+  defense = convert_defense_projects(resume[:defense_projects])
+  portfolio = convert_portfolio_projects(resume[:portfolio][:projects])
+  portfolio ++ defense
 end
 ```
 
-### Basic Example
+## Key Patterns
 
-Here's a simple counter application:
-
+**Pattern Matching for Type-Specific Logic:**
 ```elixir
-defmodule MyApp do
-  use Raxol.App
+defp extract_tech_stack_for(:defense, raw_project),
+  do: extract_tech_stack(raw_project[:technologies])
 
-  def init(_opts) do
-    {:ok, %{counter: 0}}
-  end
-
-  def handle_key(?j, state) do
-    {:ok, %{state | counter: state.counter + 1}}
-  end
-
-  def render(state) do
-    "Counter: #{state.counter}"
-  end
-end
+defp extract_tech_stack_for(:portfolio, raw_project),
+  do: [raw_project[:language]]
 ```
 
-### Advanced Patterns
-
-#### State Management
-
-Keep your state immutable and use pattern matching:
-
-```elixir
-def handle_key(:arrow_down, %{cursor: cursor, max: max} = state) do
-  new_cursor = min(cursor + 1, max)
-  {:ok, %{state | cursor: new_cursor}}
-end
+**Progressive Disclosure with `<details>`:**
+```heex
+<details class="project-details">
+  <summary class="project-summary">Details</summary>
+  <div>{project.description}</div>
+</details>
 ```
 
-#### Box Drawing
+**GitHub Integration:**
+GitHub repository topics automatically fetched and displayed as tags.
 
-Use Unicode box-drawing characters for beautiful layouts:
+## Why This Stack?
 
-```bash
-┌─────────────────┐
-│ Title           │
-├─────────────────┤
-│ Content         │
-└─────────────────┘
-```
+- **Phoenix LiveView**: Real-time without JavaScript complexity
+- **File-based content**: Simple, versionable, no database needed
+- **Obsidian publishing**: Write in your editor, publish via API
+- **Functional Elixir**: Pattern matching, immutable state, pipe operators
+- **Monospace aesthetic**: Clean, fast, content-focused
 
-### Integration with Phoenix LiveView
+## Links
 
-The magic happens when you combine Raxol with LiveView. The architecture:
-
-1. **Raxol Terminal** - Terminal rendering engine
-2. **Phoenix LiveView** - Real-time web orchestration
-3. **Web Browser** - Character-perfect monospace grid display
-
-This gives you server-side terminal logic with real-time updates in the browser.
-
-## Features of droo.foo
-
-- **Terminal Interface**: Full Unix-like terminal with navigation
-- **60fps Updates**: Smooth LiveView-powered interactions
-- **Monospace Aesthetic**: Character-perfect grid alignment
-- **Multiple Themes**: Synthwave84, Matrix, Cyberpunk, and more
-- **Responsive Design**: Adapts to mobile and desktop
-- **File-based Content**: Simple markdown-based blog system
-
-## Quick Start Guide
-
-Press `` ` `` to toggle the terminal view anywhere on the site. Once in the terminal, use:
-
-- Arrow keys to navigate
-- Enter to select
-- `t` to cycle themes
-- `` ` `` to exit terminal
-
-## What's Next?
-
-I'll be writing about:
-- Phoenix LiveView architectural patterns
-- Advanced Raxol techniques
-- File-based content management systems
-- Web3 integration with Elixir
-- Building PWAs with Phoenix
-
-## Learn More
-
-Check out these resources:
-- [Raxol Documentation](https://hexdocs.pm/raxol)
-- [Phoenix LiveView Guide](https://hexdocs.pm/phoenix_live_view)
-- [Source Code](https://github.com/droo/droodotfoo)
-
-Happy terminal hacking!
+- [Mana Ethereum Client](https://github.com/axol-io/mana)
+- [Riddler Cross-chain Solver](https://github.com/axol-io/riddler)
+- [Phoenix LiveView](https://hexdocs.pm/phoenix_live_view)

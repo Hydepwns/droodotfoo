@@ -19,6 +19,32 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png" />
     <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
 
+    <!-- RSS Feed -->
+    <link rel="alternate" type="application/rss+xml" title="DROO.FOO RSS Feed" href="/feed.xml" />
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content={assigns[:meta_description] || "Blockchain infrastructure engineer building production-grade FOSS tooling for Cosmos and EVM ecosystems"} />
+    <meta name="author" content="DROO AMOR" />
+    <meta name="keywords" content="blockchain, elixir, ethereum, cosmos, web3, infrastructure, engineering" />
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:site_name" content="DROO.FOO" />
+    <meta property="og:title" content={assigns[:og_title] || assigns[:page_title] || "DROO.FOO"} />
+    <meta property="og:description" content={assigns[:og_description] || assigns[:meta_description] || "Blockchain infrastructure engineer building production-grade FOSS tooling"} />
+    <meta property="og:type" content={assigns[:og_type] || "website"} />
+    <meta property="og:url" content={"https://droo.foo#{assigns[:current_path] || "/"}"} />
+    <meta property="og:image" content={assigns[:og_image] || "https://droo.foo/images/og-image.png"} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@MF_DROO" />
+    <meta name="twitter:creator" content="@MF_DROO" />
+    <meta name="twitter:title" content={assigns[:twitter_title] || assigns[:og_title] || assigns[:page_title] || "DROO.FOO"} />
+    <meta name="twitter:description" content={assigns[:twitter_description] || assigns[:og_description] || assigns[:meta_description] || "Blockchain infrastructure engineer building production-grade FOSS tooling"} />
+    <meta name="twitter:image" content={assigns[:twitter_image] || assigns[:og_image] || "https://droo.foo/images/og-image.png"} />
+
     <.live_title default="DROO.FOO" suffix=" · Engineer building his Gundam">
       {assigns[:page_title]}
     </.live_title>
@@ -27,11 +53,14 @@
     </script>
   </head>
   <body>
+    <!-- Skip to main content link for screen readers -->
+    <a href="#main-content" class="skip-to-content">Skip to main content</a>
+
     <!-- Debug Mode Indicator -->
-    <div id="debug-indicator">[DEBUG MODE]</div>
+    <div id="debug-indicator" aria-live="polite" aria-atomic="true">[DEBUG MODE]</div>
 
     <!-- Theme Change Indicator -->
-    <div id="theme-indicator"></div>
+    <div id="theme-indicator" role="status" aria-live="polite" aria-atomic="true"></div>
 
     <!-- Theme Toggle Button (desktop only) -->
     <button
@@ -91,7 +120,10 @@
       </div>
     </div>
 
-    {@inner_content}
+    <!-- Main content landmark with id for skip link -->
+    <main id="main-content" role="main">
+      {@inner_content}
+    </main>
     
 <!-- Music Player (Spotify with YouTube fallback) - Site-wide, persists across pages -->
     <div
@@ -134,8 +166,8 @@
 
     <script>
       // Theme cycling functionality
-      const themes = ['theme-synthwave84', 'theme-green', 'theme-matrix', 'theme-cyberpunk', 'theme-phosphor', 'theme-amber', 'theme-high-contrast'];
-      const themeNames = ['Synthwave84', 'Green', 'Matrix', 'Cyberpunk', 'Phosphor', 'Amber', 'High Contrast'];
+      const themes = ['theme-synthwave84', 'theme-hotline', 'theme-matrix', 'theme-cyberpunk', 'theme-phosphor', 'theme-amber', 'theme-high-contrast'];
+      const themeNames = ['Synthwave84', 'Hotline', 'Matrix', 'Cyberpunk', 'Phosphor', 'Amber', 'High Contrast'];
       let currentThemeIndex = 0;
       let themeIndicatorTimeout;
 
