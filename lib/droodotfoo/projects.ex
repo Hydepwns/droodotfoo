@@ -12,6 +12,7 @@ defmodule Droodotfoo.Projects do
     :tagline,
     :description,
     :tech_stack,
+    :topics,
     :github_url,
     :demo_url,
     :live_demo,
@@ -27,6 +28,7 @@ defmodule Droodotfoo.Projects do
           tagline: String.t(),
           description: String.t(),
           tech_stack: list(String.t()),
+          topics: list(String.t()),
           github_url: String.t() | nil,
           demo_url: String.t() | nil,
           live_demo: boolean(),
@@ -36,211 +38,190 @@ defmodule Droodotfoo.Projects do
           ascii_thumbnail: list(String.t())
         }
 
-  @doc """
-  Returns all projects from resume data (defense_projects + portfolio.projects).
-  """
+  @doc "Returns all projects from resume data (defense_projects + portfolio.projects)"
   @spec all() :: list(t())
   def all do
     resume = ResumeData.get_resume_data()
-
-    # Convert defense projects
     defense = convert_defense_projects(resume[:defense_projects] || [])
-
-    # Convert portfolio projects
     portfolio = convert_portfolio_projects(resume[:portfolio][:projects] || [])
-
-    # Combine and return
     portfolio ++ defense
   end
 
-  # Convert defense projects to Projects struct format
-  defp convert_defense_projects(defense_projects) do
-    defense_projects
-    |> Enum.map(fn project ->
-      tech_stack = extract_tech_stack(project[:technologies] || %{})
+  @doc "Gets a project by ID"
+  @spec get(atom()) :: t() | nil
+  def get(id), do: Enum.find(all(), &(&1.id == id))
 
-      %__MODULE__{
-        id:
-          project.name
-          |> String.downcase()
-          |> String.replace(~r/[^a-z0-9]+/, "_")
-          |> String.to_atom(),
-        name: project.name,
-        tagline: extract_tagline(project.description),
-        description: project.description,
-        tech_stack: tech_stack,
-        github_url:
-          if(project[:url] in ["Classified", "Proprietary"], do: nil, else: project[:url]),
-        demo_url: nil,
-        live_demo: false,
-        status: parse_status(project[:status] || "Completed"),
-        highlights: [project.description],
-        year: extract_year(project[:start_date]),
-        ascii_thumbnail: generate_defense_thumbnail(project.name)
-      }
-    end)
+  @doc "Returns active projects only"
+  @spec active() :: list(t())
+  def active, do: Enum.filter(all(), &(&1.status == :active))
+
+  @doc "Returns projects with live demos"
+  @spec with_live_demos() :: list(t())
+  def with_live_demos, do: Enum.filter(all(), &(&1.live_demo))
+
+  @doc "Filters projects by tech stack"
+  @spec filter_by_tech(String.t()) :: list(t())
+  def filter_by_tech(tech) do
+    tech_lower = String.downcase(tech)
+    Enum.filter(all(), &Enum.any?(&1.tech_stack, fn t -> String.downcase(t) == tech_lower end))
   end
 
-  # Convert portfolio projects to Projects struct format
-  defp convert_portfolio_projects(portfolio_projects) do
-    portfolio_projects
-    |> Enum.map(fn project ->
-      %__MODULE__{
-        id:
-          project.name
-          |> String.downcase()
-          |> String.replace(~r/[^a-z0-9]+/, "_")
-          |> String.to_atom(),
-        name: project.name,
-        tagline: project.description,
-        description: project.description,
-        tech_stack: [project[:language] || "N/A"],
-        github_url: project.url,
-        demo_url: if(project[:status] == "active", do: project.url, else: nil),
-        live_demo: project[:status] == "active",
-        status: parse_status(project[:status] || "active"),
-        highlights: [project.description],
-        year: extract_current_year(),
-        ascii_thumbnail: generate_portfolio_thumbnail(project.name)
-      }
-    end)
+  @doc "Returns a color-coded status indicator for a project"
+  @spec status_indicator(:active | :completed | :archived) :: String.t()
+  def status_indicator(:active), do: "█ Active"
+  def status_indicator(:completed), do: "▓ Done"
+  def status_indicator(:archived), do: "░ Archive"
+
+  @doc "Returns count of projects"
+  @spec count() :: integer()
+  def count, do: length(all())
+
+  # Private functions
+
+  defp convert_defense_projects(projects) do
+    Enum.map(projects, &build_project(:defense, &1))
   end
 
-  # Extract tech stack from nested technologies structure
+  defp convert_portfolio_projects(projects) do
+    Enum.map(projects, &build_project(:portfolio, &1))
+  end
+
+  defp build_project(type, raw_project) do
+    %__MODULE__{
+      id: to_id(raw_project.name),
+      name: raw_project.name,
+      tagline: extract_tagline_for(type, raw_project),
+      description: raw_project.description,
+      tech_stack: extract_tech_stack_for(type, raw_project),
+      topics: extract_topics_for(type, raw_project),
+      github_url: extract_github_url_for(type, raw_project),
+      demo_url: extract_demo_url_for(type, raw_project),
+      live_demo: is_live_demo?(type, raw_project),
+      status: parse_status(raw_project[:status], default_status_for(type)),
+      highlights: extract_highlights_for(type, raw_project),
+      year: extract_year_for(type, raw_project),
+      ascii_thumbnail: generate_thumbnail(type, raw_project.name)
+    }
+  end
+
+  # Type-specific extractors
+
+  defp extract_tagline_for(:defense, raw_project),
+    do: extract_tagline(raw_project.description)
+
+  defp extract_tagline_for(:portfolio, raw_project),
+    do: raw_project.description
+
+  defp extract_tech_stack_for(:defense, raw_project),
+    do: extract_tech_stack(raw_project[:technologies] || %{})
+
+  defp extract_tech_stack_for(:portfolio, raw_project),
+    do: [raw_project[:language] || "N/A"]
+
+  defp extract_github_url_for(:defense, raw_project),
+    do: normalize_url(raw_project[:url])
+
+  defp extract_github_url_for(:portfolio, raw_project),
+    do: raw_project.url
+
+  defp extract_demo_url_for(:defense, _raw_project), do: nil
+
+  defp extract_demo_url_for(:portfolio, raw_project),
+    do: if(raw_project[:status] == "active", do: raw_project.url)
+
+  defp is_live_demo?(:defense, _raw_project), do: false
+  defp is_live_demo?(:portfolio, raw_project), do: raw_project[:status] == "active"
+
+  defp default_status_for(:defense), do: :completed
+  defp default_status_for(:portfolio), do: :active
+
+  defp extract_year_for(:defense, raw_project), do: extract_year(raw_project[:start_date])
+  defp extract_year_for(:portfolio, _raw_project), do: DateTime.utc_now().year
+
+  defp extract_highlights_for(:defense, _raw_project), do: []
+  defp extract_highlights_for(:portfolio, raw_project), do: raw_project[:highlights] || []
+
+  defp extract_topics_for(:defense, _raw_project), do: []
+  defp extract_topics_for(:portfolio, raw_project), do: raw_project[:topics] || []
+
+  defp to_id(name) do
+    name
+    |> String.downcase()
+    |> String.replace(~r/[^a-z0-9]+/, "_")
+    |> String.to_atom()
+  end
+
   defp extract_tech_stack(technologies) when is_map(technologies) do
     technologies
-    |> Enum.reject(fn {_k, v} -> is_nil(v) || v == [] end)
+    |> Enum.reject(fn {_k, v} -> is_nil(v) or v == [] end)
     |> Enum.flat_map(fn {_category, items} -> items end)
     |> Enum.uniq()
   end
 
   defp extract_tech_stack(_), do: []
 
-  # Extract first sentence as tagline
   defp extract_tagline(description) do
-    description
-    |> String.split(". ")
-    |> List.first()
-    |> String.slice(0..60)
+    description |> String.split(". ") |> List.first() |> String.slice(0..60)
   end
 
-  # Parse status string to atom
-  defp parse_status(status) when is_binary(status) do
+  defp parse_status(status, default) when is_binary(status) do
     case String.downcase(status) do
       "active" -> :active
       "completed" -> :completed
       "archived" -> :archived
-      _ -> :completed
+      _ -> default
     end
   end
 
-  defp parse_status(_), do: :completed
+  defp parse_status(_, default), do: default
 
-  # Extract year from ISO date format (YYYY-MM)
+  defp normalize_url(url) when url in ["Classified", "Proprietary", nil], do: nil
+  defp normalize_url(url), do: url
+
   defp extract_year(date) when is_binary(date) do
-    date
-    |> String.split("-")
-    |> List.first()
-    |> String.to_integer()
-  rescue
-    _ -> extract_current_year()
+    with [year | _] <- String.split(date, "-"),
+         {year_int, ""} <- Integer.parse(year) do
+      year_int
+    else
+      _ -> DateTime.utc_now().year
+    end
   end
 
-  defp extract_year(_), do: extract_current_year()
+  defp extract_year(_), do: DateTime.utc_now().year
 
-  defp extract_current_year do
-    DateTime.utc_now().year
-  end
-
-  # Generate ASCII thumbnails for defense projects
-  defp generate_defense_thumbnail(name) do
+  defp generate_thumbnail(:defense, name) do
     [
       "╭──────────────────────╮",
-      "│  #{String.pad_trailing("DEFENSE PROJECT", 21)}│",
-      "│  #{String.pad_trailing("═══════════════", 21)}│",
-      "│                     │",
-      "│  ╔═══════════════╗  │",
-      "│  ║  CLASSIFIED   ║  │",
-      "│  ║   █████████   ║  │",
-      "│  ║   ░░░░░░░░░   ║  │",
-      "│  ╚═══════════════╝  │",
-      "│                     │",
-      "│  #{String.pad_trailing(String.slice(name, 0..19), 21)}│",
+      "│  DEFENSE PROJECT     │",
+      "│  ═══════════════     │",
+      "│                      │",
+      "│  ╔═══════════════╗   │",
+      "│  ║  CLASSIFIED   ║   │",
+      "│  ║   █████████   ║   │",
+      "│  ║   ░░░░░░░░░   ║   │",
+      "│  ╚═══════════════╝   │",
+      "│                      │",
+      "│  #{pad(name)}        │",
       "╰──────────────────────╯"
     ]
   end
 
-  # Generate ASCII thumbnails for portfolio projects
-  defp generate_portfolio_thumbnail(name) do
+  defp generate_thumbnail(:portfolio, name) do
     [
       "╭──────────────────────╮",
-      "│  #{String.pad_trailing("OPEN SOURCE", 21)}│",
-      "│  #{String.pad_trailing("═══════════", 21)}│",
-      "│                     │",
-      "│      ╭─────────╮    │",
-      "│      │  CODE   │    │",
-      "│      │  ░▒▓▒░  │    │",
-      "│      │  ░▒▓▒░  │    │",
-      "│      ╰─────────╯    │",
-      "│                     │",
-      "│  #{String.pad_trailing(String.slice(name, 0..19), 21)}│",
+      "│  OPEN SOURCE         │",
+      "│  ═══════════         │",
+      "│                      │",
+      "│      ╭─────────╮     │",
+      "│      │  CODE   │     │",
+      "│      │  ░▒▓▒░  │     │",
+      "│      │  ░▒▓▒░  │     │",
+      "│      ╰─────────╯     │",
+      "│                      │",
+      "│  #{pad(name)}        │",
       "╰──────────────────────╯"
     ]
   end
 
-  @doc """
-  Gets a project by ID
-  """
-  @spec get(atom()) :: t() | nil
-  def get(id) do
-    Enum.find(all(), &(&1.id == id))
-  end
-
-  @doc """
-  Returns active projects only
-  """
-  @spec active() :: list(t())
-  def active do
-    all()
-    |> Enum.filter(&(&1.status == :active))
-  end
-
-  @doc """
-  Returns projects with live demos
-  """
-  @spec with_live_demos() :: list(t())
-  def with_live_demos do
-    all()
-    |> Enum.filter(&(&1.live_demo == true))
-  end
-
-  @doc """
-  Filters projects by tech stack
-  """
-  @spec filter_by_tech(String.t()) :: list(t())
-  def filter_by_tech(tech) do
-    tech_lower = String.downcase(tech)
-
-    all()
-    |> Enum.filter(fn project ->
-      Enum.any?(project.tech_stack, fn stack_item ->
-        String.downcase(stack_item) == tech_lower
-      end)
-    end)
-  end
-
-  @doc """
-  Returns a color-coded status indicator for a project.
-  Uses ASCII art and gradient characters for visual appeal.
-  """
-  @spec status_indicator(:active | :completed | :archived) :: String.t()
-  def status_indicator(:active), do: "█ Active"
-  def status_indicator(:completed), do: "▓ Done"
-  def status_indicator(:archived), do: "░ Archive"
-
-  @doc """
-  Returns count of projects
-  """
-  @spec count() :: integer()
-  def count, do: length(all())
+  defp pad(name), do: name |> String.slice(0..19) |> String.pad_trailing(21)
 end

@@ -42,6 +42,9 @@ defmodule Droodotfoo.Application do
       DroodotfooWeb.Endpoint
     ]
 
+    # Add dev-only services
+    children = if Mix.env() == :dev, do: children ++ [Droodotfoo.Dev.FileWatcher], else: children
+
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Droodotfoo.Supervisor]

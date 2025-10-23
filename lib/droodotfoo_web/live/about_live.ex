@@ -16,6 +16,7 @@ defmodule DroodotfooWeb.AboutLive do
     socket
     |> assign(:resume, resume)
     |> assign(:page_title, "About")
+    |> assign(:current_path, "/about")
     |> then(&{:ok, &1})
   end
 
@@ -25,6 +26,7 @@ defmodule DroodotfooWeb.AboutLive do
     <.page_layout
       page_title={@resume.personal_info.name}
       page_description={@resume.personal_info.title}
+      current_path={@current_path}
     >
       <section class="about-section">
         <h2 class="section-title">About</h2>
@@ -57,19 +59,21 @@ defmodule DroodotfooWeb.AboutLive do
               </div>
             </div>
 
-            <%= if exp[:summary] do %>
-              <p class="experience-description">{exp.summary}</p>
+            <%= if exp[:description] do %>
+              <p class="experience-description">{exp.description}</p>
             <% end %>
 
             <%= if exp[:achievements] && length(exp.achievements) > 0 do %>
-              <div class="mt-1">
-                <strong>Key Achievements:</strong>
-                <ul>
-                  <%= for achievement <- exp.achievements do %>
-                    <li>{achievement}</li>
-                  <% end %>
-                </ul>
-              </div>
+              <details class="experience-details">
+                <summary class="experience-summary">Details</summary>
+                <div class="mt-1">
+                  <ul>
+                    <%= for achievement <- exp.achievements do %>
+                      <li>{achievement}</li>
+                    <% end %>
+                  </ul>
+                </div>
+              </details>
             <% end %>
 
             <%= if exp[:technologies] && map_size(exp.technologies) > 0 do %>
@@ -90,16 +94,90 @@ defmodule DroodotfooWeb.AboutLive do
           <h2 class="section-title">Education</h2>
 
           <%= for edu <- @resume.education do %>
-            <article class="mb-2">
-              <div class="experience-title">{edu.degree}</div>
-              <div class="experience-company">{edu.institution}</div>
-              <div class="experience-date">
-                <%= if edu[:graduation_year] do %>
-                  {edu.graduation_year}
-                <% end %>
+            <article class="experience-item">
+              <div class="experience-header">
+                <div class="experience-title">
+                  {edu.degree}
+                  <%= if edu[:field] do %>
+                    , {edu.field}
+                  <% end %>
+                  <%= if edu[:concentration] do %>
+                    ({edu.concentration})
+                  <% end %>
+                </div>
+                <div class="experience-company">{edu.institution}</div>
+                <div class="experience-date">
+                  <%= if edu[:start_date] && edu[:end_date] do %>
+                    {format_date_range(edu.start_date, edu.end_date)}
+                  <% end %>
+                </div>
               </div>
+
+              <%= if edu[:minor] do %>
+                <p class="text-muted">Minor: {edu.minor}</p>
+              <% end %>
+
+              <%= if edu[:achievements] && map_size(edu.achievements) > 0 do %>
+                <details class="experience-details">
+                  <summary class="experience-summary">Achievements</summary>
+                  <div class="mt-1">
+                    <%= if edu.achievements[:leadership] && length(edu.achievements.leadership) > 0 do %>
+                      <div class="mb-1">
+                        <strong>Leadership:</strong>
+                        <ul>
+                          <%= for item <- edu.achievements.leadership do %>
+                            <li>{item}</li>
+                          <% end %>
+                        </ul>
+                      </div>
+                    <% end %>
+
+                    <%= if edu.achievements[:academic] && length(edu.achievements.academic) > 0 do %>
+                      <div class="mb-1">
+                        <strong>Academic:</strong>
+                        <ul>
+                          <%= for item <- edu.achievements.academic do %>
+                            <li>{item}</li>
+                          <% end %>
+                        </ul>
+                      </div>
+                    <% end %>
+
+                    <%= if edu.achievements[:athletics] && length(edu.achievements.athletics) > 0 do %>
+                      <div class="mb-1">
+                        <strong>Athletics:</strong>
+                        <ul>
+                          <%= for item <- edu.achievements.athletics do %>
+                            <li>{item}</li>
+                          <% end %>
+                        </ul>
+                      </div>
+                    <% end %>
+                  </div>
+                </details>
+              <% end %>
             </article>
           <% end %>
+        </section>
+      <% end %>
+
+      <%= if @resume[:certifications] && length(@resume.certifications) > 0 do %>
+        <hr class="section-divider" />
+
+        <section class="certifications-section">
+          <h2 class="section-title">Certifications</h2>
+
+          <div class="certifications-grid">
+            <%= for cert <- @resume.certifications do %>
+              <article class="certification-item">
+                <div class="cert-name">{cert.name}</div>
+                <div class="cert-issuer">{cert.issuer}</div>
+                <%= if cert[:date] do %>
+                  <div class="cert-date">{cert.date}</div>
+                <% end %>
+              </article>
+            <% end %>
+          </div>
         </section>
       <% end %>
     </.page_layout>

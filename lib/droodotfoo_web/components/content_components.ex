@@ -15,11 +15,12 @@ defmodule DroodotfooWeb.ContentComponents do
     assigns = assign(assigns, :today, Date.utc_today() |> Date.to_string())
 
     ~H"""
-    <header class="box-single site-header">
+    <header class="box-single site-header" role="banner">
       <table class="header-table">
+        <caption class="sr-only">Site header with metadata</caption>
         <tr>
           <td class="header-title" colspan="2">
-            <a href="/" class="site-title">DROO.FOO</a>
+            <a href="/" class="site-title" aria-label="DROO.FOO - Return to homepage">DROO.FOO</a>
           </td>
           <td class="header-meta-label">Version</td>
           <td class="header-meta-value header-meta-value-right">v1.0.0</td>
@@ -27,12 +28,12 @@ defmodule DroodotfooWeb.ContentComponents do
         <tr>
           <td class="header-subtitle" colspan="2">Building axol.io</td>
           <td class="header-meta-label">Updated</td>
-          <td class="header-meta-value header-meta-value-right">{@today}</td>
+          <td class="header-meta-value header-meta-value-right"><time datetime={@today}>{@today}</time></td>
         </tr>
         <tr>
           <td class="header-meta-label header-author-label">Author</td>
           <td class="header-meta-value" colspan="3">
-            <a href="https://github.com/hydepwns" target="_blank" rel="noopener">DROO AMOR</a>
+            <a href="https://github.com/hydepwns" target="_blank" rel="noopener noreferrer" aria-label="DROO AMOR on GitHub (opens in new tab)">DROO AMOR</a>
           </td>
         </tr>
       </table>
@@ -46,6 +47,7 @@ defmodule DroodotfooWeb.ContentComponents do
   """
   attr :page_title, :string, required: true
   attr :page_description, :string, default: nil
+  attr :current_path, :string, default: ""
   slot :inner_block, required: true
 
   def page_layout(assigns) do
@@ -59,7 +61,7 @@ defmodule DroodotfooWeb.ContentComponents do
 
       <hr class="section-divider" />
 
-      <.page_footer />
+      <.page_footer current_path={@current_path} />
     </div>
     """
   end
@@ -84,17 +86,23 @@ defmodule DroodotfooWeb.ContentComponents do
   @doc """
   Standard page footer with navigation links.
   """
+  attr :current_path, :string, default: ""
+
   def page_footer(assigns) do
     ~H"""
-    <footer class="page-footer">
-      <nav class="footer-nav">
-        <a href="/">← Home</a>
-        <span class="nav-separator">|</span>
-        <a href="/about">About</a>
-        <span class="nav-separator">|</span>
-        <a href="/projects">Projects</a>
-        <span class="nav-separator">|</span>
-        <a href="/resume">Resume</a>
+    <footer class="page-footer" role="contentinfo">
+      <nav class="footer-nav" aria-label="Footer navigation">
+        <a href="/" aria-current={if @current_path == "/", do: "page", else: false}>← Home</a>
+        <span class="nav-separator" aria-hidden="true">|</span>
+        <a href="/about" aria-current={if @current_path == "/about", do: "page", else: false}>About</a>
+        <span class="nav-separator" aria-hidden="true">|</span>
+        <a href="/now" aria-current={if @current_path == "/now", do: "page", else: false}>Now</a>
+        <span class="nav-separator" aria-hidden="true">|</span>
+        <a href="/projects" aria-current={if @current_path == "/projects", do: "page", else: false}>Projects</a>
+        <span class="nav-separator" aria-hidden="true">|</span>
+        <a href="/posts" aria-current={if String.starts_with?(@current_path, "/posts"), do: "page", else: false}>Writing</a>
+        <span class="nav-separator" aria-hidden="true">|</span>
+        <a href="/sitemap" aria-current={if @current_path == "/sitemap", do: "page", else: false}>Sitemap</a>
       </nav>
     </footer>
     """
@@ -103,13 +111,21 @@ defmodule DroodotfooWeb.ContentComponents do
   @doc """
   Site navigation menu for homepage.
   """
+  attr :current_path, :string, default: ""
+
   def site_nav(assigns) do
     ~H"""
-    <nav class="site-nav-simple">
+    <nav class="site-nav-simple" aria-label="Primary navigation">
       <p>
-        <a href="/about">About</a>
-        · <a href="/projects">Projects</a>
-        · <a href="/resume">Resume</a>
+        <a href="/about" aria-current={if @current_path == "/about", do: "page", else: false}>About</a>
+        <span aria-hidden="true">·</span>
+        <a href="/now" aria-current={if @current_path == "/now", do: "page", else: false}>Now</a>
+        <span aria-hidden="true">·</span>
+        <a href="/projects" aria-current={if @current_path == "/projects", do: "page", else: false}>Projects</a>
+        <span aria-hidden="true">·</span>
+        <a href="/posts" aria-current={if String.starts_with?(@current_path, "/posts"), do: "page", else: false}>Writing</a>
+        <span aria-hidden="true">·</span>
+        <a href="/sitemap" aria-current={if @current_path == "/sitemap", do: "page", else: false}>Sitemap</a>
       </p>
     </nav>
     """
@@ -264,6 +280,108 @@ defmodule DroodotfooWeb.ContentComponents do
         </button>
       <% end %>
     </div>
+    """
+  end
+
+  @doc """
+  Social media meta tags for Open Graph and Twitter Cards.
+  Improves how links appear when shared on social platforms.
+
+  ## Options
+
+    * `:title` - Page title (required)
+    * `:description` - Page description (required)
+    * `:url` - Canonical URL of the page (required)
+    * `:image` - Social card image URL (optional)
+    * `:image_alt` - Alt text for the image (optional)
+    * `:type` - Open Graph type (default: "website", use "article" for blog posts)
+    * `:author` - Author name for articles (optional)
+    * `:published_time` - Article publish date in ISO8601 (optional)
+    * `:tags` - List of article tags (optional)
+
+  ## Examples
+
+      # For a blog post
+      <.social_meta_tags
+        title="My Blog Post"
+        description="An interesting article"
+        url="https://droo.foo/posts/my-post"
+        image="https://droo.foo/patterns/my-post"
+        image_alt="Visual pattern for: My Blog Post"
+        type="article"
+        author="DROO AMOR"
+        published_time="2025-01-18T00:00:00Z"
+        tags={["elixir", "phoenix"]}
+      />
+
+      # For a regular page
+      <.social_meta_tags
+        title="About"
+        description="Learn about DROO AMOR"
+        url="https://droo.foo/about"
+      />
+  """
+  attr :title, :string, required: true
+  attr :description, :string, required: true
+  attr :url, :string, required: true
+  attr :image, :string, default: nil
+  attr :image_alt, :string, default: nil
+  attr :type, :string, default: "website"
+  attr :author, :string, default: nil
+  attr :published_time, :string, default: nil
+  attr :tags, :list, default: []
+
+  def social_meta_tags(assigns) do
+    # Set default image if none provided
+    assigns =
+      assign(
+        assigns,
+        :effective_image,
+        assigns.image || "https://droo.foo/images/logo-512.png"
+      )
+
+    assigns =
+      assign(
+        assigns,
+        :effective_image_alt,
+        assigns.image_alt || "DROO.FOO - #{assigns.title}"
+      )
+
+    ~H"""
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content={@type} />
+    <meta property="og:url" content={@url} />
+    <meta property="og:title" content={@title} />
+    <meta property="og:description" content={@description} />
+    <meta property="og:image" content={@effective_image} />
+    <meta property="og:image:alt" content={@effective_image_alt} />
+    <meta property="og:site_name" content="DROO.FOO" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Article-specific meta tags -->
+    <%= if @type == "article" do %>
+      <%= if @author do %>
+        <meta property="article:author" content={@author} />
+      <% end %>
+      <%= if @published_time do %>
+        <meta property="article:published_time" content={@published_time} />
+      <% end %>
+      <%= for tag <- @tags do %>
+        <meta property="article:tag" content={tag} />
+      <% end %>
+    <% end %>
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={@url} />
+    <meta name="twitter:title" content={@title} />
+    <meta name="twitter:description" content={@description} />
+    <meta name="twitter:image" content={@effective_image} />
+    <meta name="twitter:image:alt" content={@effective_image_alt} />
+
+    <!-- Additional SEO meta tags -->
+    <meta name="description" content={@description} />
+    <link rel="canonical" href={@url} />
     """
   end
 end

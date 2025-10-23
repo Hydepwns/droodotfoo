@@ -49,7 +49,9 @@ config :droodotfoo, DroodotfooWeb.Endpoint,
     patterns: [
       ~r"priv/static/(?!uploads/).*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/droodotfoo_web/(?:controllers|live|components|router)/?.*\.(ex|heex)$"
+      ~r"lib/droodotfoo_web/(?:controllers|live|components|router)/?.*\.(ex|heex)$",
+      ~r"priv/resume\.json$",
+      ~r"priv/posts/.*\.md$"
     ]
   ]
 

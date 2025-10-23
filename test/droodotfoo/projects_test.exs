@@ -75,9 +75,10 @@ defmodule Droodotfoo.ProjectsTest do
       active_projects = Projects.active()
       active_ids = Enum.map(active_projects, & &1.id)
 
-      # mana and raxol are marked as "active" in resume.json
+      # mana, raxol, and riddler are marked as "active" in resume.json
       assert :mana in active_ids
       assert :raxol in active_ids
+      assert :riddler in active_ids
     end
   end
 
@@ -95,6 +96,7 @@ defmodule Droodotfoo.ProjectsTest do
       # Active portfolio projects should have live demos
       assert :mana in demo_ids
       assert :raxol in demo_ids
+      assert :riddler in demo_ids
     end
   end
 
