@@ -17,6 +17,9 @@ defmodule DroodotfooWeb.Plugs.ContentSecurityPolicy do
     |> Plug.Conn.put_resp_header("x-content-type-options", "nosniff")
     |> Plug.Conn.put_resp_header("x-frame-options", "SAMEORIGIN")
     |> Plug.Conn.put_resp_header("x-xss-protection", "1; mode=block")
+    |> Plug.Conn.put_resp_header("cache-control", "no-cache, no-store, must-revalidate")
+    |> Plug.Conn.put_resp_header("pragma", "no-cache")
+    |> Plug.Conn.put_resp_header("expires", "0")
   end
 
   defp build_csp_policy(conn) do
@@ -34,7 +37,7 @@ defmodule DroodotfooWeb.Plugs.ContentSecurityPolicy do
       "connect-src 'self' ws: wss: #{host} chrome-extension: moz-extension:",
       "frame-src 'self' #{host} https://www.youtube.com https://www.youtube-nocookie.com https://open.spotify.com chrome-extension: moz-extension:",
       "worker-src 'self' blob:",
-      "object-src 'none'",
+      "object-src 'self'",
       "base-uri 'self'",
       "form-action 'self'",
       "frame-ancestors 'self'"
