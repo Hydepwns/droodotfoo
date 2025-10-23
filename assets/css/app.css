@@ -13,6 +13,8 @@
 /* === PAGE-SPECIFIC STYLES === */
 @import "./contact_form.css";
 @import "./resume.css";
+@import "./pattern_gallery.css";
+@import "./post_list.css";
 
 /* === SHARED UTILITY STYLES === */
 .spinner {
@@ -45,7 +47,8 @@
 }
 
 /* === CORE STYLES === */
-@import "./monospace.css";        /* Base typography and monospace grid */
+@import "./monospace.css";         /* Base typography and monospace grid */
+@import "./syntax_highlighting.css"; /* Code block syntax highlighting (Autumn OneDark theme) */
 /* @import "./terminal_grid.css"; */     /* Terminal buffer rendering - ARCHIVED */
 @import "./layout.css";            /* Container positioning */
 
