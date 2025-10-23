@@ -19,18 +19,23 @@ defmodule DroodotfooWeb.Router do
 
     live "/", DroodotfooLive
     live "/about", AboutLive
+    live "/now", NowLive
     live "/projects", ProjectsLive
-    live "/web3", Web3Live
-    live "/contact", ContactLive
-    live "/resume", ResumeLive
-    get "/resume/download", PageController, :download_resume
-    live "/stl-viewer", STLViewerLive
-    live "/spotify", SpotifyLive
+    live "/posts", PostsLive
     # PWA archived - see .archived_pwa/README.md
     # live "/pwa", PWALive
     live "/posts/:slug", PostLive
-    # Test route for Astro STL viewer
-    get "/astro-test", PageController, :astro_test
+    live "/sitemap", SitemapLive
+    live "/pattern-gallery", PatternGalleryLive
+
+    # RSS feed
+    get "/feed.xml", FeedController, :rss
+
+    # Sitemap for SEO
+    get "/sitemap.xml", SitemapController, :index
+
+    # Generated patterns for posts
+    get "/patterns/:slug", PatternController, :show
 
     # Spotify OAuth routes
     get "/auth/spotify", SpotifyAuthController, :authorize
