@@ -1,0 +1,131 @@
+/* Pattern Gallery Styles */
+
+.pattern-gallery-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.gallery-controls {
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+.gallery-controls .form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.gallery-controls .text-muted {
+  font-size: 0.875rem;
+  opacity: 0.7;
+}
+
+.pattern-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+@media (max-width: 768px) {
+  .pattern-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pattern-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pattern-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.pattern-preview {
+  width: 100%;
+  aspect-ratio: 1200 / 630;
+  background: #000;
+  overflow: hidden;
+  position: relative;
+}
+
+.pattern-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.pattern-info {
+  padding: 1.5rem;
+}
+
+.pattern-name {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+  font-weight: bold;
+  font-family: 'Monaspace Argon', monospace;
+  letter-spacing: 0.05em;
+}
+
+.pattern-description {
+  margin: 0 0 1rem 0;
+  font-size: 0.875rem;
+  opacity: 0.8;
+  line-height: 1.5;
+}
+
+.pattern-code {
+  display: block;
+  padding: 0.5rem;
+  background: var(--code-bg, #1e1e1e);
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  font-family: 'Monaspace Argon', monospace;
+  font-size: 0.8125rem;
+  color: var(--accent-color, #00ff00);
+}
+
+.gallery-usage {
+  padding: 2rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+.gallery-usage h2 {
+  margin-top: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.gallery-usage pre {
+  background: var(--code-bg, #1e1e1e);
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.gallery-usage code {
+  font-family: 'Monaspace Argon', monospace;
+  font-size: 0.875rem;
+  color: var(--text-color);
+}
+
+/* Ensure patterns are crisp */
+.pattern-preview img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
