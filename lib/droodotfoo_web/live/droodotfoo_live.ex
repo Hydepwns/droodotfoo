@@ -43,16 +43,31 @@ defmodule DroodotfooWeb.DroodotfooLive do
               LATEST
             </h2>
             <%= for post <- @latest_posts do %>
-              <article class="post-item">
-                <h3 class="mb-0-5">
-                  <a href={"/posts/#{post.slug}"} class="link-reset">
-                    {post.title}
-                  </a>
-                </h3>
-                <p class="text-muted-alt">
-                  {Date.to_string(post.date)} • {post.read_time} min read
-                </p>
-                <p>{post.description}</p>
+              <article class="post-item-with-image">
+                <div class="post-item-content">
+                  <h3 class="mb-0-5">
+                    <a href={"/posts/#{post.slug}"} class="link-reset">
+                      {post.title}
+                    </a>
+                  </h3>
+                  <p class="text-muted-alt">
+                    {Date.to_string(post.date)} • {post.read_time} min read
+                  </p>
+                  <p>{post.description}</p>
+                </div>
+                <div class="post-item-image">
+                  <object
+                    data={"#{Posts.social_image_url(post)}?animate=true"}
+                    type="image/svg+xml"
+                    aria-label={"Pattern for #{post.title}"}
+                  >
+                    <img
+                      src={Posts.social_image_url(post)}
+                      alt={"Pattern for #{post.title}"}
+                      loading="lazy"
+                    />
+                  </object>
+                </div>
               </article>
             <% end %>
           </section>
