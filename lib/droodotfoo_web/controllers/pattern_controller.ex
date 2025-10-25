@@ -1,7 +1,7 @@
 defmodule DroodotfooWeb.PatternController do
   use DroodotfooWeb, :controller
 
-  alias Droodotfoo.Content.PatternGenerator
+  alias Droodotfoo.Content.PatternCache
 
   @doc """
   Serves a generated SVG pattern for a post slug.
@@ -32,8 +32,8 @@ defmodule DroodotfooWeb.PatternController do
       animate: parse_boolean(params["animate"], false)
     ]
 
-    # Generate SVG
-    svg = PatternGenerator.generate_svg(slug, opts)
+    # Get from cache or generate (server-side caching)
+    svg = PatternCache.get_or_generate(slug, opts)
 
     # Set aggressive caching headers (pattern is deterministic)
     conn
