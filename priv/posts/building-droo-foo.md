@@ -1,165 +1,186 @@
 ---
-title: "DROO.FOO: Architecture & Publishing"
+title: "Building DROO.FOO: Module 1"
 date: "2025-01-18"
-description: "How droo.foo is built: Phoenix LiveView, file-based content, and Obsidian publishing"
+description: "Infrastructure for content. Building a gundam slowly, one module at a time."
 author: "DROO AMOR"
-tags: ["elixir", "phoenix", "liveview", "obsidian", "architecture"]
+tags: ["elixir", "phoenix", "architecture", "systems"]
 slug: "building-droo-foo"
 ---
 
-# Building droo.foo
+<div class="post-pattern-header">
+  <object data="/patterns/building-droo-foo?animate=true" type="image/svg+xml" style="width: 100%; height: 300px; display: block;">
+    <img src="/patterns/building-droo-foo" alt="Generative pattern for building-droo-foo" style="width: 100%; height: 300px; object-fit: cover;" />
+  </object>
+</div>
 
-A minimalist portfolio built with Phoenix LiveView, emphasizing functional patterns and content-first design.
+# Module 1
 
-## Stack
+I'm building a gundam. This site is the first module.
+I needed to prove the architecture. If the content system isn't modular, the larger system won't work.
 
-- **Elixir + Phoenix 1.8 + LiveView**: Server-side rendering with real-time updates
-- **MDEx**: Fast markdown rendering
-- **File-based content**: Posts in `priv/posts/`, resume in `priv/resume.json`
-- **Monaspace Argon**: Monospace typography
+## The Constraints
 
-## Architecture
+- Monospace terminal interface.
+- Character-perfect grid.
+- Ideally no layout shifts, no font surprises.
+- Must be highly portable
+- Accessibility is a first-class feature (WCAG, ARIA, Lemmy, etc)
+- Raxol must use this and the site proves it works.
 
-```
-┌─────────────────────────────────────────────────────┐
-│                   Browser                           │
-│  ┌──────────────────────────────────────────────┐  │
-│  │         Phoenix LiveView                     │  │
-│  │  - Real-time rendering                       │  │
-│  │  - WebSocket connection                      │  │
-│  │  - Server-side state                         │  │
-│  └──────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────┐
-│              Phoenix Application                     │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────┐  │
-│  │  LiveViews   │  │  Components  │  │   API    │  │
-│  │              │  │              │  │          │  │
-│  │ - Home       │  │ - Layout     │  │ - Posts  │  │
-│  │ - About      │  │ - Tech Tags  │  │          │  │
-│  │ - Projects   │  │ - Details    │  │          │  │
-│  │ - Posts      │  │              │  │          │  │
-│  └──────────────┘  └──────────────┘  └──────────┘  │
-│                        │                             │
-│                        ▼                             │
-│  ┌──────────────────────────────────────────────┐  │
-│  │           Data Layer                         │  │
-│  │  - priv/resume.json   (resume data)          │  │
-│  │  - priv/posts/*.md    (blog posts)           │  │
-│  └──────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────┘
-```
+Additionally, it must pass the 'squint test', meaning the visible monospace grid, character spacing and font display but must highly optimized for legibility and visual rhythm.
 
-### Key LiveViews
-- `DroodotfooLive` - Homepage
-- `AboutLive` - Resume/experience
-- `ProjectsLive` - Portfolio projects
-- `PostLive` - Blog posts
+We addressed the font display constraint quickly by using the [monaspace font family](https://monaspace.githubnext.com/). *A personal favorite.*
 
-## Obsidian Publishing Workflow
+**That character-perfect grid became the first problem.**
+CSS handles 1ch units differently across browsers. Safari rendered 1ch at ~0.1ch wider than Chrome, which was enough to break alignment after _80 characters_.
 
-Write posts in Obsidian, publish via API:
+## Pattern Generation: Reproducible Art
 
-```
-┌──────────────────────────────────────────────────┐
-│  Obsidian Vault                                  │
-│  ┌────────────────────────────────────┐          │
-│  │  Post.md                           │          │
-│  │  ---                               │          │
-│  │  title: "My Post"                  │          │
-│  │  date: "2025-01-18"                │          │
-│  │  ---                               │          │
-│  │  # Content here                    │          │
-│  └────────────────────────────────────┘          │
-└──────────────────────────────────────────────────┘
-                  │
-                  │ POST /api/posts
-                  ▼
-┌──────────────────────────────────────────────────┐
-│  Phoenix API Endpoint                            │
-│  ┌────────────────────────────────────┐          │
-│  │  POST /api/posts                   │          │
-│  │  - Validates frontmatter           │          │
-│  │  - Generates slug                  │          │
-│  │  - Writes to priv/posts/           │          │
-│  └────────────────────────────────────┘          │
-└──────────────────────────────────────────────────┘
-                  │
-                  ▼
-┌──────────────────────────────────────────────────┐
-│  File System                                     │
-│  priv/posts/my-post.md                           │
-└──────────────────────────────────────────────────┘
-```
+Every post needs a visual; the site looked too boring and manual design doesn't scale.
 
-Posts are immediately available at `/posts/slug` via LiveView.
-
-## Data Model
+Deterministic pattern generation: hash the slug, seed the RNG, generate SVG. Reproducible, cacheable, zero manual work.
 
 ```elixir
-# Single source of truth
-priv/resume.json
-  ├─ personal_info
-  ├─ experience[]
-  ├─ education[]
-  ├─ certifications[]
-  ├─ defense_projects[]
-  └─ portfolio
-      └─ projects[]
-          ├─ mana (Ethereum client)
-          ├─ riddler (Cross-chain solver)
-          └─ ...
+def generate_svg(slug, opts \\ []) do
+  # Hash the slug to get a deterministic seed
+  seed = :erlang.phash2(slug)
+  :rand.seed(:exsplus, {seed, seed, seed})
 
-# Blog posts
-priv/posts/*.md
-  └─ Frontmatter + Markdown
+  # Choose style based on slug hash
+  style = choose_style(slug)
+  generate_pattern(style, opts)
+end
 ```
 
-Projects dynamically load from resume data:
+We will start with eight pattern styles for now. The slug hash determines which one. No database or storage, just math. (See all at [/patterns](/patterns).)
+
+This gives us reusable infrastructure. Any content—posts, projects, pages— get some basic deterministic artwork.
+
+## Phoenix LiveView: The Runtime
+
+Phoenix LiveView: server-side rendering, real-time updates, no JavaScript bloat. Components are functions. Purely data in, UI out.
+
+```elixir
+def render(assigns) do
+  ~H"""
+  <.page_layout title={@post.title}>
+    <.pattern slug={@post.slug} />
+    <.content markdown={@post.content} />
+  </.page_layout>
+  """
+end
+```
+
+## File-Based Content: Data as Files
+
+We have no database, instead we use Git for version control, `resume.json` is the selected source. We can change to another file type but json is simple enough.
+Posts are markdown.
+Files version naturally, backup becomes trivial and allows us to migrate easily.
+
+Projects pull from resume data:
 
 ```elixir
 def all do
   resume = ResumeData.get_resume_data()
+  # defense projects are handled slightly differently
   defense = convert_defense_projects(resume[:defense_projects])
   portfolio = convert_portfolio_projects(resume[:portfolio][:projects])
   portfolio ++ defense
 end
 ```
 
-## Key Patterns
+Pattern matching is then made in to data shapes. Defense and portfolio projects become the same struct. No if/else, no type checking.
 
-**Pattern Matching for Type-Specific Logic:**
-```elixir
-defp extract_tech_stack_for(:defense, raw_project),
-  do: extract_tech_stack(raw_project[:technologies])
+## Obsidian → Web: Terminal Workflow
 
-defp extract_tech_stack_for(:portfolio, raw_project),
-  do: [raw_project[:language]]
+I tend to write in [Obsidian](https://obsidian.md/) or in [Zed](https://zed.dev/).
+So we made an API endpoint that accepts markdown, then writes file(s):`/posts/slug`.
+
+```bash
+# From Obsidian, we then run via plugin or script:
+curl -X POST https://droo.foo/api/posts \
+  -H "Content-Type: application/json" \
+  -d '{"content": "---\ntitle: My Post\n---\nContent here"}'
 ```
 
-**Progressive Disclosure with `<details>`:**
-```heex
-<details class="project-details">
-  <summary class="project-summary">Details</summary>
-  <div>{project.description}</div>
-</details>
-```
+No GUI. The endpoint extends to any content type. Authentication later.
 
-**GitHub Integration:**
-GitHub repository topics automatically fetched and displayed as tags.
+## What Broke On Contact (And Why That Matters)
 
-## Why This Stack?
+**CSS precision with 1ch units.** Safari rendered *1ch at ~0.1ch wider* than Chrome—enough to misalign the grid after 80 characters. Firefox had different quirks with font-feature-settings.
 
-- **Phoenix LiveView**: Real-time without JavaScript complexity
-- **File-based content**: Simple, versionable, no database needed
-- **Obsidian publishing**: Write in your editor, publish via API
-- **Functional Elixir**: Pattern matching, immutable state, pipe operators
-- **Monospace aesthetic**: Clean, fast, content-focused
+**Why this mattered**: The monospace grid isn't *aesthetic*—it's _architectural_. If the grid breaks, Raxol breaks. The terminal framework depends on character-perfect alignment.
 
-## Links
+The fix:
+1. `font-feature-settings: 'liga' 0, 'calt' 0` to disable ligatures
+2. CSS cascade control—no inherited text transforms or letter spacing
+3. JavaScript validation on resize to lock the grid
 
-- [Mana Ethereum Client](https://github.com/axol-io/mana)
-- [Riddler Cross-chain Solver](https://github.com/axol-io/riddler)
-- [Phoenix LiveView](https://hexdocs.pm/phoenix_live_view)
+Not sexy, but necessary. The monospace grid is the foundation. Our Agalma even, at least it is for Raxol.
+But for now this is fine, we reached an optimal learning outcome and can circle back to write more tests for more browsers (e.g. [Ladybird](https://ladybird.org/) browser, ~disgusting~ Edge, iterm browser) and observe how rendering is executed.
+
+That now finally leaves:
+**GitHub API rate limiting.** The API allows 60 requests/hour without authentication. With 10+ projects, each page load hit the limit after one visitor.
+
+Built a caching layer with ETS (Erlang's in-memory key-value store). One GenServer fetches data on startup, caches it, refreshes hourly. Cache hit rate after warmup: 98%.
+Pros: No external dependencies, no token management, instant response times.
+Cons: We still may want to build a better solution. Because of reasons.
+
+**Pattern generation went through three iterations. (at *least*)**
+
+For brevity our third version was a complete refactor:
+1. Each pattern type became its own module.
+2. Pattern selection used pattern matching on hash ranges.
+3. The SVG builder became a pure function—same input, meaning same output, every time.
+
+Result: Pattern generation dropped from ~15ms to <5ms.
+*yay*, this takes us to:
+
+## Accessibility Challenges
+
+**ARIA roles conflicting with semantic HTML.** Terminal grids don't map cleanly to standard web semantics. The terminal is a grid of cells, but also a dynamic application. Screen readers expected one thing, the DOM provided another.
+
+**Why this mattered**: Claiming accessibility as a first-class constraint means nothing if screen readers can't navigate the interface or if keyboard users get trapped in the grid.
+
+The problem had two parts:
+
+1. **Structure**: Terminal cells needed proper ARIA roles without breaking semantic HTML. The grid needed to be navigable but not chatty.
+2. **Updates**: LiveView pushes updates constantly. Screen readers needed to know *when* content changed without announcing every single cell modification.
+
+The fix:
+1. Roving tabindex for keyboard navigation - only one focusable element at a time, arrow keys move focus
+2. `aria-live="polite"` regions for terminal output - screen readers announce new content without interrupting
+3. Semantic grouping with proper role hierarchy - terminal as application, grid structure underneath
+
+Not perfect yet. Still testing with NVDA, VoiceOver, and JAWS. But navigable and usable, which is the baseline.
+
+## The Final Numbers
+
+**Pattern generation:** <5ms per SVG. 2000 lines total.
+**GitHub cache:** 98% hit rate. <1ms cached responses.
+**Page load:** <200ms first paint. 50ms LiveView connection. Zero layout shift.
+**Build:** 8s full, <1s incremental.
+
+## What It Enables / Summary
+
+The pieces helped compose:
+- Raxol, which uses the same patterns
+- Preliminary pattern system works for content
+- LiveView enables real-time features
+
+Pattern generator is a library. Components are a design system. __Files are the data layer__.
+
+## Module 2?
+
+Raxol is next. Same-ish aesthetic, same precision, for terminal interfaces.
+
+[/patterns](/patterns) shows some of the simple the patterns. [/now](/now) tracks what's next.
+
+---
+
+**Stack:** Phoenix 1.8 + LiveView, Elixir, MDEx, Monaspace Argon
+**Source:** File-based (priv/posts/, priv/resume.json)
+**Patterns:** 8 styles, deterministic SVG generation
+**Workflow:** Obsidian/Zed → API → Live
+
+Pattern for this post: [animated](/patterns/building-droo-foo?animate=true) | [static](/patterns/building-droo-foo)

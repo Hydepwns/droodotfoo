@@ -19,8 +19,16 @@ defmodule Droodotfoo.Projects do
     :status,
     :highlights,
     :year,
-    :ascii_thumbnail
+    :ascii_thumbnail,
+    :github_data
   ]
+
+  @type github_data :: %{
+          repo_info: map() | nil,
+          languages: map() | nil,
+          latest_commit: map() | nil,
+          latest_release: map() | nil
+        }
 
   @type t :: %__MODULE__{
           id: atom(),
@@ -35,7 +43,8 @@ defmodule Droodotfoo.Projects do
           status: :active | :completed | :archived,
           highlights: list(String.t()),
           year: integer(),
-          ascii_thumbnail: list(String.t())
+          ascii_thumbnail: list(String.t()),
+          github_data: github_data() | nil
         }
 
   @doc "Returns all projects from resume data (defense_projects + portfolio.projects)"
@@ -64,6 +73,19 @@ defmodule Droodotfoo.Projects do
   def filter_by_tech(tech) do
     tech_lower = String.downcase(tech)
     Enum.filter(all(), &Enum.any?(&1.tech_stack, fn t -> String.downcase(t) == tech_lower end))
+  end
+
+  @doc "Enriches projects with GitHub data (cached or real-time)"
+  @spec with_github_data() :: list(t())
+  def with_github_data do
+    all()
+    |> Droodotfoo.GitHub.enrich_projects()
+  end
+
+  @doc "Enriches a single project with GitHub data"
+  @spec enrich_with_github_data(t()) :: t()
+  def enrich_with_github_data(project) do
+    Droodotfoo.GitHub.enrich_project(project)
   end
 
   @doc "Returns a color-coded status indicator for a project"
