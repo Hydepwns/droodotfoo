@@ -1,0 +1,14 @@
+{
+  "name": "droodotfoo-accessibility-tests",
+  "version": "1.0.0",
+  "description": "Automated accessibility testing with axe-core",
+  "private": true,
+  "scripts": {
+    "test": "node test-accessibility.js",
+    "test:ci": "node test-accessibility.js --ci"
+  },
+  "dependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "playwright": "^1.49.1"
+  }
+}
