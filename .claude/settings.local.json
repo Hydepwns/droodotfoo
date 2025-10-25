@@ -116,7 +116,9 @@
       "Bash(if [ -n \"$GITHUB_TOKEN\" ])",
       "Bash(then echo \"Token is set: $GITHUB_TOKEN:0:4...\")",
       "Bash(else echo \"No token set\")",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Bash(cat:*)",
+      "Bash(sort:*)"
     ],
     "deny": [],
     "ask": []

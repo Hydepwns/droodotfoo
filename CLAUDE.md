@@ -30,6 +30,12 @@ mix precommit          # Compile with warnings as errors, check unused deps, for
 # Assets
 mix assets.build       # Build CSS and JS
 mix assets.deploy      # Build minified production assets
+
+# Pattern Cache Management
+mix pattern_cache stats      # Show cache statistics
+mix pattern_cache clear      # Clear all cached patterns
+mix pattern_cache benchmark  # Benchmark cache performance (568x speedup!)
+mix pattern_cache warmup     # Pre-generate patterns for all posts
 ```
 
 ## Secret Management
@@ -88,6 +94,28 @@ fly secrets set CDN_HOST="your-project.pages.dev"  # Optional CDN
 - **Grid System**: CSS uses 1ch units for character-perfect alignment
 - **JavaScript**: `assets/js/terminal_grid.ts` enforces grid on resize, `assets/js/hooks.ts` handles LiveView integration
 - **Styling**: Monospace-web aesthetic with Monaspace Argon font
+
+### Performance & Caching
+
+**JavaScript Bundle Optimization**:
+- Main bundle: 273KB (with code splitting enabled)
+- Heavy libraries (THREE.js, ethers.js) dynamically imported only when needed
+- Lazy-loaded hooks reduce initial page load by 96.5%
+
+**Server-Side Caching**:
+- **Pattern Cache** (`lib/droodotfoo/content/pattern_cache.ex`) - ETS-based cache for SVG patterns
+  - 568x speedup for cached patterns (26ms → 47µs)
+  - 24-hour TTL (patterns are deterministic)
+  - Automatic cleanup every 10 minutes
+  - Management: `mix pattern_cache stats|clear|benchmark|warmup`
+
+- **GitHub Cache** (`lib/droodotfoo/github/cache.ex`) - Repository data with 1-hour TTL
+- **Spotify Cache** (`lib/droodotfoo/spotify/cache.ex`) - Currently playing data
+- **Posts Cache** (`lib/droodotfoo/content/posts.ex`) - ETS-based blog post metadata
+
+**Two-Phase Loading**:
+- Projects page loads instantly, enriches with GitHub data asynchronously
+- Pattern: `mount` renders immediately, `handle_info` updates with API data
 
 ### Routing
 
