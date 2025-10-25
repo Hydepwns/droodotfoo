@@ -33,50 +33,38 @@ defmodule DroodotfooWeb.SitemapLive do
           Complete site structure for quick navigation. Click any link to jump to that page.
         </p>
 
-        <ul class="tree">
-          <li>
-            <strong>droo.foo</strong>
-            <ul>
-              <li><a href="/">Home</a></li>
-              <li><a href="/about">About</a></li>
-              <li><a href="/now">Now</a></li>
-              <li><a href="/projects">Projects</a></li>
-              <li>
-                <a href="/posts">Writing</a>
-                <span class="text-muted"> ({length(@posts)} posts)</span>
-              </li>
-              <li><a href="/sitemap">Sitemap</a></li>
-            </ul>
-          </li>
-        </ul>
+        <div class="ascii-tree">
+          <div><strong>droo.foo</strong></div>
+          <div>├── <a href="/">Home</a></div>
+          <div>├── <a href="/about">About</a></div>
+          <div>├── <a href="/now">Now</a></div>
+          <div>├── <a href="/projects">Projects</a></div>
+          <div>├── <a href="/posts">Writing</a> <span class="text-muted">({length(@posts)} posts)</span></div>
+          <div>├── <a href="/pattern-gallery">Pattern Gallery</a></div>
+          <div>└── <a href="/sitemap">Sitemap</a></div>
+        </div>
 
         <%= if length(@posts) > 0 do %>
           <details class="mt-2">
             <summary style="cursor: pointer; user-select: none;">
               <strong>All Posts</strong> ({length(@posts)})
             </summary>
-            <ul class="mt-1" style="list-style: none; padding-left: 0;">
-              <%= for post <- @posts do %>
-                <li style="padding-left: 2ch; margin-bottom: 0.25rem;">
-                  <a href={"/posts/#{post.slug}"}>{post.title}</a>
-                  <span class="text-muted"> - {Date.to_string(post.date)}</span>
-                </li>
+            <div class="ascii-tree mt-1">
+              <%= for {post, idx} <- Enum.with_index(@posts, 1) do %>
+                <div><%= if idx == length(@posts), do: "└── ", else: "├── " %><a href={"/posts/#{post.slug}"}>{post.title}</a> <span class="text-muted">- {Date.to_string(post.date)}</span></div>
               <% end %>
-            </ul>
+            </div>
           </details>
         <% end %>
 
         <hr class="section-divider" />
 
         <h3>Feeds & Meta</h3>
-        <ul>
-          <li>
-            <a href="/feed.xml">RSS Feed</a> - Subscribe to blog updates
-          </li>
-          <li>
-            <a href="/sitemap.xml">XML Sitemap</a> - For search engines
-          </li>
-        </ul>
+        <div class="ascii-tree">
+          <div>├── <a href="/feed.xml">RSS Feed</a> <span class="text-muted">- Subscribe to blog updates</span></div>
+          <div>├── <a href="/sitemap.xml">XML Sitemap</a> <span class="text-muted">- For search engines</span></div>
+          <div>└── <a href="/llms.txt">LLMs.txt</a> <span class="text-muted">- Structured content for language models</span></div>
+        </div>
       </section>
     </.page_layout>
     """

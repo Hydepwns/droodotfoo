@@ -54,6 +54,7 @@ defmodule DroodotfooWeb.SitemapController do
       {"/now", today, "weekly", "0.8"},
       {"/projects", today, "weekly", "0.9"},
       {"/posts", today, "weekly", "0.9"},
+      {"/pattern-gallery", today, "monthly", "0.7"},
       {"/sitemap", today, "monthly", "0.6"}
     ]
   end
