@@ -1,0 +1,470 @@
+/* UI Components - Extracted from monospace.css */
+
+/* Theme Toggle Button */
+.theme-toggle {
+  position: fixed;
+  top: 5.5rem;
+  right: max(1rem, calc(50vw - 50ch + 1rem));
+  z-index: 10000;
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-bold);
+  font-size: 0.875rem;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: var(--border-thickness) solid var(--border-color);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+/* Hide theme toggle on mobile - use hamburger instead */
+@media screen and (max-width: 768px) {
+  .theme-toggle {
+    display: none;
+  }
+}
+
+.theme-toggle:hover {
+  background-color: var(--text-color);
+  color: var(--background-color);
+  transform: scale(1.1);
+}
+
+.theme-toggle::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  right: calc(100% + 0.5rem);
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: var(--text-color);
+  color: var(--background-color);
+  padding: 0.25rem 0.5rem;
+  border: var(--border-thickness) solid var(--border-color);
+  white-space: nowrap;
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-medium);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 10001;
+}
+
+.theme-toggle:hover::after {
+  opacity: 1;
+}
+
+/* Debug Toggle Button */
+.debug-toggle {
+  position: fixed;
+  top: 3rem;
+  right: max(1rem, calc(50vw - 50ch + 1rem));
+  z-index: 10000;
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-bold);
+  font-size: 0.875rem;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: var(--border-thickness) solid var(--border-color);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+/* Hide debug toggle on mobile - use hamburger instead */
+@media screen and (max-width: 768px) {
+  .debug-toggle {
+    display: none;
+  }
+}
+
+.debug-toggle:hover {
+  background-color: var(--text-color);
+  color: var(--background-color);
+  transform: scale(1.1);
+}
+
+.debug-toggle::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  right: calc(100% + 0.5rem);
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: var(--text-color);
+  color: var(--background-color);
+  padding: 0.25rem 0.5rem;
+  border: var(--border-thickness) solid var(--border-color);
+  white-space: nowrap;
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-medium);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 10001;
+}
+
+.debug-toggle:hover::after {
+  opacity: 1;
+}
+
+/* Debug mode active state */
+.debug-mode .debug-toggle {
+  background-color: var(--accent-color);
+  color: var(--background-color);
+  border-color: var(--accent-color);
+}
+
+/* Debug mode indicator */
+#debug-indicator {
+  display: none;
+  position: fixed;
+  top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--accent-color);
+  color: var(--background-color);
+  padding: 0.25rem 0.75rem;
+  font-family: var(--font-family);
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-bold);
+  border: var(--border-thickness) solid var(--accent-color);
+  z-index: 10002;
+  pointer-events: none;
+}
+
+.debug-mode #debug-indicator {
+  display: block;
+}
+
+/* Theme change indicator */
+#theme-indicator {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--accent-color);
+  color: var(--background-color);
+  padding: 0.5rem 1rem;
+  font-family: var(--font-family);
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-bold);
+  border: var(--border-thickness) solid var(--accent-color);
+  z-index: 10002;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+#theme-indicator.show {
+  opacity: 1;
+}
+
+/* Music Toggle Button */
+.music-toggle {
+  position: fixed;
+  top: 8rem;
+  right: max(1rem, calc(50vw - 50ch + 1rem));
+  z-index: 10000;
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-bold);
+  font-size: 0.875rem;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: var(--border-thickness) solid var(--border-color);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+/* Hide music toggle on mobile - use hamburger instead */
+@media screen and (max-width: 768px) {
+  .music-toggle {
+    display: none;
+  }
+}
+
+.music-toggle:hover {
+  background-color: var(--text-color);
+  color: var(--background-color);
+  transform: scale(1.1);
+}
+
+.music-toggle::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  right: calc(100% + 0.5rem);
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: var(--text-color);
+  color: var(--background-color);
+  padding: 0.25rem 0.5rem;
+  border: var(--border-thickness) solid var(--border-color);
+  white-space: nowrap;
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-medium);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 10001;
+}
+
+.music-toggle:hover::after {
+  opacity: 1;
+}
+
+/* Hide old UI elements */
+.keyboard-toggle,
+.mobile-nav {
+  display: none !important;
+}
+
+/* Hamburger Menu - Mobile Only */
+.hamburger-toggle {
+  position: fixed;
+  top: 1.5rem;
+  right: 0.5rem;
+  z-index: 10000;
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-bold);
+  font-size: 1.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: var(--border-thickness) solid var(--border-color);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+@media screen and (max-width: 768px) {
+  .hamburger-toggle {
+    display: flex;
+  }
+}
+
+.hamburger-toggle:hover {
+  background-color: var(--text-color);
+  color: var(--background-color);
+  transform: scale(1.1);
+}
+
+.hamburger-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10001;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.hamburger-menu.menu-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.hamburger-menu .menu-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 2rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: var(--border-thickness) solid var(--border-color);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-bold);
+}
+
+.hamburger-menu .menu-close:hover {
+  background-color: var(--text-color);
+  color: var(--background-color);
+  transform: scale(1.1);
+}
+
+.menu-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2rem;
+  background-color: var(--background-color);
+  border: 2px solid var(--border-color);
+  min-width: 280px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: var(--border-thickness) solid var(--border-color);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-family);
+  font-size: 1rem;
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+}
+
+.menu-item:hover {
+  background-color: var(--text-color);
+  color: var(--background-color);
+  transform: translateX(0.5rem);
+}
+
+.menu-icon {
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-bold);
+  min-width: 2rem;
+  text-align: center;
+}
+
+.menu-label {
+  flex: 1;
+  text-align: left;
+}
+
+/* PWA Install Link */
+.pwa-install-link {
+  position: relative;
+  color: var(--text-color);
+  text-decoration: underline;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.pwa-install-link:hover {
+  opacity: 0.7;
+}
+
+.pwa-install-link::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--text-color);
+  color: var(--background-color);
+  padding: 0.25rem 0.5rem;
+  border: var(--border-thickness) solid var(--border-color);
+  white-space: nowrap;
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-medium);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 10001;
+}
+
+.pwa-install-link:hover::after {
+  opacity: 1;
+}
+
+/* ASCII Art Container */
+.ascii-art {
+  white-space: pre;
+  font-family: var(--font-family);
+  line-height: var(--line-height);
+  overflow-x: auto;
+}
+
+/* Terminal-like Elements */
+.terminal-prompt::before {
+  content: "$ ";
+  color: var(--accent-color);
+  font-weight: var(--font-weight-bold);
+}
+
+.terminal-output {
+  color: var(--text-color);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Instructions Box */
+.instructions-box {
+  border: var(--border-thickness) var(--border-style) var(--border-color);
+  padding: var(--grid-gap);
+  margin: 0 0 1rem 0;
+  background-color: var(--background-color-alt);
+}
+
+/* Reading Progress Bar */
+.reading-progress-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: var(--background-color-alt);
+  z-index: 9999;
+  opacity: 0.9;
+}
+
+.reading-progress-bar {
+  height: 100%;
+  background: var(--accent-color, var(--link-color));
+  width: 0%;
+  transition: width 0.15s ease-out;
+}
+
+/* Ensure progress bar is visible on all themes */
+.theme-synthwave84 .reading-progress-bar {
+  background: #ff6ec7;
+}
+
+.theme-hotline .reading-progress-bar {
+  background: #f0f465;
+}
+
+.theme-matrix .reading-progress-bar {
+  background: #00ff00;
+}
+
+.theme-cyberpunk .reading-progress-bar {
+  background: #00ffff;
+}
+
+.theme-phosphor .reading-progress-bar {
+  background: #33ff33;
+}
+
+.theme-amber .reading-progress-bar {
+  background: #ffaa00;
+}
+
+.theme-high-contrast .reading-progress-bar {
+  background: #ffff00;
+}
