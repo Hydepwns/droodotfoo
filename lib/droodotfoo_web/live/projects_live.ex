@@ -1,23 +1,38 @@
 defmodule DroodotfooWeb.ProjectsLive do
-  @moduledoc """
-  Projects showcase page.
-  Displays portfolio and defense projects in monospace-web style.
-  """
+  @moduledoc "Projects showcase page"
 
   use DroodotfooWeb, :live_view
-  alias Droodotfoo.Projects
-  import DroodotfooWeb.ContentComponents
-  import DroodotfooWeb.ViewHelpers
+  alias Droodotfoo.{Projects, GitHub}
+  alias Droodotfoo.GitHub.LanguageColors
+  alias DroodotfooWeb.SEO.JsonLD
+  import DroodotfooWeb.{ContentComponents, ViewHelpers}
 
   @impl true
   def mount(_params, _session, socket) do
-    projects = Projects.all()
+    projects = Projects.with_github_data()
 
-    socket
-    |> assign(:projects, projects)
-    |> assign(:page_title, "Projects")
-    |> assign(:current_path, "/projects")
-    |> then(&{:ok, &1})
+    json_ld = [
+      JsonLD.breadcrumb_schema([{"Home", "/"}, {"Projects", "/projects"}])
+      | Enum.map(projects, &JsonLD.software_schema/1)
+    ]
+
+    {:ok,
+     assign(socket,
+       projects: projects,
+       page_title: "Projects",
+       current_path: "/projects",
+       json_ld: json_ld
+     )}
+  end
+
+  @impl true
+  def handle_event("refresh_github_data", %{"github_url" => url}, socket) do
+    with {:ok, {owner, repo}} <- GitHub.Client.parse_github_url(url) do
+      GitHub.force_refresh(owner, repo)
+      {:noreply, assign(socket, :projects, Projects.with_github_data())}
+    else
+      _ -> {:noreply, socket}
+    end
   end
 
   @impl true
@@ -25,66 +40,161 @@ defmodule DroodotfooWeb.ProjectsLive do
     ~H"""
     <.page_layout page_title="Projects" page_description="Selected portfolio work and contributions" current_path={@current_path}>
       <div class="projects-grid">
-        <%= for project <- @projects do %>
-          <article class="project-card">
-            <header>
+        <article :for={project <- @projects} class="project-card">
+          <div class="project-content-grid">
+            <div class="project-left">
               <h2 class="project-title">{project.name}</h2>
-              <p class="text-muted">{project.description}</p>
-            </header>
+              <p class="text-muted project-description-text">{project.description}</p>
 
-            <%= if project.highlights && length(project.highlights) > 0 do %>
-              <details class="project-details">
+              <details :if={project.highlights != []} class="project-details">
                 <summary class="project-summary">Details</summary>
                 <div class="project-description">
                   <ul>
-                    <%= for highlight <- project.highlights do %>
-                      <li>{highlight}</li>
-                    <% end %>
+                    <li :for={highlight <- project.highlights}>{highlight}</li>
                   </ul>
                 </div>
               </details>
-            <% end %>
 
-            <%= if project.topics && length(project.topics) > 0 do %>
-              <div class="project-topics mt-1">
-                <%= for topic <- project.topics do %>
-                  <span class="topic-tag">{topic}</span>
+              <div class="mt-1">
+                <%= if project.topics != [] do %>
+                  <div class="project-topics">
+                    <span :for={topic <- project.topics} class="topic-tag">{topic}</span>
+                  </div>
+                <% else %>
+                  <.tech_tags technologies={project.tech_stack || []} />
                 <% end %>
               </div>
-            <% else %>
-              <.tech_tags technologies={project.tech_stack || []} />
-            <% end %>
+            </div>
 
-            <footer class="project-footer mt-1">
-              <div class="project-meta text-muted">
-                <span>
-                  {format_status(project.status)}
-                </span>
-                <%= if project.year do %>
-                  <span> |  {project.year}</span>
-                <% end %>
-                <%= if project.github_url do %>
-                  <span> | </span>
-                  <a
-                    href={project.github_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="GitHub"
-                    class="github-link"
-                  >
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                    </svg>
-                  </a>
-                <% end %>
-              </div>
-            </footer>
-          </article>
-        <% end %>
+            <div class="project-right">
+              <.github_stats project={project} />
+            </div>
+          </div>
+        </article>
       </div>
     </.page_layout>
     """
   end
 
-  # format_status helper now imported from ViewHelpers
+  defp github_stats(%{project: %{github_data: %{status: :ok}}} = assigns) do
+    ~H"""
+    <div :if={@project.github_data.languages} class="language-breakdown">
+      <div :for={{lang, pct} <- format_language_bars(@project.github_data.languages)} class="language-bar">
+        <span class="lang-name">{lang}</span>
+        <span class="lang-bar-fill" style={"color: #{LanguageColors.get_color(lang)}"}>
+          {String.duplicate("█", percentage_to_bars(pct))}
+        </span>
+        <span class="lang-percentage">{pct}%</span>
+      </div>
+    </div>
+
+    <div :if={repo = @project.github_data.repo_info} class="github-meta text-muted mt-1">
+      ★ {repo.stars} ⑂ {repo.forks}
+      <span :if={repo.updated_at}> | Updated {format_time_ago(repo.updated_at)}</span>
+    </div>
+
+    <div :if={commit = @project.github_data.latest_commit} class="latest-commit text-muted">
+      Latest: {commit.message} ({format_time_ago(commit.date)})
+    </div>
+
+    <div :if={cached = @project.github_data.cached_at} class="cache-timestamp text-muted">
+      <small>Cached {format_cached_time(cached)}</small>
+    </div>
+
+    <a
+      :if={@project.github_url}
+      href={@project.github_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="github-link mt-1"
+    >
+      GitHub →
+    </a>
+    """
+  end
+
+  defp github_stats(%{project: %{github_data: %{status: :loading}}} = assigns) do
+    ~H"""
+    <div class="github-loading">
+      <div class="loading-skeleton"></div>
+      <div class="loading-skeleton"></div>
+      <div class="loading-skeleton"></div>
+    </div>
+    """
+  end
+
+  defp github_stats(%{project: %{github_data: %{status: status}}} = assigns)
+       when status in [:unauthorized, :not_found, :rate_limited, :error] do
+    can_retry = status in [:not_found, :rate_limited, :error]
+    has_url = !is_nil(assigns.project.github_url)
+    assigns = assign(assigns, :show_retry, can_retry && has_url)
+
+    ~H"""
+    <div class="github-error text-muted">
+      <span>{error_message(@project.github_data.status)}</span>
+      <button
+        :if={@show_retry}
+        phx-click="refresh_github_data"
+        phx-value-github_url={@project.github_url}
+        class="refresh-button"
+      >
+        Retry →
+      </button>
+    </div>
+    """
+  end
+
+  defp github_stats(assigns) do
+    ~H"""
+    <div class="project-meta text-muted">
+      <span>{format_status(@project.status)}</span>
+      <span :if={@project.year}> | {@project.year}</span>
+    </div>
+    """
+  end
+
+  defp error_message(:unauthorized), do: "[Private - stats unavailable]"
+  defp error_message(:not_found), do: "[Repository not found]"
+  defp error_message(:rate_limited), do: "[Rate limited - refreshes hourly]"
+  defp error_message(:error), do: "[GitHub data unavailable]"
+
+  defp format_time_ago(datetime) when is_binary(datetime) do
+    with {:ok, dt, _} <- DateTime.from_iso8601(datetime) do
+      DateTime.utc_now() |> DateTime.diff(dt) |> format_duration()
+    else
+      _ -> "recently"
+    end
+  end
+
+  defp format_time_ago(_), do: "recently"
+
+  defp format_cached_time(ms) when is_integer(ms) do
+    (System.system_time(:millisecond) - ms) |> div(1000) |> format_duration()
+  end
+
+  defp format_cached_time(_), do: "recently"
+
+  defp format_duration(s) when s < 60, do: "just now"
+  defp format_duration(s) when s < 3600, do: "#{div(s, 60)}m ago"
+  defp format_duration(s) when s < 86400, do: "#{div(s, 3600)}h ago"
+  defp format_duration(s) when s < 2_592_000, do: "#{div(s, 86400)}d ago"
+  defp format_duration(s) when s < 31_536_000, do: "#{div(s, 2_592_000)}mo ago"
+  defp format_duration(s), do: "#{div(s, 31_536_000)}y ago"
+
+  defp format_language_bars(langs) when is_map(langs) do
+    total = langs |> Map.values() |> Enum.sum()
+
+    if total > 0 do
+      langs
+      |> Enum.sort_by(fn {_, bytes} -> -bytes end)
+      |> Enum.take(3)
+      |> Enum.map(fn {lang, bytes} -> {lang, Float.round(bytes / total * 100, 1)} end)
+    else
+      []
+    end
+  end
+
+  defp format_language_bars(_), do: []
+
+  defp percentage_to_bars(pct), do: max(1, round(pct / 5))
 end

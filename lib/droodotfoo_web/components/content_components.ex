@@ -15,7 +15,7 @@ defmodule DroodotfooWeb.ContentComponents do
     assigns = assign(assigns, :today, Date.utc_today() |> Date.to_string())
 
     ~H"""
-    <header class="box-single site-header" role="banner">
+    <header class="site-header" role="banner">
       <table class="header-table">
         <caption class="sr-only">Site header with metadata</caption>
         <tr>
@@ -55,13 +55,11 @@ defmodule DroodotfooWeb.ContentComponents do
     <div class="page-container">
       <.site_header />
 
+      <.site_nav current_path={@current_path} />
+
       <.page_header title={@page_title} description={@page_description} />
 
       {render_slot(@inner_block)}
-
-      <hr class="section-divider" />
-
-      <.page_footer current_path={@current_path} />
     </div>
     """
   end
@@ -80,31 +78,6 @@ defmodule DroodotfooWeb.ContentComponents do
         <p class="text-muted">{@description}</p>
       <% end %>
     </header>
-    """
-  end
-
-  @doc """
-  Standard page footer with navigation links.
-  """
-  attr :current_path, :string, default: ""
-
-  def page_footer(assigns) do
-    ~H"""
-    <footer class="page-footer" role="contentinfo">
-      <nav class="footer-nav" aria-label="Footer navigation">
-        <a href="/" aria-current={if @current_path == "/", do: "page", else: false}>← Home</a>
-        <span class="nav-separator" aria-hidden="true">|</span>
-        <a href="/about" aria-current={if @current_path == "/about", do: "page", else: false}>About</a>
-        <span class="nav-separator" aria-hidden="true">|</span>
-        <a href="/now" aria-current={if @current_path == "/now", do: "page", else: false}>Now</a>
-        <span class="nav-separator" aria-hidden="true">|</span>
-        <a href="/projects" aria-current={if @current_path == "/projects", do: "page", else: false}>Projects</a>
-        <span class="nav-separator" aria-hidden="true">|</span>
-        <a href="/posts" aria-current={if String.starts_with?(@current_path, "/posts"), do: "page", else: false}>Writing</a>
-        <span class="nav-separator" aria-hidden="true">|</span>
-        <a href="/sitemap" aria-current={if @current_path == "/sitemap", do: "page", else: false}>Sitemap</a>
-      </nav>
-    </footer>
     """
   end
 
@@ -280,6 +253,36 @@ defmodule DroodotfooWeb.ContentComponents do
         </button>
       <% end %>
     </div>
+    """
+  end
+
+  @doc """
+  Series navigation component for blog posts.
+  Displays links to other posts in the same series.
+  """
+  attr :current_post, :map, required: true
+  attr :series_posts, :list, required: true
+
+  def series_nav(assigns) do
+    ~H"""
+    <%= if length(@series_posts) > 1 do %>
+      <div class="series-nav">
+        <div class="series-nav-title">
+          Series: {@current_post.series}
+        </div>
+        <ol>
+          <%= for post <- @series_posts do %>
+            <li>
+              <%= if post.slug == @current_post.slug do %>
+                <strong class="series-current">{post.title}</strong> <span class="text-muted">(current)</span>
+              <% else %>
+                <a href={"/posts/#{post.slug}"}>{post.title}</a>
+              <% end %>
+            </li>
+          <% end %>
+        </ol>
+      </div>
+    <% end %>
     """
   end
 

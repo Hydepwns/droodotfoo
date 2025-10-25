@@ -9,6 +9,7 @@ defmodule DroodotfooWeb.DroodotfooLive do
   use DroodotfooWeb, :live_view
 
   alias Droodotfoo.Content.Posts
+  alias DroodotfooWeb.SEO.JsonLD
   import DroodotfooWeb.ContentComponents
 
   @impl true
@@ -24,7 +25,16 @@ defmodule DroodotfooWeb.DroodotfooLive do
         _ -> []
       end
 
-    {:ok, socket |> assign(:latest_posts, latest_posts)}
+    # Generate JSON-LD schemas for homepage
+    json_ld = [
+      JsonLD.website_schema(),
+      JsonLD.person_schema()
+    ]
+
+    {:ok,
+     socket
+     |> assign(:latest_posts, latest_posts)
+     |> assign(:json_ld, json_ld)}
   end
 
   @impl true
@@ -120,10 +130,6 @@ defmodule DroodotfooWeb.DroodotfooLive do
             </a>
           </div>
         </section>
-
-        <footer class="instructions-box">
-          <span id="site-footer" phx-update="ignore">No tracking/analytics</span>
-        </footer>
       </div>
     </div>
     """

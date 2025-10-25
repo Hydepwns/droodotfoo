@@ -6,6 +6,7 @@ defmodule DroodotfooWeb.AboutLive do
 
   use DroodotfooWeb, :live_view
   alias Droodotfoo.Resume.ResumeData
+  alias DroodotfooWeb.SEO.JsonLD
   import DroodotfooWeb.ContentComponents
   import DroodotfooWeb.ViewHelpers
 
@@ -13,10 +14,20 @@ defmodule DroodotfooWeb.AboutLive do
   def mount(_params, _session, socket) do
     resume = ResumeData.get_resume_data()
 
+    # Generate JSON-LD schemas for about page
+    json_ld = [
+      JsonLD.person_schema(),
+      JsonLD.breadcrumb_schema([
+        {"Home", "/"},
+        {"About", "/about"}
+      ])
+    ]
+
     socket
     |> assign(:resume, resume)
     |> assign(:page_title, "About")
     |> assign(:current_path, "/about")
+    |> assign(:json_ld, json_ld)
     |> then(&{:ok, &1})
   end
 
@@ -30,7 +41,20 @@ defmodule DroodotfooWeb.AboutLive do
     >
       <section class="about-section">
         <h2 class="section-title">About</h2>
-        <p>{@resume.summary}</p>
+        <p>
+          I build blockchain infrastructure at axol.io. Before that, defense systems
+          where requirements were measured in operational uptime and failure aborted missions.
+          Before that, startups where shipping broken code and fixing it fast was the norm.
+        </p>
+
+        <h3 class="mt-2">The Pattern</h3>
+        <p>
+          Startups taught me to ship fast and iterate. Defense taught me to make things
+          not break. Blockchain forces both: move quickly, but a production bug can cost
+          millions with no rollback.
+        </p>
+
+        <p class="mt-2">{@resume.summary}</p>
 
         <%= if @resume[:focus_areas] && length(@resume.focus_areas) > 0 do %>
           <div class="mt-2">
