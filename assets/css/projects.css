@@ -1,0 +1,325 @@
+/* Projects, Timeline, and Resume Components */
+
+/* Experience Timeline */
+.experience-timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  position: relative;
+}
+
+.experience-item {
+  margin-bottom: 2rem;
+  padding-left: 2rem;
+  position: relative;
+}
+
+.experience-item::before {
+  content: "●";
+  position: absolute;
+  left: 0;
+  top: 0.25rem;
+  color: var(--accent-color);
+  font-weight: var(--font-weight-bold);
+}
+
+/* Definition Lists - For experience/job details */
+dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 1rem;
+  margin: 1rem 0;
+}
+
+dt {
+  font-weight: var(--font-weight-bold);
+  text-align: right;
+}
+
+dd {
+  margin: 0;
+}
+
+/* Project Cards */
+.project-card {
+  border: var(--border-thickness) solid var(--border-color);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.project-card:hover {
+  border-color: var(--accent-color);
+  background-color: var(--background-color-alt);
+}
+
+.project-title {
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-bold);
+  margin: 0 0 0.5rem 0;
+}
+
+.project-description {
+  margin: 0.5rem 0;
+  line-height: var(--line-height);
+}
+
+.project-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.project-link {
+  text-decoration: none;
+  color: var(--accent-color);
+  font-weight: var(--font-weight-medium);
+  padding: 0.25rem 0.5rem;
+  border: var(--border-thickness) solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.project-link:hover {
+  background-color: var(--text-color);
+  color: var(--background-color);
+}
+
+/* Project Content Grid */
+.project-content-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 0rem;
+  align-items: start;
+}
+
+.project-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.project-right {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.project-description-text {
+  margin: 0.5rem 0;
+  line-height: var(--line-height);
+}
+
+.project-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Certifications Grid */
+.certifications-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin: 1rem 0;
+}
+
+.certification-card {
+  border: var(--border-thickness) solid var(--border-color);
+  padding: 1rem;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.certification-card:hover {
+  border-color: var(--accent-color);
+  background-color: var(--background-color-alt);
+}
+
+.certification-name {
+  font-weight: var(--font-weight-bold);
+  margin: 0 0 0.5rem 0;
+}
+
+.certification-issuer {
+  color: var(--text-color-alt);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.certification-date {
+  font-size: 0.75rem;
+  color: var(--text-color-alt);
+  margin-top: 0.5rem;
+}
+
+/* Section Headers */
+.section-header {
+  font-size: 1.75rem;
+  font-weight: var(--font-weight-bold);
+  margin: 2rem 0 1rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: var(--border-thickness) solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+/* GitHub Error States */
+.github-error {
+  padding: 0.5rem 0;
+  font-size: 0.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.refresh-button {
+  background: none;
+  border: var(--border-thickness) solid var(--border-color);
+  color: var(--text-color);
+  padding: 0.25rem 0.75rem;
+  font-family: var(--font-family);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: flex-start;
+}
+
+.refresh-button:hover {
+  background-color: var(--text-color);
+  color: var(--background-color);
+  border-color: var(--text-color);
+}
+
+.refresh-button:active {
+  transform: translateY(1px);
+}
+
+/* Loading Skeleton */
+.github-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.loading-skeleton {
+  height: 1rem;
+  background: var(--border-color);
+  border-radius: 2px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.loading-skeleton:nth-child(1) {
+  width: 80%;
+}
+
+.loading-skeleton:nth-child(2) {
+  width: 60%;
+}
+
+.loading-skeleton:nth-child(3) {
+  width: 70%;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Language Breakdown */
+.language-breakdown {
+  font-family: var(--font-family);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  text-align: left;
+}
+
+.language-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  justify-content: flex-start;
+}
+
+.lang-name {
+  min-width: 80px;
+  font-weight: var(--font-weight-medium);
+  text-align: left;
+}
+
+.lang-bar-fill {
+  /* Color set via inline style from GitHub language colors */
+  letter-spacing: -0.1em;
+  font-weight: var(--font-weight-bold);
+}
+
+.lang-percentage {
+  color: var(--text-color-alt);
+  min-width: 45px;
+  text-align: right;
+}
+
+/* ASCII Section Headers */
+.ascii-section-header {
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-bold);
+  margin: 2rem 0 1rem 0;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+/* Content Grid for side-by-side layouts */
+.content-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+/* Legacy social icon styles (kept for compatibility) */
+.social-links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: left;
+  margin: 1rem 0;
+}
+
+.social-icon {
+  text-decoration: none;
+  color: var(--text-color);
+  padding: 0.5rem 1rem;
+  border: var(--border-thickness) solid var(--border-color);
+  transition: all 0.3s ease;
+  font-family: var(--font-family);
+}
+
+.social-icon:hover {
+  background-color: var(--text-color);
+  color: var(--background-color);
+}
+
+/* Responsive Projects */
+@media screen and (max-width: 768px) {
+  .certifications-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .project-links {
+    flex-direction: column;
+  }
+
+  .project-content-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}

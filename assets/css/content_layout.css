@@ -1,0 +1,206 @@
+/* Content Page Layout - Shared by About, Projects, Sitemap, Posts, Now, etc. */
+/* Used by the page_layout component in ContentComponents */
+
+/* Page Container - Main content wrapper */
+.page-container {
+  max-width: 80ch;
+  margin: 0 auto;
+  padding: 0 1rem 2rem 1rem;
+}
+
+/* Site Header - Table Layout with DROO.FOO branding */
+.site-header {
+  display: table;
+  width: 100%;
+  margin-bottom: 1rem;
+  table-layout: fixed;
+}
+
+.site-header-row {
+  display: table-row;
+}
+
+.site-header-cell {
+  display: table-cell;
+  padding: 1rem;
+  vertical-align: middle;
+  border-right: var(--border-thickness) solid var(--border-color);
+}
+
+.site-header-cell:last-child {
+  border-right: none;
+}
+
+/* Header Table - Used inside site-header */
+.header-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 2px solid var(--border-color);
+}
+
+.header-table td {
+  padding: 0.5ch 0.75ch;
+  vertical-align: top;
+  border-right: 2px solid var(--border-color);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.header-table td:last-child {
+  border-right: none;
+}
+
+.header-table tr:last-child td {
+  border-bottom: none;
+}
+
+.header-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.header-subtitle {
+  font-size: 1rem;
+  color: var(--text-color-alt);
+}
+
+.header-meta-label {
+  font-weight: bold;
+  text-align: right;
+  width: 8ch;
+  white-space: nowrap;
+}
+
+.header-author-label {
+  width: 7ch;
+}
+
+.header-meta-value {
+  text-align: left;
+}
+
+.header-meta-value-right {
+  text-align: right;
+  width: 12ch;
+}
+
+.site-title {
+  text-decoration: none;
+  color: var(--text-color);
+  font-weight: bold;
+  transition: color 0.2s ease;
+}
+
+.site-title:hover {
+  color: var(--highlight-color);
+}
+
+/* Page Header - Title and description */
+.page-header {
+  margin: 0 0 2rem 0;
+}
+
+.page-header h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2.5rem;
+  font-weight: var(--font-weight-bold);
+}
+
+.page-header .text-muted {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+/* Simple Navigation - Text-based links with underline */
+.site-nav-simple {
+  margin: 0 0 1rem 0;
+  padding: 0.5rem 0;
+  border-bottom: var(--border-thickness) solid var(--border-color);
+  text-align: left;
+}
+
+.site-nav-simple p {
+  margin: 0;
+}
+
+.site-nav-simple a {
+  text-decoration: underline;
+  color: var(--text-color);
+}
+
+.site-nav-simple a:hover {
+  color: var(--highlight-color);
+}
+
+/* Section Divider */
+.section-divider {
+  border: 0;
+  border-top: var(--border-thickness) solid var(--border-color);
+  margin: 2rem 0;
+}
+
+.section-divider-thick {
+  border-top: 3px solid var(--border-color);
+}
+
+/* Section Headers */
+.section-title {
+  font-size: 1.75rem;
+  font-weight: var(--font-weight-bold);
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: var(--border-thickness) var(--border-style) var(--border-color);
+}
+
+.section-description {
+  margin-bottom: 1.5rem;
+  color: var(--text-color-alt);
+}
+
+/* Narrow Container - For more focused content */
+.narrow-container {
+  max-width: 80ch;
+  margin: 0 auto;
+  padding: 2rem var(--grid-gap);
+}
+
+/* Series Navigation - Links to other posts in same series */
+.series-nav {
+  border: var(--border-thickness) solid var(--border-color);
+  padding: 1rem;
+  margin: 2rem 0;
+  background-color: var(--background-color-alt);
+}
+
+.series-nav-title {
+  font-weight: var(--font-weight-bold);
+  margin-bottom: 0.75rem;
+}
+
+.series-nav ol {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.series-nav li {
+  margin-bottom: 0.25rem;
+}
+
+.series-nav .series-current {
+  color: var(--text-color);
+}
+
+/* Responsive Layout */
+@media screen and (max-width: 768px) {
+  .page-container,
+  .narrow-container {
+    padding: 1rem;
+  }
+
+  .page-header h1 {
+    font-size: 2rem;
+  }
+
+  .site-header {
+    margin-bottom: 0.5rem;
+  }
+}

@@ -1,0 +1,208 @@
+/* Utility Classes - Extracted from monospace.css */
+
+/* Text Alignment */
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-uppercase {
+  text-transform: uppercase;
+}
+
+/* Text Colors */
+.text-muted {
+  color: var(--text-color-alt);
+}
+
+.text-muted-alt {
+  color: var(--text-color-alt);
+  opacity: 0.85; /* Increased from 0.7 for better contrast ratio */
+}
+
+/* Spacing Utilities */
+.mt-0-5 {
+  margin-top: 0.5rem;
+}
+
+.mt-1 {
+  margin-top: 1rem;
+}
+
+.mt-2 {
+  margin-top: 2rem;
+}
+
+.mb-0-5 {
+  margin-bottom: 0.5rem;
+}
+
+.mb-1 {
+  margin-bottom: 1rem;
+}
+
+.mb-2 {
+  margin-bottom: 2rem;
+}
+
+.p-1 {
+  padding: 1rem;
+}
+
+.p-2 {
+  padding: 2rem;
+}
+
+/* Flexbox Utilities */
+.flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-1 {
+  gap: 1rem;
+}
+
+.gap-2 {
+  gap: 2rem;
+}
+
+/* Hidden Utility */
+.hidden {
+  display: none !important;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Link Reset */
+.link-reset {
+  text-decoration: none;
+  color: inherit;
+}
+
+.link-reset:hover {
+  text-decoration: underline;
+}
+
+/* Section Spacing */
+.section-spacing {
+  margin: 2rem 0;
+}
+
+/* Section Divider */
+.section-divider {
+  border: 0;
+  border-top: var(--border-thickness) solid var(--border-color);
+  margin: 2rem 0;
+}
+
+/* Divider Line */
+.divider-line {
+  width: 100%;
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 1rem 0;
+}
+
+/* List Without Bullets */
+.list-none {
+  list-style: none;
+  padding-left: 0;
+}
+
+/* Tree Structure (for sitemap) */
+ul.tree {
+  list-style: none;
+  padding-left: 0;
+  font-family: var(--font-family);
+}
+
+ul.tree ul {
+  padding-left: 3ch;
+  margin-top: 0.25rem;
+}
+
+ul.tree li {
+  margin-bottom: 0.25rem;
+  padding-left: 2ch;
+  position: relative;
+}
+
+ul.tree li::before {
+  content: "- ";
+  position: absolute;
+  left: 0;
+  color: var(--text-color-alt);
+}
+
+ul.tree > li:first-child {
+  padding-left: 0;
+}
+
+ul.tree > li:first-child::before {
+  content: "";
+}
+
+ul.tree details[open] > summary::before {
+  content: "v ";
+}
+
+ul.tree details:not([open]) > summary::before {
+  content: "> ";
+}
+
+/* ASCII Tree (for sitemap) */
+.ascii-tree {
+  font-family: var(--font-family);
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+  color: var(--text-color);
+}
+
+.ascii-tree div {
+  margin: 0;
+  padding: 0;
+}
+
+.ascii-tree a {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+.ascii-tree a:hover {
+  color: var(--link-hover-color);
+  text-decoration: underline;
+}
