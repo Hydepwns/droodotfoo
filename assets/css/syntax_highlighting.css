@@ -1,392 +1,462 @@
-/* onedark
- * revision: cdd4d1d1ce734170a61766ffd2fb68f40165e188
+/* Syntax Highlighting - Minimal & Theme-Aware
+ * Uses --syntax-* variables defined in themes.css
+ * Focused on essential languages: Elixir, JavaScript, TypeScript, Bash, Markdown
  */
 
+/* Base code block styling */
 pre.athl {
-  color: #abb2bf;
-  background-color: #282c34;
+  color: var(--syntax-text);
+  background-color: var(--syntax-bg);
+  font-family: "Monaspace Argon", monospace;
+  font-variant-ligatures: normal;
+  tab-size: 4;
+  border-color: var(--border-color);
+  position: relative;
 }
-.attribute {
-  color: #c678dd;
+
+/* Copy button */
+.copy-button {
+  position: absolute;
+  top: 0.75rem;
+  right: 1rem;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-family: "Monaspace Argon", monospace;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  z-index: 10;
 }
-.attribute-builtin {
-  color: #61afef;
+
+pre.athl:hover .copy-button {
+  opacity: 1;
 }
-.boolean {
-  color: #d19a66;
+
+.copy-button:hover {
+  color: var(--text-primary);
+  border-color: var(--text-primary);
 }
-.character {
-  color: #98c379;
+
+.copy-button:active {
+  transform: scale(0.95);
 }
-.character-special {
-  color: #c678dd;
+
+.copy-button.copied {
+  color: var(--syntax-string);
+  border-color: var(--syntax-string);
+  opacity: 1;
 }
-.comment {
-  color: #7f848e;
+
+.copy-icon {
+  display: inline-block;
+  letter-spacing: 0.05em;
 }
-.comment-documentation {
-  color: #7f848e;
+
+/* Language label in top-left corner */
+pre.athl code[class*="language-"]::before {
+  position: absolute;
+  top: 0.75rem;
+  left: 2rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.5;
+  font-family: "Monaspace Argon", monospace;
+  pointer-events: none;
+  z-index: 1;
 }
-.comment-error {
-  color: #282c34;
-  background-color: #e06c75;
+
+/* Core syntax tokens */
+.string,
+.string-documentation {
+  color: var(--syntax-string);
+  font-family: var(--font-family-base);
 }
-.comment-hint {
-  color: #7f848e;
-}
-.comment-note {
-  color: #282c34;
-  background-color: #56b6c2;
-}
-.comment-todo {
-  color: #282c34;
-  background-color: #61afef;
-}
-.comment-warning {
-  color: #282c34;
-  background-color: #e5c07b;
-}
-.constant {
-  color: #d19a66;
-}
-.constant-builtin {
-  color: #c678dd;
-}
-.constant-java {
-  color: #d19a66;
-}
-.constant-macro {
-  color: #d19a66;
-}
-.constructor {
-  color: #e5c07b;
-}
-.constructor-lua {
-  color: #e5c07b;
-}
-.constructor-python {
-  color: #e5c07b;
-}
-.diff-delta {
-  color: #8cf8f7;
-}
-.diff-minus {
-  color: #ffc0b9;
-}
-.diff-plus {
-  color: #b3f6c0;
-}
-.function {
-  color: #61afef;
-}
-.function-builtin {
-  color: #e5c07b;
-}
-.function-builtin-bash {
-  color: #e5c07b;
-}
-.function-call {
-  color: #61afef;
-}
-.function-macro {
-  color: #61afef;
-}
-.function-method {
-  color: #61afef;
-}
-.function-method-call {
-  color: #61afef;
-}
-.function-method-call-php {
-  color: #61afef;
-}
-.function-method-php {
-  color: #61afef;
-}
-.highlighted {
-  background-color: #282c34;
-}
-.keyword {
-  color: #c678dd;
-}
-.keyword-conditional {
-  color: #c678dd;
-}
-.keyword-conditional-ternary {
-  color: #c678dd;
-}
-.keyword-coroutine {
-  color: #c678dd;
-}
-.keyword-debug {
-  color: #c678dd;
-}
-.keyword-directive {
-  color: #c678dd;
-}
-.keyword-directive-css {
-  color: #c678dd;
-}
-.keyword-directive-define {
-  color: #c678dd;
-}
-.keyword-exception {
-  color: #c678dd;
-}
-.keyword-export {
-  color: #c678dd;
-}
-.keyword-function {
-  color: #c678dd;
-}
-.keyword-import {
-  color: #c678dd;
-}
-.keyword-import-c {
-  color: #c678dd;
-}
-.keyword-import-cpp {
-  color: #c678dd;
-}
-.keyword-modifier {
-  color: #c678dd;
-}
-.keyword-operator {
-  color: #c678dd;
-}
-.keyword-repeat {
-  color: #c678dd;
-}
+
+.keyword,
+.keyword-conditional,
+.keyword-exception,
+.keyword-function,
+.keyword-import,
+.keyword-operator,
+.keyword-repeat,
 .keyword-return {
-  color: #c678dd;
+  color: var(--syntax-keyword);
+  font-weight: 600;
+  font-family: var(--font-family-precise);
 }
-.keyword-type {
-  color: #c678dd;
+
+.function,
+.function-builtin,
+.function-call,
+.function-method,
+.function-method-call {
+  color: var(--syntax-function);
+  font-family: var(--font-family-warm);
 }
-.label {
-  color: #c678dd;
+
+.comment {
+  color: var(--syntax-comment);
+  opacity: 0.6;
+  font-style: italic;
+  font-family: var(--font-family-informal);
 }
-.label-yaml {
-  color: #c678dd;
+
+.comment-documentation {
+  color: var(--syntax-comment);
+  opacity: 0.7;
+  font-style: italic;
+  font-family: var(--font-family-authoritative);
 }
-.markup {
-  color: #61afef;
+
+.number,
+.number-float {
+  color: var(--syntax-number);
 }
-.markup-environment {
-  color: #61afef;
+
+.operator {
+  color: var(--syntax-operator);
+  font-weight: 600;
 }
-.markup-environment-name {
-  color: #61afef;
+
+.variable,
+.variable-member,
+.variable-parameter {
+  color: var(--syntax-text);
 }
+
+.variable-builtin {
+  color: var(--syntax-keyword);
+}
+
+.type,
+.type-builtin {
+  color: var(--syntax-keyword);
+  font-weight: 500;
+}
+
+.property {
+  color: var(--syntax-text);
+}
+
+.punctuation-bracket,
+.punctuation-delimiter {
+  color: var(--syntax-text);
+  opacity: 0.8;
+}
+
+.constant,
+.constant-builtin,
+.boolean {
+  color: var(--syntax-number);
+}
+
+.module {
+  color: var(--syntax-function);
+  font-weight: 600;
+}
+
+.tag {
+  color: var(--syntax-keyword);
+}
+
+.attribute {
+  color: var(--syntax-function);
+}
+
+.string-escape,
+.string-special {
+  color: var(--syntax-operator);
+  font-weight: 700;
+}
+
+/* Language-specific accents and labels */
+
+/* Elixir - Purple accent */
+code.language-elixir {
+  border-left: 3px solid rgba(148, 104, 221, 0.5);
+  background: linear-gradient(
+    90deg,
+    rgba(148, 104, 221, 0.03) 0%,
+    transparent 10%
+  );
+}
+
+code.language-elixir::before {
+  content: "ELIXIR";
+  color: rgba(148, 104, 221, 0.7);
+}
+
+code.language-elixir .string-special-symbol {
+  color: var(--syntax-number);
+  font-weight: 600;
+}
+
+code.language-elixir .operator {
+  font-weight: 700;
+}
+
+/* JavaScript - Yellow accent */
+code.language-javascript,
+code.language-js {
+  border-left: 3px solid rgba(247, 223, 30, 0.5);
+  background: linear-gradient(
+    90deg,
+    rgba(247, 223, 30, 0.03) 0%,
+    transparent 10%
+  );
+}
+
+code.language-javascript::before,
+code.language-js::before {
+  content: "JAVASCRIPT";
+  color: rgba(247, 223, 30, 0.8);
+}
+
+/* TypeScript - Yellow accent */
+code.language-typescript,
+code.language-ts {
+  border-left: 3px solid rgba(247, 223, 30, 0.5);
+  background: linear-gradient(
+    90deg,
+    rgba(247, 223, 30, 0.03) 0%,
+    transparent 10%
+  );
+}
+
+code.language-typescript::before,
+code.language-ts::before {
+  content: "TYPESCRIPT";
+  color: rgba(247, 223, 30, 0.8);
+}
+
+/* Bash/Shell - Green accent */
+code.language-bash,
+code.language-sh,
+code.language-shell {
+  border-left: 3px solid rgba(76, 175, 80, 0.5);
+  background: linear-gradient(
+    90deg,
+    rgba(76, 175, 80, 0.03) 0%,
+    transparent 10%
+  );
+}
+
+code.language-bash::before,
+code.language-sh::before,
+code.language-shell::before {
+  content: "BASH";
+  color: rgba(76, 175, 80, 0.7);
+}
+
+code.language-bash .variable-parameter,
+code.language-sh .variable-parameter {
+  font-weight: 600;
+}
+
+/* Markdown - Gray accent */
+code.language-markdown,
+code.language-md {
+  border-left: 3px solid rgba(158, 158, 158, 0.5);
+  background: linear-gradient(
+    90deg,
+    rgba(158, 158, 158, 0.03) 0%,
+    transparent 10%
+  );
+}
+
+code.language-markdown::before,
+code.language-md::before {
+  content: "MARKDOWN";
+  color: rgba(158, 158, 158, 0.8);
+}
+
 .markup-heading {
-  color: #e06c75;
+  color: var(--syntax-keyword);
   font-weight: bold;
 }
-.markup-heading-1 {
-  color: #e06c75;
-  font-weight: bold;
-}
-.markup-heading-2 {
-  color: #e06c75;
-  font-weight: bold;
-}
-.markup-heading-3 {
-  color: #e06c75;
-  font-weight: bold;
-}
-.markup-heading-4 {
-  color: #e06c75;
-  font-weight: bold;
-}
-.markup-heading-5 {
-  color: #e06c75;
-  font-weight: bold;
-}
-.markup-heading-6 {
-  color: #e06c75;
-  font-weight: bold;
-}
+
 .markup-italic {
   font-style: italic;
 }
-.markup-link {
-  text-decoration: underline;
-}
-.markup-link-label {
-  color: #61afef;
-}
-.markup-link-label-html {
-  color: #61afef;
-}
-.markup-link-url {
-  color: #c678dd;
-}
-.markup-list {
-  color: #e06c75;
-}
-.markup-list-checked {
-  color: #c678dd;
-}
-.markup-list-unchecked {
-  color: #abb2bf;
-}
-.markup-math {
-  color: #61afef;
-}
-.markup-quote {
-  color: #61afef;
-}
-.markup-raw {
-  color: #98c379;
-}
-.markup-raw-block {
-  color: #98c379;
-}
-.markup-strikethrough {
-  text-decoration: line-through;
-}
+
 .markup-strong {
-  color: #e5c07b;
   font-weight: bold;
 }
-.markup-underline {
-  text-decoration: underline;
+
+.markup-link,
+.markup-link-url {
+  color: var(--syntax-operator);
 }
-.module {
-  color: #e5c07b;
+
+.markup-list {
+  color: var(--syntax-keyword);
 }
-.module-builtin {
-  color: #61afef;
+
+.markup-raw {
+  color: var(--syntax-string);
 }
-.normal {
-  color: #abb2bf;
-  background-color: #282c34;
+
+/* Additional common languages - minimal styling */
+
+/* Python - Blue accent */
+code.language-python,
+code.language-py {
+  border-left: 3px solid rgba(48, 105, 152, 0.5);
+  background: linear-gradient(
+    90deg,
+    rgba(48, 105, 152, 0.03) 0%,
+    transparent 10%
+  );
 }
-.number {
-  color: #d19a66;
+
+code.language-python::before,
+code.language-py::before {
+  content: "PYTHON";
+  color: rgba(48, 105, 152, 0.8);
 }
-.number-css {
-  color: #d19a66;
+
+/* JSON - Indigo accent */
+code.language-json {
+  border-left: 3px solid rgba(63, 81, 181, 0.5);
+  background: linear-gradient(
+    90deg,
+    rgba(63, 81, 181, 0.03) 0%,
+    transparent 10%
+  );
 }
-.number-float {
-  color: #d19a66;
+
+code.language-json::before {
+  content: "JSON";
+  color: rgba(63, 81, 181, 0.8);
 }
-.operator {
-  color: #56b6c2;
+
+/* CSS - Purple accent */
+code.language-css {
+  border-left: 3px solid rgba(156, 39, 176, 0.5);
+  background: linear-gradient(
+    90deg,
+    rgba(156, 39, 176, 0.03) 0%,
+    transparent 10%
+  );
 }
-.property {
-  color: #e06c75;
+
+code.language-css::before {
+  content: "CSS";
+  color: rgba(156, 39, 176, 0.8);
 }
-.property-class-css {
-  color: #e06c75;
+
+/* HTML - Red accent */
+code.language-html {
+  border-left: 3px solid rgba(244, 67, 54, 0.5);
+  background: linear-gradient(
+    90deg,
+    rgba(244, 67, 54, 0.03) 0%,
+    transparent 10%
+  );
 }
-.property-css {
-  color: #e06c75;
+
+code.language-html::before {
+  content: "HTML";
+  color: rgba(244, 67, 54, 0.8);
 }
-.property-id-css {
-  color: #e06c75;
+
+/* SQL - Teal accent */
+code.language-sql {
+  border-left: 3px solid rgba(0, 150, 136, 0.5);
+  background: linear-gradient(
+    90deg,
+    rgba(0, 150, 136, 0.03) 0%,
+    transparent 10%
+  );
 }
-.property-json {
-  color: #e06c75;
+
+code.language-sql::before {
+  content: "SQL";
+  color: rgba(0, 150, 136, 0.8);
 }
-.property-scss {
-  color: #abb2bf;
+
+code.language-sql .keyword {
+  text-transform: uppercase;
+  font-weight: 700;
 }
-.property-toml {
-  color: #c678dd;
+
+/* HEEx - Pink accent */
+code.language-heex {
+  border-left: 3px solid rgba(236, 72, 153, 0.5);
+  background: linear-gradient(
+    90deg,
+    rgba(236, 72, 153, 0.03) 0%,
+    transparent 10%
+  );
 }
-.property-yaml {
-  color: #e06c75;
+
+code.language-heex::before {
+  content: "HEEX";
+  color: rgba(236, 72, 153, 0.7);
 }
-.punctuation-bracket {
-  color: #c678dd;
+
+/* Diff - Gray accent */
+code.language-diff {
+  border-left: 3px solid rgba(158, 158, 158, 0.5);
+  background: linear-gradient(
+    90deg,
+    rgba(158, 158, 158, 0.03) 0%,
+    transparent 10%
+  );
 }
-.punctuation-delimiter {
-  color: #abb2bf;
+
+code.language-diff::before {
+  content: "DIFF";
+  color: rgba(158, 158, 158, 0.8);
 }
-.punctuation-delimiter-regex {
-  color: #abb2bf;
+
+.diff-plus {
+  color: var(--syntax-string);
+  background: rgba(0, 255, 0, 0.08);
 }
-.punctuation-special {
-  color: #abb2bf;
+
+.diff-minus {
+  color: var(--syntax-comment);
+  background: rgba(255, 0, 0, 0.08);
 }
-.string {
-  color: #98c379;
+
+.diff-delta {
+  color: var(--syntax-operator);
+  background: rgba(255, 255, 0, 0.08);
 }
-.string-documentation {
-  color: #98c379;
+
+/* Comment annotations */
+.comment-todo,
+.comment-note,
+.comment-warning,
+.comment-error {
+  font-weight: 700;
+  padding: 0 4px;
+  border-radius: 2px;
+  opacity: 1;
 }
-.string-escape {
-  color: #56b6c2;
+
+.comment-error {
+  color: var(--syntax-bg);
+  background-color: var(--syntax-keyword);
 }
-.string-plain-css {
-  color: #98c379;
+
+.comment-warning {
+  color: var(--syntax-bg);
+  background-color: var(--syntax-number);
 }
-.string-regexp {
-  color: #61afef;
+
+.comment-todo {
+  color: var(--syntax-bg);
+  background-color: var(--syntax-function);
 }
-.string-special {
-  color: #61afef;
-}
-.string-special-path {
-  color: #61afef;
-}
-.string-special-symbol {
-  color: #e06c75;
-}
-.string-special-symbol-ruby {
-  color: #e06c75;
-}
-.string-special-url {
-  color: #61afef;
-  font-style: italic;
-  text-decoration: underline;
-}
-.string-special-url-html {
-  text-decoration: underline;
-}
-.tag {
-  color: #e06c75;
-}
-.tag-attribute {
-  color: #e06c75;
-}
-.tag-builtin {
-  color: #61afef;
-}
-.tag-delimiter {
-  color: #abb2bf;
-}
-.type {
-  color: #e5c07b;
-}
-.type-builtin {
-  color: #e5c07b;
-}
-.type-css {
-  color: #e5c07b;
-}
-.type-definition {
-  color: #e5c07b;
-}
-.type-tag-css {
-  color: #e5c07b;
-}
-.variable {
-  color: #e06c75;
-}
-.variable-builtin {
-  color: #e5c07b;
-}
-.variable-member {
-  color: #e06c75;
-}
-.variable-parameter {
-  color: #e06c75;
-}
-.variable-parameter-bash {
-  color: #e06c75;
-}
-.variable-parameter-builtin {
-  color: #61afef;
+
+.comment-note {
+  color: var(--syntax-bg);
+  background-color: var(--syntax-operator);
 }

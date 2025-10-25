@@ -1,5 +1,22 @@
 /* Post List with Images */
 
+/* Pattern header for blog posts */
+.post-pattern-header {
+  margin: 0 0 2rem 0;
+  border: var(--border-thickness) solid var(--border-color);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.post-pattern-header object,
+.post-pattern-header img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1200 / 630;  /* Match pattern generation ratio */
+  object-fit: fill;           /* Stretch to fill like homepage patterns */
+}
+
 .post-item-with-image {
   display: flex;
   gap: 2rem;
