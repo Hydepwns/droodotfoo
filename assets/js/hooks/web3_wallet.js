@@ -3,13 +3,20 @@
  *
  * Handles MetaMask wallet connection and message signing for authentication.
  * Communicates with Phoenix LiveView via pushEvent/handleEvent.
+ *
+ * PERFORMANCE: Uses dynamic imports to avoid bundling ethers.js (~500KB) in main bundle.
+ * ethers.js is only loaded when Web3 wallet functionality is actually used.
  */
 
-import { ethers } from "ethers";
-
 export const Web3WalletHook = {
-  mounted() {
-    console.log("[Web3] Hook mounted");
+  async mounted() {
+    console.log("[Web3] Hook mounted - loading ethers.js...");
+
+    // Dynamic import of ethers.js (only loaded when Web3 features are used)
+    const ethersModule = await import("ethers");
+    this.ethers = ethersModule.ethers;
+
+    console.log("[Web3] ethers.js loaded successfully");
 
     this.provider = null;
     this.signer = null;
@@ -74,6 +81,11 @@ export const Web3WalletHook = {
       return;
     }
 
+    if (!this.ethers) {
+      console.error("[Web3] ethers.js not loaded");
+      return;
+    }
+
     try {
       // Check if already connected (without requesting connection)
       const accounts = await window.ethereum.request({
@@ -82,7 +94,7 @@ export const Web3WalletHook = {
 
       if (accounts.length > 0) {
         console.log("[Web3] Wallet already connected:", accounts[0]);
-        this.provider = new ethers.BrowserProvider(window.ethereum);
+        this.provider = new this.ethers.BrowserProvider(window.ethereum);
         this.signer = await this.provider.getSigner();
         this.address = accounts[0];
         const network = await this.provider.getNetwork();
@@ -107,9 +119,17 @@ export const Web3WalletHook = {
       return;
     }
 
+    if (!this.ethers) {
+      console.error("[Web3] ethers.js not loaded");
+      this.pushEvent("wallet_error", {
+        message: "ethers.js library not loaded",
+      });
+      return;
+    }
+
     try {
       // Request account access
-      this.provider = new ethers.BrowserProvider(window.ethereum);
+      this.provider = new this.ethers.BrowserProvider(window.ethereum);
 
       const accounts = await this.provider.send("eth_requestAccounts", []);
 
@@ -195,8 +215,13 @@ export const Web3WalletHook = {
   async handleAccountSwitch(newAddress) {
     console.log("[Web3] Account switched to:", newAddress);
 
+    if (!this.ethers) {
+      console.error("[Web3] ethers.js not loaded");
+      return;
+    }
+
     try {
-      this.provider = new ethers.BrowserProvider(window.ethereum);
+      this.provider = new this.ethers.BrowserProvider(window.ethereum);
       this.signer = await this.provider.getSigner();
       this.address = newAddress;
       const network = await this.provider.getNetwork();

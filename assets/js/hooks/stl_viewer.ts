@@ -1,29 +1,45 @@
 /**
  * STL Viewer Hook
  * Three.js-based 3D model viewer integrated with Phoenix LiveView
+ *
+ * PERFORMANCE: Uses dynamic imports to avoid bundling THREE.js (~600KB) in main bundle.
+ * THREE.js is only loaded when STL viewer is actually used.
  */
 
-import * as THREE from 'three';
-import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-
 interface STLViewerHook {
-  mounted: () => void;
+  mounted: () => Promise<void>;
   destroyed: () => void;
-  scene?: THREE.Scene;
-  camera?: THREE.PerspectiveCamera;
-  renderer?: THREE.WebGLRenderer;
-  controls?: OrbitControls;
-  mesh?: THREE.Mesh;
+  scene?: any;
+  camera?: any;
+  renderer?: any;
+  controls?: any;
+  mesh?: any;
   animationId?: number;
   el: HTMLElement;
   pushEvent?: (event: string, payload: any) => void;
   handleEvent?: (event: string, callback: (payload: any) => void) => void;
+  THREE?: any;
+  STLLoader?: any;
+  OrbitControls?: any;
 }
 
 export const STLViewerHook: Partial<STLViewerHook> = {
-  mounted() {
-    console.log('STL Viewer mounted');
+  async mounted() {
+    console.log('STL Viewer mounted - loading THREE.js...');
+
+    // Dynamic import of THREE.js (only loaded when STL viewer is used)
+    const [THREE, { STLLoader }, { OrbitControls }] = await Promise.all([
+      import('three'),
+      import('three/examples/jsm/loaders/STLLoader.js'),
+      import('three/examples/jsm/controls/OrbitControls.js')
+    ]);
+
+    // Store for later use in other methods
+    this.THREE = THREE;
+    this.STLLoader = STLLoader;
+    this.OrbitControls = OrbitControls;
+
+    console.log('THREE.js loaded successfully');
 
     // Extract component ID from wrapper element
     const wrapperId = this.el.id;
@@ -77,7 +93,7 @@ export const STLViewerHook: Partial<STLViewerHook> = {
     this.scene.add(backLight);
 
     // Set up orbit controls
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls = new this.OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.05;
     this.controls.minDistance = 1;
@@ -146,7 +162,7 @@ export const STLViewerHook: Partial<STLViewerHook> = {
   },
 
   loadModel(url: string) {
-    if (!this.scene) return;
+    if (!this.scene || !this.THREE || !this.STLLoader) return;
 
     // Remove existing mesh
     if (this.mesh) {
@@ -154,27 +170,27 @@ export const STLViewerHook: Partial<STLViewerHook> = {
       this.mesh = undefined;
     }
 
-    const loader = new STLLoader();
+    const loader = new this.STLLoader();
 
     loader.load(
       url,
-      (geometry) => {
+      (geometry: any) => {
         // Center and scale the geometry
         geometry.computeBoundingBox();
         const boundingBox = geometry.boundingBox!;
-        const center = new THREE.Vector3();
+        const center = new this.THREE.Vector3();
         boundingBox.getCenter(center);
         geometry.translate(-center.x, -center.y, -center.z);
 
         // Calculate scale to fit in view
-        const size = new THREE.Vector3();
+        const size = new this.THREE.Vector3();
         boundingBox.getSize(size);
         const maxDim = Math.max(size.x, size.y, size.z);
         const scale = 2 / maxDim;
         geometry.scale(scale, scale, scale);
 
         // Create material
-        const material = new THREE.MeshPhongMaterial({
+        const material = new this.THREE.MeshPhongMaterial({
           color: 0x00ffaa,
           specular: 0x111111,
           shininess: 200,
@@ -182,7 +198,7 @@ export const STLViewerHook: Partial<STLViewerHook> = {
         });
 
         // Create mesh
-        this.mesh = new THREE.Mesh(geometry, material);
+        this.mesh = new this.THREE.Mesh(geometry, material);
         this.scene!.add(this.mesh);
 
         // Calculate model info
@@ -217,9 +233,9 @@ export const STLViewerHook: Partial<STLViewerHook> = {
   },
 
   setRenderMode(mode: string) {
-    if (!this.mesh) return;
+    if (!this.mesh || !this.THREE) return;
 
-    const material = this.mesh.material as THREE.MeshPhongMaterial;
+    const material = this.mesh.material;
 
     switch (mode) {
       case 'wireframe':
@@ -233,29 +249,29 @@ export const STLViewerHook: Partial<STLViewerHook> = {
         const geometry = this.mesh.geometry;
         this.scene!.remove(this.mesh);
 
-        const pointsMaterial = new THREE.PointsMaterial({
+        const pointsMaterial = new this.THREE.PointsMaterial({
           color: 0x00ffaa,
           size: 0.02
         });
 
-        this.mesh = new THREE.Points(geometry, pointsMaterial) as any;
+        this.mesh = new this.THREE.Points(geometry, pointsMaterial);
         this.scene!.add(this.mesh);
         break;
     }
   },
 
   rotateCamera(axis?: string, angle: number = 0.1) {
-    if (!this.camera) return;
+    if (!this.camera || !this.THREE) return;
 
     switch (axis) {
       case 'x':
-        this.camera.position.applyAxisAngle(new THREE.Vector3(1, 0, 0), angle);
+        this.camera.position.applyAxisAngle(new this.THREE.Vector3(1, 0, 0), angle);
         break;
       case 'y':
-        this.camera.position.applyAxisAngle(new THREE.Vector3(0, 1, 0), angle);
+        this.camera.position.applyAxisAngle(new this.THREE.Vector3(0, 1, 0), angle);
         break;
       case 'z':
-        this.camera.position.applyAxisAngle(new THREE.Vector3(0, 0, 1), angle);
+        this.camera.position.applyAxisAngle(new this.THREE.Vector3(0, 0, 1), angle);
         break;
     }
 
@@ -272,19 +288,20 @@ export const STLViewerHook: Partial<STLViewerHook> = {
   },
 
   zoom(distance: number) {
-    if (!this.camera) return;
+    if (!this.camera || !this.THREE) return;
 
-    const direction = new THREE.Vector3();
+    const direction = new this.THREE.Vector3();
     this.camera.getWorldDirection(direction);
     this.camera.position.addScaledVector(direction, distance);
   },
 
   cycleRenderMode() {
-    if (!this.mesh) return;
+    if (!this.mesh || !this.THREE) return;
 
     const currentMaterial = this.mesh.material;
 
-    if (currentMaterial instanceof THREE.MeshPhongMaterial) {
+    // Check material type by properties instead of instanceof
+    if (currentMaterial.isMeshPhongMaterial || currentMaterial.type === 'MeshPhongMaterial') {
       if (currentMaterial.wireframe) {
         // Wireframe -> Points
         this.setRenderMode('points');
@@ -292,7 +309,7 @@ export const STLViewerHook: Partial<STLViewerHook> = {
         // Solid -> Wireframe
         this.setRenderMode('wireframe');
       }
-    } else if (currentMaterial instanceof THREE.PointsMaterial) {
+    } else if (currentMaterial.isPointsMaterial || currentMaterial.type === 'PointsMaterial') {
       // Points -> Solid
       this.setRenderMode('solid');
     }
@@ -362,7 +379,7 @@ export const STLViewerHook: Partial<STLViewerHook> = {
     if (this.mesh) {
       this.mesh.geometry.dispose();
       if (this.mesh.material) {
-        (this.mesh.material as THREE.Material).dispose();
+        this.mesh.material.dispose();
       }
     }
 
