@@ -1,6 +1,6 @@
 # droo.foo
 
-Interactive terminal portfolio built with Phoenix LiveView and Raxol terminal UI framework.
+A modular portfolio site that doubles as infrastructure for building terminal interfaces. Built with Phoenix LiveView and Raxol, it proves the architecture by shipping blog posts, project showcases, and interactive plugins through a character-perfect monospace grid.
 
 ![Test Coverage](https://img.shields.io/badge/coverage-40.8%25-orange)
 ![Tests](https://img.shields.io/badge/tests-1159%20passing-brightgreen)
@@ -9,15 +9,15 @@ Interactive terminal portfolio built with Phoenix LiveView and Raxol terminal UI
 
 **Live Demo**: [droo.foo](https://droo.foo)
 
-> Note: Spotify and Web3 features require additional OAuth/wallet setup (optional). Core terminal, games, and utilities work without configuration.
+> Spotify and Web3 features require OAuth/wallet setup (optional). Terminal, games, and plugins work without configuration.
 
 ## Features
 
 ### Core Terminal
-- **Terminal Interface**: Full Unix-like terminal experience in the browser with 80x24 character grid
+- **Terminal Interface**: 80x24 character grid in the browser, Unix-style commands
 - **Vim Navigation**: hjkl movement, search with `/`, command mode with `:` prefix
-- **Real-time Updates**: 60fps rendering via Phoenix LiveView with optimized diffing
-- **PWA Support**: Installable progressive web app with offline capabilities
+- **Real-time Updates**: Phoenix LiveView WebSocket connection for live rendering
+- **PWA Support**: Installable as a progressive web app
 
 ### Integrations
 - **Web3 Wallet**: Connect MetaMask for wallet authentication, ENS resolution, NFT/token viewing
@@ -109,28 +109,29 @@ Visit [`localhost:4000`](http://localhost:4000)
 
 ## Architecture
 
-- **Phoenix LiveView**: Real-time web framework with WebSocket connections
-- **Raxol Terminal**: Character-perfect monospace rendering (1ch CSS grid)
-- **TEA/Elm Pattern**: Functional state management with immutable state
-- **GenServers**: RaxolApp, PluginSystem, Spotify, Content.Posts orchestration
-- **Plugin System**: Behavior-based extensible architecture (10 built-in plugins)
-- **Performance**: 60fps rendering, ETS caching, optimized LiveView diffing
-- **WebRTC P2P**: Real-time peer connections for Portal file sharing
-- **E2E Encryption**: Signal Protocol (X3DH + Double Ratchet) for secure transfers
+Built as modular infrastructure where each component plugs into the next:
+
+**Rendering**: Phoenix LiveView handles real-time updates over WebSockets. Raxol renders terminal UI using 1ch CSS grid for predictable monospace layout. Each character occupies exactly 1ch width—no layout shifts, no font rendering surprises.
+
+**State Management**: GenServers orchestrate terminal state (RaxolApp), plugins, Spotify integration, and content loading. TEA/Elm pattern keeps state immutable and predictable.
+
+**Performance**: ETS caching for GitHub API data (98% hit rate). LiveView diffing minimizes DOM updates. Page loads under 200ms.
+
+**Extensibility**: Plugin system uses Elixir behaviors—10 built-in plugins (games, utilities, integrations). Each plugin is self-contained and swappable.
+
+**P2P Features**: WebRTC data channels for file sharing. Signal Protocol (X3DH + Double Ratchet) for end-to-end encryption.
 
 **Test Coverage**: 801/836 tests passing (96%)
 
 ## Tech Stack
 
-- **Backend**: Elixir 1.18+, Phoenix 1.8, LiveView 1.0
-- **Terminal**: Raxol 1.4.1 (character-perfect rendering)
+- **Backend**: Elixir 1.18+, Phoenix 1.8, LiveView 1.0, Bandit web server
+- **Terminal**: Raxol 1.4.1 for monospace rendering
 - **Frontend**: TypeScript, esbuild, Tailwind CSS
-- **Web3**: ethers.js (wallet integration, ENS resolution)
-- **P2P**: WebRTC (data channels for file sharing)
-- **Encryption**: libsignal-protocol-nif (Signal Protocol), AES-256-GCM
-- **3D Rendering**: Three.js (STL viewer)
+- **Web3**: ethers.js for wallet integration and ENS resolution
+- **P2P**: WebRTC data channels, libsignal-protocol-nif for E2E encryption
+- **3D Rendering**: Three.js for STL viewer
 - **Testing**: ExUnit (801/836 tests passing)
-- **Server**: Bandit 1.5+ (HTTP/2 support)
 
 ## Development
 

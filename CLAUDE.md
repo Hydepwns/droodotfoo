@@ -48,13 +48,19 @@ op signin
 # Create secrets item
 op item create --category=login --title="droodotfoo-dev" \
   SPOTIFY_CLIENT_ID="your_value" \
-  SPOTIFY_CLIENT_SECRET="your_value"
+  SPOTIFY_CLIENT_SECRET="your_value" \
+  GITHUB_TOKEN="your_github_token"  # Optional: for higher API rate limits
 
 # Run with secrets loaded
 ./bin/dev
 ```
 
 The `bin/dev` script automatically loads secrets from `op://Private/droodotfoo-dev/`.
+
+**Optional: GitHub Token**
+- Without token: 60 requests/hour (sufficient for development)
+- With token: 5000 requests/hour (recommended for production)
+- Create token at: https://github.com/settings/tokens (needs `public_repo` scope)
 
 ### Production (Fly.io Secrets)
 
@@ -65,6 +71,7 @@ fly secrets set SECRET_KEY_BASE=$(mix phx.gen.secret)
 fly secrets set PHX_HOST="your-app.fly.dev"
 fly secrets set SPOTIFY_CLIENT_ID="prod_value"
 fly secrets set SPOTIFY_CLIENT_SECRET="prod_value"
+fly secrets set GITHUB_TOKEN="prod_github_token"  # Optional: recommended for production
 fly secrets set CDN_HOST="your-project.pages.dev"  # Optional CDN
 ```
 
@@ -181,6 +188,33 @@ Hooks.AstroComponentHook = {
 
 ### Layout Consistency
 All LiveViews use the same root layout (`DroodotfooWeb.Layouts.root`). No intermediate app layout - keep the monospace aesthetic consistent across all pages.
+
+## Content System
+
+### Blog Posts
+
+The blog system is file-based with markdown posts stored in `priv/posts/`. Key features:
+
+- **Markdown with YAML frontmatter**: Posts use MDEx for fast rendering with syntax highlighting
+- **Series support**: Group related posts with `series` and `series_order` frontmatter fields
+- **Social sharing**: Automatic Open Graph images via SVG pattern generation or custom images
+- **Reading progress**: Client-side progress bar tracks scroll position
+- **Enhanced metadata**: Article-specific OpenGraph tags for better link previews
+
+Example frontmatter with series:
+```yaml
+---
+title: "Phoenix LiveView Basics"
+date: "2025-01-18"
+description: "Introduction to Phoenix LiveView"
+tags: ["elixir", "phoenix", "liveview"]
+slug: "phoenix-liveview-basics"
+series: "Phoenix LiveView Tutorial"
+series_order: 1
+---
+```
+
+Posts in a series automatically display series navigation showing all related posts with the current post highlighted.
 
 ## Dependencies
 
