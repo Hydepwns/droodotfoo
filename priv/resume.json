@@ -13,7 +13,7 @@
       "catalan": "learning"
     }
   },
-  "summary": "Blockchain infrastructure engineer with 3+ years in Web3 and 5+ years in defense R&D. Nuclear submarine background with track record of delivering measurable impact and optimizing complex systems.",
+  "summary": "Built production blockchain infrastructure (mana Ethereum client, raxol terminal framework) for Cosmos and Ethereum ecosystems. Previously: nuclear submarine engineering where failure aborted missions, competitive intelligence at LidoDAO ($34B TVL). Pattern: high-stakes systems that cannot afford to break.",
   "availability": "open_to_consulting",
   "focus_areas": [
     "Cosmos SDK",
@@ -28,10 +28,11 @@
       "employment_type": "full-time",
       "start_date": "2024-05",
       "end_date": "Present",
-      "description": "Lead blockchain infrastructure company building production-grade FOSS tooling for Cosmos and EVM ecosystems. Direct technical leadership across protocol design, distributed systems architecture, and open-source community development.",
+      "description": "Lead blockchain infrastructure company building production-grade FOSS tooling for Cosmos and EVM ecosystems. Direct technical leadership across protocol design, distributed systems architecture, validator/sequencer operations, and open-source community development.",
       "achievements": [
-        "Founded axol.io, developing mana Ethereum client and raxol terminal UI framework as production-grade FOSS tools",
-        "Built and maintain open-source blockchain infrastructure community with active contributor base"
+        "Operating production sequencers and nodes across Ethereum L2s and mainnet, handling transaction ordering and network consensus",
+        "Founded axol.io, developed mana Ethereum client and raxol terminal UI framework as production-grade FOSS tools",
+        "Built open-source blockchain infrastructure with active contributor community"
       ],
       "technologies": {
         "languages": ["Elixir", "TypeScript", "Rust", "C"],
@@ -48,7 +49,7 @@
       "end_date": "2024-05",
       "description": "Led Node Operations Mechanisms (NOM) strategy for LidoDAO, the largest liquid staking protocol ($34B TVL). Led competitive intelligence and ecosystem research, delivering strategic analyses to DAO leadership.",
       "achievements": [
-        "Delivered 60+ weekly Competition & Ecosystem Landscape reports providing strategic insights to inform product decisions",
+        "Delivered 60+ weekly competitive analysis reports to inform protocol strategy",
         "Built competitive intelligence tool, beachpatrol, for monitoring competitor protocols using OSINT methodologies",
         "Analyzed node operator economics and performance metrics across multiple blockchain networks"
       ],
@@ -182,7 +183,7 @@
   "defense_projects": [
     {
       "name": "Nuclear Submarine Tactical R&D Systems",
-      "description": "Invented mechanical/electrical system reducing submarine tactical weapon launch cycle by 14% (timing details classified). Designed specialized tooling and procedures reducing personnel exposure in radioactive zones by 34% across Columbia and Virginia-class submarine programs.",
+      "description": "Tactical weapon systems and radiation safety tooling",
       "technologies": {
         "domains": ["Mechanical Engineering", "Electrical Engineering"],
         "systems": ["Nuclear Systems", "Precision Manufacturing"]
@@ -195,7 +196,7 @@
     },
     {
       "name": "Precision Instrument Calibration System",
-      "description": "Developed comprehensive calibration and repair protocols for submarine precision instruments, eliminating $20M in anticipated replacement costs. Standardized maintenance procedures across test equipment inventory, extending service life while maintaining classification-level accuracy requirements.",
+      "description": "Calibration and repair protocols for precision instruments",
       "technologies": {
         "methodologies": [
           "Precision Calibration",
@@ -236,7 +237,7 @@
       {
         "name": "raxol",
         "url": "https://github.com/Hydepwns/raxol",
-        "description": "Terminal UI framework for Elixir applications",
+        "description": "Terminal UI framework for Elixir",
         "language": "Elixir",
         "status": "active",
         "topics": ["ansi", "component-based", "elixir", "phoenix-liveview", "terminal-ui", "tui"],
@@ -251,7 +252,7 @@
       {
         "name": "riddler",
         "url": "https://github.com/axol-io/riddler",
-        "description": "Cross-chain solver with automated rebalancing system",
+        "description": "Cross-chain bridge solver",
         "language": "Elixir",
         "status": "active",
         "topics": ["blockchain", "cross-chain", "defi", "elixir", "solver", "web3"],

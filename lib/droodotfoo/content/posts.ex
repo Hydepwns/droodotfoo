@@ -10,6 +10,8 @@ defmodule Droodotfoo.Content.Posts do
   - **Syntax Highlighting**: Code blocks are automatically highlighted using Autumn (OneDark theme)
   - **Extended Markdown**: Supports tables, footnotes, strikethrough, task lists, and autolinks
   - **Images**: Store images in `/priv/static/images/posts/` and reference with `![alt text](/images/posts/filename.png)`
+  - **Series Support**: Group related posts together with series navigation
+  - **Social Sharing**: Automatic Open Graph images via pattern generation or custom images
 
   ## Example Post Structure
 
@@ -19,6 +21,11 @@ defmodule Droodotfoo.Content.Posts do
       description: "A brief description"
       tags: ["elixir", "phoenix"]
       slug: "my-blog-post"
+      featured_image: "/images/custom-og-image.png"
+      featured_image_alt: "Custom social sharing image"
+      series: "Phoenix LiveView Tutorial"
+      series_order: 1
+      pattern_style: "geometric"
       ---
 
       # Heading
@@ -32,6 +39,19 @@ defmodule Droodotfoo.Content.Posts do
       ```
 
       ![Diagram showing architecture](/images/posts/architecture-diagram.png)
+
+  ## Blog Series
+
+  To create a series of related posts, add `series` and `series_order` to the frontmatter:
+
+      ---
+      title: "Phoenix LiveView Basics"
+      series: "Phoenix LiveView Tutorial"
+      series_order: 1
+      ---
+
+  The series navigation component will automatically appear on posts that belong to a series,
+  showing all posts in the series with the current post highlighted.
   """
 
   use GenServer
@@ -46,8 +66,11 @@ defmodule Droodotfoo.Content.Posts do
       :slug,
       :title,
       :date,
+      :modified_time,
       :description,
       :tags,
+      :series,
+      :series_order,
       :content,
       :html,
       :read_time,
@@ -61,8 +84,11 @@ defmodule Droodotfoo.Content.Posts do
             slug: String.t(),
             title: String.t(),
             date: Date.t(),
+            modified_time: Date.t() | nil,
             description: String.t(),
             tags: list(String.t()),
+            series: String.t() | nil,
+            series_order: integer() | nil,
             content: String.t(),
             html: String.t(),
             read_time: integer(),
@@ -100,6 +126,14 @@ defmodule Droodotfoo.Content.Posts do
   @doc "Reload posts from filesystem"
   def reload do
     GenServer.cast(__MODULE__, :reload)
+  end
+
+  @doc "Get all posts in a series, sorted by series_order"
+  @spec get_series_posts(String.t()) :: list(Post.t())
+  def get_series_posts(series_name) do
+    list_posts()
+    |> Enum.filter(fn post -> post.series == series_name end)
+    |> Enum.sort_by(fn post -> post.series_order || 999 end)
   end
 
   @doc """
@@ -229,6 +263,9 @@ defmodule Droodotfoo.Content.Posts do
             tasklist: true,
             footnotes: true
           ],
+          render: [
+            unsafe_: true
+          ],
           syntax_highlight: [formatter: :html_linked]
         )
 
@@ -236,8 +273,11 @@ defmodule Droodotfoo.Content.Posts do
           slug: slug,
           title: Map.get(frontmatter, "title", "Untitled"),
           date: parse_date(Map.get(frontmatter, "date")),
+          modified_time: parse_date(Map.get(frontmatter, "modified_time")),
           description: Map.get(frontmatter, "description", ""),
           tags: Map.get(frontmatter, "tags", []),
+          series: Map.get(frontmatter, "series"),
+          series_order: Map.get(frontmatter, "series_order"),
           author: Map.get(frontmatter, "author"),
           featured_image: Map.get(frontmatter, "featured_image"),
           featured_image_alt: Map.get(frontmatter, "featured_image_alt"),
@@ -302,7 +342,9 @@ defmodule Droodotfoo.Content.Posts do
       "tags" => post.tags,
       "slug" => post.slug,
       "featured_image" => post.featured_image,
-      "featured_image_alt" => post.featured_image_alt
+      "featured_image_alt" => post.featured_image_alt,
+      "series" => post.series,
+      "series_order" => post.series_order
     }
 
     content = build_frontmatter(frontmatter) <> "\n" <> post.content
@@ -320,7 +362,9 @@ defmodule Droodotfoo.Content.Posts do
         "slug: #{inspect(map["slug"])}"
       ] ++
         optional_field(map, "featured_image") ++
-        optional_field(map, "featured_image_alt")
+        optional_field(map, "featured_image_alt") ++
+        optional_field(map, "series") ++
+        optional_field(map, "series_order")
 
     yaml = Enum.join(yaml_lines, "\n")
     "---\n#{yaml}\n---"
