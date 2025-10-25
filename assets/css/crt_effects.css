@@ -1,9 +1,0 @@
-/* CRT Effects - DISABLED
- *
- * This file has been cleared to completely disable CRT effects.
- * The @source directive in app.css scans all .css files, so commenting
- * out the @import alone wasn't enough.
- *
- * To re-enable CRT effects in the future, uncomment the @import in app.css
- * and restore the contents of this file from git history.
- */

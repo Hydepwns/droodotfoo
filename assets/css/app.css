@@ -1,22 +1,40 @@
-/* See the Tailwind configuration guide for advanced usage
-   https://tailwindcss.com/docs/configuration */
+/* Tailwind CSS v4 Configuration
+   Tree-shaking happens automatically based on @source paths */
 
 @import "tailwindcss";
-@source "../css";
-@source "../js";
-@source "../../lib/droodotfoo_web";
+@source "../../lib/droodotfoo_web/**/*.{heex,ex}";
+@source "../js/**/*.{js,ts}";
 
-/* === SHARED FORM STYLES === */
-@import "./forms.css";              /* Shared form components and inputs */
-@import "./tech_components.css";    /* Technology tags and chips */
+/* === CORE STYLES === */
+@import "./monospace.css";         /* Base typography and monospace grid */
+@import "./themes.css";            /* Color palette CSS variables */
+@import "./utilities.css";         /* Utility classes */
+@import "./syntax_highlighting.css"; /* Code syntax highlighting */
 
-/* === PAGE-SPECIFIC STYLES === */
-@import "./contact_form.css";
-@import "./resume.css";
-@import "./pattern_gallery.css";
-@import "./post_list.css";
+/* === LAYOUT === */
+@import "./layout.css";            /* Container positioning */
+@import "./content_layout.css";    /* Content page layout */
 
-/* === SHARED UTILITY STYLES === */
+/* === SHARED COMPONENTS === */
+@import "./forms.css";             /* Shared form components */
+@import "./tech_components.css";   /* Technology tags */
+@import "./components.css";        /* UI components - toggles, hamburger */
+@import "./widgets.css";           /* Music player, social links */
+@import "./navigation.css";        /* Breadcrumbs, loading indicators */
+@import "./connection_status.css"; /* LiveView connection status */
+@import "./accessibility.css";     /* A11y overrides */
+
+/* === PAGE-SPECIFIC STYLES ===
+   Note: These are loaded globally but only ~1KB total
+   Moving to per-page loading would add complexity without much benefit */
+@import "./homepage.css";          /* Homepage layouts */
+@import "./projects.css";          /* Project cards, timeline */
+@import "./post_list.css";         /* Blog post listings */
+@import "./pattern_gallery.css";  /* Pattern gallery */
+@import "./resume.css";            /* Resume page */
+@import "./contact_form.css";      /* Contact form */
+
+/* === GLOBAL UTILITIES === */
 .spinner {
   width: 16px;
   height: 16px;
@@ -31,36 +49,16 @@
   100% { transform: rotate(360deg); }
 }
 
-/* A Tailwind plugin that makes "hero-#{ICON}" classes available.
-   The heroicons installation itself is managed by your mix.exs */
-@plugin "../vendor/heroicons";
-
-/* Add variants based on LiveView classes */
-@custom-variant phx-click-loading (.phx-click-loading&, .phx-click-loading &);
-@custom-variant phx-submit-loading (.phx-submit-loading&, .phx-submit-loading &);
-@custom-variant phx-change-loading (.phx-change-loading&, .phx-change-loading &);
-
 /* Make LiveView wrapper divs transparent for layout */
 [data-phx-session],
 [data-phx-teleported-src] {
   display: contents;
 }
 
-/* === CORE STYLES === */
-@import "./monospace.css";         /* Base typography and monospace grid */
-@import "./syntax_highlighting.css"; /* Code block syntax highlighting (Autumn OneDark theme) */
-/* @import "./terminal_grid.css"; */     /* Terminal buffer rendering - ARCHIVED */
-@import "./layout.css";            /* Container positioning */
+/* === PLUGINS === */
+@plugin "../vendor/heroicons";
 
-/* === THEMING & VISUAL EFFECTS === */
-@import "./themes.css";            /* 7 minimal variable-based color palettes */
-/* @import "./crt_effects.css"; */  /* Vintage CRT effects - DISABLED */
-@import "./accessibility.css";     /* A11y overrides */
-
-/* === UI COMPONENTS === */
-@import "./navigation.css";        /* Breadcrumbs and loading indicators */
-@import "./connection_status.css"; /* LiveView connection status */
-/* @import "./pwa.css"; */              /* PWA UI components - ARCHIVED */
-
-/* === RESPONSIVE === */
-/* @import "./mobile.css"; */           /* Mobile-specific overrides - ARCHIVED (terminal-focused) */
+/* === CUSTOM VARIANTS === */
+@custom-variant phx-click-loading (.phx-click-loading&, .phx-click-loading &);
+@custom-variant phx-submit-loading (.phx-submit-loading&, .phx-submit-loading &);
+@custom-variant phx-change-loading (.phx-change-loading&, .phx-change-loading &);

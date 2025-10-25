@@ -1,5 +1,6 @@
 /* Minimal Theme System - Variable-based Color Palettes
  * Following monospace-web principles: CSS variables only, no element-specific rules
+ * Each theme defines base colors + syntax highlighting colors
  */
 
 /* Synthwave84 - Neon purple and pink */
@@ -9,6 +10,16 @@
   --border-color: #ff00ff;
   --accent-color: #00ffff;
   --secondary-color: #cc00cc;
+
+  /* Syntax highlighting colors */
+  --syntax-bg: #1a0033;
+  --syntax-text: #ff00ff;
+  --syntax-string: #ff69b4;
+  --syntax-keyword: #00ffff;
+  --syntax-function: #ff00ff;
+  --syntax-comment: #ff00ff;
+  --syntax-number: #00ffff;
+  --syntax-operator: #00ffff;
 }
 
 /* Hotline - Hot pink and electric cyan inspired by Hotline Miami */
@@ -18,6 +29,16 @@
   --border-color: #00d9ff;
   --accent-color: #00d9ff;
   --secondary-color: #ff69b4;
+
+  /* Syntax highlighting colors */
+  --syntax-bg: #0a0014;
+  --syntax-text: #ff1493;
+  --syntax-string: #00d9ff;
+  --syntax-keyword: #ff69b4;
+  --syntax-function: #ff1493;
+  --syntax-comment: #ff69b4;
+  --syntax-number: #00d9ff;
+  --syntax-operator: #00d9ff;
 }
 
 /* Matrix - Digital rain aesthetic */
@@ -27,6 +48,16 @@
   --border-color: #008f11;
   --accent-color: #00ff41;
   --secondary-color: #003b00;
+
+  /* Syntax highlighting colors */
+  --syntax-bg: #0d0208;
+  --syntax-text: #00ff00;
+  --syntax-string: #00ff41;
+  --syntax-keyword: #00cc00;
+  --syntax-function: #00ff00;
+  --syntax-comment: #00cc00;
+  --syntax-number: #00ff41;
+  --syntax-operator: #00cc00;
 }
 
 /* Cyberpunk - Neon cyan and magenta */
@@ -36,6 +67,16 @@
   --border-color: #ff00ff;
   --accent-color: #ff00ff;
   --secondary-color: #00cccc;
+
+  /* Syntax highlighting colors */
+  --syntax-bg: #0a0e27;
+  --syntax-text: #00ffff;
+  --syntax-string: #ff00ff;
+  --syntax-keyword: #00ffff;
+  --syntax-function: #ff00ff;
+  --syntax-comment: #00cccc;
+  --syntax-number: #ff00ff;
+  --syntax-operator: #00ffff;
 }
 
 /* Phosphor - Amber monochrome */
@@ -45,6 +86,16 @@
   --border-color: #ff8800;
   --accent-color: #ffd700;
   --secondary-color: #cc8800;
+
+  /* Syntax highlighting colors */
+  --syntax-bg: #1a1200;
+  --syntax-text: #ffb000;
+  --syntax-string: #ffd700;
+  --syntax-keyword: #ffb000;
+  --syntax-function: #ff8800;
+  --syntax-comment: #cc8800;
+  --syntax-number: #ffd700;
+  --syntax-operator: #ff8800;
 }
 
 /* Amber - Classic amber terminal */
@@ -54,6 +105,16 @@
   --border-color: #ffb000;
   --accent-color: #ffb000;
   --secondary-color: #cc8800;
+
+  /* Syntax highlighting colors */
+  --syntax-bg: #000000;
+  --syntax-text: #ffb000;
+  --syntax-string: #ffd700;
+  --syntax-keyword: #ffb000;
+  --syntax-function: #ff8800;
+  --syntax-comment: #cc8800;
+  --syntax-number: #ffd700;
+  --syntax-operator: #ff8800;
 }
 
 /* High Contrast - Accessibility-first */
@@ -63,6 +124,16 @@
   --border-color: #ffffff;
   --accent-color: #ffffff;
   --secondary-color: #cccccc;
+
+  /* Syntax highlighting colors */
+  --syntax-bg: #000000;
+  --syntax-text: #ffffff;
+  --syntax-string: #ffffff;
+  --syntax-keyword: #ffffff;
+  --syntax-function: #ffffff;
+  --syntax-comment: #cccccc;
+  --syntax-number: #ffffff;
+  --syntax-operator: #ffffff;
 }
 
 /* High contrast dark mode override */
