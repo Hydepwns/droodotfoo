@@ -35,9 +35,11 @@ droodotfoo-*.tar
 npm-debug.log
 /assets/node_modules/
 /node_modules/
+/test/accessibility/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+package-lock.json
 
 # Ignore MacOS files
 .DS_Store

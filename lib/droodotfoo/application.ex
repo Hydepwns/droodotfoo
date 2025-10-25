@@ -26,6 +26,9 @@ defmodule Droodotfoo.Application do
       # Start Spotify services
       Droodotfoo.Spotify.Cache,
       Droodotfoo.Spotify,
+      # Start GitHub services
+      Droodotfoo.GitHub.Cache,
+      Droodotfoo.GitHub.Fetcher,
       # Start Web3 server
       Droodotfoo.Web3,
       # Start plugin system

@@ -23,6 +23,9 @@ end
 # Blog API token for Obsidian publishing (all environments)
 config :droodotfoo, :blog_api_token, System.get_env("BLOG_API_TOKEN")
 
+# GitHub API token for higher rate limits (all environments, optional)
+config :droodotfoo, :github_token, System.get_env("GITHUB_TOKEN")
+
 # Resume source configuration (all environments)
 # Load resume from Fileverse/IPFS if configured, otherwise use hardcoded data
 if resume_cid = System.get_env("RESUME_IPFS_CID") do
