@@ -1,0 +1,874 @@
+/* Terminal Grid System CSS */
+/* Critical for Raxol-to-HTML grid alignment */
+
+/* Each cell MUST be exactly 1ch wide for grid alignment */
+.terminal-container {
+  font-family: var(--font-family);
+  font-size: 16px;
+  line-height: var(--line-height);
+
+  /* Fill available width - responsive sizing */
+  /* 106ch matches BoxConfig terminal width (35 nav + 71 content) */
+  width: min(106ch, 100%);
+  max-width: 100%;
+  /* Exact terminal height: 45 rows × line-height (1.5) × font-size (16px) = 1080px */
+  height: calc(45 * 1.5 * 16px);
+  min-height: calc(45 * 1.5 * 16px);
+  max-height: calc(45 * 1.5 * 16px);
+  flex: 0 0 auto; /* Don't grow or shrink */
+
+  margin: 0;
+  padding: 0;
+
+  /* Prevent any sub-pixel rendering that breaks the grid */
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+  text-rendering: optimizeLegibility;
+
+  /* Grid debugging - shows character boundaries */
+  position: relative;
+  z-index: 1; /* Lower than STL viewer container */
+
+  /* Allow content to be visible */
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
+.terminal-line {
+  display: block;
+  height: 1.2em;
+  line-height: 1.2;
+  white-space: pre;
+  margin: 0;
+  padding: 0;
+
+  /* Ensure lines don't overflow horizontally but are visible vertically */
+  overflow-x: hidden;
+  overflow-y: visible;
+  max-width: 106ch;
+}
+
+.cell {
+  display: inline-block;
+  width: 1ch;
+  height: 1.2em;
+  line-height: 1.2;
+  vertical-align: top;
+  text-align: center;
+
+  /* Ensure no overflow breaks grid */
+  overflow: hidden;
+
+  /* Monaspace-specific adjustments */
+  font-variant-ligatures: contextual; /* Allow ligatures within cells */
+}
+
+/* Style mappings from Raxol to CSS */
+.cell.bold {
+  font-weight: var(--font-weight-bold);
+  font-variation-settings: "wght" 800;
+}
+
+.cell.italic {
+  font-style: italic;
+}
+
+.cell.underline {
+  text-decoration: underline;
+}
+
+/* Color mappings - Terminal 16 colors */
+.cell.fg-black {
+  color: #000000;
+}
+.cell.fg-red {
+  color: #cc0000;
+}
+.cell.fg-green {
+  color: #4e9a06;
+}
+.cell.fg-yellow {
+  color: #c4a000;
+}
+.cell.fg-blue {
+  color: #3465a4;
+}
+.cell.fg-magenta {
+  color: #75507b;
+}
+.cell.fg-cyan {
+  color: #06989a;
+}
+.cell.fg-white {
+  color: #d3d7cf;
+}
+
+/* Bright variants */
+.cell.fg-bright-black {
+  color: #555753;
+}
+.cell.fg-bright-red {
+  color: #ef2929;
+}
+.cell.fg-bright-green {
+  color: #8ae234;
+}
+.cell.fg-bright-yellow {
+  color: #fce94f;
+}
+.cell.fg-bright-blue {
+  color: #729fcf;
+}
+.cell.fg-bright-magenta {
+  color: #ad7fa8;
+}
+.cell.fg-bright-cyan {
+  color: #34e2e2;
+}
+.cell.fg-bright-white {
+  color: #eeeeec;
+}
+
+/* Background colors */
+.cell.bg-black {
+  background-color: #2e3436;
+}
+.cell.bg-red {
+  background-color: #cc0000;
+}
+.cell.bg-green {
+  background-color: #4e9a06;
+}
+.cell.bg-yellow {
+  background-color: #c4a000;
+}
+.cell.bg-blue {
+  background-color: #3465a4;
+}
+.cell.bg-magenta {
+  background-color: #75507b;
+}
+.cell.bg-cyan {
+  background-color: #06989a;
+}
+.cell.bg-white {
+  background-color: #d3d7cf;
+}
+
+/* Bright background variants */
+.cell.bg-bright-black {
+  background-color: #555753;
+}
+.cell.bg-bright-red {
+  background-color: #ef2929;
+}
+.cell.bg-bright-green {
+  background-color: #8ae234;
+}
+.cell.bg-bright-yellow {
+  background-color: #fce94f;
+}
+.cell.bg-bright-blue {
+  background-color: #729fcf;
+}
+.cell.bg-bright-magenta {
+  background-color: #ad7fa8;
+}
+.cell.bg-bright-cyan {
+  background-color: #34e2e2;
+}
+.cell.bg-bright-white {
+  background-color: #eeeeec;
+}
+
+/* Clickable region styles - data-driven interactive cells */
+
+/* Make clickable cells visually distinct */
+.cell[data-clickable="true"] {
+  cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  will-change: background-color, box-shadow;
+}
+
+/* Hover state for clickable cells - stronger feedback (35% opacity) */
+.cell[data-clickable="true"]:hover,
+.cell[data-clickable="true"].region-hovered {
+  background-color: rgba(100, 150, 255, 0.35);
+  opacity: 1;
+  box-shadow: inset 0 0 0 1px rgba(100, 150, 255, 0.5);
+}
+
+/* Active/pressed state for clickable cells */
+.cell[data-clickable="true"]:active {
+  background-color: rgba(100, 150, 255, 0.35);
+  opacity: 1;
+  box-shadow: inset 0 0 0 1px rgba(100, 150, 255, 0.5);
+  transform: translateY(1px);
+}
+
+/* Focus state for keyboard navigation accessibility */
+.cell[data-clickable="true"]:focus {
+  outline: 2px solid rgba(100, 150, 255, 0.6);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+/* Enhanced focus-visible for keyboard-only navigation (no mouse focus outline) */
+.cell[data-clickable="true"]:focus-visible {
+  outline: 3px solid rgba(100, 150, 255, 0.8);
+  outline-offset: -1px;
+  z-index: 10;
+  background-color: rgba(100, 150, 255, 0.25);
+}
+
+/* Touch device optimizations (for mobile) */
+@media (hover: none) and (pointer: coarse) {
+  /* Disable hover effects on touch devices */
+  .cell[data-clickable="true"]:hover {
+    background-color: transparent;
+    box-shadow: none;
+  }
+
+  /* Disable region highlighting on touch devices (performance optimization) */
+  .cell[data-clickable="true"].region-hovered {
+    background-color: transparent;
+    box-shadow: none;
+  }
+
+  /* Keep active state for touch feedback */
+  .cell[data-clickable="true"]:active {
+    background-color: rgba(100, 150, 255, 0.40);
+    box-shadow: inset 0 0 0 1px rgba(100, 150, 255, 0.5);
+  }
+
+  /* Don't dim non-clickable areas on touch devices */
+  .terminal-wrapper:hover .cell:not([data-clickable="true"]) {
+    opacity: 1;
+  }
+}
+
+/* Region-type specific styles */
+
+/* Navigation regions - primary blue highlight (40% opacity for clarity) */
+.cell[data-region-id="home"]:hover,
+.cell[data-region-id="experience"]:hover,
+.cell[data-region-id="contact"]:hover,
+.cell[data-region-id="games"]:hover,
+.cell[data-region-id="stl_viewer"]:hover,
+.cell[data-region-id="web3"]:hover,
+.cell[data-region-id="home"].region-hovered,
+.cell[data-region-id="experience"].region-hovered,
+.cell[data-region-id="contact"].region-hovered,
+.cell[data-region-id="games"].region-hovered,
+.cell[data-region-id="stl_viewer"].region-hovered,
+.cell[data-region-id="web3"].region-hovered {
+  background-color: rgba(100, 150, 255, 0.40);
+  box-shadow: inset 0 0 0 1px rgba(100, 150, 255, 0.6);
+  cursor: pointer;
+}
+
+/* Action regions - green highlight for positive actions (38% opacity) */
+.cell[data-region-id*="button"]:hover,
+.cell[data-region-id*="submit"]:hover,
+.cell[data-region-id*="connect"]:hover,
+.cell[data-region-id*="play"]:hover,
+.cell[data-region-id*="start"]:hover,
+.cell[data-region-id*="button"].region-hovered,
+.cell[data-region-id*="submit"].region-hovered,
+.cell[data-region-id*="connect"].region-hovered,
+.cell[data-region-id*="play"].region-hovered,
+.cell[data-region-id*="start"].region-hovered {
+  background-color: rgba(80, 200, 120, 0.38);
+  box-shadow: inset 0 0 0 1px rgba(80, 200, 120, 0.5);
+  cursor: pointer;
+}
+
+.cell[data-region-id*="button"]:active,
+.cell[data-region-id*="submit"]:active,
+.cell[data-region-id*="connect"]:active,
+.cell[data-region-id*="play"]:active,
+.cell[data-region-id*="start"]:active {
+  background-color: rgba(80, 200, 120, 0.50);
+  box-shadow: inset 0 0 0 1px rgba(80, 200, 120, 0.7);
+}
+
+/* Content regions - purple highlight for links/cards (36% opacity) */
+.cell[data-region-id*="project"]:hover,
+.cell[data-region-id*="link"]:hover,
+.cell[data-region-id*="card"]:hover,
+.cell[data-region-id*="project"].region-hovered,
+.cell[data-region-id*="link"].region-hovered,
+.cell[data-region-id*="card"].region-hovered {
+  background-color: rgba(150, 100, 255, 0.36);
+  box-shadow: inset 0 0 0 1px rgba(150, 100, 255, 0.5);
+  cursor: alias;
+}
+
+.cell[data-region-id*="project"]:active,
+.cell[data-region-id*="link"]:active,
+.cell[data-region-id*="card"]:active {
+  background-color: rgba(150, 100, 255, 0.48);
+  box-shadow: inset 0 0 0 1px rgba(150, 100, 255, 0.7);
+}
+
+/* Danger/close regions - red highlight (36% opacity) */
+.cell[data-region-id*="close"],
+.cell[data-region-id*="cancel"],
+.cell[data-region-id*="quit"] {
+  cursor: not-allowed;
+}
+
+.cell[data-region-id*="close"]:hover,
+.cell[data-region-id*="cancel"]:hover,
+.cell[data-region-id*="quit"]:hover,
+.cell[data-region-id*="close"].region-hovered,
+.cell[data-region-id*="cancel"].region-hovered,
+.cell[data-region-id*="quit"].region-hovered {
+  background-color: rgba(255, 80, 80, 0.36);
+  box-shadow: inset 0 0 0 1px rgba(255, 80, 80, 0.5);
+  cursor: pointer;
+}
+
+.cell[data-region-id*="close"]:active,
+.cell[data-region-id*="cancel"]:active,
+.cell[data-region-id*="quit"]:active {
+  background-color: rgba(255, 80, 80, 0.48);
+  box-shadow: inset 0 0 0 1px rgba(255, 80, 80, 0.7);
+}
+
+/* Non-clickable area dimming - optimized for performance */
+.cell:not([data-clickable="true"]) {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  will-change: opacity;
+}
+
+/* Subtle dim when hovering terminal - disabled for performance */
+/* Uncomment if dimming is desired, but may affect scroll smoothness
+.terminal-wrapper:hover .cell:not([data-clickable="true"]) {
+  opacity: 0.85;
+}
+
+.terminal-wrapper:has(.cell[data-clickable="true"]:hover) .cell:not([data-clickable="true"]),
+.terminal-wrapper:has(.cell.region-hovered) .cell:not([data-clickable="true"]) {
+  opacity: 0.75;
+}
+*/
+
+/* Click feedback animation */
+.cell[data-clickable="true"].clicked {
+  animation: click-pulse 0.2s ease-out;
+}
+
+@keyframes click-pulse {
+  0% {
+    transform: scale(1);
+    background-color: rgba(100, 150, 255, 0.35);
+  }
+  50% {
+    transform: scale(0.95);
+    background-color: rgba(100, 150, 255, 0.5);
+  }
+  100% {
+    transform: scale(1);
+    background-color: rgba(100, 150, 255, 0.35);
+  }
+}
+
+/* High contrast mode accessibility enhancements - more subtle */
+.theme-high-contrast .cell[data-clickable="true"]:hover,
+.theme-high-contrast .cell[data-clickable="true"].region-hovered {
+  background-color: rgba(255, 255, 100, 0.25);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 100, 0.5);
+}
+
+.theme-high-contrast .cell[data-clickable="true"]:focus-visible {
+  outline: 2px solid rgba(255, 255, 100, 0.8);
+  outline-offset: -1px;
+  background-color: rgba(255, 255, 100, 0.20);
+}
+
+.theme-high-contrast .cell[data-clickable="true"]:active {
+  background-color: rgba(255, 255, 100, 0.40);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 100, 0.7);
+}
+
+/* Subtle dimming in high contrast mode */
+.theme-high-contrast .terminal-wrapper:hover .cell:not([data-clickable="true"]) {
+  opacity: 0.90;
+}
+
+.theme-high-contrast .terminal-wrapper:has(.cell.region-hovered) .cell:not([data-clickable="true"]) {
+  opacity: 0.85;
+}
+
+/* Debug mode - show clickable region boundaries */
+.terminal-container.debug-clickable .cell[data-clickable="true"] {
+  outline: 1px dashed rgba(0, 255, 0, 0.5);
+  outline-offset: -1px;
+}
+
+/* Debug mode - show region IDs on hover */
+.terminal-container.debug-clickable .cell[data-clickable="true"]:hover::after {
+  content: attr(data-region-id);
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  background: rgba(0, 0, 0, 0.9);
+  color: #0f0;
+  padding: 2px 4px;
+  font-size: 10px;
+  white-space: nowrap;
+  z-index: 1000;
+  border: 1px solid #0f0;
+  pointer-events: none;
+}
+
+/* Debug mode - different colors for different region types */
+.terminal-container.debug-clickable .cell[data-clickable="true"][data-region-id*="play"] {
+  outline-color: rgba(80, 200, 120, 0.6);
+}
+
+.terminal-container.debug-clickable .cell[data-clickable="true"][data-region-id*="project"] {
+  outline-color: rgba(150, 100, 255, 0.6);
+}
+
+.terminal-container.debug-clickable .cell[data-clickable="true"][data-region-id*="web3"] {
+  outline-color: rgba(255, 200, 0, 0.6);
+}
+
+/* Terminal overlay - let it fit content naturally */
+.terminal-overlay {
+  /* Let terminal dictate size - no constraints */
+  min-height: 0;
+  height: auto;
+}
+
+/* Terminal wrapper - single canonical definition */
+.terminal-wrapper {
+  /* Layout */
+  flex: 0 0 auto; /* Don't grow or shrink - fit content exactly */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+
+  /* Sizing - responsive width */
+  width: min(95vw, 1400px);
+  max-width: 1400px;
+  /* Height determined by terminal-container (1080px for 45 rows) */
+  min-height: 0;
+  height: auto;
+
+  /* Spacing */
+  margin: 0;
+  padding: 0.1rem;
+
+  /* Appearance */
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+
+  /* No scroll - content uses viewport windowing internally */
+  overflow: visible;
+
+  /* Positioning context for absolute children */
+  position: relative;
+}
+
+/* Custom scrollbar styling - monospaced web aesthetic */
+.terminal-wrapper::-webkit-scrollbar {
+  width: 1ch; /* Use character width for monospace alignment */
+  background-color: rgba(20, 20, 30, 0.8);
+}
+
+.terminal-wrapper::-webkit-scrollbar-track {
+  background: rgba(20, 20, 30, 0.5);
+  /* ASCII box-drawing border: thin vertical line */
+  border-left: 1px solid rgba(100, 150, 255, 0.3);
+  border-right: 1px solid rgba(100, 150, 255, 0.1);
+}
+
+.terminal-wrapper::-webkit-scrollbar-thumb {
+  /* Monospace web: blocky, no curves, sharp edges */
+  background: rgba(100, 150, 255, 0.5);
+  border-radius: 0; /* Sharp corners, no curves */
+  /* ASCII-style border pattern */
+  border-left: 1px solid rgba(100, 150, 255, 0.8);
+  border-right: 1px solid rgba(100, 150, 255, 0.3);
+  border-top: 1px solid rgba(100, 150, 255, 0.8);
+  border-bottom: 1px solid rgba(100, 150, 255, 0.3);
+  /* Subtle ASCII pattern hint */
+  box-shadow: inset 1px 1px 0 rgba(150, 180, 255, 0.3);
+  transition: background 0.1s ease;
+}
+
+.terminal-wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 150, 255, 0.7);
+  box-shadow: inset 1px 1px 0 rgba(150, 180, 255, 0.5);
+}
+
+.terminal-wrapper::-webkit-scrollbar-thumb:active {
+  background: rgba(100, 150, 255, 0.9);
+  /* Inverted for "pressed" feel */
+  box-shadow: inset -1px -1px 0 rgba(150, 180, 255, 0.6);
+}
+
+/* Firefox scrollbar styling - monospace web */
+.terminal-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 150, 255, 0.5) rgba(20, 20, 30, 0.5);
+}
+
+/* Terminal container inherits theme colors */
+.terminal-wrapper .terminal-container {
+  color: var(--text-color);
+  background-color: var(--background-color);
+}
+
+/* Cursor simulation */
+.cell.cursor {
+  background-color: var(--text-color);
+  color: var(--background-color);
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0.3;
+  }
+}
+
+/* Debug mode - shows grid */
+.terminal-container.debug-grid {
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 0, 0, 0.1) 0,
+      rgba(255, 0, 0, 0.1) 1ch,
+      transparent 1ch,
+      transparent calc(1ch + 1px)
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 0, 0, 0.1) 0,
+      rgba(255, 0, 0, 0.1) var(--line-height),
+      transparent var(--line-height),
+      transparent calc(var(--line-height) + 1px)
+    );
+}
+
+/* Misaligned cells (for debugging) */
+.cell.misaligned {
+  background-color: rgba(255, 0, 0, 0.3) !important;
+  outline: 1px solid red;
+}
+
+/* Header table (monospace-web style) */
+table.header {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0.5rem;
+  margin-top: 0;
+  font-family: var(--font-family);
+}
+
+table.header th,
+table.header td {
+  padding: 0.25rem 0.5rem;
+  text-align: left;
+  border: 1px solid var(--border-color);
+}
+
+table.header th {
+  font-weight: var(--font-weight-bold);
+  background-color: var(--background-color-alt);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+table.header .title {
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+  letter-spacing: 0.1em;
+}
+
+table.header .subtitle {
+  font-size: 0.75rem;
+  color: var(--text-color-alt);
+  margin-top: 0.2rem;
+}
+
+table.header .width-min {
+  width: 1%;
+  white-space: nowrap;
+}
+
+table.header .width-auto {
+  width: auto;
+}
+
+/* Responsive adjustments moved to mobile.css for better organization */
+
+/* Interactive elements - hover states */
+.terminal-wrapper {
+  cursor: default;
+  user-select: none; /* Prevent text selection during clicking */
+}
+
+/* Add hover effect to make clickable areas discoverable */
+.terminal-line {
+  transition: background-color 0.15s ease-in-out;
+}
+
+/* Hover state for navigation menu area (rows 15-20, approximately) */
+.terminal-wrapper:hover .terminal-line:nth-child(n + 16):nth-child(-n + 21) {
+  cursor: pointer;
+}
+
+.terminal-wrapper .terminal-line:nth-child(n + 16):nth-child(-n + 21):hover {
+  background-color: rgba(100, 150, 255, 0.08);
+  transition: background-color 0.1s ease-in-out;
+}
+
+/* Active state (when clicking) */
+.terminal-wrapper .terminal-line:nth-child(n + 16):nth-child(-n + 21):active {
+  background-color: rgba(100, 150, 255, 0.15);
+  transition: background-color 0.05s ease-in-out;
+}
+
+/* Visual feedback for focused terminal */
+.terminal-wrapper:focus {
+  outline: 2px solid rgba(100, 150, 255, 0.3);
+  outline-offset: 2px;
+}
+
+.terminal-wrapper:focus-visible {
+  outline: 2px solid rgba(100, 150, 255, 0.5);
+  outline-offset: 2px;
+}
+
+/* STL Viewer Canvas - positioned inside terminal-wrapper */
+#stl-viewer-container {
+  position: absolute;
+  pointer-events: none;
+  z-index: 500; /* Z-index scale: 500 for overlays */
+  isolation: isolate; /* Create new stacking context */
+}
+
+#stl-canvas {
+  background: transparent !important;
+  display: block;
+  pointer-events: auto !important;
+  cursor: grab;
+  position: absolute; /* Use absolute instead of relative */
+  top: 0;
+  left: 0;
+  /* Position and size calculated by JS hook */
+}
+
+/* ========================================================================
+   Modern REPL Command Bar Styling
+   ======================================================================== */
+
+/* Command bar - always visible at bottom */
+.repl-command-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0.5ch 1ch;
+  background-color: rgba(20, 20, 30, 0.95);
+  border-top: 1px solid rgba(100, 150, 255, 0.2);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+/* Focused state */
+.repl-command-bar.focused {
+  background-color: rgba(30, 30, 45, 0.98);
+  border-top-color: rgba(100, 150, 255, 0.5);
+  box-shadow: 0 -2px 10px rgba(100, 150, 255, 0.1);
+}
+
+/* Unfocused placeholder text styling */
+.repl-command-bar.unfocused {
+  opacity: 0.7;
+}
+
+.repl-command-bar.unfocused:hover {
+  opacity: 0.9;
+  border-top-color: rgba(100, 150, 255, 0.3);
+  cursor: text;
+}
+
+/* Command prompt symbol */
+.repl-prompt {
+  color: rgba(100, 150, 255, 0.8);
+  margin-right: 1ch;
+  font-weight: bold;
+}
+
+/* Blinking cursor in command bar */
+.repl-cursor {
+  display: inline-block;
+  width: 1ch;
+  background-color: rgba(100, 200, 255, 0.7);
+  animation: cursor-blink 1s step-end infinite;
+}
+
+@keyframes cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Suggestions dropdown */
+.suggestions-dropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  background-color: rgba(20, 20, 30, 0.98);
+  border: 1px solid rgba(100, 150, 255, 0.3);
+  border-bottom: none;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4);
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 1000;
+  animation: dropdown-slide-up 0.15s ease-out;
+}
+
+@keyframes dropdown-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Suggestion item */
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  padding: 0.5ch 1ch;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  border-left: 3px solid transparent;
+}
+
+.suggestion-item:hover {
+  background-color: rgba(100, 150, 255, 0.1);
+  border-left-color: rgba(100, 150, 255, 0.5);
+}
+
+.suggestion-item.selected {
+  background-color: rgba(100, 150, 255, 0.15);
+  border-left-color: rgba(100, 200, 255, 0.8);
+}
+
+/* Category badges with color coding */
+.category-badge {
+  display: inline-block;
+  padding: 0.25ch 1ch;
+  margin-right: 1ch;
+  font-size: 0.85em;
+  font-weight: bold;
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Category colors */
+.category-badge.game {
+  background-color: rgba(80, 200, 120, 0.2);
+  color: rgba(100, 255, 150, 0.9);
+  border: 1px solid rgba(80, 200, 120, 0.4);
+}
+
+.category-badge.integration,
+.category-badge.web3 {
+  background-color: rgba(160, 100, 240, 0.2);
+  color: rgba(200, 150, 255, 0.9);
+  border: 1px solid rgba(160, 100, 240, 0.4);
+}
+
+.category-badge.system {
+  background-color: rgba(100, 150, 255, 0.2);
+  color: rgba(150, 200, 255, 0.9);
+  border: 1px solid rgba(100, 150, 255, 0.4);
+}
+
+.category-badge.utility,
+.category-badge.tool {
+  background-color: rgba(255, 200, 100, 0.2);
+  color: rgba(255, 220, 150, 0.9);
+  border: 1px solid rgba(255, 200, 100, 0.4);
+}
+
+.category-badge.content,
+.category-badge.navigation {
+  background-color: rgba(100, 200, 255, 0.2);
+  color: rgba(150, 220, 255, 0.9);
+  border: 1px solid rgba(100, 200, 255, 0.4);
+}
+
+.category-badge.effect {
+  background-color: rgba(255, 100, 200, 0.2);
+  color: rgba(255, 150, 220, 0.9);
+  border: 1px solid rgba(255, 100, 200, 0.4);
+}
+
+.category-badge.file {
+  background-color: rgba(150, 150, 150, 0.2);
+  color: rgba(200, 200, 200, 0.9);
+  border: 1px solid rgba(150, 150, 150, 0.4);
+}
+
+/* Suggestion command name */
+.suggestion-command {
+  font-weight: bold;
+  color: rgba(200, 220, 255, 0.95);
+  margin-right: 1ch;
+}
+
+/* Suggestion description */
+.suggestion-description {
+  color: rgba(180, 180, 200, 0.8);
+  font-size: 0.95em;
+}
+
+/* Navigation hint in dropdown footer */
+.suggestions-footer {
+  padding: 0.5ch 1ch;
+  background-color: rgba(30, 30, 40, 0.95);
+  border-top: 1px solid rgba(100, 150, 255, 0.2);
+  text-align: center;
+  font-size: 0.9em;
+  color: rgba(150, 150, 170, 0.8);
+}
+
+/* Scrollbar styling for dropdown */
+.suggestions-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.suggestions-dropdown::-webkit-scrollbar-track {
+  background: rgba(20, 20, 30, 0.5);
+}
+
+.suggestions-dropdown::-webkit-scrollbar-thumb {
+  background: rgba(100, 150, 255, 0.3);
+  border-radius: 4px;
+}
+
+.suggestions-dropdown::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 150, 255, 0.5);
+}

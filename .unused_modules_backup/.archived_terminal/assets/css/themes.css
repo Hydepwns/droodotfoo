@@ -1,0 +1,353 @@
+/* Terminal Theme System */
+
+/* Classic Green Terminal */
+.theme-green {
+  --text-color: #00ff00;
+  --text-color-alt: #00cc00;
+  --background-color: #001100;
+  --background-color-alt: #002200;
+  --border-color: #00ff00;
+  --cursor-color: #00ff00;
+}
+
+.theme-green .cell.fg-black { color: #003300; }
+.theme-green .cell.fg-red { color: #00ff00; }
+.theme-green .cell.fg-green { color: #00ff00; }
+.theme-green .cell.fg-yellow { color: #00ff00; }
+.theme-green .cell.fg-blue { color: #00cc00; }
+.theme-green .cell.fg-magenta { color: #00cc00; }
+.theme-green .cell.fg-cyan { color: #00ff00; }
+.theme-green .cell.fg-white { color: #00ff00; }
+.theme-green .cell.fg-bright-black { color: #006600; }
+.theme-green .cell.fg-bright-red { color: #00ff00; }
+.theme-green .cell.fg-bright-green { color: #00ff00; }
+.theme-green .cell.fg-bright-yellow { color: #00ff00; }
+.theme-green .cell.fg-bright-blue { color: #00ff00; }
+.theme-green .cell.fg-bright-magenta { color: #00ff00; }
+.theme-green .cell.fg-bright-cyan { color: #00ff00; }
+.theme-green .cell.fg-bright-white { color: #00ff00; }
+
+/* Amber Monochrome */
+.theme-amber {
+  --text-color: #ffb000;
+  --text-color-alt: #cc8800;
+  --background-color: #1a0f00;
+  --background-color-alt: #2a1800;
+  --border-color: #ffb000;
+  --cursor-color: #ffb000;
+}
+
+.theme-amber .cell.fg-black { color: #4a3000; }
+.theme-amber .cell.fg-red { color: #ff8800; }
+.theme-amber .cell.fg-green { color: #ffb000; }
+.theme-amber .cell.fg-yellow { color: #ffcc00; }
+.theme-amber .cell.fg-blue { color: #cc8800; }
+.theme-amber .cell.fg-magenta { color: #ff9900; }
+.theme-amber .cell.fg-cyan { color: #ffaa00; }
+.theme-amber .cell.fg-white { color: #ffb000; }
+.theme-amber .cell.fg-bright-black { color: #886000; }
+.theme-amber .cell.fg-bright-red { color: #ffaa00; }
+.theme-amber .cell.fg-bright-green { color: #ffcc00; }
+.theme-amber .cell.fg-bright-yellow { color: #ffdd00; }
+.theme-amber .cell.fg-bright-blue { color: #ffaa00; }
+.theme-amber .cell.fg-bright-magenta { color: #ffbb00; }
+.theme-amber .cell.fg-bright-cyan { color: #ffcc00; }
+.theme-amber .cell.fg-bright-white { color: #ffdd00; }
+
+/* High Contrast */
+.theme-high-contrast {
+  --text-color: #ffffff;
+  --text-color-alt: #cccccc;
+  --background-color: #000000;
+  --background-color-alt: #111111;
+  --border-color: #ffffff;
+  --cursor-color: #ffffff;
+}
+
+.theme-high-contrast .cell.fg-black { color: #555555; }
+.theme-high-contrast .cell.fg-red { color: #ff0000; }
+.theme-high-contrast .cell.fg-green { color: #00ff00; }
+.theme-high-contrast .cell.fg-yellow { color: #ffff00; }
+.theme-high-contrast .cell.fg-blue { color: #5555ff; }
+.theme-high-contrast .cell.fg-magenta { color: #ff00ff; }
+.theme-high-contrast .cell.fg-cyan { color: #00ffff; }
+.theme-high-contrast .cell.fg-white { color: #ffffff; }
+.theme-high-contrast .cell.fg-bright-black { color: #888888; }
+.theme-high-contrast .cell.fg-bright-red { color: #ff5555; }
+.theme-high-contrast .cell.fg-bright-green { color: #55ff55; }
+.theme-high-contrast .cell.fg-bright-yellow { color: #ffff55; }
+.theme-high-contrast .cell.fg-bright-blue { color: #5555ff; }
+.theme-high-contrast .cell.fg-bright-magenta { color: #ff55ff; }
+.theme-high-contrast .cell.fg-bright-cyan { color: #55ffff; }
+.theme-high-contrast .cell.fg-bright-white { color: #ffffff; }
+
+/* Cyberpunk */
+.theme-cyberpunk {
+  --text-color: #ff00ff;
+  --text-color-alt: #00ffff;
+  --background-color: #0a0014;
+  --background-color-alt: #14001f;
+  --border-color: #ff00ff;
+  --cursor-color: #00ffff;
+}
+
+.theme-cyberpunk .cell.fg-black { color: #1a0028; }
+.theme-cyberpunk .cell.fg-red { color: #ff0088; }
+.theme-cyberpunk .cell.fg-green { color: #00ff88; }
+.theme-cyberpunk .cell.fg-yellow { color: #ff00ff; }
+.theme-cyberpunk .cell.fg-blue { color: #0088ff; }
+.theme-cyberpunk .cell.fg-magenta { color: #ff00ff; }
+.theme-cyberpunk .cell.fg-cyan { color: #00ffff; }
+.theme-cyberpunk .cell.fg-white { color: #ff00ff; }
+.theme-cyberpunk .cell.fg-bright-black { color: #550088; }
+.theme-cyberpunk .cell.fg-bright-red { color: #ff00aa; }
+.theme-cyberpunk .cell.fg-bright-green { color: #00ffaa; }
+.theme-cyberpunk .cell.fg-bright-yellow { color: #ff88ff; }
+.theme-cyberpunk .cell.fg-bright-blue { color: #00aaff; }
+.theme-cyberpunk .cell.fg-bright-magenta { color: #ff55ff; }
+.theme-cyberpunk .cell.fg-bright-cyan { color: #55ffff; }
+.theme-cyberpunk .cell.fg-bright-white { color: #ffaaff; }
+
+/* Matrix Green */
+.theme-matrix {
+  --text-color: #00ff41;
+  --text-color-alt: #008f11;
+  --background-color: #0d0208;
+  --background-color-alt: #1a0412;
+  --border-color: #00ff41;
+  --cursor-color: #00ff41;
+}
+
+.theme-matrix .cell.fg-black { color: #003311; }
+.theme-matrix .cell.fg-red { color: #00cc33; }
+.theme-matrix .cell.fg-green { color: #00ff41; }
+.theme-matrix .cell.fg-yellow { color: #00ff41; }
+.theme-matrix .cell.fg-blue { color: #008f11; }
+.theme-matrix .cell.fg-magenta { color: #00dd33; }
+.theme-matrix .cell.fg-cyan { color: #00ff41; }
+.theme-matrix .cell.fg-white { color: #00ff41; }
+.theme-matrix .cell.fg-bright-black { color: #006622; }
+.theme-matrix .cell.fg-bright-red { color: #00ff41; }
+.theme-matrix .cell.fg-bright-green { color: #33ff66; }
+.theme-matrix .cell.fg-bright-yellow { color: #66ff88; }
+.theme-matrix .cell.fg-bright-blue { color: #00cc33; }
+.theme-matrix .cell.fg-bright-magenta { color: #33ff66; }
+.theme-matrix .cell.fg-bright-cyan { color: #66ff88; }
+.theme-matrix .cell.fg-bright-white { color: #88ffaa; }
+
+/* Phosphor Blue */
+.theme-phosphor {
+  --text-color: #00ddff;
+  --text-color-alt: #0099cc;
+  --background-color: #000033;
+  --background-color-alt: #000044;
+  --border-color: #00ddff;
+  --cursor-color: #00ddff;
+}
+
+.theme-phosphor .cell.fg-black { color: #001144; }
+.theme-phosphor .cell.fg-red { color: #0099ff; }
+.theme-phosphor .cell.fg-green { color: #00bbff; }
+.theme-phosphor .cell.fg-yellow { color: #00ddff; }
+.theme-phosphor .cell.fg-blue { color: #0088dd; }
+.theme-phosphor .cell.fg-magenta { color: #00aaff; }
+.theme-phosphor .cell.fg-cyan { color: #00ddff; }
+.theme-phosphor .cell.fg-white { color: #00ddff; }
+.theme-phosphor .cell.fg-bright-black { color: #003366; }
+.theme-phosphor .cell.fg-bright-red { color: #00bbff; }
+.theme-phosphor .cell.fg-bright-green { color: #00ddff; }
+.theme-phosphor .cell.fg-bright-yellow { color: #00eeff; }
+.theme-phosphor .cell.fg-bright-blue { color: #00aaff; }
+.theme-phosphor .cell.fg-bright-magenta { color: #33ddff; }
+.theme-phosphor .cell.fg-bright-cyan { color: #55eeff; }
+.theme-phosphor .cell.fg-bright-white { color: #aaffff; }
+
+/* Synthwave84 - Retro 80s neon aesthetic */
+.theme-synthwave84 {
+  /* Base colors */
+  --text-color: #ffffff;
+  --text-color-alt: #848bbd;
+  --background-color: #241b2f;
+  --background-color-alt: #262335;
+  --border-color: #ff7edb;
+  --cursor-color: #f97e72;
+
+  /* Synthwave accent colors */
+  --sw-pink: #ff7edb;
+  --sw-cyan: #36f9f6;
+  --sw-green: #72f1b8;
+  --sw-yellow: #fede5d;
+  --sw-red: #fe4450;
+  --sw-orange: #ff8b39;
+  --sw-purple: #848bbd;
+
+  /* Text glow effect (optional, for enhanced neon look) */
+  --glow-intensity: 0.5;
+}
+
+/* Synthwave84 Soft - Lower contrast variant */
+.theme-synthwave84-soft {
+  --text-color: #e0e0e0;
+  --text-color-alt: #848bbd;
+  --background-color: #2a2139;
+  --background-color-alt: #2d2541;
+  --border-color: #d96ac8;
+  --cursor-color: #e06a5e;
+
+  --sw-pink: #d96ac8;
+  --sw-cyan: #2dd4d1;
+  --sw-green: #5dd49f;
+  --sw-yellow: #d9c54a;
+  --sw-red: #d93a46;
+  --sw-orange: #d9762f;
+  --sw-purple: #7078a8;
+}
+
+/* Synthwave84 High Contrast - Enhanced visibility */
+.theme-synthwave84-high {
+  --text-color: #ffffff;
+  --text-color-alt: #a0a8d9;
+  --background-color: #1a1425;
+  --background-color-alt: #1e1729;
+  --border-color: #ff99e6;
+  --cursor-color: #ff5544;
+
+  --sw-pink: #ff99e6;
+  --sw-cyan: #44fffc;
+  --sw-green: #88ffcc;
+  --sw-yellow: #ffee77;
+  --sw-red: #ff5566;
+  --sw-orange: #ff9955;
+  --sw-purple: #9999dd;
+}
+
+/* Synthwave84 terminal color overrides */
+.theme-synthwave84 .cell.fg-red,
+.theme-synthwave84-soft .cell.fg-red,
+.theme-synthwave84-high .cell.fg-red { color: var(--sw-red); }
+
+.theme-synthwave84 .cell.fg-green,
+.theme-synthwave84-soft .cell.fg-green,
+.theme-synthwave84-high .cell.fg-green { color: var(--sw-green); }
+
+.theme-synthwave84 .cell.fg-yellow,
+.theme-synthwave84-soft .cell.fg-yellow,
+.theme-synthwave84-high .cell.fg-yellow { color: var(--sw-yellow); }
+
+.theme-synthwave84 .cell.fg-cyan,
+.theme-synthwave84-soft .cell.fg-cyan,
+.theme-synthwave84-high .cell.fg-cyan { color: var(--sw-cyan); }
+
+.theme-synthwave84 .cell.fg-magenta,
+.theme-synthwave84-soft .cell.fg-magenta,
+.theme-synthwave84-high .cell.fg-magenta { color: var(--sw-pink); }
+
+.theme-synthwave84 .cell.fg-white,
+.theme-synthwave84-soft .cell.fg-white,
+.theme-synthwave84-high .cell.fg-white { color: var(--text-color); }
+
+/* Bright variants with enhanced glow */
+.theme-synthwave84 .cell.fg-bright-red,
+.theme-synthwave84-soft .cell.fg-bright-red,
+.theme-synthwave84-high .cell.fg-bright-red {
+  color: var(--sw-red);
+  text-shadow: 0 0 8px var(--sw-red);
+}
+
+.theme-synthwave84 .cell.fg-bright-green,
+.theme-synthwave84-soft .cell.fg-bright-green,
+.theme-synthwave84-high .cell.fg-bright-green {
+  color: var(--sw-green);
+  text-shadow: 0 0 8px var(--sw-green);
+}
+
+.theme-synthwave84 .cell.fg-bright-yellow,
+.theme-synthwave84-soft .cell.fg-bright-yellow,
+.theme-synthwave84-high .cell.fg-bright-yellow {
+  color: var(--sw-yellow);
+  text-shadow: 0 0 8px var(--sw-yellow);
+}
+
+.theme-synthwave84 .cell.fg-bright-cyan,
+.theme-synthwave84-soft .cell.fg-bright-cyan,
+.theme-synthwave84-high .cell.fg-bright-cyan {
+  color: var(--sw-cyan);
+  text-shadow: 0 0 10px var(--sw-cyan);
+}
+
+.theme-synthwave84 .cell.fg-bright-magenta,
+.theme-synthwave84-soft .cell.fg-bright-magenta,
+.theme-synthwave84-high .cell.fg-bright-magenta {
+  color: var(--sw-pink);
+  text-shadow: 0 0 10px var(--sw-pink);
+}
+
+.theme-synthwave84 .cell.fg-bright-white,
+.theme-synthwave84-soft .cell.fg-bright-white,
+.theme-synthwave84-high .cell.fg-bright-white {
+  color: var(--text-color);
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+}
+
+/* Background colors for Synthwave84 */
+.theme-synthwave84 .cell.bg-red,
+.theme-synthwave84-soft .cell.bg-red,
+.theme-synthwave84-high .cell.bg-red { background-color: var(--sw-red); }
+
+.theme-synthwave84 .cell.bg-green,
+.theme-synthwave84-soft .cell.bg-green,
+.theme-synthwave84-high .cell.bg-green { background-color: var(--sw-green); }
+
+.theme-synthwave84 .cell.bg-magenta,
+.theme-synthwave84-soft .cell.bg-magenta,
+.theme-synthwave84-high .cell.bg-magenta { background-color: var(--sw-pink); }
+
+.theme-synthwave84 .cell.bg-cyan,
+.theme-synthwave84-soft .cell.bg-cyan,
+.theme-synthwave84-high .cell.bg-cyan { background-color: var(--sw-cyan); }
+
+/* Neon glow effect for borders */
+.theme-synthwave84 .terminal-wrapper,
+.theme-synthwave84-soft .terminal-wrapper,
+.theme-synthwave84-high .terminal-wrapper {
+  box-shadow:
+    0 0 8px rgba(255, 126, 219, 0.4),
+    0 0 16px rgba(255, 126, 219, 0.2),
+    inset 0 0 2px rgba(255, 126, 219, 0.1);
+}
+
+/* Enhanced cursor with glow */
+.theme-synthwave84 .cell.cursor,
+.theme-synthwave84-soft .cell.cursor,
+.theme-synthwave84-high .cell.cursor {
+  background-color: var(--cursor-color);
+  box-shadow: 0 0 12px var(--cursor-color);
+  animation: neon-blink 1s ease-in-out infinite;
+}
+
+@keyframes neon-blink {
+  0%, 49% {
+    opacity: 1;
+    box-shadow: 0 0 12px var(--cursor-color);
+  }
+  50%, 100% {
+    opacity: 0.7;
+    box-shadow: 0 0 6px var(--cursor-color);
+  }
+}
+
+/* Theme transition animation */
+.terminal-container {
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.cell {
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+/* Synthwave header title glow */
+.theme-synthwave84 table.header .title,
+.theme-synthwave84-soft table.header .title,
+.theme-synthwave84-high table.header .title {
+  text-shadow: 0 0 10px var(--sw-pink), 0 0 20px rgba(255, 126, 219, 0.3);
+}
