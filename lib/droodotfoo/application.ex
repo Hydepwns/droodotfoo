@@ -35,6 +35,8 @@ defmodule Droodotfoo.Application do
       Droodotfoo.PluginSystem,
       # Start blog post system
       Droodotfoo.Content.Posts,
+      # Start pattern cache for SVG pattern generation
+      Droodotfoo.Content.PatternCache,
       # Start Portal presence server
       Droodotfoo.Fileverse.Portal.PresenceServer,
       # Start contact form rate limiter

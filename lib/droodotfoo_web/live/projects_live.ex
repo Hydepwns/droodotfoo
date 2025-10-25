@@ -9,19 +9,46 @@ defmodule DroodotfooWeb.ProjectsLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    projects = Projects.with_github_data()
+    # Phase 1: Load basic project data immediately (no GitHub API calls)
+    projects = Projects.all()
 
+    # Generate JSON-LD (will be updated after GitHub data loads)
     json_ld = [
       JsonLD.breadcrumb_schema([{"Home", "/"}, {"Projects", "/projects"}])
       | Enum.map(projects, &JsonLD.software_schema/1)
     ]
+
+    # Phase 2: Enrich with GitHub data asynchronously after connection
+    if connected?(socket) do
+      send(self(), :enrich_github_data)
+    end
 
     {:ok,
      assign(socket,
        projects: projects,
        page_title: "Projects",
        current_path: "/projects",
-       json_ld: json_ld
+       json_ld: json_ld,
+       loading_github: true
+     )}
+  end
+
+  @impl true
+  def handle_info(:enrich_github_data, socket) do
+    # Fetch GitHub data in background
+    enriched_projects = Projects.with_github_data()
+
+    # Update JSON-LD with enriched project data
+    json_ld = [
+      JsonLD.breadcrumb_schema([{"Home", "/"}, {"Projects", "/projects"}])
+      | Enum.map(enriched_projects, &JsonLD.software_schema/1)
+    ]
+
+    {:noreply,
+     assign(socket,
+       projects: enriched_projects,
+       json_ld: json_ld,
+       loading_github: false
      )}
   end
 
