@@ -21,6 +21,7 @@ echo "Loading secrets from 1Password..."
 
 export SPOTIFY_CLIENT_ID=$(op read "op://Private/droodotfoo-dev/SPOTIFY_CLIENT_ID" 2>/dev/null || echo "")
 export SPOTIFY_CLIENT_SECRET=$(op read "op://Private/droodotfoo-dev/SPOTIFY_CLIENT_SECRET" 2>/dev/null || echo "")
+export GITHUB_TOKEN=$(op read "op://Private/droodotfoo-dev/GITHUB_TOKEN" 2>/dev/null || echo "")
 export PHX_HOST="localhost"
 
 # Verify critical secrets are loaded
@@ -30,6 +31,10 @@ fi
 
 if [ -z "$SPOTIFY_CLIENT_SECRET" ]; then
     echo "Warning: SPOTIFY_CLIENT_SECRET not found in 1Password"
+fi
+
+if [ -z "$GITHUB_TOKEN" ]; then
+    echo "Warning: GITHUB_TOKEN not found in 1Password"
 fi
 
 echo "Starting Phoenix server..."
