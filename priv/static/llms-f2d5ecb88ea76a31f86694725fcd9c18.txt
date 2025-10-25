@@ -1,0 +1,49 @@
+# DROO.FOO
+
+> Personal website of DROO AMOR - software engineer, blockchain researcher, and builder.
+> Built with Elixir/Phoenix LiveView and Raxol terminal UI framework. Features a monospace-web
+> aesthetic, file-based content system, and terminal-style interface.
+
+DROO.FOO is both a portfolio and an experimental platform showcasing:
+- Phoenix LiveView applications with real-time terminal UIs
+- Blockchain/Web3 projects and research
+- Technical writing on Elixir, Phoenix, and distributed systems
+- Open-source contributions and creative coding experiments
+
+## Core Pages
+
+- [Home](https://droo.foo/): Terminal-style interface with Raxol framework
+- [About](https://droo.foo/about): Background, skills, and experience
+- [Now](https://droo.foo/now): Current projects and focus areas
+- [Projects](https://droo.foo/projects): Portfolio of work and open-source contributions
+- [Writing](https://droo.foo/posts): Technical blog posts and articles
+- [Sitemap](https://droo.foo/sitemap): Complete site structure
+
+## Featured Content
+
+- [Building droo.foo](https://droo.foo/posts/building-droo-foo): Architecture and technical details of this site
+- [RSS Feed](https://droo.foo/feed.xml): Subscribe to blog posts
+
+## Technical Documentation
+
+- [CLAUDE.md](https://github.com/hydepwns/droodotfoo/blob/main/CLAUDE.md): Development guide and architecture overview
+- [README.md](https://github.com/hydepwns/droodotfoo/blob/main/README.md): Project setup and deployment instructions
+
+## Key Technologies
+
+- **Framework**: Elixir, Phoenix 1.8, Phoenix LiveView
+- **Terminal UI**: Raxol (custom terminal rendering library)
+- **Content**: File-based markdown with MDEx parser
+- **Styling**: Monaspace Argon monospace font, character-grid CSS
+- **Infrastructure**: Fly.io hosting, Cloudflare Pages CDN
+
+## Contact & Social
+
+- **GitHub**: [@hydepwns](https://github.com/hydepwns)
+- **Email**: droo@droo.foo
+- **Location**: Remote / Traveling
+
+## Optional
+
+- [Pattern Gallery](https://droo.foo/pattern-gallery): Animated SVG patterns generated for blog posts
+- [Spotify Integration](https://droo.foo/): Music player with Web Playback SDK (when authenticated)
