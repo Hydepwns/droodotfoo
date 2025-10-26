@@ -71,7 +71,7 @@ defmodule DroodotfooWeb.ProjectsLive do
       current_path={@current_path}
     >
       <div class="projects-grid">
-        <article :for={project <- @projects} class="project-card">
+        <article :for={project <- @projects} id={to_string(project.id)} class="project-card">
           <div class="project-content-grid">
             <div class="project-left">
               <h2 class="project-title">{project.name}</h2>
