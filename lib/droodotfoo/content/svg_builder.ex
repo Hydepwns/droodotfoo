@@ -144,10 +144,7 @@ defmodule Droodotfoo.Content.SVGBuilder do
   @spec render_element(element) :: String.t()
   def render_element(%{tag: tag, attrs: attrs, class: class_name, children: children}) do
     # Build attributes string
-    attrs_str =
-      attrs
-      |> Enum.map(fn {key, value} -> "#{key}=\"#{value}\"" end)
-      |> Enum.join(" ")
+    attrs_str = Enum.map_join(attrs, " ", fn {key, value} -> "#{key}=\"#{value}\"" end)
 
     # Add class if present
     class_str = if class_name, do: " class=\"#{class_name}\"", else: ""
@@ -180,9 +177,7 @@ defmodule Droodotfoo.Content.SVGBuilder do
   """
   @spec render_elements([element]) :: String.t()
   def render_elements(elements) when is_list(elements) do
-    elements
-    |> Enum.map(&render_element/1)
-    |> Enum.join("\n")
+    Enum.map_join(elements, "\n", &render_element/1)
   end
 
   @doc """
@@ -390,11 +385,9 @@ defmodule Droodotfoo.Content.SVGBuilder do
     y2 = Keyword.get(opts, :y2, "0%")
 
     stops_str =
-      stops
-      |> Enum.map(fn {offset, color, opacity} ->
+      Enum.map_join(stops, "\n", fn {offset, color, opacity} ->
         "<stop offset=\"#{offset}%\" stop-color=\"#{color}\" stop-opacity=\"#{opacity}\"/>"
       end)
-      |> Enum.join("\n")
 
     """
     <linearGradient id="#{id}" x1="#{x1}" y1="#{y1}" x2="#{x2}" y2="#{y2}">
@@ -427,11 +420,9 @@ defmodule Droodotfoo.Content.SVGBuilder do
     fy = Keyword.get(opts, :fy, cy)
 
     stops_str =
-      stops
-      |> Enum.map(fn {offset, color, opacity} ->
+      Enum.map_join(stops, "\n", fn {offset, color, opacity} ->
         "<stop offset=\"#{offset}%\" stop-color=\"#{color}\" stop-opacity=\"#{opacity}\"/>"
       end)
-      |> Enum.join("\n")
 
     """
     <radialGradient id="#{id}" cx="#{cx}" cy="#{cy}" r="#{r}" fx="#{fx}" fy="#{fy}">

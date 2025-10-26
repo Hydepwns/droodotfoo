@@ -229,14 +229,12 @@ defmodule Droodotfoo.Plugins.Calculator do
   end
 
   defp do_evaluate(expr) do
-    try do
-      result = parse_and_compute(expr)
-      {:ok, result}
-    catch
-      :division_by_zero -> {:error, "Division by zero"}
-      :invalid_expression -> {:error, "Invalid expression"}
-      _ -> {:error, "Calculation error"}
-    end
+    result = parse_and_compute(expr)
+    {:ok, result}
+  catch
+    :division_by_zero -> {:error, "Division by zero"}
+    :invalid_expression -> {:error, "Invalid expression"}
+    _ -> {:error, "Calculation error"}
   end
 
   defp parse_and_compute(expr) do
