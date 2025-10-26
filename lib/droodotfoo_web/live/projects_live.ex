@@ -65,7 +65,11 @@ defmodule DroodotfooWeb.ProjectsLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <.page_layout page_title="Projects" page_description="Selected portfolio work and contributions" current_path={@current_path}>
+    <.page_layout
+      page_title="Projects"
+      page_description="Open source work and contributions"
+      current_path={@current_path}
+    >
       <div class="projects-grid">
         <article :for={project <- @projects} class="project-card">
           <div class="project-content-grid">
@@ -106,7 +110,10 @@ defmodule DroodotfooWeb.ProjectsLive do
   defp github_stats(%{project: %{github_data: %{status: :ok}}} = assigns) do
     ~H"""
     <div :if={@project.github_data.languages} class="language-breakdown">
-      <div :for={{lang, pct} <- format_language_bars(@project.github_data.languages)} class="language-bar">
+      <div
+        :for={{lang, pct} <- format_language_bars(@project.github_data.languages)}
+        class="language-bar"
+      >
         <span class="lang-name">{lang}</span>
         <span class="lang-bar-fill" style={"color: #{LanguageColors.get_color(lang)}"}>
           {String.duplicate("█", percentage_to_bars(pct))}
@@ -117,7 +124,7 @@ defmodule DroodotfooWeb.ProjectsLive do
 
     <div :if={repo = @project.github_data.repo_info} class="github-meta text-muted mt-1">
       ★ {repo.stars} ⑂ {repo.forks}
-      <span :if={repo.updated_at}> | Updated {format_time_ago(repo.updated_at)}</span>
+      <span :if={repo.updated_at}> | Updated  {format_time_ago(repo.updated_at)}</span>
     </div>
 
     <div :if={commit = @project.github_data.latest_commit} class="latest-commit text-muted">
@@ -175,7 +182,7 @@ defmodule DroodotfooWeb.ProjectsLive do
     ~H"""
     <div class="project-meta text-muted">
       <span>{format_status(@project.status)}</span>
-      <span :if={@project.year}> | {@project.year}</span>
+      <span :if={@project.year}> |  {@project.year}</span>
     </div>
     """
   end

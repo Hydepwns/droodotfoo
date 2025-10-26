@@ -34,7 +34,11 @@ defmodule DroodotfooWeb.NowLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <.page_layout page_title="Now" page_description="What I'm currently focused on" current_path={@current_path}>
+    <.page_layout
+      page_title="Now"
+      page_description="What I'm currently focused on"
+      current_path={@current_path}
+    >
       <section class="about-section">
         <div class="text-muted mb-2">
           <strong>Last updated:</strong>
@@ -44,7 +48,7 @@ defmodule DroodotfooWeb.NowLive do
         <h3 class="mt-2">Running</h3>
         <p>
           Running <strong><a href="https://axol.io" target="_blank" rel="noopener">axol.io</a></strong>.
-          Operating production blockchain infrastructure:
+          Sequencers and nodes across Ethereum L2s and mainnet:
         </p>
 
         <article class="experience-item">
@@ -54,8 +58,8 @@ defmodule DroodotfooWeb.NowLive do
           </div>
 
           <p class="experience-description">
-            Operating sequencers and nodes across Ethereum L2s and mainnet. Infrastructure handles
-            transaction ordering, state transitions, and network consensus for multiple chains.
+            Running validator infrastructure for transaction ordering and state transitions.
+            Currently operating on Aztec, Base, Optimism, and Ethereum mainnet.
           </p>
 
           <div class="tech-tags mt-1">
@@ -67,9 +71,11 @@ defmodule DroodotfooWeb.NowLive do
         </article>
 
         <p class="mt-2 text-muted">
-          Also building FOSS protocol implementations: <strong>mana</strong> (Ethereum client),
-          <strong>raxol</strong> (terminal UI framework), and <strong>riddler</strong> (cross-chain solver).
-          See <a href="/projects">projects</a> for details.
+          Also building FOSS: <strong>mana</strong>
+          (Ethereum client), <strong>raxol</strong>
+          (terminal UI framework), and <strong>riddler</strong>
+          (cross-chain solver).
+          See <a href="/projects">projects</a>.
         </p>
 
         <hr class="section-divider" />
@@ -85,19 +91,24 @@ defmodule DroodotfooWeb.NowLive do
           <div class="mt-1">
             <ul>
               <li>
-                <strong>go-ethereum (geth)</strong> - Core client implementation, EVM execution, and state management
+                <strong>go-ethereum (geth)</strong>
+                - Core client implementation, EVM execution, and state management
               </li>
               <li>
-                <strong>ibc-go</strong> - IBC protocol implementation in Cosmos SDK, packet routing and state proofs
+                <strong>ibc-go</strong>
+                - IBC protocol implementation in Cosmos SDK, packet routing and state proofs
               </li>
               <li>
-                <strong>Hyperlane</strong> - Bridge architecture, validator sets, and cross-chain message passing
+                <strong>Hyperlane</strong>
+                - Bridge architecture, validator sets, and cross-chain message passing
               </li>
               <li>
-                <strong>OTP source</strong> - gen_server internals, supervisor restart strategies, and distributed Erlang
+                <strong>OTP source</strong>
+                - gen_server internals, supervisor restart strategies, and distributed Erlang
               </li>
               <li>
-                <strong>Solver rebalancer architectures</strong> - cross-chain inventory management and quant trading systems
+                <strong>Solver rebalancer architectures</strong>
+                - cross-chain inventory management and quant trading systems
               </li>
             </ul>
           </div>
@@ -116,8 +127,9 @@ defmodule DroodotfooWeb.NowLive do
 
         <h3 class="mt-2">Location & Work</h3>
         <p>
-          Based in <strong>{@resume.personal_info.location}</strong> (<time>{@resume.personal_info.timezone}</time>).
-          Remote work. Protocol research, open-source development, validator operations.
+          Based in <strong>{@resume.personal_info.location}</strong>
+          (<time>{@resume.personal_info.timezone}</time>).
+          Remote. Mostly protocol research, open-source work, and running validators.
         </p>
 
         <%= if @resume.focus_areas && length(@resume.focus_areas) > 0 do %>
@@ -137,11 +149,11 @@ defmodule DroodotfooWeb.NowLive do
           <h3 class="mt-2">Availability</h3>
           <div class="experience-item">
             <p>
-              <strong>Open to consulting</strong> on blockchain infrastructure.
-              Cosmos SDK, Ethereum protocol, validator operations.
+              Open to consulting on validator infrastructure and protocol work.
+              Mostly Cosmos SDK, Ethereum clients, and node operations.
             </p>
             <p class="text-muted mt-1">
-              Want to work together? <a href="/about">See my experience</a> or reach out.
+              <a href="/about">Experience here</a> if you want to work together.
             </p>
           </div>
         <% end %>
@@ -150,11 +162,14 @@ defmodule DroodotfooWeb.NowLive do
 
         <p class="text-muted">
           <strong>About /now pages:</strong>
-          This page follows the <a
+          This page follows the
+          <a
             href="https://nownownow.com/about"
             target="_blank"
             rel="noopener"
-          >/now page movement</a>
+          >
+            /now page movement
+          </a>
           by Derek Sivers. It's manually updated whenever my focus significantly shifts.
           Think of it as a snapshot of what has my attention right now.
         </p>
