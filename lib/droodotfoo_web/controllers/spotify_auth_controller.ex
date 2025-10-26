@@ -34,13 +34,21 @@ defmodule DroodotfooWeb.SpotifyAuthController do
   @doc """
   Handles the OAuth callback from Spotify.
   Exchanges authorization code for access tokens.
+  Validates state parameter to prevent CSRF attacks.
   """
-  def callback(conn, %{"code" => code, "state" => _state}) do
-    case Manager.complete_auth(code) do
+  def callback(conn, %{"code" => code, "state" => state}) do
+    case Manager.complete_auth(code, state) do
       :ok ->
         conn
         |> put_flash(:info, "Successfully connected to Spotify!")
         |> put_session(:spotify_authenticated, true)
+        |> redirect(to: "/")
+
+      {:error, :invalid_state} ->
+        Logger.warning("Spotify auth failed: invalid state (potential CSRF attack)")
+
+        conn
+        |> put_flash(:error, "Authentication failed: security validation error")
         |> redirect(to: "/")
 
       {:error, reason} ->

@@ -66,7 +66,7 @@ defmodule Droodotfoo.Projects do
 
   @doc "Returns projects with live demos"
   @spec with_live_demos() :: list(t())
-  def with_live_demos, do: Enum.filter(all(), &(&1.live_demo))
+  def with_live_demos, do: Enum.filter(all(), & &1.live_demo)
 
   @doc "Filters projects by tech stack"
   @spec filter_by_tech(String.t()) :: list(t())

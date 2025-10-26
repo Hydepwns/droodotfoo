@@ -1,7 +1,8 @@
 defmodule DroodotfooWeb.PatternController do
   use DroodotfooWeb, :controller
+  require Logger
 
-  alias Droodotfoo.Content.PatternCache
+  alias Droodotfoo.Content.{PatternCache, PatternRateLimiter}
 
   @doc """
   Serves a generated SVG pattern for a post slug.
@@ -24,23 +25,39 @@ defmodule DroodotfooWeb.PatternController do
       GET /patterns/my-post-slug?style=grid&width=800&height=400
   """
   def show(conn, %{"slug" => slug} = params) do
-    # Parse options from query params
-    opts = [
-      style: parse_style(params["style"]),
-      width: parse_integer(params["width"], 1200),
-      height: parse_integer(params["height"], 630),
-      animate: parse_boolean(params["animate"], false)
-    ]
+    # Check rate limit
+    ip_address = get_ip_address(conn)
 
-    # Get from cache or generate (server-side caching)
-    svg = PatternCache.get_or_generate(slug, opts)
+    case PatternRateLimiter.check_rate_limit(ip_address) do
+      {:ok, :allowed} ->
+        # Parse options from query params
+        opts = [
+          style: parse_style(params["style"]),
+          width: parse_integer(params["width"], 1200),
+          height: parse_integer(params["height"], 630),
+          animate: parse_boolean(params["animate"], false)
+        ]
 
-    # Set aggressive caching headers (pattern is deterministic)
-    conn
-    |> put_resp_content_type("image/svg+xml")
-    |> put_resp_header("cache-control", "public, max-age=31536000, immutable")
-    |> put_resp_header("etag", generate_etag(slug, opts))
-    |> send_resp(200, svg)
+        # Record request for rate limiting
+        PatternRateLimiter.record_request(ip_address)
+
+        # Get from cache or generate (server-side caching)
+        svg = PatternCache.get_or_generate(slug, opts)
+
+        # Set aggressive caching headers (pattern is deterministic)
+        conn
+        |> put_resp_content_type("image/svg+xml")
+        |> put_resp_header("cache-control", "public, max-age=31536000, immutable")
+        |> put_resp_header("etag", generate_etag(slug, opts))
+        |> send_resp(200, svg)
+
+      {:error, message} ->
+        Logger.warning("Pattern rate limit exceeded for IP #{ip_address}: #{message}")
+
+        conn
+        |> put_resp_content_type("text/plain")
+        |> send_resp(429, "Rate limit exceeded. Please try again later.")
+    end
   end
 
   # Parse style parameter
@@ -78,5 +95,28 @@ defmodule DroodotfooWeb.PatternController do
     opts_string = Enum.map_join(opts, "-", fn {k, v} -> "#{k}:#{v}" end)
     hash = :crypto.hash(:md5, "#{slug}-#{opts_string}") |> Base.encode16(case: :lower)
     ~s("#{hash}")
+  end
+
+  # Extract IP address from connection headers
+  defp get_ip_address(conn) do
+    # Fly.io sets Fly-Client-IP with verified client IP (can't be spoofed)
+    case get_req_header(conn, "fly-client-ip") do
+      [ip | _] ->
+        ip |> String.trim()
+
+      [] ->
+        # Fallback to X-Forwarded-For
+        case get_req_header(conn, "x-forwarded-for") do
+          [forwarded | _] ->
+            forwarded
+            |> String.split(",")
+            |> List.last()
+            |> String.trim()
+
+          [] ->
+            # Final fallback to remote_ip
+            to_string(:inet_parse.ntoa(conn.remote_ip))
+        end
+    end
   end
 end

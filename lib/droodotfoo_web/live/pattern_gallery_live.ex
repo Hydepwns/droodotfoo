@@ -25,8 +25,10 @@ defmodule DroodotfooWeb.PatternGalleryLive do
      |> assign(:page_title, "Pattern Gallery")
      |> assign(:current_path, "/pattern-gallery")
      |> assign(:slug, "example-post")
-     |> assign(:animate, false)  # Disabled by default to reduce GPU load
-     |> assign(:preview_pattern, nil)  # Track which pattern is being previewed
+     # Disabled by default to reduce GPU load
+     |> assign(:animate, false)
+     # Track which pattern is being previewed
+     |> assign(:preview_pattern, nil)
      |> assign(:pattern_styles, @pattern_styles)}
   end
 
@@ -53,7 +55,11 @@ defmodule DroodotfooWeb.PatternGalleryLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <.page_layout page_title="Pattern Gallery" page_description="Browse and preview all SVG pattern styles used for social sharing images" current_path={@current_path}>
+    <.page_layout
+      page_title="Pattern Gallery"
+      page_description="Browse and preview all SVG pattern styles used for social sharing images"
+      current_path={@current_path}
+    >
       <div class="pattern-gallery-container">
         <div class="gallery-controls">
           <div style="margin-bottom: 1rem;">

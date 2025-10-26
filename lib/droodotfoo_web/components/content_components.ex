@@ -28,12 +28,21 @@ defmodule DroodotfooWeb.ContentComponents do
         <tr>
           <td class="header-subtitle" colspan="2">Building axol.io</td>
           <td class="header-meta-label">Updated</td>
-          <td class="header-meta-value header-meta-value-right"><time datetime={@today}>{@today}</time></td>
+          <td class="header-meta-value header-meta-value-right">
+            <time datetime={@today}>{@today}</time>
+          </td>
         </tr>
         <tr>
           <td class="header-meta-label header-author-label">Author</td>
           <td class="header-meta-value" colspan="3">
-            <a href="https://github.com/hydepwns" target="_blank" rel="noopener noreferrer" aria-label="DROO AMOR on GitHub (opens in new tab)">DROO AMOR</a>
+            <a
+              href="https://github.com/hydepwns"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="DROO AMOR on GitHub (opens in new tab)"
+            >
+              DROO AMOR
+            </a>
           </td>
         </tr>
       </table>
@@ -274,7 +283,8 @@ defmodule DroodotfooWeb.ContentComponents do
           <%= for post <- @series_posts do %>
             <li>
               <%= if post.slug == @current_post.slug do %>
-                <strong class="series-current">{post.title}</strong> <span class="text-muted">(current)</span>
+                <strong class="series-current">{post.title}</strong>
+                <span class="text-muted">(current)</span>
               <% else %>
                 <a href={"/posts/#{post.slug}"}>{post.title}</a>
               <% end %>

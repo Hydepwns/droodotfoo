@@ -31,7 +31,11 @@ defmodule DroodotfooWeb.PostsLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <.page_layout page_title="Writing" page_description="Thoughts on engineering, crypto, and building" current_path={@current_path}>
+    <.page_layout
+      page_title="Writing"
+      page_description="Thoughts on engineering, crypto, and building"
+      current_path={@current_path}
+    >
       <%= if @posts == [] do %>
         <p class="text-muted">No posts yet.</p>
       <% else %>

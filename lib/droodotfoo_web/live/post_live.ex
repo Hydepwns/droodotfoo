@@ -16,7 +16,8 @@ defmodule DroodotfooWeb.PostLive do
         full_image_url = URI.merge("https://droo.foo", social_image_url) |> to_string()
 
         # Published time in ISO8601 format for article metadata
-        published_time = DateTime.new!(post.date, ~T[00:00:00], "Etc/UTC") |> DateTime.to_iso8601()
+        published_time =
+          DateTime.new!(post.date, ~T[00:00:00], "Etc/UTC") |> DateTime.to_iso8601()
 
         # Modified time if available
         modified_time =

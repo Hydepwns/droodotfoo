@@ -99,9 +99,7 @@ defmodule Droodotfoo.GitHub.Fetcher do
       :ok
     else
       {:error, reason} ->
-        Logger.warning(
-          "Failed to fetch GitHub data for #{project.name}: #{inspect(reason)}"
-        )
+        Logger.warning("Failed to fetch GitHub data for #{project.name}: #{inspect(reason)}")
 
         {:error, reason}
     end
