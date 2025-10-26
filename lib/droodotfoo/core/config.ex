@@ -16,8 +16,9 @@ defmodule Droodotfoo.Core.Config do
 
   @doc """
   Gets the environment (dev, test, prod).
+  Falls back to :prod if not configured (safe default for releases).
   """
-  def environment, do: Application.get_env(:droodotfoo, :environment, Mix.env())
+  def environment, do: Application.get_env(:droodotfoo, :environment, :prod)
 
   @doc """
   Checks if running in development mode.
