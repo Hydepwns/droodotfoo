@@ -73,14 +73,12 @@ defmodule Droodotfoo.GitHub.Cache do
   """
   @spec clear() :: :ok
   def clear do
-    try do
-      :ets.delete_all_objects(@table_name)
+    :ets.delete_all_objects(@table_name)
+    :ok
+  rescue
+    ArgumentError ->
+      Logger.warning("Cache table not initialized")
       :ok
-    rescue
-      ArgumentError ->
-        Logger.warning("Cache table not initialized")
-        :ok
-    end
   end
 
   @doc """
@@ -88,13 +86,11 @@ defmodule Droodotfoo.GitHub.Cache do
   """
   @spec delete(cache_key()) :: :ok
   def delete(key) do
-    try do
-      :ets.delete(@table_name, key)
+    :ets.delete(@table_name, key)
+    :ok
+  rescue
+    ArgumentError ->
       :ok
-    rescue
-      ArgumentError ->
-        :ok
-    end
   end
 
   @doc """
@@ -102,19 +98,17 @@ defmodule Droodotfoo.GitHub.Cache do
   """
   @spec stats() :: map()
   def stats do
-    try do
-      size = :ets.info(@table_name, :size)
-      memory = :ets.info(@table_name, :memory)
+    size = :ets.info(@table_name, :size)
+    memory = :ets.info(@table_name, :memory)
 
-      %{
-        size: size,
-        memory_words: memory,
-        memory_bytes: memory * :erlang.system_info(:wordsize)
-      }
-    rescue
-      ArgumentError ->
-        %{size: 0, memory_words: 0, memory_bytes: 0}
-    end
+    %{
+      size: size,
+      memory_words: memory,
+      memory_bytes: memory * :erlang.system_info(:wordsize)
+    }
+  rescue
+    ArgumentError ->
+      %{size: 0, memory_words: 0, memory_bytes: 0}
   end
 
   ## GenServer Callbacks

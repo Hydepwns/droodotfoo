@@ -72,24 +72,22 @@ defmodule Droodotfoo.Content.PatternCache do
   """
   @spec get(cache_key()) :: {:ok, cache_value()} | :miss
   def get(key) do
-    try do
-      case :ets.lookup(@table_name, key) do
-        [{^key, svg, expires_at}] ->
-          if System.system_time(:millisecond) < expires_at do
-            {:ok, svg}
-          else
-            :ets.delete(@table_name, key)
-            :miss
-          end
-
-        [] ->
+    case :ets.lookup(@table_name, key) do
+      [{^key, svg, expires_at}] ->
+        if System.system_time(:millisecond) < expires_at do
+          {:ok, svg}
+        else
+          :ets.delete(@table_name, key)
           :miss
-      end
-    rescue
-      ArgumentError ->
-        Logger.warning("Pattern cache table not initialized")
+        end
+
+      [] ->
         :miss
     end
+  rescue
+    ArgumentError ->
+      Logger.warning("Pattern cache table not initialized")
+      :miss
   end
 
   @doc """
@@ -119,15 +117,13 @@ defmodule Droodotfoo.Content.PatternCache do
   """
   @spec clear() :: :ok
   def clear do
-    try do
-      :ets.delete_all_objects(@table_name)
-      Logger.info("Pattern cache cleared")
+    :ets.delete_all_objects(@table_name)
+    Logger.info("Pattern cache cleared")
+    :ok
+  rescue
+    ArgumentError ->
+      Logger.warning("Pattern cache table not initialized")
       :ok
-    rescue
-      ArgumentError ->
-        Logger.warning("Pattern cache table not initialized")
-        :ok
-    end
   end
 
   @doc """
@@ -157,20 +153,18 @@ defmodule Droodotfoo.Content.PatternCache do
   """
   @spec stats() :: map()
   def stats do
-    try do
-      size = :ets.info(@table_name, :size)
-      memory = :ets.info(@table_name, :memory)
+    size = :ets.info(@table_name, :size)
+    memory = :ets.info(@table_name, :memory)
 
-      %{
-        size: size,
-        memory_words: memory,
-        memory_bytes: memory * :erlang.system_info(:wordsize),
-        ttl_hours: @default_ttl / :timer.hours(1)
-      }
-    rescue
-      ArgumentError ->
-        %{size: 0, memory_words: 0, memory_bytes: 0, ttl_hours: 24}
-    end
+    %{
+      size: size,
+      memory_words: memory,
+      memory_bytes: memory * :erlang.system_info(:wordsize),
+      ttl_hours: @default_ttl / :timer.hours(1)
+    }
+  rescue
+    ArgumentError ->
+      %{size: 0, memory_words: 0, memory_bytes: 0, ttl_hours: 24}
   end
 
   ## GenServer Callbacks

@@ -200,7 +200,7 @@ defmodule Droodotfoo.Performance.Cache do
   end
 
   def clear(namespace) do
-    match_spec = [{{{{namespace, :_}, :_}}, [], [true]}]
+    match_spec = [{{{namespace, :_}, :_}, [], [true]}]
     :ets.select_delete(@table_name, match_spec)
     clear_stats(namespace)
     :ok
@@ -253,7 +253,7 @@ defmodule Droodotfoo.Performance.Cache do
 
   def stats(namespace) do
     # Count entries in namespace
-    match_spec = [{{{{namespace, :_}, :_}}, [], [true]}]
+    match_spec = [{{{namespace, :_}, :_}, [], [true]}]
     size = :ets.select_count(@table_name, match_spec)
 
     stats_data = get_stats(namespace)
@@ -353,7 +353,7 @@ defmodule Droodotfoo.Performance.Cache do
 
   defp estimate_namespace_memory(namespace) do
     # Rough estimation based on entry count
-    match_spec = [{{{{namespace, :_}, :_}}, [], [true]}]
+    match_spec = [{{{namespace, :_}, :_}, [], [true]}]
     count = :ets.select_count(@table_name, match_spec)
     # Assume ~1KB average per entry
     count * 1024

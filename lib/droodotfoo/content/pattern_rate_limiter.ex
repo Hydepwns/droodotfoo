@@ -58,11 +58,13 @@ defmodule Droodotfoo.Content.PatternRateLimiter do
 
     cond do
       minute_count >= @max_requests_per_minute ->
-        {:reply, {:error, "Rate limit exceeded: maximum #{@max_requests_per_minute} requests per minute"},
+        {:reply,
+         {:error, "Rate limit exceeded: maximum #{@max_requests_per_minute} requests per minute"},
          state}
 
       hourly_count >= @max_requests_per_hour ->
-        {:reply, {:error, "Rate limit exceeded: maximum #{@max_requests_per_hour} requests per hour"},
+        {:reply,
+         {:error, "Rate limit exceeded: maximum #{@max_requests_per_hour} requests per hour"},
          state}
 
       true ->

@@ -58,9 +58,7 @@ defmodule Droodotfoo.Content.Patterns.Waves do
 
     # Build path data string
     path_data =
-      points
-      |> Enum.map(fn {x, y} -> "#{x},#{y}" end)
-      |> Enum.join(" L ")
+      Enum.map_join(points, " L ", fn {x, y} -> "#{x},#{y}" end)
       |> then(&("M " <> &1))
 
     # Create SVG path element
