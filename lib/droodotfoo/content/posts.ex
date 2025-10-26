@@ -56,6 +56,7 @@ defmodule Droodotfoo.Content.Posts do
 
   use GenServer
   require Logger
+  alias Droodotfoo.Content.PostValidator
 
   @posts_dir Application.compile_env(:droodotfoo, :posts_dir, "priv/posts")
   @table_name :posts_cache
@@ -206,7 +207,9 @@ defmodule Droodotfoo.Content.Posts do
   end
 
   def handle_call({:save_post, content, metadata}, _from, state) do
-    with {:ok, post} <- create_post(content, metadata),
+    with {:ok, validated_content, validated_metadata} <-
+           PostValidator.validate(content, metadata),
+         {:ok, post} <- create_post(validated_content, validated_metadata),
          :ok <- write_post_to_disk(post) do
       :ets.insert(@table_name, {post.slug, post})
       {:reply, {:ok, post}, state}
@@ -255,19 +258,21 @@ defmodule Droodotfoo.Content.Posts do
         slug = Map.get(frontmatter, "slug", default_slug)
 
         # Convert markdown to HTML with syntax highlighting and extended features
-        html = MDEx.to_html!(markdown,
-          extension: [
-            strikethrough: true,
-            table: true,
-            autolink: true,
-            tasklist: true,
-            footnotes: true
-          ],
-          render: [
-            unsafe_: true
-          ],
-          syntax_highlight: [formatter: :html_linked]
-        )
+        # Note: unsafe_ set to false to prevent XSS attacks via raw HTML injection
+        html =
+          MDEx.to_html!(markdown,
+            extension: [
+              strikethrough: true,
+              table: true,
+              autolink: true,
+              tasklist: true,
+              footnotes: true
+            ],
+            render: [
+              unsafe_: false
+            ],
+            syntax_highlight: [formatter: :html_linked]
+          )
 
         %Post{
           slug: slug,
@@ -352,29 +357,16 @@ defmodule Droodotfoo.Content.Posts do
   end
 
   defp build_frontmatter(map) do
-    # Manually build YAML frontmatter (YamlElixir is read-only)
-    yaml_lines =
-      [
-        "title: #{inspect(map["title"])}",
-        "date: #{inspect(map["date"])}",
-        "description: #{inspect(map["description"])}",
-        "tags: #{inspect(map["tags"])}",
-        "slug: #{inspect(map["slug"])}"
-      ] ++
-        optional_field(map, "featured_image") ++
-        optional_field(map, "featured_image_alt") ++
-        optional_field(map, "series") ++
-        optional_field(map, "series_order")
+    # Use Ymlr for proper YAML encoding (handles escaping, special chars, etc.)
+    # Filter out nil values to keep frontmatter clean
+    frontmatter_map =
+      map
+      |> Enum.reject(fn {_k, v} -> is_nil(v) end)
+      |> Enum.into(%{})
 
-    yaml = Enum.join(yaml_lines, "\n")
-    "---\n#{yaml}\n---"
-  end
-
-  defp optional_field(map, key) do
-    case Map.get(map, key) do
-      nil -> []
-      value -> ["#{key}: #{inspect(value)}"]
-    end
+    {:ok, yaml} = Ymlr.document(frontmatter_map)
+    # Ymlr already adds the opening ---, just need closing
+    "#{yaml}---"
   end
 
   defp generate_slug(title) do

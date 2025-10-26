@@ -146,6 +146,7 @@ defmodule Droodotfoo.MixProject do
       # Blog system dependencies
       {:mdex, "~> 0.2"},
       {:yaml_elixir, "~> 2.9"},
+      {:ymlr, "~> 5.0"},
       {:plug_crypto, "~> 2.0"},
       # Web3 integration dependencies
       {:ethers, "~> 0.6.7"},
