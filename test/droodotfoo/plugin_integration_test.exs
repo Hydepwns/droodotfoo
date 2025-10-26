@@ -1,5 +1,7 @@
 defmodule Droodotfoo.PluginIntegrationTest do
   use ExUnit.Case, async: false
+  # Plugin/terminal features archived - tests skipped until reactivation
+  @moduletag :skip
 
   alias Droodotfoo.PluginSystem
   alias Droodotfoo.Raxol.Command, as: RaxolCommand

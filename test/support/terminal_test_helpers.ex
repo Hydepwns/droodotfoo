@@ -56,15 +56,18 @@ defmodule Droodotfoo.TerminalTestHelpers do
 
   @doc """
   Checks if buffer dimensions match expected terminal size.
+  Note: Config module is archived, using hardcoded dimensions (110x45).
   """
   def has_correct_dimensions?(%{lines: lines}) when is_list(lines) do
-    config = Config.dimensions()
+    # Hardcoded terminal dimensions (from archived Config module)
+    expected_height = 45
+    expected_width = 110
 
-    length(lines) == config.height and
+    length(lines) == expected_height and
       Enum.all?(lines, fn line ->
         is_map(line) and
           Map.has_key?(line, :cells) and
-          length(line.cells) == config.width
+          length(line.cells) == expected_width
       end)
   end
 

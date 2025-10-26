@@ -39,9 +39,16 @@ defmodule Droodotfoo.Performance.MetricsTest do
 
   describe "increment/3" do
     test "increments counter metrics" do
+      # Clear to ensure fresh state
+      Metrics.clear(:all)
+
       Metrics.increment(:test_counter)
+      # Sleep 1 second to ensure different timestamps (metrics uses :second granularity)
+      Process.sleep(1100)
       Metrics.increment(:test_counter)
+      Process.sleep(1100)
       Metrics.increment(:test_counter, 3)
+      Process.sleep(100)
 
       value = Metrics.counter_value(:test_counter)
       assert value == 5

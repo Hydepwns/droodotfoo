@@ -1,13 +1,16 @@
 defmodule Droodotfoo.Terminal.CommandBaseTest do
   use ExUnit.Case, async: true
-  doctest Droodotfoo.Terminal.CommandBase
+
+  # doctest Droodotfoo.Terminal.CommandBase  # Module archived - tests retained for potential reactivation
+  # Terminal features archived - tests skipped until reactivation
+  @moduletag :skip
 
   # Test module that uses CommandBase
   # Note: Command metadata is now in CommandRegistry, modules only implement execute/3
   defmodule TestCommands do
-    use Droodotfoo.Terminal.CommandBase
+    # use Droodotfoo.Terminal.CommandBase  # Module archived
 
-    @impl true
+    # @impl true  # Commented out since behavior is not loaded
     def execute("test", args, state) do
       {:ok, "Test executed with #{length(args)} args", state}
     end
