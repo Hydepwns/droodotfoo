@@ -141,10 +141,13 @@ defmodule Droodotfoo.GitHub.Cache do
   defp cleanup_expired do
     now = System.system_time(:millisecond)
 
-    expired_count =
+    expired_keys =
       @table_name
       |> :ets.select([{{:"$1", :"$2", :"$3", :"$4"}, [{:<, :"$3", now}], [:"$1"]}])
-      |> Enum.each(&:ets.delete(@table_name, &1))
+
+    expired_count =
+      expired_keys
+      |> Enum.map(&:ets.delete(@table_name, &1))
       |> length()
 
     if expired_count > 0 do
