@@ -43,15 +43,15 @@ defmodule DroodotfooWeb.AboutLive do
         <h2 class="section-title">About</h2>
         <p>
           I build blockchain infrastructure at axol.io. Before that, defense systems
-          where requirements were measured in operational uptime and failure aborted missions.
+          where uptime requirements were strict and bugs had operational consequences.
           Before that, startups where shipping broken code and fixing it fast was the norm.
         </p>
 
-        <h3 class="mt-2">The Pattern</h3>
+        <h3 class="mt-2">What I've learned</h3>
         <p>
           Startups taught me to ship fast and iterate. Defense taught me to make things
-          not break. Blockchain forces both: move quickly, but a production bug can cost
-          millions with no rollback.
+          not break. Blockchain requires both: move quickly, but bugs are expensive and
+          immutable. No rollback makes you careful about what "done" means.
         </p>
 
         <p class="mt-2">{@resume.summary}</p>

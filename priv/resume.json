@@ -13,7 +13,7 @@
       "catalan": "learning"
     }
   },
-  "summary": "Built production blockchain infrastructure (mana Ethereum client, raxol terminal framework) for Cosmos and Ethereum ecosystems. Previously: nuclear submarine engineering where failure aborted missions, competitive intelligence at LidoDAO ($34B TVL). Pattern: high-stakes systems that cannot afford to break.",
+  "summary": "Building blockchain infrastructure (mana Ethereum client, raxol terminal framework) for Cosmos and Ethereum. Previously: nuclear submarine engineering where bugs had operational consequences, competitive intelligence at LidoDAO. Preference for systems where correctness matters more than speed.",
   "availability": "open_to_consulting",
   "focus_areas": [
     "Cosmos SDK",
@@ -28,11 +28,11 @@
       "employment_type": "full-time",
       "start_date": "2024-05",
       "end_date": "Present",
-      "description": "Lead blockchain infrastructure company building production-grade FOSS tooling for Cosmos and EVM ecosystems. Direct technical leadership across protocol design, distributed systems architecture, validator/sequencer operations, and open-source community development.",
+      "description": "Building FOSS blockchain infrastructure for Cosmos and EVM ecosystems. Writing protocol implementations, running validators and sequencers, managing distributed systems.",
       "achievements": [
-        "Operating production sequencers and nodes across Ethereum L2s and mainnet, handling transaction ordering and network consensus",
-        "Founded axol.io, developed mana Ethereum client and raxol terminal UI framework as production-grade FOSS tools",
-        "Built open-source blockchain infrastructure with active contributor community"
+        "Running sequencers and nodes on Aztec, Base, Optimism, and Ethereum mainnet",
+        "Built mana (Ethereum client) and raxol (terminal UI framework) as open-source tools",
+        "Operating validator infrastructure for transaction ordering and state transitions"
       ],
       "technologies": {
         "languages": ["Elixir", "TypeScript", "Rust", "C"],
@@ -47,11 +47,11 @@
       "employment_type": "contract",
       "start_date": "2023-03",
       "end_date": "2024-05",
-      "description": "Led Node Operations Mechanisms (NOM) strategy for LidoDAO, the largest liquid staking protocol ($34B TVL). Led competitive intelligence and ecosystem research, delivering strategic analyses to DAO leadership.",
+      "description": "Node Operations Mechanisms (NOM) strategy for LidoDAO, the largest liquid staking protocol. Competitive intelligence and ecosystem research.",
       "achievements": [
-        "Delivered 60+ weekly competitive analysis reports to inform protocol strategy",
-        "Built competitive intelligence tool, beachpatrol, for monitoring competitor protocols using OSINT methodologies",
-        "Analyzed node operator economics and performance metrics across multiple blockchain networks"
+        "Wrote 60+ weekly competitive analysis reports tracking protocol developments",
+        "Built beachpatrol, a competitive intelligence tool for monitoring protocols using OSINT",
+        "Analyzed node operator economics and performance across multiple networks"
       ],
       "technologies": {
         "languages": ["Python"],
@@ -65,10 +65,10 @@
       "employment_type": "full-time",
       "start_date": "2022-01",
       "end_date": "2023-03",
-      "description": "Technical evaluation and integration of blockchain protocol prototypes for venture investment, product development, and node infrastructure deployment.",
+      "description": "Technical evaluation of blockchain protocols for venture investment and node infrastructure deployment.",
       "achievements": [
-        "Created governance framework and implemented voting system using Cosmos SDK authz module with Go, Ansible, and Bash scripting",
-        "Conducted code analysis and prototype deployment to evaluate blockchain project software infrastructure requirements"
+        "Built governance framework and voting system using Cosmos SDK authz module (Go, Ansible, Bash)",
+        "Evaluated blockchain protocols through code analysis and prototype deployment"
       ],
       "technologies": {
         "languages": ["JavaScript", "Rust", "Go", "Move"],
@@ -83,11 +83,11 @@
       "employment_type": "full-time",
       "start_date": "2020-10",
       "end_date": "2022-01",
-      "description": "Engineering Lead of JTG HM&E Engineering for $9B+ of nuclear submarine PSA projects.",
+      "description": "Engineering Lead for nuclear submarine PSA projects.",
       "achievements": [
-        "Accelerated engineering deliverables by 11% vs previous PSA projects through systematic troubleshooting and cross-functional consultation",
-        "Led Program Management & QA of underway Sea Trials for testing and certification process, meeting stringent customer and contractual requirements",
-        "Managed high-risk re-entry controls, roadmap and product liability tracking for PSA & NEWCON nuclear submarines"
+        "Accelerated engineering deliverables by 11% vs previous PSA projects",
+        "Led Program Management & QA for Sea Trials testing and certification",
+        "Managed high-risk re-entry controls and liability tracking for nuclear submarines"
       ],
       "technologies": {
         "languages": ["MATLAB"],
@@ -109,11 +109,11 @@
       "employment_type": "full-time",
       "start_date": "2018-12",
       "end_date": "2020-11",
-      "description": "Technical Lead for cross-department rapid prototyping inventions (Mech/Elec), managing 5-10 person teams with budgeting up to $15M monthly per project for US warfare components.",
+      "description": "Technical Lead for rapid prototyping (mechanical/electrical), managing 5-10 person teams for US warfare component development.",
       "achievements": [
-        "Developed calibration and repair process for precision instruments, eliminating $20M in replacement costs",
-        "Invented mechanical/electrical system reducing submarine tactical weapon launch cycle by 14% (timing details classified)",
-        "Designed specialized tooling and procedures reducing personnel exposure in radioactive zones by 34%"
+        "Developed calibration and repair process for precision instruments, avoiding replacement costs",
+        "Invented mechanical/electrical system reducing submarine weapon launch cycle by 14% (timing classified)",
+        "Designed tooling reducing personnel exposure in radioactive zones by 34%"
       ],
       "technologies": {
         "languages": ["MATLAB"],
@@ -257,10 +257,10 @@
         "status": "active",
         "topics": ["blockchain", "cross-chain", "defi", "elixir", "solver", "web3"],
         "highlights": [
-          "Across Protocol integration: multi-chain liquidity optimization",
-          "Wormhole support in development: Solana and Sui bridge connectivity",
-          "Automated rebalancing algorithms for cross-chain inventory management",
-          "Real-time monitoring and execution of profitable solver opportunities"
+          "Across Protocol integration for multi-chain liquidity",
+          "Wormhole support in development (Solana and Sui bridges)",
+          "Automated rebalancing for cross-chain inventory",
+          "Real-time monitoring and execution of solver opportunities"
         ]
       }
     ]
