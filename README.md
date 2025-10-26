@@ -193,10 +193,15 @@ fly secrets set \
 fly secrets set BLOG_API_TOKEN=$(mix phx.gen.secret)
 
 # Optional: Spotify integration
+# obtain secrets from https://developer.spotify.com/dashboard
 fly secrets set \
   SPOTIFY_CLIENT_ID="prod_client_id" \
-  SPOTIFY_CLIENT_SECRET="prod_client_secret" \
-  SPOTIFY_REDIRECT_URI="https://your-app.fly.dev/auth/spotify/callback"
+  SPOTIFY_CLIENT_SECRET="prod_client_secret"
+
+# Then register https://droo.foo/auth/spotify/callback in Spotify Dashboard
+# https://developer.spotify.com/dashboard
+# add redirect URI and the website link (i.e. `PHX_HOST`)
+SPOTIFY_REDIRECT_URI="https://your-app.fly.dev/auth/spotify/callback"
 
 # Optional: GitHub API token for higher rate limits (5000/hr vs 60/hr)
 fly secrets set GITHUB_TOKEN="ghp_xxxxx"
