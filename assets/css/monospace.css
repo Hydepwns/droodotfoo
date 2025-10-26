@@ -96,7 +96,7 @@
   --font-weight-medium: 600;
   --font-weight-bold: 800;
   --font-size-base: 16px;
-  --line-height: 1.5;
+  --line-height: 1.5rem; /* Fixed rem value for predictable grid calculations (24px at base) */
 
   /* Semantic Monaspace Font Families */
   --font-family-base: "Monaspace Neon", monospace;        /* Clean, general-purpose baseline */
@@ -314,7 +314,10 @@ table {
 
 th,
 td {
-  padding: 0.5ch 1ch;
+  /* Precision padding that compensates for border thickness to maintain grid alignment */
+  padding: calc(var(--line-height) / 2)
+           calc(1ch - var(--border-thickness) / 2)
+           calc((var(--line-height) / 2) - var(--border-thickness));
   text-align: left;
   border: 1px solid var(--border-color);
   line-height: var(--line-height);
