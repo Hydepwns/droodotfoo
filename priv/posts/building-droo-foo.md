@@ -13,22 +13,15 @@ slug: "building-droo-foo"
   </object>
 </div>
 
-# Module 1
+# Module 1: Proof of Architecture
 
-Like building a gundam—one module at a time. Each piece proves the system works before the next one ships. The content system is Module 1. If it's not modular here, it won't be modular at scale.
+Like building a gundam—one module at a time, each proving the system before the next ships.
 
-I'm building blockchain infrastructure at [axol.io](https://axol.io). The stack has three parts:
-- **[mana](/projects#mana)**: Ethereum client in Elixir
-- **[raxol](/projects#raxol)**: Terminal UI framework
-- **[riddler](/projects#riddler)**: Cross-chain solver
+This site is Module 1. If the content system isn't modular, [mana](/projects#mana) won't be. If the monospace grid breaks here, it breaks in [raxol](/projects#raxol). If patterns can't handle blog posts, they can't handle validator dashboards.
 
-This site is the first module—proof the architecture works.
-If the content system isn't modular, the larger system won't be. If the monospace grid breaks here, it'll break in raxol. If patterns can't handle blog posts, they can't handle validator dashboards.
-
-**Stack:** Phoenix 1.8 + LiveView, Elixir, MDEx, Monaspace Argon
-**Source:** File-based (priv/posts/, priv/resume.json)
-**Patterns:** 8 styles, deterministic SVG generation
-**Workflow:** Obsidian/Zed → API → Live
+**The stack:** Phoenix 1.8 + LiveView, MDEx, file-based content, deterministic SVG generation
+**The test:** Character-perfect terminal grid across browsers
+**The workflow:** Obsidian/Zed → API → Live
 
 ---
 
@@ -44,7 +37,7 @@ The architecture must satisfy:
 
 Additionally, it must pass the "squint test": visible monospace grid with precise character spacing, highly optimized for legibility and visual rhythm.
 
-We addressed font constraints quickly using the [monaspace font family](https://monaspace.githubnext.com/). A personal favorite for texture healing and precise monospace rendering.
+We addressed font constraints quickly using the [monaspace font family](https://monaspace.githubnext.com/). Monaspace provides texture healing—a feature that adjusts letter spacing dynamically to create visually even text density while maintaining strict monospace alignment. Perfect for our character-perfect grid requirements.
 
 **Character-perfect grid alignment became the first real problem.**
 
@@ -134,41 +127,17 @@ No GUI, no admin panel. The endpoint extends to any content type.
 
 ### Security Implementation
 
-Three layers of defense:
+Three layers of defense: bearer token authentication, IP-based rate limiting (10/hour, 50/day), and content validation (path traversal prevention, slug sanitization, 1MB max). No token bypass—endpoint returns 401 if unconfigured.
 
-```elixir
-# 1. Rate limiting (per IP)
-def create(conn, params) do
-  ip_address = get_ip_address(conn)
-
-  with {:ok, :allowed} <- PostRateLimiter.check_rate_limit(ip_address),
-       :ok <- verify_api_token(conn),
-       {:ok, validated_content, validated_metadata} <-
-         PostValidator.validate(content, metadata) do
-    # Write the post
-  end
-end
-
-# 2. Content validation
-defp validate_slug(%{"slug" => slug}) do
-  cond do
-    String.contains?(slug, "..") -> {:error, "path traversal"}
-    String.contains?(slug, "/") -> {:error, "slashes not allowed"}
-    not Regex.match?(~r/^[a-z0-9-]+$/, slug) -> {:error, "invalid chars"}
-    true -> {:ok, metadata}
-  end
-end
-
-# Rate limits: 10 posts/hour, 50/day
-# Content max: 1MB
-# Token required (no bypass)
-```
+See [`CLAUDE.md`](/CLAUDE.md#blog-post-api-security) for implementation details and usage examples.
 
 ---
 
-## What Broke On Contact
+## What Broke (And How We Fixed It)
 
-### CSS Precision with 1ch Units
+Implementation collides with reality. Here's what broke, ordered by severity:
+
+### CSS Precision Crisis
 
 **Safari** rendered 1ch at *~0.1ch* wider than **Chrome**—enough to misalign the grid after 80 characters.
 **Firefox** had different quirks with `font-feature-settings`.
@@ -180,22 +149,9 @@ The fix:
 2. CSS cascade control—no inherited text transforms or letter spacing
 3. JavaScript validation on resize to lock the grid
 
-Not sexy, but necessary. The monospace grid is foundational—our _*agalma*_ for Raxol.
+Not sexy, but necessary. The monospace grid became our agalma—not just aesthetic preference, but the idealized constraint that drives every architectural decision. If this foundation breaks, everything built on it collapses.
 
-
----
-
-**On Agalma:**
-
-<img src="/images/blog/greek-agalma.webp" alt="Ancient Greek statue representing the concept of Agalma" style="float: right; margin-left: 1.5rem; margin-bottom: 1rem; max-width: 200px; height: auto;" />
-
-*Agalma* (ἄγαλμα) is a Greek term that can refer to a shiny ornament, treasure, or precious offering. In philosophy and psychoanalysis, conceptualized by [Jacques Lacan](https://en.wikipedia.org/wiki/Jacques_Lacan), it describes the idealized object that causes desire—that which illuminates life and generates a constant search, although the desire is for the sensation it produces and not for the object itself.
-
----
-
-
-We reached an optimal learning outcome for now.
-Next step: write tests for more browsers (Ladybird, ~disgusting~ Edge, terminal browsers) and observe rendering execution.
+Next step: write tests for more browsers (Ladybird, Edge, terminal browsers) and observe rendering execution.
 
 ### GitHub API Rate Limiting
 
@@ -215,7 +171,7 @@ Pattern generation went through three iterations. Version three was a complete r
 
 **Result:** Pattern generation dropped from ~15ms to <5ms.
 
-## Accessibility Challenges
+### Accessibility: The Hidden Complexity
 
 **ARIA roles conflicting with semantic HTML.** Terminal grids don't map cleanly to web semantics. The terminal is a grid of cells *and* a dynamic application. Screen readers expected one thing, the DOM provided another.
 
@@ -252,15 +208,16 @@ This proves the architecture. Next: applying these patterns to validator dashboa
 
 ---
 
-## What's Next
+## What This Unlocks
 
-**Module 2:** [Raxol](/projects#raxol) — Terminal UI framework using these same patterns
-**Module 3+:** [mana](/projects#mana) (Ethereum client), [riddler](/projects#riddler) (cross-chain solver)
+The architecture holds. The same patterns that render blog posts will render validator dashboards, blockchain monitoring, real-time terminal interfaces.
 
-The pattern system works for blog posts. Next iteration: validator dashboards, blockchain monitoring, real-time terminal interfaces.
+**Next:** [Raxol](/projects#raxol) applies this grid system to terminal UIs. Same constraints, different problem space. Then [mana](/projects#mana) (Ethereum client) and [riddler](/projects#riddler) (cross-chain solver) build on the proven foundation.
+
+Module 1 proves the system works. Each subsequent module inherits these patterns—monospace precision, deterministic generation, composable components, accessibility first.
 
 See all projects at [/projects](/projects). Track progress at [/now](/now).
 
 ---
 
-Pattern for this post: [animated](/patterns/building-droo-foo?animate=true) | [static](/patterns/building-droo-foo)
+This post's pattern: [animated](/patterns/building-droo-foo?animate=true) | [static](/patterns/building-droo-foo)
