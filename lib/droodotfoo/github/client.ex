@@ -94,6 +94,9 @@ defmodule Droodotfoo.GitHub.Client do
       {:ok, %{status: 404}} ->
         {:error, :not_found}
 
+      {:ok, %{status: 403}} ->
+        {:error, :rate_limited}
+
       {:error, reason} ->
         Logger.error("Failed to fetch languages: #{inspect(reason)}")
         {:error, reason}
@@ -126,6 +129,9 @@ defmodule Droodotfoo.GitHub.Client do
       {:ok, %{status: 404}} ->
         {:error, :not_found}
 
+      {:ok, %{status: 403}} ->
+        {:error, :rate_limited}
+
       {:error, reason} ->
         Logger.error("Failed to fetch latest commit: #{inspect(reason)}")
         {:error, reason}
@@ -154,6 +160,9 @@ defmodule Droodotfoo.GitHub.Client do
 
       {:ok, %{status: 404}} ->
         {:error, :not_found}
+
+      {:ok, %{status: 403}} ->
+        {:error, :rate_limited}
 
       {:error, reason} ->
         Logger.error("Failed to fetch latest release: #{inspect(reason)}")
@@ -450,15 +459,20 @@ defmodule Droodotfoo.GitHub.Client do
 
     headers =
       case github_token() do
-        nil -> headers
+        token when token in [nil, ""] -> headers
         token -> [{"authorization", "Bearer #{token}"} | headers]
       end
 
     case Req.get(url, headers: headers) do
-      {:ok, %{status: status}} = _response when status in [500, 502, 503, 504] and retry_count < 3 ->
+      {:ok, %{status: status}} = _response
+      when status in [500, 502, 503, 504] and retry_count < 3 ->
         # Exponential backoff: 1s, 2s, 4s
-        backoff_ms = :math.pow(2, retry_count) * 1000 |> round()
-        Logger.warning("GitHub API returned #{status}, retrying in #{backoff_ms}ms (attempt #{retry_count + 1}/3)")
+        backoff_ms = (:math.pow(2, retry_count) * 1000) |> round()
+
+        Logger.warning(
+          "GitHub API returned #{status}, retrying in #{backoff_ms}ms (attempt #{retry_count + 1}/3)"
+        )
+
         Process.sleep(backoff_ms)
         rest_api_request(url, retry_count + 1)
 
@@ -468,12 +482,19 @@ defmodule Droodotfoo.GitHub.Client do
   rescue
     error ->
       if retry_count < 3 do
-        backoff_ms = :math.pow(2, retry_count) * 1000 |> round()
-        Logger.warning("GitHub REST API request failed: #{inspect(error)}, retrying in #{backoff_ms}ms (attempt #{retry_count + 1}/3)")
+        backoff_ms = (:math.pow(2, retry_count) * 1000) |> round()
+
+        Logger.warning(
+          "GitHub REST API request failed: #{inspect(error)}, retrying in #{backoff_ms}ms (attempt #{retry_count + 1}/3)"
+        )
+
         Process.sleep(backoff_ms)
         rest_api_request(url, retry_count + 1)
       else
-        Logger.error("GitHub REST API request failed after #{retry_count} retries: #{inspect(error)}")
+        Logger.error(
+          "GitHub REST API request failed after #{retry_count} retries: #{inspect(error)}"
+        )
+
         {:error, :request_failed}
       end
   end
