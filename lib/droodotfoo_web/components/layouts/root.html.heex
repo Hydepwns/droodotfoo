@@ -279,9 +279,9 @@
         document.documentElement.classList.add(savedTheme);
         currentThemeIndex = themes.indexOf(savedTheme);
       } else {
-        // Set default theme if none saved
-        document.documentElement.classList.add(themes[0]);
-        localStorage.setItem('phx:theme', themes[0]);
+        // Set default theme if none saved (High Contrast - black and white)
+        document.documentElement.classList.add(themes[6]);
+        localStorage.setItem('phx:theme', themes[6]);
       }
 
       // Music player starts minimized by default (no auto-load)
