@@ -65,7 +65,7 @@ def generate_svg(slug, opts \\ []) do
 end
 ```
 
-Eight basic pattern styles for now— the slug hash determines which one. No database, no storage, just deterministic math. See all at [/patterns](/patterns).
+Eight basic pattern styles for now— the slug hash determines which one. No database, no storage, just deterministic math. See all at [/pattern-gallery](/pattern-gallery).
 
 This infrastructure now is reusable. Any content—posts, projects, validator dashboards—gets deterministic artwork with the same code. Moving along...
 
@@ -129,7 +129,7 @@ No GUI, no admin panel. The endpoint extends to any content type.
 
 Three layers of defense: bearer token authentication, IP-based rate limiting (10/hour, 50/day), and content validation (path traversal prevention, slug sanitization, 1MB max). No token bypass—endpoint returns 401 if unconfigured.
 
-See [`CLAUDE.md`](/CLAUDE.md#blog-post-api-security) for implementation details and usage examples.
+Implementation details and usage examples coming in a future post on API security patterns.
 
 ---
 
