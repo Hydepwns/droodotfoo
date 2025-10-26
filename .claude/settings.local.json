@@ -118,7 +118,13 @@
       "Bash(else echo \"No token set\")",
       "Bash(fi)",
       "Bash(cat:*)",
-      "Bash(sort:*)"
+      "Bash(sort:*)",
+      "Bash(mix hex.audit:*)",
+      "Bash(lib/droodotfoo_web/live/about_live.ex )",
+      "Bash(lib/droodotfoo_web/live/now_live.ex )",
+      "Bash(lib/droodotfoo_web/live/projects_live.ex )",
+      "Bash(priv/resume.json)",
+      "Bash(mix deps.unlock:*)"
     ],
     "deny": [],
     "ask": []
