@@ -227,16 +227,30 @@ defmodule Droodotfoo.Content.Posts do
   ## Private Functions
 
   defp load_posts_from_disk do
-    posts_path()
-    |> File.ls!()
-    |> Enum.filter(&String.ends_with?(&1, ".md"))
-    |> Enum.map(&load_post_file/1)
-    |> Enum.reject(&is_nil/1)
-    |> tap(fn posts ->
-      Enum.each(posts, fn post ->
-        :ets.insert(@table_name, {post.slug, post})
-      end)
-    end)
+    path = posts_path()
+
+    case File.ls(path) do
+      {:ok, files} ->
+        files
+        |> Enum.filter(&String.ends_with?(&1, ".md"))
+        |> Enum.map(&load_post_file/1)
+        |> Enum.reject(&is_nil/1)
+        |> tap(fn posts ->
+          Enum.each(posts, fn post ->
+            :ets.insert(@table_name, {post.slug, post})
+          end)
+
+          Logger.info("Loaded #{length(posts)} blog posts from #{path}")
+        end)
+
+      {:error, :enoent} ->
+        Logger.warning("Posts directory not found: #{path}. No posts loaded.")
+        []
+
+      {:error, reason} ->
+        Logger.error("Failed to read posts directory #{path}: #{inspect(reason)}")
+        []
+    end
   end
 
   defp load_post_file(filename) do
@@ -377,6 +391,8 @@ defmodule Droodotfoo.Content.Posts do
   end
 
   defp posts_path do
-    Path.join(File.cwd!(), @posts_dir)
+    # Use Application.app_dir for releases (works in dev and prod)
+    :droodotfoo
+    |> Application.app_dir(@posts_dir)
   end
 end
