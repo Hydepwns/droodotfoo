@@ -41,6 +41,10 @@ defmodule Droodotfoo.Application do
       Droodotfoo.Fileverse.Portal.PresenceServer,
       # Start contact form rate limiter
       Droodotfoo.Contact.RateLimiter,
+      # Start post API rate limiter
+      Droodotfoo.Content.PostRateLimiter,
+      # Start pattern endpoint rate limiter
+      Droodotfoo.Content.PatternRateLimiter,
       # Start a worker by calling: Droodotfoo.Worker.start_link(arg)
       # {Droodotfoo.Worker, arg},
       # Start to serve requests, typically the last entry
