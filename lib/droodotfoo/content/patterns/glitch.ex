@@ -57,6 +57,7 @@ defmodule Droodotfoo.Content.Patterns.Glitch do
 
     # Sometimes add offset for glitch effect
     {should_offset, rng} = RandomGenerator.chance(rng, config.offset_chance)
+
     {offset_x, rng} =
       if should_offset do
         RandomGenerator.uniform_range(rng, config.offset_range)

@@ -55,6 +55,7 @@ defmodule Droodotfoo.Content.Patterns.Geometric do
       case shape_type do
         :circle ->
           radius = size / 2
+
           element =
             SVGBuilder.circle(x, y, radius)
             |> SVGBuilder.with_attrs(%{
@@ -63,6 +64,7 @@ defmodule Droodotfoo.Content.Patterns.Geometric do
               "stroke-width": config.stroke_width,
               opacity: opacity
             })
+
           {element, rng}
 
         :rect ->
@@ -79,6 +81,7 @@ defmodule Droodotfoo.Content.Patterns.Geometric do
               opacity: opacity,
               transform: "rotate(#{rotation} #{center_x} #{center_y})"
             })
+
           {element, rng}
 
         :triangle ->
@@ -97,6 +100,7 @@ defmodule Droodotfoo.Content.Patterns.Geometric do
               "stroke-width": config.stroke_width,
               opacity: opacity
             })
+
           {element, rng}
       end
 

@@ -57,13 +57,34 @@ defmodule Droodotfoo.Content.Patterns.Dots do
     max_distance = :math.sqrt(:math.pow(width / 2, 2) + :math.pow(height / 2, 2))
 
     # Generate dots for each grid position
-    {dots, rng} = generate_dots_grid(rows, cols, dot_spacing, center_x, center_y, max_distance, config, rng, animate)
+    {dots, rng} =
+      generate_dots_grid(
+        rows,
+        cols,
+        dot_spacing,
+        center_x,
+        center_y,
+        max_distance,
+        config,
+        rng,
+        animate
+      )
 
     {dots, rng}
   end
 
   # Private helper to generate all dots in the grid
-  defp generate_dots_grid(rows, cols, spacing, center_x, center_y, max_distance, config, rng, animate) do
+  defp generate_dots_grid(
+         rows,
+         cols,
+         spacing,
+         center_x,
+         center_y,
+         max_distance,
+         config,
+         rng,
+         animate
+       ) do
     positions =
       for row <- 0..(rows - 1),
           col <- 0..(cols - 1) do
@@ -72,7 +93,17 @@ defmodule Droodotfoo.Content.Patterns.Dots do
 
     # Generate each dot with updated RNG state
     Enum.map_reduce(positions, rng, fn {x, y}, acc_rng ->
-      generate_single_dot(x, y, center_x, center_y, max_distance, spacing, config, acc_rng, animate)
+      generate_single_dot(
+        x,
+        y,
+        center_x,
+        center_y,
+        max_distance,
+        spacing,
+        config,
+        acc_rng,
+        animate
+      )
     end)
     |> then(fn {dots, final_rng} ->
       # Filter out nil values (dots that were too small)

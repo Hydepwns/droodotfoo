@@ -166,13 +166,22 @@ brew install flyctl
 # Login to Fly.io
 fly auth login
 
-# Set production secrets
+# Set production secrets (required)
 fly secrets set \
   SECRET_KEY_BASE=$(mix phx.gen.secret) \
+  PHX_HOST="your-app.fly.dev"
+
+# Set blog API token (required for Obsidian publishing)
+fly secrets set BLOG_API_TOKEN=$(mix phx.gen.secret)
+
+# Optional: Spotify integration
+fly secrets set \
   SPOTIFY_CLIENT_ID="prod_client_id" \
   SPOTIFY_CLIENT_SECRET="prod_client_secret" \
-  SPOTIFY_REDIRECT_URI="https://your-app.fly.dev/auth/spotify/callback" \
-  PHX_HOST="your-app.fly.dev"
+  SPOTIFY_REDIRECT_URI="https://your-app.fly.dev/auth/spotify/callback"
+
+# Optional: GitHub API token for higher rate limits (5000/hr vs 60/hr)
+fly secrets set GITHUB_TOKEN="ghp_xxxxx"
 
 # Optional: Configure Cloudflare Pages CDN for static assets
 fly secrets set CDN_HOST="your-project.pages.dev"
@@ -187,28 +196,74 @@ fly deploy
 - `SECRET_KEY_BASE` - Phoenix secret key (generate with `mix phx.gen.secret`)
 - `PHX_HOST` - Your production domain
 
+**Required for blog API:**
+- `BLOG_API_TOKEN` - API token for Obsidian publishing (generate with `mix phx.gen.secret`)
+
 **Optional:**
 - `SPOTIFY_CLIENT_ID` - Spotify API client ID
 - `SPOTIFY_CLIENT_SECRET` - Spotify API client secret
 - `SPOTIFY_REDIRECT_URI` - OAuth callback URL
+- `GITHUB_TOKEN` - GitHub personal access token (5000/hr rate limit vs 60/hr without)
 - `CDN_HOST` - Cloudflare Pages domain for static asset CDN
-- `BLOG_API_TOKEN` - API token for Obsidian publishing
 - `PORT` - Server port (default: 4000)
 
 ## Obsidian Publishing
 
-Publish posts directly from Obsidian via API:
+Publish posts directly from Obsidian via API with built-in security:
 
 ```bash
-# Set API token
-export BLOG_API_TOKEN="your_secure_token"
+# Generate and set API token
+export BLOG_API_TOKEN=$(mix phx.gen.secret)
 
 # POST to /api/posts with:
-# - Authorization: Bearer <token>
-# - Body: {"content": "markdown...", "metadata": {"title": "...", "description": "...", "tags": [...]}}
+curl -X POST https://droo.foo/api/posts \
+  -H "Authorization: Bearer $BLOG_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "# My Post\n\nContent here",
+    "metadata": {
+      "title": "My Post",
+      "description": "Post description",
+      "tags": ["elixir"]
+    }
+  }'
 ```
 
-Posts saved to `priv/posts/` and served at `/posts/:slug`
+**Security Features:**
+- Rate limiting: 10 posts/hour, 50 posts/day per IP
+- Bearer token authentication (constant-time comparison)
+- Content validation: 1MB size limit, path traversal prevention
+- Slug validation: alphanumeric and hyphens only
+
+Posts are saved to `priv/posts/` and served at `/posts/:slug`
+
+## Security
+
+The application implements multiple security layers:
+
+**Authentication & Authorization:**
+- OAuth 2.0 with CSRF protection (state parameter validation) for Spotify
+- Bearer token authentication for blog API with constant-time comparison
+- No token bypass - all endpoints require proper authentication
+
+**Rate Limiting:**
+- Blog API: 10 posts/hour, 50 posts/day per IP
+- Contact form: Rate limited per IP
+- ETS-based in-memory tracking with automatic cleanup
+
+**Input Validation:**
+- Content size limits (1MB max for blog posts)
+- Path traversal prevention (no `..`, `/`, `\` in slugs)
+- Slug sanitization (alphanumeric and hyphens only)
+- XSS protection via Phoenix HTML escaping
+
+**Production Deployment:**
+- HTTPS enforcement via `force_ssl` (see config/prod.exs)
+- Secure session cookies with SECRET_KEY_BASE
+- Content Security Policy headers
+- HSTS support for HTTPS-only access
+
+See [CLAUDE.md](CLAUDE.md) for detailed security configuration and deployment checklist.
 
 ## Documentation
 

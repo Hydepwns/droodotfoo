@@ -197,9 +197,11 @@ defmodule Droodotfoo.Content.PatternConfig do
   Gets a specific color palette by name.
   Returns `{:ok, palette}` or `{:error, :unknown_palette}`.
   """
-  @spec get_palette(atom) :: {:ok, %{bg: String.t(), colors: [String.t()]}} | {:error, :unknown_palette}
+  @spec get_palette(atom) ::
+          {:ok, %{bg: String.t(), colors: [String.t()]}} | {:error, :unknown_palette}
   def get_palette(name) when is_atom(name) do
     palettes = color_palettes()
+
     case Map.get(palettes, name) do
       nil -> {:error, :unknown_palette}
       palette -> {:ok, palette}
@@ -226,7 +228,8 @@ defmodule Droodotfoo.Content.PatternConfig do
   Chooses a color palette based on slug and style combination.
   This gives different palettes for the same slug depending on pattern style.
   """
-  @spec choose_palette_for_style(String.t(), atom) :: {atom, %{bg: String.t(), colors: [String.t()]}}
+  @spec choose_palette_for_style(String.t(), atom) ::
+          {atom, %{bg: String.t(), colors: [String.t()]}}
   def choose_palette_for_style(slug, style) when is_binary(slug) and is_atom(style) do
     # Combine slug and style for seed
     combined_seed = "#{slug}-#{style}"

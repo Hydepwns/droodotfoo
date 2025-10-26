@@ -384,7 +384,14 @@ defmodule Droodotfoo.Resume.ResumeData do
             description: "Terminal UI framework for Elixir applications",
             language: "Elixir",
             status: "active",
-            topics: ["ansi", "component-based", "elixir", "phoenix-liveview", "terminal-ui", "tui"],
+            topics: [
+              "ansi",
+              "component-based",
+              "elixir",
+              "phoenix-liveview",
+              "terminal-ui",
+              "tui"
+            ],
             highlights: [
               "Component-based architecture with declarative markup",
               "Real-time updates via Phoenix LiveView integration",

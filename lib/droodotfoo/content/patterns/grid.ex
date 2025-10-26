@@ -44,7 +44,18 @@ defmodule Droodotfoo.Content.Patterns.Grid do
       end
 
     Enum.map_reduce(positions, rng, fn {row, col, x, y}, acc_rng ->
-      generate_single_cell(row, col, x, y, cell_size, wave_freq, config, palette, acc_rng, animate)
+      generate_single_cell(
+        row,
+        col,
+        x,
+        y,
+        cell_size,
+        wave_freq,
+        config,
+        palette,
+        acc_rng,
+        animate
+      )
     end)
     |> then(fn {cells, final_rng} ->
       {Enum.reject(cells, &is_nil/1), final_rng}

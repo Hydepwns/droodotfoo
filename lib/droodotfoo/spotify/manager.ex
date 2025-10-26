@@ -9,13 +9,18 @@ defmodule Droodotfoo.Spotify.Manager do
 
   @doc """
   Completes the OAuth authentication flow with the authorization code.
+  Validates the state parameter to prevent CSRF attacks.
   Returns :ok on success or {:error, reason} on failure.
   """
-  def complete_auth(code) do
-    case Auth.exchange_code_for_tokens(code) do
+  def complete_auth(code, state) do
+    case Auth.exchange_code_for_tokens(code, state) do
       {:ok, _tokens} ->
         Logger.info("Spotify authentication completed successfully")
         :ok
+
+      {:error, :invalid_state} ->
+        Logger.warning("Spotify auth failed: state validation failed (CSRF attempt)")
+        {:error, :invalid_state}
 
       {:error, reason} ->
         Logger.error("Failed to complete Spotify authentication: #{inspect(reason)}")

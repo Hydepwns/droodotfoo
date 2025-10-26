@@ -60,14 +60,17 @@ defmodule Droodotfoo.Content.Patterns.Circuit do
             0 ->
               # Horizontal movement
               {is_positive, new_rng} = RandomGenerator.chance(acc_rng, 0.5)
+
               if is_positive do
                 {last_x + segment_length, last_y, new_rng}
               else
                 {last_x - segment_length, last_y, new_rng}
               end
+
             _ ->
               # Vertical movement
               {is_positive, new_rng} = RandomGenerator.chance(acc_rng, 0.5)
+
               if is_positive do
                 {last_x, last_y + segment_length, new_rng}
               else
