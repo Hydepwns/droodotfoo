@@ -51,7 +51,16 @@ fly secrets set SPOTIFY_CLIENT_SECRET="your_client_secret"
 
 # Optional: CDN
 fly secrets set CDN_HOST="your-project.pages.dev"
+
+# Required: Blog API token (for /api/posts endpoint)
+fly secrets set BLOG_API_TOKEN=$(mix phx.gen.secret)
 ```
+
+> **Security Note**: The `BLOG_API_TOKEN` is required for the `/api/posts` endpoint used by Obsidian/external publishing tools. This endpoint features:
+> - Bearer token authentication (constant-time comparison)
+> - Rate limiting: 10 posts/hour, 50 posts/day per IP
+> - Content validation: max 1MB, slug sanitization, path traversal prevention
+> - Returns 401 if token not configured (no bypass)
 
 ### 4. Deploy
 
@@ -292,11 +301,12 @@ fly auth token
 ## Security
 
 **Best Practices:**
-- Use secrets for all sensitive data
+- Use secrets for all sensitive data (never hardcode)
 - Enable force_https
 - Keep dependencies updated
 - Monitor security advisories
-- Rotate secrets periodically
+- Rotate secrets periodically (especially BLOG_API_TOKEN)
+- Use strong tokens: `mix phx.gen.secret` generates secure 64-byte values
 
 **Headers:**
 ```elixir

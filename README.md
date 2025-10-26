@@ -1,23 +1,31 @@
 # droo.foo
 
-A modular portfolio site that doubles as infrastructure for building terminal interfaces. Built with Phoenix LiveView and Raxol, it proves the architecture by shipping blog posts, project showcases, and interactive plugins through a character-perfect monospace grid.
+Personal portfolio and blog built with Phoenix LiveView, featuring generative art patterns and monospace web aesthetics. Optional terminal interface with games and plugins available for interactive experiences.
 
-![Test Coverage](https://img.shields.io/badge/coverage-40.8%25-orange)
-![Tests](https://img.shields.io/badge/tests-1159%20passing-brightgreen)
+![Test Coverage](https://img.shields.io/badge/coverage-41.2%25-orange)
+![Tests](https://img.shields.io/badge/tests-1149%20passing-brightgreen)
 ![Elixir](https://img.shields.io/badge/elixir-1.17-purple)
 ![Phoenix](https://img.shields.io/badge/phoenix-1.8.1-orange)
 
 **Live Demo**: [droo.foo](https://droo.foo)
 
-> Spotify and Web3 features require OAuth/wallet setup (optional). Terminal, games, and plugins work without configuration.
+> Optional integrations: Spotify player, Web3 wallet, terminal interface with games. All require setup but are not needed for core functionality.
 
 ## Features
 
-### Core Terminal
-- **Terminal Interface**: 80x24 character grid in the browser, Unix-style commands
-- **Vim Navigation**: hjkl movement, search with `/`, command mode with `:` prefix
-- **Real-time Updates**: Phoenix LiveView WebSocket connection for live rendering
-- **PWA Support**: Installable as a progressive web app
+### Core Portfolio & Blog
+- **Monospace Web Design**: Character-perfect grid using 1ch units and rem-based line-height
+- **Blog System**: File-based markdown posts with YAML frontmatter and series support
+- **Generative Patterns**: Unique SVG patterns per post with 8 animation styles
+- **Real-time Updates**: Phoenix LiveView for instant page updates
+- **Projects Showcase**: GitHub integration with stats and contribution visualization
+- **Resume System**: Structured JSON-based resume with filtering and search
+
+### Optional Terminal Interface (110x45 grid)
+- **Terminal UI**: Browser-based character grid with Unix-style commands
+- **Vim Navigation**: hjkl movement, search with `/`, command mode with `:`
+- **Real-time Rendering**: LiveView WebSocket connection for 60fps updates
+- **PWA Support**: Installable as progressive web app
 
 ### Integrations
 - **Web3 Wallet**: Connect MetaMask for wallet authentication, ENS resolution, NFT/token viewing
@@ -76,6 +84,34 @@ mix phx.server
 
 Visit [`localhost:4000`](http://localhost:4000)
 
+## Monospace Web Design
+
+The site implements Wickström's monospace web technique for character-perfect grid alignment:
+
+**Horizontal Grid (1ch units):**
+- Each character occupies exactly 1ch width
+- Container widths snap to character boundaries: `calc(round(down, 80ch, 1ch))`
+- Table columns use character-based widths (8ch, 12ch, 20ch, etc.)
+
+**Vertical Grid (rem-based line-height):**
+- Fixed `--line-height: 1.5rem` for predictable calculations
+- Prevents line-height compounding in nested elements
+- Scales proportionally: 24px at 16px base, 21px at 14px mobile
+
+**Visual Refinements:**
+- Double-line horizontal rules with layered pseudo-elements
+- Precision table padding compensates for border thickness
+- Media element grid alignment (images/videos snap to line-height)
+- All spacing uses multiples of 1ch or line-height
+
+**Benefits:**
+- Zero layout shift (every character positioned exactly)
+- Maintainable vertical rhythm throughout content
+- Professional terminal-inspired aesthetic
+- Consistent across all themes and screen sizes
+
+See [wickstrom.tech](https://wickstrom.tech/2024-09-26-how-i-built-the-monospace-web.html) for the original technique.
+
 ## Terminal Commands
 
 ### Navigation
@@ -109,29 +145,32 @@ Visit [`localhost:4000`](http://localhost:4000)
 
 ## Architecture
 
-Built as modular infrastructure where each component plugs into the next:
+Built with modular Phoenix LiveView architecture:
 
-**Rendering**: Phoenix LiveView handles real-time updates over WebSockets. Raxol renders terminal UI using 1ch CSS grid for predictable monospace layout. Each character occupies exactly 1ch width—no layout shifts, no font rendering surprises.
+**Monospace Web Design**: Character-perfect grid using Wickström's monospace web technique with 1ch horizontal units and rem-based line-height for predictable vertical rhythm. Double-line dividers, precision table padding, and media element grid alignment maintain visual consistency.
 
-**State Management**: GenServers orchestrate terminal state (RaxolApp), plugins, Spotify integration, and content loading. TEA/Elm pattern keeps state immutable and predictable.
+**Rendering**: Phoenix LiveView handles real-time updates over WebSockets. Optional Raxol terminal UI available for interactive experiences.
 
-**Performance**: ETS caching for GitHub API data (98% hit rate). LiveView diffing minimizes DOM updates. Page loads under 200ms.
+**State Management**: GenServers orchestrate content loading, GitHub API integration, and optional terminal/plugin state. Functional patterns with immutable state throughout.
 
-**Extensibility**: Plugin system uses Elixir behaviors—10 built-in plugins (games, utilities, integrations). Each plugin is self-contained and swappable.
+**Performance**: ETS caching for GitHub API data, blog post metadata, and SVG patterns. Pattern cache provides 568x speedup (26ms → 47µs). Page loads under 200ms.
 
-**P2P Features**: WebRTC data channels for file sharing. Signal Protocol (X3DH + Double Ratchet) for end-to-end encryption.
+**Content System**: File-based blog posts with markdown + YAML frontmatter. Deterministic SVG pattern generation per post with 8 animation styles. No database required.
 
-**Test Coverage**: 801/836 tests passing (96%)
+**Optional Features**: Terminal interface with 10 plugins (games, utilities), Web3 wallet integration, P2P file sharing with E2E encryption.
+
+**Test Coverage**: 1,149/1,170 tests passing (98.2% pass rate, 41.2% code coverage)
 
 ## Tech Stack
 
-- **Backend**: Elixir 1.18+, Phoenix 1.8, LiveView 1.0, Bandit web server
-- **Terminal**: Raxol 1.4.1 for monospace rendering
-- **Frontend**: TypeScript, esbuild, Tailwind CSS
-- **Web3**: ethers.js for wallet integration and ENS resolution
-- **P2P**: WebRTC data channels, libsignal-protocol-nif for E2E encryption
-- **3D Rendering**: Three.js for STL viewer
-- **Testing**: ExUnit (801/836 tests passing)
+- **Backend**: Elixir 1.17+, Phoenix 1.8.1, LiveView 1.1.12, Bandit web server
+- **Styling**: Tailwind CSS v4, Monaspace font family (Argon, Neon, Xenon, Radon, Krypton)
+- **Monospace Grid**: 1ch units + rem-based line-height for character-perfect alignment
+- **Frontend**: TypeScript, esbuild for bundling, lazy-loaded hooks
+- **Content**: MDEx for markdown parsing with syntax highlighting
+- **Caching**: ETS for GitHub API, posts, patterns (568x speedup for patterns)
+- **Optional**: Raxol 1.4.1 (terminal), ethers.js (Web3), Three.js (STL viewer)
+- **Testing**: ExUnit with 1,149/1,170 tests passing (98.2%)
 
 ## Development
 
@@ -268,33 +307,29 @@ See [CLAUDE.md](CLAUDE.md) for detailed security configuration and deployment ch
 ## Documentation
 
 ### Project Documentation
-- **[CLAUDE.md](CLAUDE.md)** - Project overview and AI assistant instructions
+- **[CLAUDE.md](CLAUDE.md)** - Project overview, patterns, and AI assistant context
 - **[AGENTS.md](AGENTS.md)** - Phoenix/Elixir development guidelines
 
-### Technical Documentation (docs/)
-- **[architecture.md](docs/architecture.md)** - Complete system architecture (5 layers, data flow, concurrency)
-- **[api_reference.md](docs/api_reference.md)** - API index (113 HTML pages, 120+ @spec, 60+ types)
-- **[DEVELOPMENT.md](docs/DEVELOPMENT.md)** - Development guide and integrations
-- **[TODO.md](docs/TODO.md)** - Current work and next steps
-- **[FEATURES.md](docs/FEATURES.md)** - Feature roadmap (29 features, 5-phase plan)
-- **[MODULE_INVENTORY.md](docs/MODULE_INVENTORY.md)** - Complete module catalog (108 active modules)
-- **[TEST_STATUS.md](docs/TEST_STATUS.md)** - Test coverage and status
-- **[WEB3_ARCHITECTURE.md](docs/WEB3_ARCHITECTURE.md)** - Web3 integration details
+### Guides (docs/)
+- **[docs/README.md](docs/README.md)** - Documentation index and quick start
+- **[docs/TODO.md](docs/TODO.md)** - Active tasks, priorities, and roadmap
+- **[docs/guides/deployment.md](docs/guides/deployment.md)** - Fly.io production deployment
+- **[docs/guides/seo.md](docs/guides/seo.md)** - SEO optimization with JSON-LD
+- **[docs/guides/assets.md](docs/guides/assets.md)** - Image and asset optimization
 
 ### API Documentation (ExDoc)
-Generated comprehensive documentation with typespecs:
+Generate comprehensive documentation with typespecs:
 
 ```bash
-# Generate HTML documentation (113 pages)
+# Generate HTML documentation
 mix docs
 
 # View in browser
 open doc/index.html
 ```
 
-**Documentation includes:**
-- 120+ function signatures with @spec annotations
-- 60+ custom type definitions
-- Module organization into 8 logical groups
-- Usage examples and parameter descriptions
-- Searchable interface with dark/light themes
+**Includes:**
+- Module documentation with examples
+- Function signatures with @spec annotations
+- Type definitions and behaviors
+- Searchable interface
