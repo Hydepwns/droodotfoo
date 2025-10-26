@@ -124,7 +124,12 @@
       "Bash(lib/droodotfoo_web/live/now_live.ex )",
       "Bash(lib/droodotfoo_web/live/projects_live.ex )",
       "Bash(priv/resume.json)",
-      "Bash(mix deps.unlock:*)"
+      "Bash(mix deps.unlock:*)",
+      "Bash(fly logs:*)",
+      "Bash(fly machine start:*)",
+      "Bash(fly status:*)",
+      "Bash(fly deploy:*)",
+      "Bash(fly machine restart:*)"
     ],
     "deny": [],
     "ask": []
