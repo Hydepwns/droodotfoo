@@ -78,7 +78,36 @@ fly secrets set PHX_HOST="your-app.fly.dev"
 fly secrets set SPOTIFY_CLIENT_ID="prod_value"
 fly secrets set SPOTIFY_CLIENT_SECRET="prod_value"
 fly secrets set GITHUB_TOKEN="prod_github_token"  # Optional: recommended for production
+fly secrets set BLOG_API_TOKEN=$(mix phx.gen.secret)  # REQUIRED: for /api/posts endpoint
 fly secrets set CDN_HOST="your-project.pages.dev"  # Optional CDN
+```
+
+### Blog Post API Security
+
+The `/api/posts` endpoint allows publishing posts from Obsidian/external tools:
+
+**Required Environment Variable**:
+- `BLOG_API_TOKEN` - Bearer token for authentication (REQUIRED in production)
+
+**Security Features**:
+- Bearer token authentication (constant-time comparison)
+- Rate limiting: 10 posts/hour, 50 posts/day per IP
+- Content validation: max 1MB, slug sanitization, path traversal prevention
+- No token bypass - endpoint returns 401 if token not configured
+
+**Usage Example**:
+```bash
+curl -X POST https://droo.foo/api/posts \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_BLOG_API_TOKEN" \
+  -d '{
+    "content": "# Post Title\n\nContent here",
+    "metadata": {
+      "title": "My Post",
+      "description": "Description",
+      "tags": ["elixir"]
+    }
+  }'
 ```
 
 ## Architecture
