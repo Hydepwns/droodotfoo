@@ -4,8 +4,8 @@ defmodule DroodotfooWeb.PostController do
   """
 
   use DroodotfooWeb, :controller
-  alias Droodotfoo.Content.Posts
   alias Droodotfoo.Content.PostRateLimiter
+  alias Droodotfoo.Content.Posts
 
   @doc """
   Create a new blog post from Obsidian.
