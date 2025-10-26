@@ -15,8 +15,17 @@ slug: "building-droo-foo"
 
 # Module 1
 
-I'm building a gundam. This site is the first module.
-I needed to prove the architecture. If the content system isn't modular, the larger system won't work.
+I'm building blockchain infrastructure at [axol.io](https://axol.io). The stack has three parts:
+- **[mana](/projects#mana)**: Ethereum client in Elixir
+- **[raxol](/projects#raxol)**: Terminal UI framework
+- **[riddler](/projects#riddler)**: Cross-chain solver
+
+This site is the first module. It proves the architecture works. If the content system isn't modular, the larger system won't work. If the monospace grid breaks here, it'll break in raxol. If patterns can't handle blog posts, they can't handle validator dashboards.
+
+**Stack:** Phoenix 1.8 + LiveView, Elixir, MDEx, Monaspace Argon
+**Source:** File-based (priv/posts/, priv/resume.json)
+**Patterns:** 8 styles, deterministic SVG generation
+**Workflow:** Obsidian/Zed → API → Live
 
 ## The Constraints
 
@@ -25,7 +34,7 @@ I needed to prove the architecture. If the content system isn't modular, the lar
 - Ideally no layout shifts, no font surprises.
 - Must be highly portable
 - Accessibility is a first-class feature (WCAG, ARIA, Lemmy, etc)
-- Raxol must use this and the site proves it works.
+- [Raxol](/projects#raxol) (the terminal UI framework) must use this same rendering
 
 Additionally, it must pass the 'squint test', meaning the visible monospace grid, character spacing and font display but must highly optimized for legibility and visual rhythm.
 
@@ -54,7 +63,7 @@ end
 
 We will start with eight pattern styles for now. The slug hash determines which one. No database or storage, just math. (See all at [/patterns](/patterns).)
 
-This gives us reusable infrastructure. Any content—posts, projects, pages— get some basic deterministic artwork.
+This gives us reusable infrastructure. Any content—posts, projects, validator dashboards—gets deterministic artwork. See all patterns at [/patterns](/patterns).
 
 ## Phoenix LiveView: The Runtime
 
@@ -97,13 +106,53 @@ I tend to write in [Obsidian](https://obsidian.md/) or in [Zed](https://zed.dev/
 So we made an API endpoint that accepts markdown, then writes file(s):`/posts/slug`.
 
 ```bash
-# From Obsidian, we then run via plugin or script:
+# From Obsidian, run via plugin or script:
 curl -X POST https://droo.foo/api/posts \
   -H "Content-Type: application/json" \
-  -d '{"content": "---\ntitle: My Post\n---\nContent here"}'
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -d '{
+    "content": "# My Post\n\nContent here",
+    "metadata": {
+      "title": "My Post",
+      "description": "Post description",
+      "tags": ["elixir"]
+    }
+  }'
 ```
 
-No GUI. The endpoint extends to any content type. Authentication later.
+No GUI. The endpoint extends to any content type.
+
+### Security Implementation
+
+The endpoint has three layers of defense:
+
+```elixir
+# 1. Rate limiting (per IP)
+def create(conn, params) do
+  ip_address = get_ip_address(conn)
+
+  with {:ok, :allowed} <- PostRateLimiter.check_rate_limit(ip_address),
+       :ok <- verify_api_token(conn),
+       {:ok, validated_content, validated_metadata} <-
+         PostValidator.validate(content, metadata) do
+    # Write our wonderful post
+  end
+end
+
+# 2. Content validation
+defp validate_slug(%{"slug" => slug}) do
+  cond do
+    String.contains?(slug, "..") -> {:error, "path traversal"}
+    String.contains?(slug, "/") -> {:error, "slashes not allowed"}
+    not Regex.match?(~r/^[a-z0-9-]+$/, slug) -> {:error, "invalid chars"}
+    true -> {:ok, metadata}
+  end
+end
+
+# Rate limits: 10 posts/hour, 50/day. Content max: 1MB.
+# Token required (no bypass)
+```
+
 
 ## What Broke On Contact (And Why That Matters)
 
@@ -120,13 +169,14 @@ Not sexy, but necessary. The monospace grid is the foundation. Our Agalma even, 
 But for now this is fine, we reached an optimal learning outcome and can circle back to write more tests for more browsers (e.g. [Ladybird](https://ladybird.org/) browser, ~disgusting~ Edge, iterm browser) and observe how rendering is executed.
 
 That now finally leaves:
-**GitHub API rate limiting.** The API allows 60 requests/hour without authentication. With 10+ projects, each page load hit the limit after one visitor.
+### GitHub API rate limiting.
+The API allows 60 requests/hour without authentication. With 10+ projects, each page load hit the limit after one visitor.
 
 Built a caching layer with ETS (Erlang's in-memory key-value store). One GenServer fetches data on startup, caches it, refreshes hourly. Cache hit rate after warmup: 98%.
 Pros: No external dependencies, no token management, instant response times.
 Cons: We still may want to build a better solution. Because of reasons.
 
-**Pattern generation went through three iterations. (at *least*)**
+### Pattern generation went through three iterations. (at *least*)
 
 For brevity our third version was a complete refactor:
 1. Each pattern type became its own module.
@@ -161,26 +211,25 @@ Not perfect yet. Still testing with NVDA, VoiceOver, and JAWS. But navigable and
 **Page load:** <200ms first paint. 50ms LiveView connection. Zero layout shift.
 **Build:** 8s full, <1s incremental.
 
-## What It Enables / Summary
+## What It Enables
 
 The pieces helped compose:
-- Raxol, which uses the same patterns
-- Preliminary pattern system works for content
+- Pattern generator is a library
+- Components are a design system
+- Files are the data layer
 - LiveView enables real-time features
 
-Pattern generator is a library. Components are a design system. __Files are the data layer__.
+This proves the architecture. Next: applying these same patterns to validator dashboards, blockchain monitoring, and real-time terminal interfaces.
 
-## Module 2?
+## What's Next
 
-Raxol is next. Same-ish aesthetic, same precision, for terminal interfaces.
+**Module 2**: [Raxol](/projects#raxol) - Terminal UI framework using these same patterns
+**Module 3+**: [mana](/projects#mana) (Ethereum client), [riddler](/projects#riddler) (cross-chain solver)
 
-[/patterns](/patterns) shows some of the simple the patterns. [/now](/now) tracks what's next.
+The pattern system works for blog posts. Next: validator dashboards, blockchain monitoring, real-time terminal interfaces.
+
+See all projects at [/projects](/projects). Track progress at [/now](/now).
 
 ---
-
-**Stack:** Phoenix 1.8 + LiveView, Elixir, MDEx, Monaspace Argon
-**Source:** File-based (priv/posts/, priv/resume.json)
-**Patterns:** 8 styles, deterministic SVG generation
-**Workflow:** Obsidian/Zed → API → Live
 
 Pattern for this post: [animated](/patterns/building-droo-foo?animate=true) | [static](/patterns/building-droo-foo)
