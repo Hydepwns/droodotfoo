@@ -12,8 +12,22 @@ defmodule DroodotfooWeb.Endpoint do
   ]
 
   socket "/live", Phoenix.LiveView.Socket,
-    websocket: [connect_info: [session: @session_options]],
-    longpoll: [connect_info: [session: @session_options]]
+    websocket: [
+      connect_info: [session: @session_options],
+      check_origin: [
+        "https://droo.foo",
+        "https://www.droo.foo",
+        "https://droodotfoo-lingering-shadow-740.fly.dev"
+      ]
+    ],
+    longpoll: [
+      connect_info: [session: @session_options],
+      check_origin: [
+        "https://droo.foo",
+        "https://www.droo.foo",
+        "https://droodotfoo-lingering-shadow-740.fly.dev"
+      ]
+    ]
 
   # Serve at "/" the static files from "priv/static" directory.
   #
