@@ -9,7 +9,8 @@ Personal portfolio and blog built with Phoenix LiveView, featuring generative ar
 
 **Live Demo**: [droo.foo](https://droo.foo)
 
-> Optional integrations: Spotify player, Web3 wallet, terminal interface with games. All require setup but are not needed for core functionality.
+> Optional integrations: Spotify player, Web3 wallet, terminal interface with games.
+> All require setup but are not needed for core functionality.
 
 ## Features
 
@@ -112,37 +113,6 @@ The site implements Wickström's monospace web technique for character-perfect g
 
 See [wickstrom.tech](https://wickstrom.tech/2024-09-26-how-i-built-the-monospace-web.html) for the original technique.
 
-## Terminal Commands
-
-### Navigation
-- `:help` - Show available commands and keyboard shortcuts
-- `:ls` - List directory contents
-- `:cat <section>` - Display section content
-
-### Games & Utilities
-- `:snake` - Classic Snake game (WASD/arrows)
-- `:tetris` - Tetris with scoring system
-- `:2048` - 2048 sliding puzzle with undo
-- `:wordle` - Word guessing game
-- `:conway` - Conway's Game of Life
-- `:calc` - Calculator (RPN and standard modes)
-- `:typing` - Typing speed test with WPM tracking
-- `:matrix` - Matrix rain animation
-
-### Integrations
-- `:spotify` - Launch Spotify player (requires OAuth)
-- `:github` - Browse GitHub repositories
-- `:web3` - Connect Web3 wallet
-- `:ens <name>` - Resolve ENS names (requires Web3)
-- `:portal` - P2P file sharing portal
-
-### System
-- `:perf` - Performance dashboard with metrics
-- `:themes` - Switch color themes
-- `:clear` - Clear terminal output
-- `?` - Toggle help modal
-- `v` - Toggle vim mode
-
 ## Architecture
 
 Built with modular Phoenix LiveView architecture:
@@ -205,10 +175,19 @@ brew install flyctl
 # Login to Fly.io
 fly auth login
 
+# Create fly.toml and guides through setup
+# Fly.io will handle the routing from external ports (80/443) to your app's internal port 8080 (default)
+# Even though our config/runtime.exs specifies poft 4000
+fly launch
+# Or if you want to create the app manually:
+fly apps create droodotfoo
+
 # Set production secrets (required)
+# once successfully set with fly secrets set, they're stored encrypted in Fly.io's infra
+# and injected into your app as environment variables at runtime
 fly secrets set \
   SECRET_KEY_BASE=$(mix phx.gen.secret) \
-  PHX_HOST="your-app.fly.dev"
+  PHX_HOST="droodotfoo.fly.dev"
 
 # Set blog API token (required for Obsidian publishing)
 fly secrets set BLOG_API_TOKEN=$(mix phx.gen.secret)
@@ -302,8 +281,6 @@ The application implements multiple security layers:
 - Content Security Policy headers
 - HSTS support for HTTPS-only access
 
-See [CLAUDE.md](CLAUDE.md) for detailed security configuration and deployment checklist.
-
 ## Documentation
 
 ### Project Documentation
@@ -333,3 +310,34 @@ open doc/index.html
 - Function signatures with @spec annotations
 - Type definitions and behaviors
 - Searchable interface
+
+## Terminal Commands
+
+### Navigation
+- `:help` - Show available commands and keyboard shortcuts
+- `:ls` - List directory contents
+- `:cat <section>` - Display section content
+
+### Games & Utilities
+- `:snake` - Classic Snake game (WASD/arrows)
+- `:tetris` - Tetris with scoring system
+- `:2048` - 2048 sliding puzzle with undo
+- `:wordle` - Word guessing game
+- `:conway` - Conway's Game of Life
+- `:calc` - Calculator (RPN and standard modes)
+- `:typing` - Typing speed test with WPM tracking
+- `:matrix` - Matrix rain animation
+
+### Integrations
+- `:spotify` - Launch Spotify player (requires OAuth)
+- `:github` - Browse GitHub repositories
+- `:web3` - Connect Web3 wallet
+- `:ens <name>` - Resolve ENS names (requires Web3)
+- `:portal` - P2P file sharing portal
+
+### System
+- `:perf` - Performance dashboard with metrics
+- `:themes` - Switch color themes
+- `:clear` - Clear terminal output
+- `?` - Toggle help modal
+- `v` - Toggle vim mode
