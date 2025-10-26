@@ -272,7 +272,8 @@ defmodule Droodotfoo.Content.Posts do
         slug = Map.get(frontmatter, "slug", default_slug)
 
         # Convert markdown to HTML with syntax highlighting and extended features
-        # Note: unsafe_ set to false to prevent XSS attacks via raw HTML injection
+        # Note: unsafe_ set to true to allow raw HTML (images, embeds, etc.)
+        # Safe since content is controlled (authenticated API + personal blog)
         html =
           MDEx.to_html!(markdown,
             extension: [
@@ -283,7 +284,7 @@ defmodule Droodotfoo.Content.Posts do
               footnotes: true
             ],
             render: [
-              unsafe_: false
+              unsafe_: true
             ],
             syntax_highlight: [formatter: :html_linked]
           )
