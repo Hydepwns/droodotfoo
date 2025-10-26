@@ -121,14 +121,51 @@
   margin: 2rem 0;
 }
 
-/* Section Divider */
+/* Section Divider - Double-line style inspired by wickstrom.tech */
 .section-divider {
+  height: var(--line-height);
   border: 0;
-  border-top: var(--border-thickness) solid var(--border-color);
+  position: relative;
   margin: 2rem 0;
 }
 
-/* Divider Line */
+.section-divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  border-top: calc(var(--border-thickness) * 3) double var(--border-color);
+  transform: translateY(-50%);
+}
+
+/* Single-line variant for simpler dividers */
+.section-divider-single {
+  border: 0;
+  border-top: var(--border-thickness) solid var(--border-color);
+  margin: 2rem 0;
+  height: 0;
+}
+
+/* Generic horizontal rule - double-line style */
+hr {
+  height: var(--line-height);
+  border: 0;
+  position: relative;
+  margin: 2rem 0;
+}
+
+hr::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  border-top: calc(var(--border-thickness) * 3) double var(--border-color);
+  transform: translateY(-50%);
+}
+
+/* Divider Line - thin single line variant */
 .divider-line {
   width: 100%;
   height: 1px;
@@ -205,4 +242,132 @@ ul.tree details:not([open]) > summary::before {
 .ascii-tree a:hover {
   color: var(--link-hover-color);
   text-decoration: underline;
+}
+
+/* Table Column Width Utilities */
+/* Explicit width classes for precise table column control */
+/* Prevents automatic column distribution from breaking grid alignment */
+
+/* Content-based widths */
+.width-min {
+  width: 0%;
+}
+
+.width-auto {
+  width: auto;
+}
+
+/* Character-based widths (grid-aligned) */
+.width-8ch {
+  width: 8ch;
+}
+
+.width-10ch {
+  width: 10ch;
+}
+
+.width-12ch {
+  width: 12ch;
+}
+
+.width-15ch {
+  width: 15ch;
+}
+
+.width-20ch {
+  width: 20ch;
+}
+
+.width-25ch {
+  width: 25ch;
+}
+
+.width-30ch {
+  width: 30ch;
+}
+
+.width-40ch {
+  width: 40ch;
+}
+
+.width-50ch {
+  width: 50ch;
+}
+
+/* Percentage-based widths (for proportional layouts) */
+.width-10 {
+  width: 10%;
+}
+
+.width-15 {
+  width: 15%;
+}
+
+.width-20 {
+  width: 20%;
+}
+
+.width-25 {
+  width: 25%;
+}
+
+.width-30 {
+  width: 30%;
+}
+
+.width-33 {
+  width: 33.333%;
+}
+
+.width-40 {
+  width: 40%;
+}
+
+.width-50 {
+  width: 50%;
+}
+
+.width-60 {
+  width: 60%;
+}
+
+.width-66 {
+  width: 66.666%;
+}
+
+.width-70 {
+  width: 70%;
+}
+
+.width-75 {
+  width: 75%;
+}
+
+.width-80 {
+  width: 80%;
+}
+
+.width-100 {
+  width: 100%;
+}
+
+/* Common table column patterns */
+.col-label {
+  width: 15ch;
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+}
+
+.col-value {
+  width: auto;
+}
+
+.col-date {
+  width: 12ch;
+  white-space: nowrap;
+}
+
+.col-actions {
+  width: 10ch;
+  text-align: right;
 }
