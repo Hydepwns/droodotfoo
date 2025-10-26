@@ -1,7 +1,7 @@
 ---
-title: "Building DROO.FOO: Module 1"
+title: "Building DROO.FOO: Module 1 Content Infrastructure."
 date: "2025-01-18"
-description: "Infrastructure for content. Building a gundam slowly, one module at a time."
+description: "I am building my gundam slowly, one module at a time."
 author: "DROO AMOR"
 tags: ["elixir", "phoenix", "architecture", "systems"]
 slug: "building-droo-foo"
@@ -14,6 +14,8 @@ slug: "building-droo-foo"
 </div>
 
 # Module 1
+
+Like building a gundam—one module at a time. Each piece proves the system works before the next one ships. The content system is Module 1. If it's not modular here, it won't be modular at scale.
 
 I'm building blockchain infrastructure at [axol.io](https://axol.io). The stack has three parts:
 - **[mana](/projects#mana)**: Ethereum client in Elixir
