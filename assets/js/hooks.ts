@@ -9,6 +9,7 @@
 // Always-loaded hooks (used on most pages)
 import { ReadingProgressHook } from './hooks/reading_progress.js';
 import { CodeCopyHook } from './hooks/code_copy.js';
+import { MediaGridAlignHook } from './hooks/media_grid_align';
 
 // Lazy-loaded hooks (loaded on-demand when phx-hook detected)
 // These are ~35KB total and only used on specific pages:
@@ -53,6 +54,7 @@ export default {
   // Always loaded (lightweight, frequently used)
   ReadingProgressHook,
   CodeCopyHook,
+  MediaGridAlignHook,
 
   // Lazy loaded (heavy, rarely used)
   STLViewerHook: createLazyHook('STLViewerHook'),
