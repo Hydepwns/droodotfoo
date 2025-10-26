@@ -1,5 +1,7 @@
 defmodule Droodotfoo.Raxol.BoxAlignmentTest do
   use ExUnit.Case, async: true
+  # Raxol modules archived - tests skipped until reactivation
+  @moduletag :skip
   alias Droodotfoo.Raxol.BoxConfig
 
   @moduledoc """

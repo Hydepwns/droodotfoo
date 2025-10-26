@@ -1,5 +1,7 @@
 defmodule Droodotfoo.Raxol.BoxBuilderTest do
   use ExUnit.Case, async: true
+  # Raxol modules archived - tests skipped until reactivation
+  @moduletag :skip
   alias Droodotfoo.Raxol.{BoxBuilder, BoxConfig}
 
   describe "build/3" do

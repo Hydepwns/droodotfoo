@@ -1,5 +1,7 @@
 defmodule Droodotfoo.LoadTest do
   use ExUnit.Case, async: false
+  # RaxolApp archived - tests skipped until reactivation
+  @moduletag :skip
   alias Droodotfoo.{AdaptiveRefresh, InputDebouncer, InputRateLimiter, RaxolApp}
 
   setup do

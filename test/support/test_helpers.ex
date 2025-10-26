@@ -89,21 +89,25 @@ defmodule Droodotfoo.TestHelpers do
 
   @doc """
   Ensures a clean RaxolApp state for testing.
+  Note: RaxolApp is archived - this is a no-op but kept for test compatibility.
   """
   def reset_raxol_state do
-    if pid = Process.whereis(Droodotfoo.RaxolApp) do
-      # Get a fresh buffer to ensure it's responding
-      try do
-        Droodotfoo.RaxolApp.get_buffer(pid)
-      catch
-        :exit, _ ->
-          # If it's not responding, restart it
-          GenServer.stop(pid, :normal, 100)
-          Process.sleep(50)
-          {:ok, _} = Droodotfoo.RaxolApp.start_link([])
+    # RaxolApp module is archived, skip reset
+    if Code.ensure_loaded?(Droodotfoo.RaxolApp) do
+      if pid = Process.whereis(Droodotfoo.RaxolApp) do
+        # Get a fresh buffer to ensure it's responding
+        try do
+          Droodotfoo.RaxolApp.get_buffer(pid)
+        catch
+          :exit, _ ->
+            # If it's not responding, restart it
+            GenServer.stop(pid, :normal, 100)
+            Process.sleep(50)
+            {:ok, _} = Droodotfoo.RaxolApp.start_link([])
+        end
+      else
+        {:ok, _} = Droodotfoo.RaxolApp.start_link([])
       end
-    else
-      {:ok, _} = Droodotfoo.RaxolApp.start_link([])
     end
 
     :ok

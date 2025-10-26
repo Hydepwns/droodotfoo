@@ -1,5 +1,7 @@
 defmodule Droodotfoo.Raxol.RendererTest do
   use ExUnit.Case, async: true
+  # Raxol modules archived - tests skipped until reactivation
+  @moduletag :skip
 
   alias Droodotfoo.CursorTrail
   alias Droodotfoo.Raxol.Renderer

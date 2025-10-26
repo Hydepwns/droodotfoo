@@ -1,5 +1,7 @@
 defmodule DroodotfooWeb.PluginLiveIntegrationTest do
   use DroodotfooWeb.ConnCase, async: false
+  # Plugin/terminal features archived - tests skipped until reactivation
+  @moduletag :skip
 
   import Phoenix.LiveViewTest
 

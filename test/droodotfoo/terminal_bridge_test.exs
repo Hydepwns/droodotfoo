@@ -1,5 +1,7 @@
 defmodule Droodotfoo.TerminalBridgeTest do
   use ExUnit.Case, async: false
+  # TerminalBridge archived - tests skipped until reactivation
+  @moduletag :skip
   alias Droodotfoo.TerminalBridge
 
   setup do

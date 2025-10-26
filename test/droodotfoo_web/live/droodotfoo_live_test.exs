@@ -1,5 +1,7 @@
 defmodule DroodotfooWeb.DroodotfooLiveTest do
   use DroodotfooWeb.ConnCase, async: false
+  # DroodotfooLive (terminal interface) archived - tests skipped until reactivation
+  @moduletag :skip
   import Phoenix.LiveViewTest
 
   alias Droodotfoo.{PerformanceMonitor, RaxolApp}

@@ -5,10 +5,22 @@ defmodule DroodotfooWeb.ErrorHTMLTest do
   import Phoenix.Template, only: [render_to_string: 4]
 
   test "renders 404.html" do
-    assert render_to_string(DroodotfooWeb.ErrorHTML, "404", "html", []) == "Not Found"
+    html = render_to_string(DroodotfooWeb.ErrorHTML, "404", "html", [])
+
+    assert html =~ "PAGE NOT FOUND"
+    assert html =~ "monospace-container"
+    assert html =~ "[HOME]"
+    assert html =~ "[SITEMAP]"
+    assert html =~ "doesn't exist or has been moved"
   end
 
   test "renders 500.html" do
-    assert render_to_string(DroodotfooWeb.ErrorHTML, "500", "html", []) == "Internal Server Error"
+    html = render_to_string(DroodotfooWeb.ErrorHTML, "500", "html", [])
+
+    assert html =~ "SERVER ERROR"
+    assert html =~ "monospace-container"
+    assert html =~ "Something went wrong"
+    assert html =~ "[HOME]"
+    assert html =~ "Troubleshooting steps"
   end
 end

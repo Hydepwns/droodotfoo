@@ -1,7 +1,7 @@
 defmodule Droodotfoo.Resume.SearchIndexTest do
   use ExUnit.Case, async: true
 
-  alias Droodotfoo.Resume.{SearchIndex, ResumeData}
+  alias Droodotfoo.Resume.{ResumeData, SearchIndex}
 
   describe "search/3" do
     setup do
