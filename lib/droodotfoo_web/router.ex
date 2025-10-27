@@ -22,8 +22,6 @@ defmodule DroodotfooWeb.Router do
     live "/now", NowLive
     live "/projects", ProjectsLive
     live "/posts", PostsLive
-    # PWA archived - see .archived_pwa/README.md
-    # live "/pwa", PWALive
     live "/posts/:slug", PostLive
     live "/sitemap", SitemapLive
     live "/pattern-gallery", PatternGalleryLive
@@ -41,11 +39,6 @@ defmodule DroodotfooWeb.Router do
     get "/auth/spotify", SpotifyAuthController, :authorize
     get "/auth/spotify/callback", SpotifyAuthController, :callback
     get "/auth/spotify/logout", SpotifyAuthController, :logout
-  end
-
-  # Service Worker route (no CSP needed)
-  scope "/", DroodotfooWeb do
-    get "/sw.js", PageController, :service_worker
   end
 
   # API routes for Obsidian publishing

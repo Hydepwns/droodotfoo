@@ -1,7 +1,6 @@
 /**
  * Phoenix LiveView hooks for portfolio functionality
  * Terminal hooks archived to .archived_terminal/
- * PWA hooks archived to .archived_pwa/
  *
  * PERFORMANCE: Heavy hooks are lazy-loaded to reduce initial bundle size
  */

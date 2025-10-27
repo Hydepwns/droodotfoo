@@ -356,42 +356,6 @@
   text-align: left;
 }
 
-/* PWA Install Link */
-.pwa-install-link {
-  position: relative;
-  color: var(--text-color);
-  text-decoration: underline;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-}
-
-.pwa-install-link:hover {
-  opacity: 0.7;
-}
-
-.pwa-install-link::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: calc(100% + 0.5rem);
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: var(--text-color);
-  color: var(--background-color);
-  padding: 0.25rem 0.5rem;
-  border: var(--border-thickness) solid var(--border-color);
-  white-space: nowrap;
-  font-size: 0.75rem;
-  font-weight: var(--font-weight-medium);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s ease;
-  z-index: 10001;
-}
-
-.pwa-install-link:hover::after {
-  opacity: 1;
-}
-
 /* ASCII Art Container */
 .ascii-art {
   white-space: pre;
