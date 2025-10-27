@@ -129,7 +129,10 @@
       "Bash(fly machine start:*)",
       "Bash(fly status:*)",
       "Bash(fly deploy:*)",
-      "Bash(fly machine restart:*)"
+      "Bash(fly machine restart:*)",
+      "Bash(git show:*)",
+      "Bash(git rebase:*)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": []
