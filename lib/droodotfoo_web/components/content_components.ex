@@ -26,7 +26,7 @@ defmodule DroodotfooWeb.ContentComponents do
           <td class="header-meta-value header-meta-value-right">v1.0.0</td>
         </tr>
         <tr>
-          <td class="header-subtitle" colspan="2">Building axol.io</td>
+          <td class="header-subtitle" colspan="2">Engineer building his Gundam</td>
           <td class="header-meta-label">Updated</td>
           <td class="header-meta-value header-meta-value-right">
             <time datetime={@today}>{@today}</time>
@@ -36,12 +36,12 @@ defmodule DroodotfooWeb.ContentComponents do
           <td class="header-meta-label header-author-label">Author</td>
           <td class="header-meta-value" colspan="3">
             <a
-              href="https://github.com/hydepwns"
+              href="https://github.com/Hydepwns/droodotfoo"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="DROO AMOR on GitHub (opens in new tab)"
+              aria-label="DROO on GitHub - droodotfoo repository (opens in new tab)"
             >
-              DROO AMOR
+              DROO
             </a>
           </td>
         </tr>
