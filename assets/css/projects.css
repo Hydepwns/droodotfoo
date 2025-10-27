@@ -50,7 +50,7 @@ dd {
 
 .project-card:hover {
   border-color: var(--accent-color);
-  background-color: var(--background-color-alt);
+  box-shadow: 0 0 8px var(--accent-color);
 }
 
 .project-title {
@@ -133,7 +133,7 @@ dd {
 
 .certification-card:hover {
   border-color: var(--accent-color);
-  background-color: var(--background-color-alt);
+  box-shadow: 0 0 8px var(--accent-color);
 }
 
 .certification-name {
