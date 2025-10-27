@@ -225,7 +225,14 @@
         "description": "Ethereum protocol implementation in Elixir",
         "language": "Elixir",
         "status": "active",
-        "topics": ["blockchain", "elixir", "ethereum", "evm", "protocol", "web3"],
+        "topics": [
+          "blockchain",
+          "elixir",
+          "ethereum",
+          "evm",
+          "protocol",
+          "web3"
+        ],
         "highlights": [
           "Built on the BEAM VM: inherent concurrency, fault tolerance, and hot code reloading",
           "Functional architecture: immutable state, pattern matching, and pipeline-driven data flow",
@@ -240,7 +247,14 @@
         "description": "Terminal UI framework for Elixir",
         "language": "Elixir",
         "status": "active",
-        "topics": ["ansi", "component-based", "elixir", "phoenix-liveview", "terminal-ui", "tui"],
+        "topics": [
+          "ansi",
+          "component-based",
+          "elixir",
+          "phoenix-liveview",
+          "terminal-ui",
+          "tui"
+        ],
         "highlights": [
           "Component-based architecture with declarative markup",
           "Real-time updates via Phoenix LiveView integration",
@@ -255,7 +269,14 @@
         "description": "Cross-chain bridge solver",
         "language": "Elixir",
         "status": "active",
-        "topics": ["blockchain", "cross-chain", "defi", "elixir", "solver", "web3"],
+        "topics": [
+          "blockchain",
+          "cross-chain",
+          "defi",
+          "elixir",
+          "solver",
+          "web3"
+        ],
         "highlights": [
           "Across Protocol integration for multi-chain liquidity",
           "Wormhole support in development (Solana and Sui bridges)",
