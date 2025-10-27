@@ -10,9 +10,7 @@ import { Socket } from "phoenix";
 import { LiveSocket } from "phoenix_live_view";
 import topbar from "../vendor/topbar";
 import Hooks from "./hooks";
-// import PWAManager from "./modules/PWAManager"; // PWA features archived
 import "./astro-stl-viewer.js";
-// import "./astro-pwa.js"; // PWA features archived
 
 // Type definitions
 
@@ -146,15 +144,8 @@ function setupEditorIntegration(reloader: PhoenixLiveReloader): void {
   console.log("Editor integration enabled (use 'c' or 'd' + click)");
 }
 
-// Initialize PWA functionality
-// Disabled - PWA features archived
-// const pwaManager = new PWAManager();
-// pwaManager.init().catch((error) => {
-//   console.error("Failed to initialize PWA:", error);
-// });
-
 // Log successful initialization
 console.log("Phoenix LiveView application initialized");
 
 // Export for debugging purposes
-export { liveSocket, pwaManager };
+export { liveSocket };

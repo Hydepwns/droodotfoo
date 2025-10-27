@@ -41,30 +41,6 @@ defmodule DroodotfooWeb.PageController do
     end
   end
 
-  def service_worker(conn, _params) do
-    # Serve the service worker file with proper headers
-    service_worker_path =
-      Path.join([
-        Application.app_dir(:droodotfoo),
-        "priv",
-        "static",
-        "sw.js"
-      ])
-      |> Path.expand()
-
-    if File.exists?(service_worker_path) do
-      conn
-      |> put_resp_content_type("application/javascript")
-      |> put_resp_header("cache-control", "no-cache, no-store, must-revalidate")
-      |> put_resp_header("service-worker-allowed", "/")
-      |> send_file(200, service_worker_path)
-    else
-      conn
-      |> put_status(:not_found)
-      |> text("Service worker not found")
-    end
-  end
-
   def download_resume(conn, %{"format" => format}) do
     alias Droodotfoo.Resume.PDFGenerator
 
