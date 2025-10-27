@@ -11,7 +11,7 @@ defmodule DroodotfooWeb.SEO.JsonLD do
     %{
       "@context" => "https://schema.org",
       "@type" => "Person",
-      "name" => "Andrew Hyde (DROO)",
+      "name" => "DROO",
       "url" => "https://droo.foo",
       "image" => "https://droo.foo/images/og-image.png",
       "sameAs" => [
@@ -26,7 +26,7 @@ defmodule DroodotfooWeb.SEO.JsonLD do
         "url" => "https://github.com/axol-io"
       },
       "description" =>
-        "Blockchain infrastructure engineer building production-grade FOSS tooling for Cosmos and EVM ecosystems",
+        "Engineer building his Gundam - Building blockchain infrastructure and production-grade FOSS tooling for Cosmos and EVM ecosystems",
       "knowsAbout" => [
         "Blockchain",
         "Elixir",
@@ -49,10 +49,10 @@ defmodule DroodotfooWeb.SEO.JsonLD do
       "name" => "DROO.FOO",
       "url" => "https://droo.foo",
       "description" =>
-        "Blockchain infrastructure engineer building production-grade FOSS tooling",
+        "Engineer building his Gundam - Blockchain infrastructure and production-grade FOSS tooling",
       "author" => %{
         "@type" => "Person",
-        "name" => "Andrew Hyde (DROO)"
+        "name" => "DROO"
       },
       "inLanguage" => "en-US"
     }
@@ -73,12 +73,12 @@ defmodule DroodotfooWeb.SEO.JsonLD do
       "dateModified" => format_date(post.modified_time || post.date),
       "author" => %{
         "@type" => "Person",
-        "name" => "Andrew Hyde (DROO)",
+        "name" => "DROO",
         "url" => "https://droo.foo"
       },
       "publisher" => %{
         "@type" => "Person",
-        "name" => "Andrew Hyde (DROO)",
+        "name" => "DROO",
         "url" => "https://droo.foo"
       },
       "mainEntityOfPage" => %{
@@ -107,7 +107,7 @@ defmodule DroodotfooWeb.SEO.JsonLD do
         "codeRepository" => project.github_url,
         "author" => %{
           "@type" => "Person",
-          "name" => "Andrew Hyde (DROO)",
+          "name" => "DROO",
           "url" => "https://droo.foo"
         },
         "keywords" => Enum.join(project.topics, ", ")
@@ -151,7 +151,7 @@ defmodule DroodotfooWeb.SEO.JsonLD do
       "description" => "Open source blockchain infrastructure and tooling",
       "member" => %{
         "@type" => "Person",
-        "name" => "Andrew Hyde (DROO)",
+        "name" => "DROO",
         "url" => "https://droo.foo"
       }
     }
