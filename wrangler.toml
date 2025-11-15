@@ -1,0 +1,8 @@
+# Cloudflare Pages configuration for static assets
+# This deploys the Phoenix static assets (priv/static) to Cloudflare Pages CDN
+
+name = "droodotfoo-assets"
+compatibility_date = "2025-01-14"
+
+# Pages configuration
+pages_build_output_dir = "priv/static"
