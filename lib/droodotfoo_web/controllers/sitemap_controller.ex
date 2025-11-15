@@ -52,10 +52,13 @@ defmodule DroodotfooWeb.SitemapController do
       {"/", today, "daily", "1.0"},
       {"/about", today, "monthly", "0.9"},
       {"/now", today, "weekly", "0.8"},
+      {"/resume", today, "monthly", "0.9"},
       {"/projects", today, "weekly", "0.9"},
       {"/posts", today, "weekly", "0.9"},
+      {"/contact", today, "monthly", "0.7"},
       {"/pattern-gallery", today, "monthly", "0.7"},
-      {"/sitemap", today, "monthly", "0.6"}
+      {"/sitemap", today, "monthly", "0.6"},
+      {"/feed.xml", today, "daily", "0.8"}
     ]
   end
 

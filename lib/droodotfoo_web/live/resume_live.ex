@@ -13,6 +13,7 @@ defmodule DroodotfooWeb.ResumeLive do
   import DroodotfooWeb.ContentComponents
 
   alias Droodotfoo.Resume.{FilterEngine, PDFGenerator, PresetManager, ResumeData, SearchIndex}
+  alias DroodotfooWeb.SEO.JsonLD
 
   @impl true
   def mount(_params, _session, socket) do
@@ -21,6 +22,15 @@ defmodule DroodotfooWeb.ResumeLive do
     resume_data = ResumeData.get_resume_data()
     technologies = SearchIndex.extract_technologies(resume_data)
     presets = PresetManager.list_presets()
+
+    # Generate JSON-LD schemas for resume page
+    json_ld = [
+      JsonLD.person_schema(),
+      JsonLD.breadcrumb_schema([
+        {"Home", "/"},
+        {"Resume", "/resume"}
+      ])
+    ]
 
     {:ok,
      socket
@@ -39,6 +49,9 @@ defmodule DroodotfooWeb.ResumeLive do
      |> assign(:search_query, "")
      |> assign(:match_count, nil)
      |> assign(:show_filters, true)
+     |> assign(:page_title, "Resume")
+     |> assign(:current_path, "/resume")
+     |> assign(:json_ld, json_ld)
      |> load_preview(selected_format)}
   end
 
