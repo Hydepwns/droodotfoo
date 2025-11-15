@@ -4,5 +4,12 @@
 User-agent: *
 Allow: /
 
+# Disallow development and admin routes
+Disallow: /dev/
+Disallow: /api/
+
+# RSS Feed
+Allow: /feed.xml
+
 # Sitemap location
 Sitemap: https://droo.foo/sitemap.xml
