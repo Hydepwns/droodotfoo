@@ -95,7 +95,12 @@ defmodule Droodotfoo.Application do
     base_opts = [
       discard_utility_output: true,
       # Disable sandboxing for containerized environments (Fly.io, Docker)
-      no_sandbox: true
+      no_sandbox: true,
+      # Increase timeouts to prevent initialization failures
+      session_pool: [
+        timeout: 15_000,
+        init_timeout: 15_000
+      ]
     ]
 
     if chrome_path do
