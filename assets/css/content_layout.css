@@ -249,6 +249,55 @@
   outline-color: var(--accent-color);
 }
 
+/* Floating images within post content */
+.post-image-float-right {
+  float: right;
+  margin: 0 0 1rem 1.5rem;
+  max-width: 300px;
+  height: auto;
+}
+
+/* Blockquote Styling */
+.page-container blockquote,
+.narrow-container blockquote,
+.box-single blockquote,
+article blockquote {
+  margin: 1.5rem 0;
+  padding: 0.75rem 0 0.75rem 1.5rem;
+  border-left: 3px solid var(--border-color);
+  color: var(--text-color-alt);
+  font-style: italic;
+}
+
+.page-container blockquote p,
+.narrow-container blockquote p,
+.box-single blockquote p,
+article blockquote p {
+  margin: 0.5rem 0;
+}
+
+.page-container blockquote p:first-child,
+.narrow-container blockquote p:first-child,
+.box-single blockquote p:first-child,
+article blockquote p:first-child {
+  margin-top: 0;
+}
+
+.page-container blockquote p:last-child,
+.narrow-container blockquote p:last-child,
+.box-single blockquote p:last-child,
+article blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.page-container blockquote strong,
+.narrow-container blockquote strong,
+.box-single blockquote strong,
+article blockquote strong {
+  color: var(--text-color);
+  font-style: normal;
+}
+
 /* Responsive Layout */
 @media screen and (max-width: 768px) {
   .page-container,
@@ -262,5 +311,11 @@
 
   .site-header {
     margin-bottom: 0.5rem;
+  }
+
+  .post-image-float-right {
+    float: none;
+    max-width: 100%;
+    margin: 1rem 0;
   }
 }

@@ -2,10 +2,18 @@
 
 /* Pattern header for blog posts */
 .post-pattern-header {
-  margin: 0 0 2rem 0;
+  margin: 0 0 3rem 0;
   border: var(--border-thickness) solid var(--border-color);
-  border-radius: 4px;
+  border-radius: 8px;
   overflow: hidden;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.post-pattern-header:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 .post-pattern-header object,
@@ -15,6 +23,18 @@
   height: auto;
   aspect-ratio: 1200 / 630;  /* Match pattern generation ratio */
   object-fit: fill;           /* Stretch to fill like homepage patterns */
+}
+
+/* Subtle vignette overlay */
+.post-pattern-header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.15) 100%);
 }
 
 .post-item-with-image {
