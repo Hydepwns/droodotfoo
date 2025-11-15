@@ -330,7 +330,27 @@ defmodule Droodotfoo.Content.Posts do
   defp parse_date(%Date{} = date), do: date
 
   defp calculate_read_time(markdown) do
-    words = markdown |> String.split(~r/\s+/) |> length()
+    # Strip HTML tags, code blocks, and frontmatter to count only readable text
+    text =
+      markdown
+      # Remove code blocks (both ``` and indented)
+      |> String.replace(~r/```[\s\S]*?```/m, "")
+      |> String.replace(~r/^    .+$/m, "")
+      # Remove HTML tags and their attributes
+      |> String.replace(~r/<[^>]+>/m, "")
+      # Remove image alt text brackets and URLs
+      |> String.replace(~r/!\[[^\]]*\]\([^\)]*\)/m, "")
+      # Remove inline links but keep text
+      |> String.replace(~r/\[([^\]]+)\]\([^\)]*\)/m, "\\1")
+      # Remove YAML frontmatter if present
+      |> String.replace(~r/^---\n[\s\S]*?\n---\n/m, "")
+
+    words =
+      text
+      |> String.split(~r/\s+/)
+      |> Enum.reject(&(&1 == ""))
+      |> length()
+
     max(1, div(words, 200))
   end
 
