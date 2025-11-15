@@ -1,8 +1,0 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
-
-# Allow all search engines to crawl the site
-User-agent: *
-Allow: /
-
-# Sitemap location
-Sitemap: https://droo.foo/sitemap.xml
