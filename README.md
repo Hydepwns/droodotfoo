@@ -3,7 +3,7 @@
 Personal portfolio and blog built with Phoenix LiveView, featuring generative art patterns and monospace web aesthetics. Optional terminal interface with games and plugins available for interactive experiences.
 
 ![Test Coverage](https://img.shields.io/badge/coverage-41.2%25-orange)
-![Tests](https://img.shields.io/badge/tests-1149%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-1257%20passing-brightgreen)
 ![Elixir](https://img.shields.io/badge/elixir-1.17-purple)
 ![Phoenix](https://img.shields.io/badge/phoenix-1.8.1-orange)
 
@@ -21,6 +21,7 @@ Personal portfolio and blog built with Phoenix LiveView, featuring generative ar
 - **Real-time Updates**: Phoenix LiveView for instant page updates
 - **Projects Showcase**: GitHub integration with stats and contribution visualization
 - **Resume System**: Structured JSON-based resume with filtering and search
+- **SEO Optimized**: JSON-LD structured data for enhanced search engine visibility
 
 ### Optional Terminal Interface (110x45 grid)
 - **Terminal UI**: Browser-based character grid with Unix-style commands
@@ -129,24 +130,26 @@ Built with modular Phoenix LiveView architecture:
 
 **State Management**: GenServers orchestrate content loading, GitHub API integration, and optional terminal/plugin state. Functional patterns with immutable state throughout.
 
-**Performance**: ETS caching for GitHub API data, blog post metadata, and SVG patterns. Pattern cache provides 568x speedup (26ms → 47µs). Page loads under 200ms.
+**Performance**: ETS caching for GitHub API data, blog post metadata, and SVG patterns. Pattern cache provides 568x speedup (26ms → 47µs). Brotli compression for static assets. Page loads under 200ms.
 
 **Content System**: File-based blog posts with markdown + YAML frontmatter. Deterministic SVG pattern generation per post with 8 animation styles. No database required.
 
 **Optional Features**: Terminal interface with 10 plugins (games, utilities), Web3 wallet integration, P2P file sharing with E2E encryption.
 
-**Test Coverage**: 1,149/1,170 tests passing (98.2% pass rate, 41.2% code coverage)
+**Test Coverage**: 1,257/1,298 tests passing (96.8% pass rate, 41.2% code coverage)
 
 ## Tech Stack
 
 - **Backend**: Elixir 1.17+, Phoenix 1.8.1, LiveView 1.1.12, Bandit web server
-- **Styling**: Tailwind CSS v4, Monaspace font family (Argon, Neon, Xenon, Radon, Krypton)
+- **Styling**: Tailwind CSS v4, Monaspace fonts (woff2 format with preload optimization)
 - **Monospace Grid**: 1ch units + rem-based line-height for character-perfect alignment
 - **Frontend**: TypeScript, esbuild for bundling, lazy-loaded hooks
 - **Content**: MDEx for markdown parsing with syntax highlighting
 - **Caching**: ETS for GitHub API, posts, patterns (568x speedup for patterns)
+- **Compression**: Brotli for static assets (JS, CSS, SVG, fonts)
+- **SEO**: JSON-LD structured data for enhanced search visibility
 - **Optional**: Raxol 1.4.1 (terminal), ethers.js (Web3), Three.js (STL viewer)
-- **Testing**: ExUnit with 1,149/1,170 tests passing (98.2%)
+- **Testing**: ExUnit with 1,257/1,298 tests passing (96.8%)
 
 ## Development
 
