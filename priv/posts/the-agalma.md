@@ -51,6 +51,11 @@ Both paths involve suffering. But misalignment suffering compounds - more succes
 
 Find something internal worth suffering for.
 
+<div style="text-align: center; margin: 2rem 0;">
+  <img src="/images/blog/the-wrestle-of-jacob-1855.webp" alt="The Wrestle of Jacob by Gustave Doré (1855) - Jacob wrestling with the angel at dawn, representing the struggle that transforms" loading="lazy" style="max-width: 100%; height: auto;" />
+  <p style="font-size: 0.9em; color: #666; margin-top: 0.5rem;"><em>The Wrestle of Jacob (1855)</em> - Gustave Doré</p>
+</div>
+
 ## The Ancient Answer
 
 The ancient Greeks had a word for something precious hidden inside something ordinary: *agalma* (ἄγαλμα).
@@ -60,11 +65,7 @@ Originally, it meant a statue or votive offering - something that delights the g
 
 Greek statues were marble shells that once held something sacred. The word evolved from "that which pleases the gods" to "the thing of value hidden inside." Plato used it in the *Symposium* when Alcibiades compared Socrates to ugly Silenus figurines that, when cracked open, revealed golden treasures inside.
 
-Consider the French illustrator Gustave Doré (1832-1883). He created over 10,000 illustrations in his lifetime - not what the art establishment valued. They wanted oil paintings, gallery exhibitions, critical prestige. Doré chose illustration: commercial, lowbrow, mere craft. He faced contempt his entire career. Paris never gave him the recognition he wanted.
-
-But his agalma wasn't prestige. It was visualizing the divine at scale. When you picture hell or heaven, angels or demons, you're seeing Doré's vision. He shaped how millions understand sacred narratives. The world needed to see these stories brought to life, and he was willing to sacrifice everything the art world valued to make it happen.
-
-We'll return to Doré throughout - he's the clearest example of someone who found their agalma and honored it completely.
+The French illustrator Gustave Doré offers the clearest example of someone who found their agalma and honored it completely - we'll return to his story throughout.
 
 ## The Inside-Out Discovery
 
@@ -114,7 +115,8 @@ The French illustrator **Gustave Doré** (1832-1883) created more than 10,000 il
 Doré would create the master drawing in pen and ink, then hand it off to skilled engravers who meticulously transferred the image onto copper plates, reproducing every line and shadow. While they worked on production, he moved to the next vision. This system let him maintain artistic control while achieving scale impossible for a solo artist. Most "serious artists" of his era saw this as selling out. Doré saw it as the only way to reach everyone who needed to see the work.
 
 He didn't just make art. He shaped how millions of people visualize the divine. His illustrations for Paradise Lost, Dante's Divine Comedy, and the Bible became the definitive imagery for angels, demons, and spiritual revelation in Western culture.
-*When you picture hell or heaven, you're seeing Doré's vision.*
+
+> *When you picture hell or heaven, you're seeing Doré's vision.*
 
 Doré could have chased what the art world valued in his time: oil paintings, gallery exhibitions, critical prestige. That was the path to being called a "serious artist." Instead, he chose illustration - considered commercial, lowbrow, mere craft. He faced contempt from the establishment his entire life. Paris never gave him the recognition he wanted. But he kept drawing, kept building his workshops, kept disseminating his vision of the divine at a scale no "serious artist" could touch.
 
@@ -123,11 +125,6 @@ His agalma wasn't perfection - it was prolific contribution. He understood that 
 <div style="text-align: center; margin: 2rem 0;">
   <img src="/images/blog/dore-creation-of-light.webp" alt="The Creation of Light by Gustave Doré (1866) - A dramatic engraving showing divine light bursting forth from darkness" loading="lazy" style="max-width: 100%; height: auto;" />
   <p style="font-size: 0.9em; color: #666; margin-top: 0.5rem;"><em>The Creation of Light (1866)</em> - Gustave Doré</p>
-</div>
-
-<div style="text-align: center; margin: 2rem 0;">
-  <img src="/images/blog/dore-fall-of-lucifer.webp" alt="The Fall of Lucifer by Gustave Doré (1866) - Angels cast down from heaven into darkness, depicting the consequence of seeking glory outside oneself" loading="lazy" style="max-width: 100%; height: auto;" />
-  <p style="font-size: 0.9em; color: #666; margin-top: 0.5rem;"><em>The Fall of Lucifer (1866)</em> - Gustave Doré, Paradise Lost</p>
 </div>
 
 ## When You Find It
@@ -140,7 +137,12 @@ Would you do this work if no one would ever know you did it? If you couldn't sig
 
 **The failure:** They say they don't care about credit, but watch their reaction when someone else gets recognition for similar work. The resentment reveals the truth. The work stops when the spotlight disappears.
 
-**Doré:** He built engraving workshops where skilled craftsmen replicated his vision. Most of the illustrations reaching millions bore the marks of other hands. He cared more about dissemination than attribution.
+**Doré:** Most of the illustrations reaching millions bore the marks of other hands. He cared more about dissemination than attribution.
+
+<div style="text-align: center; margin: 2rem 0;">
+  <img src="/images/blog/dore-fall-of-lucifer.webp" alt="The Fall of Lucifer by Gustave Doré (1866) - Angels cast down from heaven into darkness, depicting the consequence of seeking glory outside oneself" loading="lazy" style="max-width: 100%; height: auto;" />
+  <p style="font-size: 0.9em; color: #666; margin-top: 0.5rem;"><em>The Fall of Lucifer (1866)</em> - Gustave Doré, Paradise Lost</p>
+</div>
 
 ### The Impact Test
 
@@ -157,6 +159,11 @@ Passion without skill is delusion - like tone-deaf reality show auditions where 
 **The failure:** They love something but aren't good at it, and refuse to acknowledge the gap. Or they assume that because they enjoy it casually, they should build their life around it. Enjoyment under zero stakes tells you nothing.
 
 **Doré:** Ten thousand illustrations of genuine technical and artistic merit. He wasn't just passionate about sacred narratives - he had the skill to render them at a level that changed culture. The passion drove the work, but the skill made it matter.
+
+<div style="text-align: center; margin: 2rem 0;">
+  <img src="/images/blog/vision-empyrean-paradiso-canto-31.webp" alt="Vision of the Empyrean by Gustave Doré (1866) - The highest heaven depicted as radiant light with souls arranged in divine order" loading="lazy" style="max-width: 100%; height: auto;" />
+  <p style="font-size: 0.9em; color: #666; margin-top: 0.5rem;"><em>Vision of the Empyrean (1866)</em> - Gustave Doré, from Dante's Paradiso</p>
+</div>
 
 Once you've found it and tested it, the questions become different:
 - Does this project serve the agalma, or does it serve your ego?
@@ -183,26 +190,19 @@ Your agalma isn't what excites you in the moment. It's what you return to when t
 
 ## The Timeline Question
 
-"How long should I try before I know?"
+*"How long should I try before I know?"*
 
-Wrong question. There's no fixed timeline. The agalma reveals itself through action and attention, not calendar time. Some people find the pattern in months. For others it takes decades. Doré drew commercially for years before the sacred narrative pattern became clear.
+Wrong question. There's no fixed timeline. Some people find the pattern in months. For others it takes decades. Doré drew commercially for years before the sacred narrative pattern became clear.
 
-"What about paying rent?" The agalma doesn't demand you quit your job tomorrow. Doré did commercial work for decades while discovering his pattern. The day job isn't the enemy - it's the subsidy that lets you build enough examples to see the shape. The question isn't "Can I do this full-time?" It's "Am I doing it at all?" Two focused hours a week for a year generates fifty-two examples. That's enough to see the pattern.
+The agalma doesn't demand you quit your job tomorrow. The day job isn't the enemy - it's the subsidy that lets you build enough examples to see the shape.
 
-What do you keep returning to after failures? When a project dies, what piece of it do you want to salvage? When you have free time and no obligations, what do you build? When everything's burning down, what's the one thing you protect?
+What do you keep returning to after failures? When a project dies, what piece of it do you want to salvage? When everything's burning down, what's the one thing you protect?
 
-The pattern emerges through repetition. You need enough examples to see the shape. One project tells you nothing. Ten projects start to show a pattern. Fifty projects make it undeniable.
+**Not found yet** - You're doing varied work, paying attention, noticing what keeps mattering. The pattern hasn't crystallized but you're accumulating data.
 
-**Not found yet** - You're doing varied work, paying attention, noticing what keeps mattering. You're building skills. You're following threads. The pattern hasn't crystallized but you're accumulating data.
+**Wrong place** - You're repeating the same thing expecting different results. You're not paying attention to what energizes you versus what drains you. You're optimizing for external validation instead of internal pull.
 
-**Wrong place** - You're repeating the same thing expecting different results. You're not paying attention to what energizes you versus what drains you. You're doing what you think you should want rather than watching what you want. You're optimizing for external validation instead of internal pull.
-
-If you've been doing the same work for years and still asking "is this it?", either you're not paying attention to the signals, or you're in the wrong place. The agalma reveals itself to those who look. If you're paying attention and still don't see it, try something different.
-
-<div style="text-align: center; margin: 2rem 0;">
-  <img src="/images/blog/vision-empyrean-paradiso-canto-31.webp" alt="Vision of the Empyrean by Gustave Doré (1866) - The highest heaven depicted as radiant light with souls arranged in divine order" loading="lazy" style="max-width: 100%; height: auto;" />
-  <p style="font-size: 0.9em; color: #666; margin-top: 0.5rem;"><em>Vision of the Empyrean (1866)</em> - Gustave Doré, from Dante's Paradiso</p>
-</div>
+If you've been doing the same work for years and still asking "is this it?", either you're not paying attention to the signals, or you're in the wrong place. The agalma reveals itself to those who look.
 
 ## The Obligation to Disseminate
 
@@ -224,7 +224,7 @@ Dissemination isn't evangelism. It's leaving breadcrumbs for those already hungr
 
 **True dissemination** - You make the work findable for those already searching. You sacrifice prestige for reach. You prioritize the work spreading over controlling how it spreads. You're willing to let others build on it, remix it, even take credit for it, if that means it reaches more people who need it. The work matters more than your ownership of it.
 
-Doré operated in true dissemination mode. He could have chased gallery exhibitions and kept tight control over his original drawings. Instead, he built workshops of engravers who replicated his vision across thousands of books. He let publishers use his illustrations. He prioritized scale over attribution. The work reaching millions mattered more than artistic purity or personal credit.
+Doré operated in true dissemination mode. He could have chased gallery exhibitions and kept tight control over his original drawings. Instead, he prioritized scale over attribution - the work reaching millions mattered more than artistic purity or personal credit.
 
 **The Sacrifice Test**: What are you willing to give up to increase the work's reach? Working in a "lowbrow" medium if it reaches more people. Letting others replicate your work without your control. Prioritizing scale over perfection. The difference between a signal fire and a performance is what you're willing to sacrifice.
 
@@ -239,15 +239,19 @@ The Greeks understood something we've forgotten: the precious thing isn't always
 
 ---
 
-What you worship will determine how you suffer. The agalma doesn't eliminate suffering - it transforms it. Hollow exhaustion becomes meaningful fatigue. Chasing validation you can't control becomes serving something that matters regardless of applause. The suffering aligns with your effort, not with external outcomes.
-
-You don't get to choose whether to suffer. You only get to choose what makes it worth it.
+The agalma transforms suffering. Hollow exhaustion becomes meaningful fatigue. Chasing validation you can't control becomes serving something that matters regardless of applause.
 
 **Start now.** Not with finding your agalma - you can't think your way there. Start with committed action in the direction that keeps calling you back. Do the work. Pay attention to what remains when external validation disappears. Notice what you protect when everything else burns. Watch what you return to after failure.
 
 The pattern will reveal itself, but only if you're building. Only if you're paying attention. Only if you're willing to follow the thread even when it leads away from prestige, comfort, or approval.
 
 The world has enough people keeping their lights hidden. Don't be one of them.
+**Follow your contribution.**
+
+<div style="text-align: center; margin: 2rem 0;">
+  <img src="/images/blog/don-quixote-and-sancho-setting-out-1863.webp" alt="Don Quixote and Sancho Setting Out by Gustave Doré (1863) - The knight and his squire beginning their quest, embodying the courage to start despite uncertainty" loading="lazy" style="max-width: 100%; height: auto;" />
+  <p style="font-size: 0.9em; color: #666; margin-top: 0.5rem;"><em>Don Quixote and Sancho Setting Out (1863)</em> - Gustave Doré</p>
+</div>
 
 Overtime Bonus: Slavoj Žižek discussing the Agalma, and anti-metaphysical delights.
 <div style="position: relative; padding-bottom: 50%; height: 0; overflow: hidden; max-width: 100%; margin: 2rem 0;">
