@@ -20,9 +20,9 @@ ARG RUNNER_IMAGE="docker.io/debian:${DEBIAN_VERSION}"
 
 FROM ${BUILDER_IMAGE} AS builder
 
-# install build dependencies (including Node.js for npm)
+# install build dependencies (including Node.js for npm and brotli for compression)
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends build-essential git curl \
+  && apt-get install -y --no-install-recommends build-essential git curl brotli \
   && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
   && apt-get install -y nodejs \
   && rm -rf /var/lib/apt/lists/*

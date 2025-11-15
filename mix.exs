@@ -188,7 +188,8 @@ defmodule Droodotfoo.MixProject do
         "tailwind droodotfoo --minify",
         "esbuild droodotfoo --minify",
         "cmd mkdir -p priv/static/astro && cp -r assets/astro/* priv/static/astro/",
-        "phx.digest"
+        "phx.digest",
+        "cmd find priv/static -type f \\( -name '*.js' -o -name '*.css' -o -name '*.svg' -o -name '*.txt' -o -name '*.html' -o -name '*.json' \\) -exec brotli -f -k {} \\; 2>/dev/null || true"
       ],
       precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"],
       check: ["ex_check"],
