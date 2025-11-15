@@ -70,6 +70,12 @@ op item create --category=login --title="droodotfoo-dev" \
 
 # Start server with secrets loaded from 1Password
 ./bin/dev
+
+# After changes re-deploy with:
+# 1. Deploy updated assets to CDN
+./scripts/deploy-cdn.sh
+# 2. Deploy Phoenix app to Fly.io
+fly deploy
 ```
 
 ### Alternative: Manual Environment Variables
