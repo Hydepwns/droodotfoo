@@ -21,6 +21,7 @@ DROO.FOO is both a portfolio and an experimental platform showcasing:
 
 ## Featured Content
 
+- [Finding the Agalma](https://droo.foo/posts/the-agalma): On finding your hidden treasure and sharing it with the world
 - [Building droo.foo](https://droo.foo/posts/building-droo-foo): Architecture and technical details of this site
 - [RSS Feed](https://droo.foo/feed.xml): Subscribe to blog posts
 
