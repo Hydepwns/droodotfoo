@@ -26,6 +26,15 @@ end
 # Blog API token for Obsidian publishing (all environments)
 config :droodotfoo, :blog_api_token, System.get_env("BLOG_API_TOKEN")
 
+# Sentry error tracking (all environments, but only active when DSN is set)
+if sentry_dsn = System.get_env("SENTRY_DSN") do
+  config :sentry,
+    dsn: sentry_dsn,
+    environment_name: config_env(),
+    enable_source_code_context: true,
+    root_source_code_paths: [File.cwd!()]
+end
+
 # GitHub API token for higher rate limits (all environments, optional)
 config :droodotfoo, :github_token, System.get_env("GITHUB_TOKEN")
 

@@ -7,6 +7,11 @@ defmodule Droodotfoo.Application do
 
   @impl true
   def start(_type, _args) do
+    # Add Sentry logger handler for capturing crashed process exceptions
+    :logger.add_handler(:sentry_handler, Sentry.LoggerHandler, %{
+      config: %{metadata: [:file, :line]}
+    })
+
     children =
       [
         DroodotfooWeb.Telemetry,

@@ -89,7 +89,7 @@ defmodule Droodotfoo.MixProject do
   def application do
     [
       mod: {Droodotfoo.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :sentry]
     ]
   end
 
@@ -160,7 +160,10 @@ defmodule Droodotfoo.MixProject do
       # PDF generation (using system wkhtmltopdf)
       {:chromic_pdf, "~> 1.0"},
       # Documentation
-      {:ex_doc, "~> 0.30", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.30", only: :dev, runtime: false},
+      # Error tracking
+      {:sentry, "~> 10.2.0"},
+      {:hackney, "~> 1.8"}
     ]
   end
 

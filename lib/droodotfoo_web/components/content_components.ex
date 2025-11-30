@@ -99,15 +99,26 @@ defmodule DroodotfooWeb.ContentComponents do
     ~H"""
     <nav class="site-nav-simple" aria-label="Primary navigation">
       <p>
-        <a href="/about" aria-current={if @current_path == "/about", do: "page", else: false}>About</a>
+        <a href="/about" aria-current={if @current_path == "/about", do: "page", else: false}>
+          About
+        </a>
         <span aria-hidden="true">·</span>
         <a href="/now" aria-current={if @current_path == "/now", do: "page", else: false}>Now</a>
         <span aria-hidden="true">·</span>
-        <a href="/projects" aria-current={if @current_path == "/projects", do: "page", else: false}>Projects</a>
+        <a href="/projects" aria-current={if @current_path == "/projects", do: "page", else: false}>
+          Projects
+        </a>
         <span aria-hidden="true">·</span>
-        <a href="/posts" aria-current={if String.starts_with?(@current_path, "/posts"), do: "page", else: false}>Writing</a>
+        <a
+          href="/posts"
+          aria-current={if String.starts_with?(@current_path, "/posts"), do: "page", else: false}
+        >
+          Writing
+        </a>
         <span aria-hidden="true">·</span>
-        <a href="/sitemap" aria-current={if @current_path == "/sitemap", do: "page", else: false}>Sitemap</a>
+        <a href="/sitemap" aria-current={if @current_path == "/sitemap", do: "page", else: false}>
+          Sitemap
+        </a>
       </p>
     </nav>
     """
