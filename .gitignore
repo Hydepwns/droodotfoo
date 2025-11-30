@@ -98,4 +98,6 @@ config/*.secret.exs
 # Ignore generated documentation with ASCII art
 docs/ascii/
 docs/art/
-.claude/
+
+# Claude
+.claude/settings.local.json
