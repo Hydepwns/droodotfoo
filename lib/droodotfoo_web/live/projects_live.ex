@@ -123,8 +123,8 @@ defmodule DroodotfooWeb.ProjectsLive do
     </div>
 
     <div :if={repo = @project.github_data.repo_info} class="github-meta text-muted mt-1">
-      ★ {repo.stars} ⑂ {repo.forks}
-      <span :if={repo.updated_at}> | Updated    {format_time_ago(repo.updated_at)}</span>
+      <span>★ {repo.stars}</span> <span>⑂ {repo.forks}</span>
+      <span :if={repo.updated_at}>| Updated {format_time_ago(repo.updated_at)}</span>
     </div>
 
     <div :if={commit = @project.github_data.latest_commit} class="latest-commit text-muted">
@@ -182,7 +182,7 @@ defmodule DroodotfooWeb.ProjectsLive do
     ~H"""
     <div class="project-meta text-muted">
       <span>{format_status(@project.status)}</span>
-      <span :if={@project.year}> |    {@project.year}</span>
+      <span :if={@project.year}>| {@project.year}</span>
     </div>
     """
   end

@@ -102,7 +102,7 @@ defmodule DroodotfooWeb.Web3Live do
         <% end %>
       </section>
 
-      <hr class="section-divider" />
+      <hr />
 
       <section>
         <h2 class="section-title">Supported Networks</h2>
@@ -151,7 +151,7 @@ defmodule DroodotfooWeb.Web3Live do
         </table>
       </section>
 
-      <hr class="section-divider" />
+      <hr />
 
       <section>
         <h2 class="section-title">Features</h2>
