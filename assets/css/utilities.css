@@ -121,33 +121,7 @@
   margin: 2rem 0;
 }
 
-/* Section Divider - Double-line style inspired by wickstrom.tech */
-.section-divider {
-  height: var(--line-height);
-  border: 0;
-  position: relative;
-  margin: 2rem 0;
-}
-
-.section-divider::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  border-top: calc(var(--border-thickness) * 3) double var(--border-color);
-  transform: translateY(-50%);
-}
-
-/* Single-line variant for simpler dividers */
-.section-divider-single {
-  border: 0;
-  border-top: var(--border-thickness) solid var(--border-color);
-  margin: 2rem 0;
-  height: 0;
-}
-
-/* Generic horizontal rule - double-line style */
+/* Horizontal rule - double-line style */
 hr {
   height: var(--line-height);
   border: 0;
