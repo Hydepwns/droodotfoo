@@ -123,39 +123,28 @@
 
 .site-nav-simple p {
   margin: 0;
+  /* Collapse whitespace from HTML formatting */
+  font-size: 0;
+}
+
+.site-nav-simple p > * {
+  font-size: 1rem;
+}
+
+.site-nav-simple p > span {
+  margin: 0 0.5ch;
 }
 
 .site-nav-simple a {
-  text-decoration: underline;
+  text-decoration: none;
   color: var(--text-color);
+  /* Use border instead of underline to avoid underlining whitespace */
+  display: inline-block;
+  border-bottom: 1px solid currentColor;
 }
 
 .site-nav-simple a:hover {
   color: var(--highlight-color);
-}
-
-/* Section Divider */
-.section-divider {
-  border: 0;
-  border-top: var(--border-thickness) solid var(--border-color);
-  margin: 2rem 0;
-}
-
-.section-divider-thick {
-  height: var(--line-height);
-  border: 0;
-  position: relative;
-  margin: 2rem 0;
-}
-
-.section-divider-thick::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  border-top: calc(var(--border-thickness) * 4) double var(--border-color);
-  transform: translateY(-50%);
 }
 
 /* Section Headers */
