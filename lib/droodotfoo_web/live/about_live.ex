@@ -68,7 +68,7 @@ defmodule DroodotfooWeb.AboutLive do
         <% end %>
       </section>
 
-      <hr class="section-divider" />
+      <hr />
 
       <section class="experience-section">
         <h2 class="section-title">Experience</h2>
@@ -112,7 +112,7 @@ defmodule DroodotfooWeb.AboutLive do
       </section>
 
       <%= if @resume[:education] && length(@resume.education) > 0 do %>
-        <hr class="section-divider" />
+        <hr />
 
         <section class="education-section">
           <h2 class="section-title">Education</h2>
@@ -186,7 +186,7 @@ defmodule DroodotfooWeb.AboutLive do
       <% end %>
 
       <%= if @resume[:certifications] && length(@resume.certifications) > 0 do %>
-        <hr class="section-divider" />
+        <hr />
 
         <section class="certifications-section">
           <h2 class="section-title">Certifications</h2>

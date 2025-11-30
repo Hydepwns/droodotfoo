@@ -78,7 +78,7 @@ defmodule DroodotfooWeb.NowLive do
           See <a href="/projects">projects</a>.
         </p>
 
-        <hr class="section-divider" />
+        <hr />
 
         <h3 class="mt-2">Learning</h3>
         <p>
@@ -123,7 +123,7 @@ defmodule DroodotfooWeb.NowLive do
           <span class="tech-tag">EVM</span>
         </div>
 
-        <hr class="section-divider" />
+        <hr />
 
         <h3 class="mt-2">Location & Work</h3>
         <p>
@@ -144,7 +144,7 @@ defmodule DroodotfooWeb.NowLive do
         <% end %>
 
         <%= if @resume.availability == "open_to_consulting" do %>
-          <hr class="section-divider" />
+          <hr />
 
           <h3 class="mt-2">Availability</h3>
           <div class="experience-item">
@@ -158,7 +158,7 @@ defmodule DroodotfooWeb.NowLive do
           </div>
         <% end %>
 
-        <hr class="section-divider" />
+        <hr />
 
         <p class="text-muted">
           <strong>About /now pages:</strong>

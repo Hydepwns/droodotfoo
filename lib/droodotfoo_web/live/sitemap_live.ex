@@ -66,7 +66,7 @@ defmodule DroodotfooWeb.SitemapLive do
           </details>
         <% end %>
 
-        <hr class="section-divider" />
+        <hr />
 
         <h3>Feeds & Meta</h3>
         <div class="ascii-tree">
