@@ -1,6 +1,9 @@
 defmodule Droodotfoo.PropertyTest do
   use ExUnit.Case
   use ExUnitProperties
+  # Skip: RaxolApp, TerminalBridge, and Raxol modules archived in .unused_modules_backup/
+  @moduletag :skip
+
   alias Droodotfoo.{AdaptiveRefresh, InputDebouncer, InputRateLimiter, RaxolApp, TerminalBridge}
   alias Droodotfoo.Raxol.{Command, Navigation, State}
 

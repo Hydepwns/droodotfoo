@@ -1,5 +1,7 @@
 defmodule Droodotfoo.RaxolAppTest do
   use ExUnit.Case, async: false
+  # Skip: RaxolApp module archived in .unused_modules_backup/
+  @moduletag :skip
 
   alias Droodotfoo.RaxolApp
 
