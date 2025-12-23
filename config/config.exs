@@ -36,7 +36,7 @@ config :droodotfoo, DroodotfooWeb.Endpoint,
     layout: false
   ],
   pubsub_server: Droodotfoo.PubSub,
-  live_view: [signing_salt: "Q0b0apxR"]
+  live_view: [signing_salt: "tB4kM7xW9vR2nL6jH3qY8cP5"]
 
 # Configure esbuild (the version is required)
 config :esbuild,

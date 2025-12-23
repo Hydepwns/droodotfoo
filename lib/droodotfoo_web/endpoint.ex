@@ -2,13 +2,15 @@ defmodule DroodotfooWeb.Endpoint do
   use Sentry.PlugCapture
   use Phoenix.Endpoint, otp_app: :droodotfoo
 
-  # The session will be stored in the cookie and signed,
-  # this means its contents can be read but not tampered with.
-  # Set :encryption_salt if you would also like to encrypt it.
+  # Session options with secure salts
+  # These are baked in at compile time. The salts are used to sign/encrypt
+  # session cookies which contain only LiveView state (not sensitive data).
+  # Actual secrets (API tokens, etc.) are stored in runtime environment variables.
   @session_options [
     store: :cookie,
     key: "_droodotfoo_key",
-    signing_salt: "9rrEqXDG",
+    signing_salt: "xK9mPqR2vL8nYw3jH6cT5bN4",
+    encryption_salt: "aF7gD1sZ9wE3rQ6yU8iO2pL5",
     same_site: "Lax"
   ]
 

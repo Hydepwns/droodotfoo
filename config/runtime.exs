@@ -10,6 +10,10 @@ import Config
 # Set environment for Droodotfoo.Core.Config (avoids Mix.env() at runtime)
 config :droodotfoo, :environment, config_env()
 
+# Session security salts are configured in config.exs/prod.exs (compile-time)
+# because they're used in module attributes that are evaluated at compile time.
+# For releases, these are baked into the release at build time.
+
 # ## Using releases
 #
 # If you use `mix release`, you need to explicitly enable the server
