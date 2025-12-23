@@ -273,7 +273,7 @@ defmodule Droodotfoo.Content.Posts do
 
         # Convert markdown to HTML with syntax highlighting and extended features
         # Note: unsafe_ set to true to allow raw HTML (images, embeds, etc.)
-        # Safe since content is controlled (authenticated API + personal blog)
+        # HTML is sanitized after rendering to prevent XSS while allowing safe embeds
         html =
           MDEx.to_html!(markdown,
             extension: [
@@ -288,6 +288,7 @@ defmodule Droodotfoo.Content.Posts do
             ],
             syntax_highlight: [formatter: :html_linked]
           )
+          |> HtmlSanitizeEx.html5()
 
         %Post{
           slug: slug,

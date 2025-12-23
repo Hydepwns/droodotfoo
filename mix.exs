@@ -145,6 +145,7 @@ defmodule Droodotfoo.MixProject do
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       # Blog system dependencies
       {:mdex, "~> 0.2"},
+      {:html_sanitize_ex, "~> 1.4"},
       {:yaml_elixir, "~> 2.9"},
       {:ymlr, "~> 5.0"},
       {:plug_crypto, "~> 2.0"},
