@@ -100,4 +100,4 @@ docs/ascii/
 docs/art/
 
 # Claude
-.claude/settings.local.json
+.claude/
