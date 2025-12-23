@@ -186,9 +186,18 @@ defmodule Droodotfoo.Core.Config do
       port: System.get_env("SMTP_PORT", "587") |> String.to_integer(),
       username: System.get_env("SMTP_USERNAME"),
       password: System.get_env("SMTP_PASSWORD"),
-      ssl: System.get_env("SMTP_SSL", "true") |> String.to_existing_atom(),
-      tls: System.get_env("SMTP_TLS", "true") |> String.to_existing_atom()
+      ssl: parse_boolean_env("SMTP_SSL", "true"),
+      tls: parse_boolean_env("SMTP_TLS", "true")
     }
+  end
+
+  # Safely parses boolean environment variables, falling back to default
+  defp parse_boolean_env(var, default) when default in ["true", "false"] do
+    case System.get_env(var, default) do
+      "true" -> true
+      "false" -> false
+      _ -> String.to_existing_atom(default)
+    end
   end
 
   # Database Configuration

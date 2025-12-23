@@ -40,15 +40,15 @@ defmodule Droodotfoo.ProjectsTest do
 
   describe "get/1" do
     test "returns project by ID for portfolio projects" do
-      project = Projects.get(:mana)
+      project = Projects.get("mana")
 
       assert project
-      assert project.id == :mana
+      assert project.id == "mana"
       assert project.name == "mana"
     end
 
     test "returns nil for non-existent project" do
-      assert Projects.get(:nonexistent) == nil
+      assert Projects.get("nonexistent") == nil
     end
 
     test "can retrieve all projects by their IDs" do
@@ -76,9 +76,9 @@ defmodule Droodotfoo.ProjectsTest do
       active_ids = Enum.map(active_projects, & &1.id)
 
       # mana, raxol, and riddler are marked as "active" in resume.json
-      assert :mana in active_ids
-      assert :raxol in active_ids
-      assert :riddler in active_ids
+      assert "mana" in active_ids
+      assert "raxol" in active_ids
+      assert "riddler" in active_ids
     end
   end
 
@@ -94,9 +94,9 @@ defmodule Droodotfoo.ProjectsTest do
       demo_ids = Enum.map(demo_projects, & &1.id)
 
       # Active portfolio projects should have live demos
-      assert :mana in demo_ids
-      assert :raxol in demo_ids
-      assert :riddler in demo_ids
+      assert "mana" in demo_ids
+      assert "raxol" in demo_ids
+      assert "riddler" in demo_ids
     end
   end
 
@@ -148,7 +148,7 @@ defmodule Droodotfoo.ProjectsTest do
 
   describe "project data integrity" do
     test "mana project has correct data from resume" do
-      project = Projects.get(:mana)
+      project = Projects.get("mana")
 
       assert project
       assert project.name == "mana"
@@ -158,7 +158,7 @@ defmodule Droodotfoo.ProjectsTest do
     end
 
     test "raxol project has correct data from resume" do
-      project = Projects.get(:raxol)
+      project = Projects.get("raxol")
 
       assert project
       assert project.name == "raxol"

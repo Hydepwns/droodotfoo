@@ -5,6 +5,9 @@ defmodule DroodotfooWeb.PageController do
 
   use DroodotfooWeb, :controller
 
+  # Valid resume formats for download (prevents header injection)
+  @valid_resume_formats ~w(technical comprehensive startup)
+
   def astro_test(conn, _params) do
     # Serve the built Astro test page
     test_page_path =
@@ -41,7 +44,7 @@ defmodule DroodotfooWeb.PageController do
     end
   end
 
-  def download_resume(conn, %{"format" => format}) do
+  def download_resume(conn, %{"format" => format}) when format in @valid_resume_formats do
     alias Droodotfoo.Resume.PDFGenerator
 
     pdf_content = PDFGenerator.generate_pdf(format)
@@ -51,6 +54,12 @@ defmodule DroodotfooWeb.PageController do
     |> put_resp_content_type("application/pdf")
     |> put_resp_header("content-disposition", "attachment; filename=\"#{filename}\"")
     |> send_resp(200, pdf_content)
+  end
+
+  def download_resume(conn, %{"format" => _invalid_format}) do
+    conn
+    |> put_status(:bad_request)
+    |> json(%{error: "Invalid format. Valid formats: technical, comprehensive, startup"})
   end
 
   def download_resume(conn, _params) do

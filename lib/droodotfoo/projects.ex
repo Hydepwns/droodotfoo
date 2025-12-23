@@ -31,7 +31,7 @@ defmodule Droodotfoo.Projects do
         }
 
   @type t :: %__MODULE__{
-          id: atom(),
+          id: String.t(),
           name: String.t(),
           tagline: String.t(),
           description: String.t(),
@@ -57,7 +57,7 @@ defmodule Droodotfoo.Projects do
   end
 
   @doc "Gets a project by ID"
-  @spec get(atom()) :: t() | nil
+  @spec get(String.t()) :: t() | nil
   def get(id), do: Enum.find(all(), &(&1.id == id))
 
   @doc "Returns active projects only"
@@ -166,11 +166,11 @@ defmodule Droodotfoo.Projects do
   defp extract_topics_for(:defense, _raw_project), do: []
   defp extract_topics_for(:portfolio, raw_project), do: raw_project[:topics] || []
 
+  # Returns sanitized string ID (avoids String.to_atom for safety)
   defp to_id(name) do
     name
     |> String.downcase()
     |> String.replace(~r/[^a-z0-9]+/, "_")
-    |> String.to_atom()
   end
 
   defp extract_tech_stack(technologies) when is_map(technologies) do

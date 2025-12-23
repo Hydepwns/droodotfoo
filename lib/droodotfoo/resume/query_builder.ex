@@ -382,8 +382,17 @@ defmodule Droodotfoo.Resume.QueryBuilder do
     set_date_range(builder, from, value)
   end
 
+  # Valid section names for safe atom conversion (prevents atom DoS)
+  @valid_section_strings ~w(experience education defense_projects portfolio certifications)
+
   defp apply_token({:sections, value}, builder, _original) do
-    sections = String.split(value, ",") |> Enum.map(&String.to_atom/1)
+    sections =
+      value
+      |> String.split(",")
+      |> Enum.map(&String.trim/1)
+      |> Enum.filter(&(&1 in @valid_section_strings))
+      |> Enum.map(&String.to_existing_atom/1)
+
     set_sections(builder, sections)
   end
 

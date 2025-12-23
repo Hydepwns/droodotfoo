@@ -50,13 +50,26 @@ defmodule Droodotfoo.RateLimiter do
     include_status = Keyword.get(opts, :include_status, true)
     error_message = Keyword.get(opts, :error_message)
 
-    # Calculate max window for cleanup retention
+    # Calculate max window for cleanup retention with validation
     max_window_seconds =
-      windows
-      |> Enum.map(fn {_name, seconds, _limit} -> seconds end)
-      |> Enum.max()
+      case windows do
+        [] ->
+          86_400
 
-    cleanup_retention = Keyword.get(opts, :cleanup_retention, max_window_seconds)
+        windows ->
+          windows
+          |> Enum.map(fn {_name, seconds, _limit} -> seconds end)
+          |> Enum.filter(&is_integer/1)
+          |> case do
+            [] -> 86_400
+            seconds -> Enum.max(seconds)
+          end
+      end
+
+    cleanup_retention =
+      opts
+      |> Keyword.get(:cleanup_retention, max_window_seconds)
+      |> then(fn val -> if is_integer(val) and val > 0, do: val, else: 86_400 end)
 
     # Determine record function name based on mode
     record_fn_name = if storage_mode == :multi, do: :record_request, else: :record_submission
