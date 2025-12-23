@@ -4,6 +4,7 @@ defmodule DroodotfooWeb.PostController do
   """
 
   use DroodotfooWeb, :controller
+  require Logger
   alias Droodotfoo.Content.PostRateLimiter
   alias Droodotfoo.Content.Posts
 
@@ -53,9 +54,12 @@ defmodule DroodotfooWeb.PostController do
         |> json(%{error: "Invalid parameters. Required: content, metadata (with title)"})
 
       {:error, reason} ->
+        # Log detailed error internally, return generic message to client
+        Logger.error("Post creation failed: #{inspect(reason)}")
+
         conn
         |> put_status(:internal_server_error)
-        |> json(%{error: "Failed to save post: #{inspect(reason)}"})
+        |> json(%{error: "Failed to save post. Please try again."})
     end
   end
 

@@ -15,20 +15,28 @@ defmodule DroodotfooWeb.Endpoint do
   socket "/live", Phoenix.LiveView.Socket,
     websocket: [
       connect_info: [session: @session_options],
-      check_origin: [
-        "https://droo.foo",
-        "https://www.droo.foo",
-        "https://droodotfoo-lingering-shadow-740.fly.dev"
-      ]
+      check_origin: {__MODULE__, :check_origin, []}
     ],
     longpoll: [
       connect_info: [session: @session_options],
-      check_origin: [
-        "https://droo.foo",
-        "https://www.droo.foo",
-        "https://droodotfoo-lingering-shadow-740.fly.dev"
-      ]
+      check_origin: {__MODULE__, :check_origin, []}
     ]
+
+  @allowed_origins [
+    "https://droo.foo",
+    "https://www.droo.foo"
+  ]
+
+  @doc """
+  Validates WebSocket connection origins.
+  Production uses explicit allowlist, dev/test allows all origins.
+  """
+  def check_origin(origin) do
+    case Application.get_env(:droodotfoo, :environment, :dev) do
+      :prod -> origin in @allowed_origins
+      _ -> true
+    end
+  end
 
   # Serve at "/" the static files from "priv/static" directory.
   #
@@ -66,7 +74,8 @@ defmodule DroodotfooWeb.Endpoint do
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
-    json_decoder: Phoenix.json_library()
+    json_decoder: Phoenix.json_library(),
+    length: 1_048_576
 
   plug Sentry.PlugContext
   plug Plug.MethodOverride

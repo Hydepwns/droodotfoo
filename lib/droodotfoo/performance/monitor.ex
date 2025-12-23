@@ -231,11 +231,12 @@ defmodule Droodotfoo.Performance.Monitor do
   """
   @spec ets_stats() :: [ets_table_stats()]
   def ets_stats do
-    :ets.all()
-    |> Enum.map(fn table ->
-      info = :ets.info(table)
-      wordsize = :erlang.system_info(:wordsize)
+    wordsize = :erlang.system_info(:wordsize)
 
+    :ets.all()
+    |> Enum.map(&:ets.info/1)
+    |> Enum.reject(&(&1 == :undefined))
+    |> Enum.map(fn info ->
       %{
         name: Keyword.get(info, :name),
         size: Keyword.get(info, :size, 0),
