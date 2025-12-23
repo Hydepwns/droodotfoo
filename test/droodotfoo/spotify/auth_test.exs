@@ -3,14 +3,34 @@ defmodule Droodotfoo.Spotify.AuthTest do
 
   alias Droodotfoo.Spotify.Auth
 
-  setup do
-    # Clean up any existing ETS tables
-    if :ets.info(:spotify_auth_state) != :undefined do
-      :ets.delete(:spotify_auth_state)
+  # Helper to store encrypted tokens the same way Auth module does
+  defp store_test_tokens(tokens) do
+    secret = Application.get_env(:droodotfoo, DroodotfooWeb.Endpoint)[:secret_key_base]
+    encrypted = Plug.Crypto.encrypt(secret, "spotify_tokens", tokens)
+
+    if :ets.whereis(:spotify_tokens) == :undefined do
+      :ets.new(:spotify_tokens, [:named_table, :public])
     end
 
-    if :ets.info(:spotify_tokens) != :undefined do
-      :ets.delete(:spotify_tokens)
+    :ets.insert(:spotify_tokens, {:tokens, encrypted})
+  end
+
+  setup do
+    # Clean up any existing ETS tables (may fail if table is :protected and owned by another process)
+    try do
+      if :ets.info(:spotify_auth_state) != :undefined do
+        :ets.delete(:spotify_auth_state)
+      end
+    rescue
+      ArgumentError -> :ok
+    end
+
+    try do
+      if :ets.info(:spotify_tokens) != :undefined do
+        :ets.delete(:spotify_tokens)
+      end
+    rescue
+      ArgumentError -> :ok
     end
 
     :ok
@@ -69,7 +89,7 @@ defmodule Droodotfoo.Spotify.AuthTest do
       assert url =~ "state="
     end
 
-    test "stores state in ETS for verification" do
+    test "stores state in ETS for verification with expiry" do
       Application.put_env(:droodotfoo, :spotify_client_id, "test_client_id")
       Application.put_env(:droodotfoo, :spotify_client_secret, "test_client_secret")
 
@@ -81,7 +101,12 @@ defmodule Droodotfoo.Spotify.AuthTest do
       state = params["state"]
 
       assert state != nil
-      assert [{:state, ^state}] = :ets.lookup(:spotify_auth_state, :state)
+      # State now includes expiry timestamp (5 minutes from creation)
+      assert [{:state, ^state, expires_at}] = :ets.lookup(:spotify_auth_state, :state)
+      # Verify expiry is in the future (within 5 minutes + some buffer)
+      now = System.system_time(:second)
+      assert expires_at > now
+      assert expires_at <= now + 310
     end
   end
 
@@ -98,8 +123,7 @@ defmodule Droodotfoo.Spotify.AuthTest do
         token_type: "Bearer"
       }
 
-      :ets.new(:spotify_tokens, [:named_table, :public])
-      :ets.insert(:spotify_tokens, {:tokens, expired_tokens})
+      store_test_tokens(expired_tokens)
 
       refute Auth.authenticated?()
     end
@@ -112,8 +136,7 @@ defmodule Droodotfoo.Spotify.AuthTest do
         token_type: "Bearer"
       }
 
-      :ets.new(:spotify_tokens, [:named_table, :public])
-      :ets.insert(:spotify_tokens, {:tokens, valid_tokens})
+      store_test_tokens(valid_tokens)
 
       assert Auth.authenticated?()
     end
@@ -129,8 +152,7 @@ defmodule Droodotfoo.Spotify.AuthTest do
         token_type: "Bearer"
       }
 
-      :ets.new(:spotify_tokens, [:named_table, :public])
-      :ets.insert(:spotify_tokens, {:tokens, tokens})
+      store_test_tokens(tokens)
 
       assert :ok = Auth.logout()
       assert [] = :ets.lookup(:spotify_tokens, :tokens)
@@ -154,8 +176,7 @@ defmodule Droodotfoo.Spotify.AuthTest do
         token_type: "Bearer"
       }
 
-      :ets.new(:spotify_tokens, [:named_table, :public])
-      :ets.insert(:spotify_tokens, {:tokens, valid_tokens})
+      store_test_tokens(valid_tokens)
 
       assert {:ok, "test_access_token"} = Auth.get_access_token()
     end

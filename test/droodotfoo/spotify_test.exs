@@ -4,13 +4,21 @@ defmodule Droodotfoo.SpotifyTest do
   alias Droodotfoo.Spotify
 
   setup do
-    # Clean up any existing ETS tables
-    if :ets.info(:spotify_auth_state) != :undefined do
-      :ets.delete(:spotify_auth_state)
+    # Clean up any existing ETS tables (may fail if table is :protected and owned by another process)
+    try do
+      if :ets.info(:spotify_auth_state) != :undefined do
+        :ets.delete(:spotify_auth_state)
+      end
+    rescue
+      ArgumentError -> :ok
     end
 
-    if :ets.info(:spotify_tokens) != :undefined do
-      :ets.delete(:spotify_tokens)
+    try do
+      if :ets.info(:spotify_tokens) != :undefined do
+        :ets.delete(:spotify_tokens)
+      end
+    rescue
+      ArgumentError -> :ok
     end
 
     # Start a test instance of the Spotify

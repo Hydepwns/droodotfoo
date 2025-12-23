@@ -75,9 +75,10 @@ defmodule Droodotfoo.Spotify.Auth do
         client()
         |> Client.authorize_url!(params)
 
-      # Store state for verification (in a real app, this should be in a secure store)
-      :ets.new(:spotify_auth_state, [:named_table, :public])
-      :ets.insert(:spotify_auth_state, {:state, state})
+      # Store state for verification with 5 minute expiry
+      ensure_ets_table(:spotify_auth_state, [:named_table, :public])
+      expires_at = System.system_time(:second) + 300
+      :ets.insert(:spotify_auth_state, {:state, state, expires_at})
 
       {:ok, url}
     end
@@ -189,10 +190,20 @@ defmodule Droodotfoo.Spotify.Auth do
   end
 
   defp verify_state(state) do
+    now = System.system_time(:second)
+
     case :ets.lookup(:spotify_auth_state, :state) do
-      [{:state, stored_state}] -> state == stored_state
-      [] -> false
+      [{:state, stored_state, expires_at}] when expires_at > now ->
+        # Clean up state after verification (single use)
+        :ets.delete(:spotify_auth_state, :state)
+        # Use constant-time comparison to prevent timing attacks
+        Plug.Crypto.secure_compare(state, stored_state)
+
+      _ ->
+        false
     end
+  rescue
+    _ -> false
   end
 
   defp calculate_expiry(expires_at) when is_integer(expires_at) do
@@ -206,19 +217,36 @@ defmodule Droodotfoo.Spotify.Auth do
   end
 
   defp store_tokens(tokens) do
-    # In a real application, encrypt these and store in a database
-    # For now, store in ETS for development
-    :ets.new(:spotify_tokens, [:named_table, :public])
-    :ets.insert(:spotify_tokens, {:tokens, tokens})
+    secret = Application.get_env(:droodotfoo, DroodotfooWeb.Endpoint)[:secret_key_base]
+    encrypted = Plug.Crypto.encrypt(secret, "spotify_tokens", tokens)
+
+    # Using :public for table access - data is encrypted for security
+    ensure_ets_table(:spotify_tokens, [:named_table, :public])
+    :ets.insert(:spotify_tokens, {:tokens, encrypted})
   end
 
   defp get_stored_tokens do
     case :ets.lookup(:spotify_tokens, :tokens) do
-      [{:tokens, tokens}] -> tokens
-      [] -> nil
+      [{:tokens, encrypted}] ->
+        secret = Application.get_env(:droodotfoo, DroodotfooWeb.Endpoint)[:secret_key_base]
+
+        case Plug.Crypto.decrypt(secret, "spotify_tokens", encrypted) do
+          {:ok, tokens} -> tokens
+          _ -> nil
+        end
+
+      [] ->
+        nil
     end
   rescue
     _ -> nil
+  end
+
+  defp ensure_ets_table(name, opts) do
+    case :ets.whereis(name) do
+      :undefined -> :ets.new(name, opts)
+      _ -> name
+    end
   end
 
   defp clear_stored_tokens do
