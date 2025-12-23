@@ -12,6 +12,7 @@ Documentation hub for the droo.foo personal portfolio and blog.
 
 **Production & Operations:**
 - [Deployment Guide](guides/deployment.md) - Fly.io deployment, CDN setup, monitoring
+- [Security Guide](guides/security.md) - Authentication, rate limiting, input validation
 - [Asset Optimization](guides/assets.md) - Images, fonts, performance optimization
 - [SEO Guide](guides/seo.md) - JSON-LD, meta tags, performance monitoring
 
@@ -26,6 +27,7 @@ docs/
 ├── TODO.md             # Project roadmap and active tasks
 └── guides/
     ├── deployment.md   # Production deployment
+    ├── security.md     # Authentication and rate limiting
     ├── assets.md       # Asset optimization
     └── seo.md          # SEO implementation
 ```

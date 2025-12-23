@@ -1,16 +1,13 @@
 # droo.foo
 
-Personal portfolio and blog built with Phoenix LiveView, featuring generative art patterns and monospace web aesthetics. Optional terminal interface with games and plugins available for interactive experiences.
+Personal portfolio and blog built with Phoenix LiveView, featuring generative art patterns and monospace web aesthetics.
 
 ![Test Coverage](https://img.shields.io/badge/coverage-41.2%25-orange)
-![Tests](https://img.shields.io/badge/tests-1257%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-963%20passing-brightgreen)
 ![Elixir](https://img.shields.io/badge/elixir-1.17-purple)
 ![Phoenix](https://img.shields.io/badge/phoenix-1.8.1-orange)
 
 **Live Demo**: [droo.foo](https://droo.foo)
-
-> Optional integrations: Spotify player, Web3 wallet, terminal interface with games.
-> All require setup but are not needed for core functionality.
 
 ## Features
 
@@ -23,29 +20,11 @@ Personal portfolio and blog built with Phoenix LiveView, featuring generative ar
 - **Resume System**: Structured JSON-based resume with filtering and search
 - **SEO Optimized**: JSON-LD structured data for enhanced search engine visibility
 
-### Optional Terminal Interface (110x45 grid)
-- **Terminal UI**: Browser-based character grid with Unix-style commands
-- **Vim Navigation**: hjkl movement, search with `/`, command mode with `:`
-- **Real-time Rendering**: LiveView WebSocket connection for 60fps updates
-- **PWA Support**: Installable as progressive web app
-
 ### Integrations
 - **Web3 Wallet**: Connect MetaMask for wallet authentication, ENS resolution, NFT/token viewing
 - **Spotify Player**: OAuth integration with playback controls, playlist browsing, and real-time progress
 - **GitHub Stats**: Repository visualization and contribution graphs
 - **STL Viewer**: 3D model viewer with Three.js integration
-
-### Fileverse P2P Collaboration
-- **Portal**: WebRTC-based P2P file sharing with real-time peer presence
-- **dDocs**: Decentralized documents with end-to-end encryption (Signal Protocol)
-- **dSheets**: Onchain data visualization with CSV/JSON export
-- **E2E Encryption**: AES-256-GCM encryption for all transfers with wallet-derived keys
-
-### Plugin System (10 Built-in)
-- **Games**: Snake, Tetris, 2048, Wordle, Conway's Game of Life
-- **Utilities**: Calculator (RPN/standard), Typing Test (WPM tracking)
-- **Effects**: Matrix Rain animation
-- **Integrations**: Spotify player, GitHub browser
 
 ## Quick Start
 
@@ -124,19 +103,17 @@ See [wickstrom.tech](https://wickstrom.tech/2024-09-26-how-i-built-the-monospace
 
 Built with modular Phoenix LiveView architecture:
 
-**Monospace Web Design**: Character-perfect grid using Wickström's monospace web technique with 1ch horizontal units and rem-based line-height for predictable vertical rhythm. Double-line dividers, precision table padding, and media element grid alignment maintain visual consistency.
+**Monospace Web Design**: Character-perfect grid using Wickstrom's monospace web technique with 1ch horizontal units and rem-based line-height for predictable vertical rhythm. Double-line dividers, precision table padding, and media element grid alignment maintain visual consistency.
 
-**Rendering**: Phoenix LiveView handles real-time updates over WebSockets. Optional Raxol terminal UI available for interactive experiences.
+**Rendering**: Phoenix LiveView handles real-time updates over WebSockets.
 
-**State Management**: GenServers orchestrate content loading, GitHub API integration, and optional terminal/plugin state. Functional patterns with immutable state throughout.
+**State Management**: GenServers orchestrate content loading and GitHub API integration. Functional patterns with immutable state throughout.
 
-**Performance**: ETS caching for GitHub API data, blog post metadata, and SVG patterns. Pattern cache provides 568x speedup (26ms → 47µs). Brotli compression for static assets. Page loads under 200ms.
+**Performance**: ETS caching for GitHub API data, blog post metadata, and SVG patterns. Pattern cache provides 568x speedup (26ms -> 47us). Brotli compression for static assets. Page loads under 200ms.
 
 **Content System**: File-based blog posts with markdown + YAML frontmatter. Deterministic SVG pattern generation per post with 8 animation styles. No database required.
 
-**Optional Features**: Terminal interface with 10 plugins (games, utilities), Web3 wallet integration, P2P file sharing with E2E encryption.
-
-**Test Coverage**: 1,257/1,298 tests passing (96.8% pass rate, 41.2% code coverage)
+**Test Coverage**: 963 tests passing (41.2% code coverage)
 
 ## Tech Stack
 
@@ -148,8 +125,8 @@ Built with modular Phoenix LiveView architecture:
 - **Caching**: ETS for GitHub API, posts, patterns (568x speedup for patterns)
 - **Compression**: Brotli for static assets (JS, CSS, SVG, fonts)
 - **SEO**: JSON-LD structured data for enhanced search visibility
-- **Optional**: Raxol 1.4.1 (terminal), ethers.js (Web3), Three.js (STL viewer)
-- **Testing**: ExUnit with 1,257/1,298 tests passing (96.8%)
+- **Optional**: ethers.js (Web3), Three.js (STL viewer)
+- **Testing**: ExUnit with 963 tests passing
 
 ## Development
 
@@ -224,76 +201,21 @@ fly deploy
 
 ### Environment Variables
 
-**Required for production:**
-- `SECRET_KEY_BASE` - Phoenix secret key (generate with `mix phx.gen.secret`)
-- `PHX_HOST` - Your production domain
+See [docs/guides/deployment.md](docs/guides/deployment.md) for complete environment variable reference.
 
-**Required for blog API:**
-- `BLOG_API_TOKEN` - API token for Obsidian publishing (generate with `mix phx.gen.secret`)
+**Required:** `SECRET_KEY_BASE`, `PHX_HOST`, `BLOG_API_TOKEN`
 
-**Optional:**
-- `SPOTIFY_CLIENT_ID` - Spotify API client ID
-- `SPOTIFY_CLIENT_SECRET` - Spotify API client secret
-- `SPOTIFY_REDIRECT_URI` - OAuth callback URL
-- `GITHUB_TOKEN` - GitHub personal access token (5000/hr rate limit vs 60/hr without)
-- `CDN_HOST` - Cloudflare Pages domain for static asset CDN
-- `PORT` - Server port (default: 4000)
-
-## Obsidian Publishing
-
-Publish posts directly from Obsidian via API with built-in security:
-
-```bash
-# Generate and set API token
-export BLOG_API_TOKEN=$(mix phx.gen.secret)
-
-# POST to /api/posts with:
-curl -X POST https://droo.foo/api/posts \
-  -H "Authorization: Bearer $BLOG_API_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "content": "# My Post\n\nContent here",
-    "metadata": {
-      "title": "My Post",
-      "description": "Post description",
-      "tags": ["elixir"]
-    }
-  }'
-```
-
-**Security Features:**
-- Rate limiting: 10 posts/hour, 50 posts/day per IP
-- Bearer token authentication (constant-time comparison)
-- Content validation: 1MB size limit, path traversal prevention
-- Slug validation: alphanumeric and hyphens only
-
-Posts are saved to `priv/posts/` and served at `/posts/:slug`
+**Optional:** `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `GITHUB_TOKEN`, `CDN_HOST`
 
 ## Security
 
-The application implements multiple security layers:
+See [docs/guides/security.md](docs/guides/security.md) for comprehensive security documentation.
 
-**Authentication & Authorization:**
-- OAuth 2.0 with CSRF protection (state parameter validation) for Spotify
-- Bearer token authentication for blog API with constant-time comparison
-- No token bypass - all endpoints require proper authentication
-
-**Rate Limiting:**
-- Blog API: 10 posts/hour, 50 posts/day per IP
-- Contact form: Rate limited per IP
-- ETS-based in-memory tracking with automatic cleanup
-
-**Input Validation:**
-- Content size limits (1MB max for blog posts)
-- Path traversal prevention (no `..`, `/`, `\` in slugs)
-- Slug sanitization (alphanumeric and hyphens only)
-- XSS protection via Phoenix HTML escaping
-
-**Production Deployment:**
-- HTTPS enforcement via `force_ssl` (see config/prod.exs)
-- Secure session cookies with SECRET_KEY_BASE
-- Content Security Policy headers
-- HSTS support for HTTPS-only access
+**Key Features:**
+- OAuth 2.0 for Spotify, Bearer token for Blog API
+- Rate limiting on all public endpoints
+- Input validation with path traversal prevention
+- HTTPS enforcement, CSP headers, secure cookies
 
 ## Documentation
 
@@ -305,6 +227,7 @@ The application implements multiple security layers:
 - **[docs/README.md](docs/README.md)** - Documentation index and quick start
 - **[docs/TODO.md](docs/TODO.md)** - Active tasks, priorities, and roadmap
 - **[docs/guides/deployment.md](docs/guides/deployment.md)** - Fly.io production deployment
+- **[docs/guides/security.md](docs/guides/security.md)** - Authentication, rate limiting, input validation
 - **[docs/guides/seo.md](docs/guides/seo.md)** - SEO optimization with JSON-LD
 - **[docs/guides/assets.md](docs/guides/assets.md)** - Image and asset optimization
 
@@ -325,33 +248,3 @@ open doc/index.html
 - Type definitions and behaviors
 - Searchable interface
 
-## Terminal Commands
-
-### Navigation
-- `:help` - Show available commands and keyboard shortcuts
-- `:ls` - List directory contents
-- `:cat <section>` - Display section content
-
-### Games & Utilities
-- `:snake` - Classic Snake game (WASD/arrows)
-- `:tetris` - Tetris with scoring system
-- `:2048` - 2048 sliding puzzle with undo
-- `:wordle` - Word guessing game
-- `:conway` - Conway's Game of Life
-- `:calc` - Calculator (RPN and standard modes)
-- `:typing` - Typing speed test with WPM tracking
-- `:matrix` - Matrix rain animation
-
-### Integrations
-- `:spotify` - Launch Spotify player (requires OAuth)
-- `:github` - Browse GitHub repositories
-- `:web3` - Connect Web3 wallet
-- `:ens <name>` - Resolve ENS names (requires Web3)
-- `:portal` - P2P file sharing portal
-
-### System
-- `:perf` - Performance dashboard with metrics
-- `:themes` - Switch color themes
-- `:clear` - Clear terminal output
-- `?` - Toggle help modal
-- `v` - Toggle vim mode

@@ -4,9 +4,9 @@
 
 ## Current Status
 
-**Last Updated**: Oct 26, 2025
+**Last Updated**: Dec 23, 2025
 **Version**: v1.0.0
-**Test Coverage**: 41.2% (1,298 tests, 1,257 passing, 290 skipped)
+**Test Coverage**: 41.2% (963 tests passing, 335 skipped)
 **Focus**: Blog system with generative art patterns and monospace web design
 
 ---
@@ -26,210 +26,70 @@ mix precommit               # Format, compile, test
 
 ## Active Priorities
 
-### Blog & Content
+### High
+| Area | Task |
+|------|------|
+| Blog | Add more blog posts, create tutorial series, write about Elixir/Phoenix |
+| Projects | Add descriptions, link live demos, add screenshots |
+| Performance | Monitor Lighthouse (90+), optimize SVG patterns, CSS bundle |
+| DevOps | GitHub Actions CI/CD (tests on PR, deploy on merge, coverage) |
 
-**High Priority:**
-- [ ] Add more blog posts (current: 1 post)
-- [ ] Create multi-part tutorial series using series navigation
-- [ ] Write about Elixir/Phoenix development process
+### Medium
+| Area | Task |
+|------|------|
+| Blog | Image optimization, code copy button, TOC, reading time |
+| Performance | Service worker, PWA manifest, progressive images |
+| DevOps | Error tracking (Sentry), uptime/performance monitoring |
 
-**Medium Priority:**
-- [ ] Implement image optimization pipeline (see `IMAGE_OPTIMIZATION.md`)
-- [ ] Add code snippet component with copy button
-- [ ] Table of contents for long posts
-- [ ] Estimated reading time more visible
-
-**Low Priority:**
-- [ ] Tag filtering on posts page
-- [ ] Search functionality across posts
-- [ ] Related posts recommendations
-- [ ] Post excerpt on listing page
-
-### Projects Page
-
-**High Priority:**
-- [ ] Add more project descriptions
-- [ ] Link to live demos where available
-- [ ] Add project images/screenshots
-
-**Low Priority:**
-- [ ] Filter projects by technology
-- [ ] Contribution timeline visualization
-- [ ] Project detail pages
-
-### Performance & Polish
-
-**High Priority:**
-- [ ] Monitor Lighthouse scores (target: 90+ across all metrics)
-- [ ] Optimize SVG pattern file sizes
-- [ ] Review and optimize CSS bundle size
-
-**Medium Priority:**
-- [ ] Implement service worker for offline reading
-- [ ] Add PWA manifest for installability
-- [ ] Progressive image loading
-
-**Low Priority:**
-- [ ] Dark mode improvements
-- [ ] Font loading optimization
-- [ ] Reduce JavaScript bundle size
-
-### DevOps & Infrastructure
-
-**High Priority:**
-- [ ] Set up GitHub Actions CI/CD
-  - [ ] Run tests on PR
-  - [ ] Deploy to Fly.io on merge to main
-  - [ ] Coverage reporting
-
-**Medium Priority:**
-- [ ] Monitoring and error tracking (Sentry/Honeybadger)
-- [ ] Uptime monitoring
-- [ ] Performance monitoring
-
-**Low Priority:**
-- [ ] Backup strategy for posts
-- [ ] Blue/green deployments
-- [ ] Staging environment
-
-### Code Quality
-
-**Medium Priority:**
-- [x] Add Credo for code quality checks (completed Oct 26)
-- [ ] Security audit with Sobelow
-- [ ] Dependency version updates
-- [ ] Remove unused modules/functions
-
-**Low Priority:**
-- [ ] Increase test coverage to 50%+
-- [ ] Document all public functions
-- [ ] Refactor complex functions
+### Low
+| Area | Task |
+|------|------|
+| Blog | Tag filtering, search, related posts, excerpts |
+| Projects | Tech filter, contribution timeline, detail pages |
+| Performance | Dark mode, font loading, JS bundle size |
+| DevOps | Post backup, blue/green deploys, staging env |
+| Code | Dependency updates, remove unused code, 50%+ coverage, docs |
 
 ---
 
-## Recently Completed (Oct 2025)
+## Completed
 
-### Code Quality Improvements (Oct 26)
-- ✅ Credo static analysis setup (v1.7.12)
-- ✅ Fixed 64 code quality issues (alias ordering, implicit try, Enum optimizations)
-- ✅ Performance test fixes (MonitorTest, MetricsTest)
-- ✅ Test helper cleanup for archived modules
-- ✅ 20% reduction in Credo warnings
-
-### Monospace Web Design (Oct 26)
-- ✅ Implemented Oskar Wickström's monospace techniques
-- ✅ Double-line HR styling with pseudo-elements
-- ✅ Precision table padding with border compensation
-- ✅ Media grid alignment (images/videos snap to line-height)
-- ✅ Table width utilities (character-based and percentage)
-- ✅ Rem-based line-height for predictable calculations
-- ✅ Documentation cleanup (65% reduction in docs/README.md)
-
-### Blog Enhancements (Oct 25)
-- ✅ Reading progress bar with scroll tracking
-- ✅ Blog post series/collections with navigation
-- ✅ Enhanced OpenGraph metadata for social sharing
-- ✅ Image optimization documentation
-- ✅ Series navigation CSS styling
-- ✅ Test coverage for series functionality
-
-### Pattern Generator Refactor (Oct 24)
-- ✅ Modular architecture (PatternConfig, RandomGenerator, SVGBuilder)
-- ✅ 8 pattern styles with animations
-- ✅ Simplified color palettes (monochrome focus)
-- ✅ Pattern gallery page
-
-### Content Pages (Oct 19-23)
-- ✅ Now page showing current activities
-- ✅ Sitemap with ASCII tree navigation
-- ✅ RSS feed and SEO sitemap
-- ✅ Contact form with rate limiting
-- ✅ Projects page with GitHub integration
+| Date | Category | Summary |
+|------|----------|---------|
+| Dec 2025 | Security | OAuth token encryption, state expiry, error sanitization, body limits |
+| Oct 2025 | Code Quality | Credo setup, 64 issues fixed, test cleanup |
+| Oct 2025 | Design | Monospace web (Wickstrom technique), double-line HRs, grid alignment |
+| Oct 2025 | Blog | Series navigation, reading progress, OpenGraph metadata |
+| Oct 2025 | Patterns | Modular generator, 8 styles with animations, pattern gallery |
+| Oct 2025 | Content | Now page, sitemap, RSS feed, contact form, projects page |
 
 ---
 
-## Ideas & Future Exploration
+## Ideas (Someday/Maybe)
 
-These are low-priority ideas to consider if there's time/interest:
-
-### Content Features
-- Email newsletter subscription
-- Comments via Giscus (GitHub Discussions)
-- Webmentions integration
-- Post scheduling/drafts
-- Markdown shortcuts/helpers
-
-### Technical Experiments
-- LiveView Native mobile app
-- Real-time collaborative editing
-- WebAssembly integration for games
-- P2P features (Portal file sharing)
-- Terminal interface enhancements
-
-### Analytics & Insights
-- Privacy-friendly analytics (Plausible/Fathom)
-- Reading statistics (time, completion rate)
-- Popular posts dashboard
-- Search query analytics
+- Newsletter, comments (Giscus), webmentions, post drafts
+- LiveView Native mobile app, real-time collaboration
+- Privacy analytics (Plausible), reading stats, popular posts dashboard
 
 ---
 
 ## Archived Features
 
-These features are built but not currently active on the site:
-
-### Terminal Interface
-- Raxol terminal framework (110x45 grid)
-- Vim-style navigation (hjkl, /, :)
-- 10 plugins (Snake, Tetris, Calculator, etc.)
-- 40+ terminal commands
-- Plugin system architecture
-
-**Status:** Code retained in `lib/droodotfoo/raxol/` and `lib/droodotfoo/terminal/`
-**To reactivate:** Update router to use `DroodotfooLive` at `/`
-
-### Web3 Integration
-- MetaMask wallet connection
-- ENS resolution
-- NFT/token viewing
-- IPFS integration
-- Smart contract interaction
-
-**Status:** Code retained in `lib/droodotfoo/web3/`
-**Note:** Experimental, not actively maintained
-
-### Fileverse P2P
-- Portal file sharing (WebRTC)
-- dDocs with E2E encryption
-- dSheets data visualization
-- Real-time collaboration
-
-**Status:** Code retained in `lib/droodotfoo/fileverse/`
-**Note:** Requires Fileverse SDK integration to complete
+| Feature | Description | Location |
+|---------|-------------|----------|
+| Terminal | Raxol framework, vim navigation, 10 plugins, 40+ commands | `.unused_modules_backup/` |
+| Web3 | MetaMask, ENS, NFT viewing, IPFS | Code exists, not routed |
+| Fileverse P2P | Portal file sharing, E2E encryption, dDocs/dSheets | Code exists, not routed |
 
 ---
 
-## Documentation
+## Resources
 
-**Core Docs (Project Root):**
-- `README.md` - Project overview and quick start
-- `CLAUDE.md` - Development commands, architecture, patterns
+| Doc | Purpose |
+|-----|---------|
+| `README.md` | Project overview and quick start |
+| `CLAUDE.md` | Development commands, architecture, patterns |
+| `docs/guides/*.md` | Deployment, assets, SEO guides |
+| `mix docs` | Generate ExDoc API documentation |
 
-**Guides (docs/guides/):**
-- `deployment.md` - Fly.io deployment, CDN, monitoring
-- `assets.md` - Image/font optimization, performance
-- `seo.md` - JSON-LD, meta tags, performance
-
-**Generated:**
-- `doc/index.html` - ExDoc API documentation (run `mix docs`)
-
----
-
-## Contact & Resources
-
-**Live Site:** [droo.foo](https://droo.foo)
-**Repository:** GitHub (private)
-**Deployment:** Fly.io
-**CDN:** Cloudflare Pages
-
-**Questions?** See `DEVELOPMENT.md` for development setup or `ARCHITECTURE.md` for system design.
+**Live:** [droo.foo](https://droo.foo) | **Deploy:** Fly.io | **CDN:** Cloudflare Pages
