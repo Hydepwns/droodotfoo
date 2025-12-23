@@ -7,6 +7,7 @@ defmodule DroodotfooWeb.SpotifyAuthController do
   require Logger
 
   alias Droodotfoo.Spotify.{Auth, Manager}
+  alias Droodotfoo.ErrorSanitizer
 
   @doc """
   Initiates the Spotify OAuth flow.
@@ -23,7 +24,7 @@ defmodule DroodotfooWeb.SpotifyAuthController do
         |> redirect(to: "/")
 
       {:error, reason} ->
-        Logger.error("Failed to start Spotify auth: #{inspect(reason)}")
+        Logger.error("Failed to start Spotify auth: #{ErrorSanitizer.sanitize(reason)}")
 
         conn
         |> put_flash(:error, "Failed to start authentication")
@@ -52,7 +53,7 @@ defmodule DroodotfooWeb.SpotifyAuthController do
         |> redirect(to: "/")
 
       {:error, reason} ->
-        Logger.error("Failed to complete Spotify auth: #{inspect(reason)}")
+        Logger.error("Failed to complete Spotify auth: #{ErrorSanitizer.sanitize(reason)}")
 
         conn
         |> put_flash(:error, "Authentication failed. Please try again.")

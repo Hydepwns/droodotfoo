@@ -76,7 +76,7 @@ defmodule Droodotfoo.Spotify.Auth do
         |> Client.authorize_url!(params)
 
       # Store state for verification with 5 minute expiry
-      ensure_ets_table(:spotify_auth_state, [:named_table, :public])
+      ensure_ets_table(:spotify_auth_state, [:named_table, :protected])
       expires_at = System.system_time(:second) + 300
       :ets.insert(:spotify_auth_state, {:state, state, expires_at})
 
@@ -84,7 +84,7 @@ defmodule Droodotfoo.Spotify.Auth do
     end
   rescue
     error ->
-      Logger.error("Error generating authorization URL: #{inspect(error)}")
+      Logger.error("Error generating authorization URL: #{sanitize_error(error)}")
       {:error, :auth_url_generation_failed}
   end
 
@@ -114,7 +114,7 @@ defmodule Droodotfoo.Spotify.Auth do
         {:ok, token_data}
       rescue
         error ->
-          Logger.error("Error exchanging code for tokens: #{inspect(error)}")
+          Logger.error("Error exchanging code for tokens: #{sanitize_error(error)}")
           {:error, :token_exchange_failed}
       end
     end
@@ -159,7 +159,7 @@ defmodule Droodotfoo.Spotify.Auth do
     {:ok, token_data.access_token}
   rescue
     error ->
-      Logger.error("Error refreshing token: #{inspect(error)}")
+      Logger.error("Error refreshing token: #{sanitize_error(error)}")
       {:error, :token_refresh_failed}
   end
 
@@ -220,8 +220,8 @@ defmodule Droodotfoo.Spotify.Auth do
     secret = Application.get_env(:droodotfoo, DroodotfooWeb.Endpoint)[:secret_key_base]
     encrypted = Plug.Crypto.encrypt(secret, "spotify_tokens", tokens)
 
-    # Using :public for table access - data is encrypted for security
-    ensure_ets_table(:spotify_tokens, [:named_table, :public])
+    # Using :protected for table access - data is encrypted for security
+    ensure_ets_table(:spotify_tokens, [:named_table, :protected])
     :ets.insert(:spotify_tokens, {:tokens, encrypted})
   end
 
@@ -254,4 +254,11 @@ defmodule Droodotfoo.Spotify.Auth do
   rescue
     _ -> :ok
   end
+
+  # Sanitize error messages before logging to prevent sensitive data leakage
+  defp sanitize_error(%{message: msg}) when is_binary(msg), do: msg
+  defp sanitize_error(%{reason: reason}) when is_binary(reason), do: reason
+  defp sanitize_error(error) when is_binary(error), do: error
+  defp sanitize_error(%{__struct__: struct}), do: "#{inspect(struct)} error"
+  defp sanitize_error(_), do: "OAuth error occurred"
 end

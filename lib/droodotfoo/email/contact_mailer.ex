@@ -8,6 +8,7 @@ defmodule Droodotfoo.Email.ContactMailer do
   require Logger
 
   alias Droodotfoo.Email.ContactEmail
+  alias Droodotfoo.ErrorSanitizer
 
   @doc """
   Sends both notification and confirmation emails for a contact form submission.
@@ -25,16 +26,16 @@ defmodule Droodotfoo.Email.ContactMailer do
         {:ok, :emails_sent}
 
       {{:error, reason}, _} ->
-        Logger.error("Failed to send notification email: #{inspect(reason)}")
+        Logger.error("Failed to send notification email: #{ErrorSanitizer.sanitize(reason)}")
         {:error, "Failed to send notification email"}
 
       {_, {:error, reason}} ->
-        Logger.error("Failed to send confirmation email: #{inspect(reason)}")
+        Logger.error("Failed to send confirmation email: #{ErrorSanitizer.sanitize(reason)}")
         {:error, "Failed to send confirmation email"}
     end
   rescue
     error ->
-      Logger.error("Error sending contact emails: #{inspect(error)}")
+      Logger.error("Error sending contact emails: #{ErrorSanitizer.sanitize(error)}")
       {:error, "Email service temporarily unavailable"}
   end
 
@@ -45,7 +46,7 @@ defmodule Droodotfoo.Email.ContactMailer do
     contact_notification_email(contact_data) |> deliver()
   rescue
     error ->
-      Logger.error("Error sending notification email: #{inspect(error)}")
+      Logger.error("Error sending notification email: #{ErrorSanitizer.sanitize(error)}")
       {:error, "Failed to send notification email"}
   end
 
@@ -56,7 +57,7 @@ defmodule Droodotfoo.Email.ContactMailer do
     contact_confirmation_email(contact_data) |> deliver()
   rescue
     error ->
-      Logger.error("Error sending confirmation email: #{inspect(error)}")
+      Logger.error("Error sending confirmation email: #{ErrorSanitizer.sanitize(error)}")
       {:error, "Failed to send confirmation email"}
   end
 
@@ -75,7 +76,7 @@ defmodule Droodotfoo.Email.ContactMailer do
       contact_notification_email(test_data) |> deliver()
     rescue
       error ->
-        Logger.error("Email configuration test failed: #{inspect(error)}")
+        Logger.error("Email configuration test failed: #{ErrorSanitizer.sanitize(error)}")
         {:error, "Email configuration test failed"}
     end
   end

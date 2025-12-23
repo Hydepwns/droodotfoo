@@ -6,6 +6,8 @@ defmodule Droodotfoo.GitHub.Client do
 
   require Logger
 
+  alias Droodotfoo.ErrorSanitizer
+
   @github_api_url "https://api.github.com/graphql"
   @github_rest_api_url "https://api.github.com"
   @cache_ttl :timer.minutes(15)
@@ -64,7 +66,7 @@ defmodule Droodotfoo.GitHub.Client do
         {:error, :rate_limited}
 
       {:error, reason} ->
-        Logger.error("Failed to fetch repo info: #{inspect(reason)}")
+        Logger.error("Failed to fetch repo info: #{ErrorSanitizer.sanitize(reason)}")
         {:error, reason}
     end
   end
@@ -98,7 +100,7 @@ defmodule Droodotfoo.GitHub.Client do
         {:error, :rate_limited}
 
       {:error, reason} ->
-        Logger.error("Failed to fetch languages: #{inspect(reason)}")
+        Logger.error("Failed to fetch languages: #{ErrorSanitizer.sanitize(reason)}")
         {:error, reason}
     end
   end
@@ -133,7 +135,7 @@ defmodule Droodotfoo.GitHub.Client do
         {:error, :rate_limited}
 
       {:error, reason} ->
-        Logger.error("Failed to fetch latest commit: #{inspect(reason)}")
+        Logger.error("Failed to fetch latest commit: #{ErrorSanitizer.sanitize(reason)}")
         {:error, reason}
     end
   end
@@ -165,7 +167,7 @@ defmodule Droodotfoo.GitHub.Client do
         {:error, :rate_limited}
 
       {:error, reason} ->
-        Logger.error("Failed to fetch latest release: #{inspect(reason)}")
+        Logger.error("Failed to fetch latest release: #{ErrorSanitizer.sanitize(reason)}")
         {:error, reason}
     end
   end
@@ -215,7 +217,10 @@ defmodule Droodotfoo.GitHub.Client do
         {:ok, repos}
 
       {:error, reason} = error ->
-        Logger.error("Failed to fetch GitHub repos for #{username}: #{inspect(reason)}")
+        Logger.error(
+          "Failed to fetch GitHub repos for #{username}: #{ErrorSanitizer.sanitize(reason)}"
+        )
+
         error
     end
   end
@@ -281,13 +286,12 @@ defmodule Droodotfoo.GitHub.Client do
       {:ok, {{_, 200, _}, _headers, response_body}} ->
         parse_graphql_response(List.to_string(response_body))
 
-      {:ok, {{_, status, _}, _headers, response_body}} ->
-        body_str = List.to_string(response_body)
-        Logger.error("GitHub GraphQL API returned #{status}: #{body_str}")
+      {:ok, {{_, status, _}, _headers, _response_body}} ->
+        Logger.error("GitHub GraphQL API returned status #{status}")
         {:error, "GitHub API error: #{status}"}
 
       {:error, reason} ->
-        {:error, "HTTP request failed: #{inspect(reason)}"}
+        {:error, "HTTP request failed: #{ErrorSanitizer.sanitize(reason)}"}
     end
   end
 
@@ -304,13 +308,12 @@ defmodule Droodotfoo.GitHub.Client do
       {:ok, {{_, 200, _}, _headers, response_body}} ->
         parse_rest_response(List.to_string(response_body))
 
-      {:ok, {{_, status, _}, _headers, response_body}} ->
-        body_str = List.to_string(response_body)
-        Logger.error("GitHub REST API returned #{status}: #{body_str}")
+      {:ok, {{_, status, _}, _headers, _response_body}} ->
+        Logger.error("GitHub REST API returned status #{status}")
         {:error, "GitHub API error: #{status}"}
 
       {:error, reason} ->
-        {:error, "HTTP request failed: #{inspect(reason)}"}
+        {:error, "HTTP request failed: #{ErrorSanitizer.sanitize(reason)}"}
     end
   end
 
