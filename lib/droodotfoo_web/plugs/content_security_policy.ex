@@ -39,12 +39,12 @@ defmodule DroodotfooWeb.Plugs.ContentSecurityPolicy do
     # Build CSP policy with nonce-based inline script protection
     # Note:
     # - 'nonce-{nonce}' allows inline scripts with matching nonce attribute
-    # - 'unsafe-eval' kept for WebAssembly (TODO: remove if not needed)
     # - 'unsafe-inline' kept for styles only (consider using nonces here too)
     # - Removed chrome-extension/moz-extension (overly permissive)
+    # - 'unsafe-eval' removed after security audit (no WASM/eval usage found)
     [
       "default-src 'self'",
-      "script-src 'self' 'nonce-#{nonce}' 'unsafe-eval' #{host}",
+      "script-src 'self' 'nonce-#{nonce}' #{host}",
       "style-src 'self' 'unsafe-inline' #{host}",
       "font-src 'self' #{host}/fonts data:",
       "img-src 'self' data: blob: #{host}",
