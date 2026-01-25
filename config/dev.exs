@@ -16,7 +16,13 @@ config :droodotfoo, DroodotfooWeb.Endpoint,
   secret_key_base: "XGb9pKKqaRoHP7mE8lkAi+DHOuhfjGoVhtHmJ8AZ0l6YWLC5GAeZ2u0T9GKKxj5X",
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:droodotfoo, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:droodotfoo, ~w(--watch)]}
+    npx: [
+      "tailwindcss",
+      "--input=css/app.css",
+      "--output=../priv/static/assets/css/app.css",
+      "--watch",
+      cd: Path.expand("../assets", __DIR__)
+    ]
   ]
 
 # ## SSL Support

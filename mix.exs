@@ -180,18 +180,17 @@ defmodule Droodotfoo.MixProject do
     [
       setup: ["deps.get", "assets.setup", "assets.build"],
       "assets.setup": [
-        "tailwind.install --if-missing",
         "esbuild.install --if-missing",
         "cmd npm --prefix ./assets ci"
       ],
       "assets.build": [
         "compile",
-        "tailwind droodotfoo",
+        "cmd npm --prefix ./assets run tailwind:build",
         "esbuild droodotfoo",
         "cmd mkdir -p priv/static/astro && cp -r assets/astro/* priv/static/astro/"
       ],
       "assets.deploy": [
-        "tailwind droodotfoo --minify",
+        "cmd npm --prefix ./assets run tailwind:deploy",
         "esbuild droodotfoo --minify",
         "cmd mkdir -p priv/static/astro && cp -r assets/astro/* priv/static/astro/",
         "phx.digest",
