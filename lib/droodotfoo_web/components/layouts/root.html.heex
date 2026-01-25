@@ -111,6 +111,11 @@
       type="font/woff2"
       crossorigin
     />
+    <!-- Preconnect to Spotify for faster embed loading -->
+    <link rel="preconnect" href="https://open.spotify.com" crossorigin />
+    <link rel="preconnect" href="https://i.scdn.co" crossorigin />
+    <link rel="dns-prefetch" href="https://open.spotify.com" />
+    <link rel="dns-prefetch" href="https://i.scdn.co" />
     <script
       defer
       phx-track-static
@@ -209,7 +214,7 @@
       class="music-player-persistent music-player-minimized"
     >
       <div class="music-player-content">
-        <!-- Spotify embed (primary) -->
+        <!-- Spotify embed (primary) - loads eagerly for faster interaction -->
         <iframe
           id="spotify-player"
           title="Spotify Music Player"
@@ -221,7 +226,6 @@
           frameBorder="0"
           allowfullscreen=""
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy"
           onerror="document.getElementById('spotify-player').style.display='none';document.getElementById('youtube-fallback').style.display='block';"
         >
         </iframe>
