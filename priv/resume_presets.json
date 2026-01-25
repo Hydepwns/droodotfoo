@@ -3,125 +3,100 @@
     "name": "tagged_preset",
     "description": null,
     "filters": {
-      "technologies": [
-        "Elixir"
-      ]
+      "technologies": ["Elixir"]
     },
-    "tags": [
-      "web3",
-      "functional"
-    ],
-    "created_at": "2026-01-25T14:33:37.139197Z",
-    "updated_at": "2026-01-25T14:33:37.139199Z",
+    "tags": ["web3", "functional"],
+    "created_at": "2026-01-25T19:30:02.337786Z",
+    "updated_at": "2026-01-25T19:30:02.337788Z",
     "is_system": false
   },
   {
     "name": "test_preset",
     "description": null,
     "filters": {
-      "technologies": [
-        "Elixir"
-      ],
+      "technologies": ["Elixir"],
       "text_search": "blockchain"
     },
     "tags": [],
-    "created_at": "2026-01-25T14:33:37.134618Z",
-    "updated_at": "2026-01-25T14:33:37.134620Z",
+    "created_at": "2026-01-25T19:30:02.367322Z",
+    "updated_at": "2026-01-25T19:30:02.367325Z",
     "is_system": false
   },
   {
     "name": "test_load",
     "description": null,
     "filters": {
-      "technologies": [
-        "Elixir"
-      ]
+      "technologies": ["Elixir"]
     },
     "tags": [],
-    "created_at": "2026-01-25T14:33:37.135102Z",
-    "updated_at": "2026-01-25T14:33:37.135104Z",
+    "created_at": "2026-01-25T19:30:02.316333Z",
+    "updated_at": "2026-01-25T19:30:02.316337Z",
     "is_system": false
   },
   {
     "name": "elixir_preset",
     "description": null,
     "filters": {
-      "technologies": [
-        "Elixir"
-      ]
+      "technologies": ["Elixir"]
     },
-    "tags": [
-      "elixir",
-      "functional"
-    ],
-    "created_at": "2026-01-25T14:33:37.144298Z",
-    "updated_at": "2026-01-25T14:33:37.144300Z",
+    "tags": ["elixir", "functional"],
+    "created_at": "2026-01-25T19:30:02.330146Z",
+    "updated_at": "2026-01-25T19:30:02.330155Z",
     "is_system": false
   },
   {
     "name": "ruby_preset",
     "description": "Updated description",
     "filters": {
-      "technologies": [
-        "Ruby"
-      ]
+      "technologies": ["Ruby"]
     },
     "tags": [],
-    "created_at": "2026-01-25T14:33:37.140689Z",
-    "updated_at": "2026-01-25T14:33:37.142601Z",
+    "created_at": "2026-01-25T19:30:02.341054Z",
+    "updated_at": "2026-01-25T19:30:02.344378Z",
     "is_system": false
   },
   {
     "name": "rust_preset",
     "description": "Rust experience",
     "filters": {
-      "technologies": [
-        "Rust"
-      ]
+      "technologies": ["Rust"]
     },
     "tags": [],
-    "created_at": "2026-01-25T14:33:37.136359Z",
-    "updated_at": "2026-01-25T14:33:37.136361Z",
+    "created_at": "2026-01-25T19:30:02.351529Z",
+    "updated_at": "2026-01-25T19:30:02.351532Z",
     "is_system": false
   },
   {
     "name": "user_preset",
     "description": null,
     "filters": {
-      "technologies": [
-        "Go"
-      ]
+      "technologies": ["Go"]
     },
     "tags": [],
-    "created_at": "2026-01-25T14:33:37.134045Z",
-    "updated_at": "2026-01-25T14:33:37.134046Z",
+    "created_at": "2026-01-25T19:30:02.332356Z",
+    "updated_at": "2026-01-25T19:30:02.332366Z",
     "is_system": false
   },
   {
     "name": "updatable",
     "description": null,
     "filters": {
-      "technologies": [
-        "Java",
-        "Kotlin"
-      ]
+      "technologies": ["Java", "Kotlin"]
     },
     "tags": [],
-    "created_at": "2026-01-25T14:33:37.124233Z",
-    "updated_at": "2026-01-25T14:33:37.130000Z",
+    "created_at": "2026-01-25T19:30:02.358042Z",
+    "updated_at": "2026-01-25T19:30:02.360103Z",
     "is_system": false
   },
   {
     "name": "import_test",
     "description": null,
     "filters": {
-      "technologies": [
-        "TypeScript"
-      ]
+      "technologies": ["TypeScript"]
     },
     "tags": [],
-    "created_at": "2026-01-25T14:33:37.131882Z",
-    "updated_at": "2026-01-25T14:33:37.131885Z",
+    "created_at": "2026-01-25T19:30:02.362290Z",
+    "updated_at": "2026-01-25T19:30:02.362307Z",
     "is_system": false
   }
 ]
