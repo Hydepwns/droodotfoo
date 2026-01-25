@@ -6,8 +6,6 @@ defmodule Droodotfoo.TerminalTestHelpers do
   rather than exact string matches, making tests less brittle when UI text changes.
   """
 
-  alias Droodotfoo.Raxol.Config
-
   @doc """
   Checks if buffer or HTML contains status bar hints (help, cmd, search).
   """

@@ -8,9 +8,8 @@ defmodule Droodotfoo.GenServerCase do
 
   setup do
     # List of GenServers that need to be managed
+    # Note: RaxolApp and TerminalBridge are archived
     genservers = [
-      {Droodotfoo.RaxolApp, []},
-      {Droodotfoo.TerminalBridge, []},
       {Droodotfoo.PerformanceMonitor, []},
       {Droodotfoo.PluginSystem, []}
     ]

@@ -1,32 +1,14 @@
 defmodule Droodotfoo.PropertyTest do
   use ExUnit.Case
   use ExUnitProperties
-  # Skip: RaxolApp, TerminalBridge, and Raxol modules archived in .unused_modules_backup/
-  @moduletag :skip
 
-  alias Droodotfoo.{AdaptiveRefresh, InputDebouncer, InputRateLimiter, RaxolApp, TerminalBridge}
-  alias Droodotfoo.Raxol.{Command, Navigation, State}
+  alias Droodotfoo.{AdaptiveRefresh, InputDebouncer, InputRateLimiter}
 
   @moduledoc """
   Property-based tests for droodotfoo components.
   These tests verify invariants and properties that should hold
   for all possible inputs.
   """
-
-  property "RaxolApp handles any sequence of valid keys without crashing" do
-    check all(key_sequence <- list_of(valid_key_gen(), min_length: 1, max_length: 100)) do
-      raxol_pid = Process.whereis(RaxolApp)
-      initial_alive = Process.alive?(raxol_pid)
-
-      # Send all keys in sequence
-      for key <- key_sequence do
-        GenServer.cast(raxol_pid, {:input, key})
-      end
-
-      # RaxolApp should still be alive
-      assert initial_alive == Process.alive?(raxol_pid)
-    end
-  end
 
   property "buffer operations maintain valid structure" do
     check all(operations <- list_of(buffer_operation_gen(), max_length: 50)) do
@@ -49,29 +31,6 @@ defmodule Droodotfoo.PropertyTest do
       assert Enum.all?(final_buffer.lines, fn line ->
                Enum.all?(line.cells, &valid_cell?/1)
              end)
-    end
-  end
-
-  property "state transitions preserve invariants" do
-    check all(transitions <- list_of(state_transition_gen(), max_length: 100)) do
-      initial_state = State.initial(80, 24)
-
-      final_state =
-        Enum.reduce(transitions, initial_state, fn transition, state ->
-          # Ensure state is always a valid map before applying transitions
-          if is_map(state) do
-            apply_state_transition(state, transition)
-          else
-            initial_state
-          end
-        end)
-
-      # State invariants
-      assert is_map(final_state)
-      assert is_boolean(final_state.command_mode)
-      assert final_state.cursor_y >= 0
-      assert final_state.cursor_x >= 0
-      assert is_binary(final_state.command_buffer)
     end
   end
 
@@ -188,105 +147,7 @@ defmodule Droodotfoo.PropertyTest do
     end
   end
 
-  property "HTML generation produces valid output" do
-    check all(content <- list_of(ascii_string(min_length: 0, max_length: 80), length: 24)) do
-      # Create buffer with correct structure matching TerminalBridge expectations
-      # TerminalBridge expects a map with :lines key containing list of line maps
-      buffer_lines =
-        Enum.map(content, fn line ->
-          chars = String.graphemes(String.pad_trailing(line, 80))
-
-          cells =
-            Enum.map(Enum.take(chars, 80), fn char ->
-              %{char: char, style: %{}}
-            end)
-
-          %{cells: cells}
-        end)
-
-      buffer = %{lines: buffer_lines}
-
-      # Generate HTML
-      html = TerminalBridge.terminal_to_html(buffer)
-
-      # HTML should be valid
-      assert is_binary(html)
-      assert String.contains?(html, "<div")
-      assert String.contains?(html, "</div>")
-
-      # Should not contain null bytes or invalid chars
-      refute String.contains?(html, <<0>>)
-    end
-  end
-
-  property "navigation commands keep cursor in bounds" do
-    check all(
-            nav_commands <- list_of(navigation_command_gen(), max_length: 100),
-            width <- integer(10..200),
-            height <- integer(10..100)
-          ) do
-      initial_state = State.initial(width, height)
-      initial_state = %{initial_state | cursor_y: div(height, 2), cursor_x: div(width, 2)}
-
-      final_state =
-        Enum.reduce(nav_commands, initial_state, fn cmd, state ->
-          result = Navigation.handle_input(state, cmd)
-          # Ensure we always have a valid state map
-          if is_map(result) and Map.has_key?(result, :cursor_y) do
-            result
-          else
-            state
-          end
-        end)
-
-      # Cursor should remain in bounds
-      assert is_map(final_state)
-      assert final_state.cursor_y >= 0
-      assert final_state.cursor_y < height
-      assert final_state.cursor_x >= 0
-      assert final_state.cursor_x < width
-    end
-  end
-
-  property "command parsing handles any input" do
-    check all(command_str <- string(:utf8, max_length: 100)) do
-      state = State.initial(80, 24)
-      state = %{state | command_mode: true, command_buffer: command_str}
-
-      # Command.handle_input doesn't handle "Enter" - that's done at State level
-      # Test other inputs that Command.handle_input does handle
-      test_keys = ["a", "b", "Backspace", "Tab", "ArrowUp", "ArrowDown"]
-
-      for key <- test_keys do
-        result = Command.handle_input(key, state)
-        # Should always return a state map
-        assert is_map(result)
-        assert Map.has_key?(result, :command_buffer)
-        assert is_binary(result.command_buffer)
-      end
-    end
-  end
-
   # Generator functions
-
-  defp valid_key_gen do
-    frequency([
-      # Regular keys
-      {40, string(:alphanumeric, length: 1)},
-      # Navigation
-      {20, member_of(["h", "j", "k", "l"])},
-      # Special
-      {10, member_of(["Enter", "Escape", "Tab"])},
-      # Movement
-      {10, member_of(["g", "G", "w", "b", "e"])},
-      # Line navigation
-      {10, member_of(["0", "$"])},
-      # Mode changes
-      {5, member_of([":", "/"])},
-      # Arrows
-      {5, member_of(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"])}
-    ])
-  end
 
   defp buffer_operation_gen do
     one_of([
@@ -295,42 +156,6 @@ defmodule Droodotfoo.PropertyTest do
       tuple({constant(:scroll), member_of([:up, :down])}),
       tuple({constant(:fill), string(:ascii, length: 1)})
     ])
-  end
-
-  defp state_transition_gen do
-    one_of([
-      tuple({constant(:navigate), navigation_command_gen()}),
-      tuple({constant(:command), string(:alphanumeric, max_length: 20)}),
-      tuple({constant(:search), string(:alphanumeric, max_length: 20)}),
-      tuple({constant(:mode_change), member_of([:navigation, :command, :search])})
-    ])
-  end
-
-  defp navigation_command_gen do
-    member_of([
-      "h",
-      "j",
-      "k",
-      "l",
-      "g",
-      "G",
-      "w",
-      "b",
-      "e",
-      "0",
-      "$",
-      "ArrowUp",
-      "ArrowDown",
-      "ArrowLeft",
-      "ArrowRight"
-    ])
-  end
-
-  defp ascii_string(opts) do
-    map(string(:ascii, opts), fn str ->
-      # Replace control characters with spaces
-      String.replace(str, ~r/[\x00-\x1F\x7F]/, " ")
-    end)
   end
 
   # Helper functions
@@ -356,19 +181,6 @@ defmodule Droodotfoo.PropertyTest do
       %{buffer | lines: lines}
     else
       buffer
-    end
-  end
-
-  defp update_line_cell(line, col, char) do
-    if col < length(line.cells) do
-      cells =
-        List.update_at(line.cells, col, fn _ ->
-          %{char: char, style: %{}}
-        end)
-
-      %{line | cells: cells}
-    else
-      line
     end
   end
 
@@ -421,30 +233,16 @@ defmodule Droodotfoo.PropertyTest do
       is_map(cell.style)
   end
 
-  defp apply_state_transition(state, {:navigate, key}) do
-    result = Navigation.handle_input(state, key)
-    # Navigation.handle_input should return a state map
-    if is_map(result), do: result, else: state
-  end
+  defp update_line_cell(line, col, char) do
+    if col < length(line.cells) do
+      cells =
+        List.update_at(line.cells, col, fn _ ->
+          %{char: char, style: %{}}
+        end)
 
-  defp apply_state_transition(state, {:command, text}) do
-    %{state | command_buffer: text}
-  end
-
-  defp apply_state_transition(state, {:search, _text}) do
-    # Search is handled through command mode
-    state
-  end
-
-  defp apply_state_transition(state, {:mode_change, :navigation}) do
-    %{state | command_mode: false}
-  end
-
-  defp apply_state_transition(state, {:mode_change, :command}) do
-    %{state | command_mode: true}
-  end
-
-  defp apply_state_transition(state, {:mode_change, _}) do
-    state
+      %{line | cells: cells}
+    else
+      line
+    end
   end
 end

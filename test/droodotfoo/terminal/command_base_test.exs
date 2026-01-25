@@ -10,7 +10,15 @@ defmodule Droodotfoo.Terminal.CommandBaseTest do
   defmodule TestCommands do
     # use Droodotfoo.Terminal.CommandBase  # Module archived
 
-    # @impl true  # Commented out since behavior is not loaded
+    # Stub run/3 that delegates to execute/3 (original was provided by CommandBase)
+    def run(command, args, state), do: execute(command, args, state)
+
+    # Stub handle_command_error/2 (original was provided by CommandBase)
+    def handle_command_error(reason, command) do
+      {:error,
+       "Error executing '#{command}': #{reason}. Use 'help #{command}' for usage information"}
+    end
+
     def execute("test", args, state) do
       {:ok, "Test executed with #{length(args)} args", state}
     end
