@@ -26,7 +26,8 @@ defmodule DroodotfooWeb.Endpoint do
 
   @allowed_origins [
     "https://droo.foo",
-    "https://www.droo.foo"
+    "https://www.droo.foo",
+    "https://droodotfoo-lingering-shadow-740.fly.dev"
   ]
 
   @doc """
