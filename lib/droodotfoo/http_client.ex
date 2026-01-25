@@ -1,10 +1,22 @@
 defmodule Droodotfoo.HttpClient do
   @moduledoc """
   Shared HTTP client utilities for API integrations.
-  Provides consistent error handling and client configuration.
+  Provides consistent error handling, client configuration, and circuit breaker integration.
+
+  ## Circuit Breaker Integration
+
+  Use `with_circuit_breaker/3` to wrap calls with circuit breaker protection:
+
+      HttpClient.with_circuit_breaker(:github, fn ->
+        client |> HttpClient.get("/repos")
+      end)
+
+  This will fail fast with `{:error, :circuit_open}` if the service is experiencing issues.
   """
 
   require Logger
+
+  alias Droodotfoo.CircuitBreaker
 
   @doc """
   Creates a new Req HTTP client with common configuration.
@@ -107,5 +119,22 @@ defmodule Droodotfoo.HttpClient do
   """
   def delete(client, path, opts \\ []) do
     request(client, [method: :delete, url: path] ++ opts)
+  end
+
+  @doc """
+  Wraps an HTTP operation with circuit breaker protection.
+
+  Returns `{:error, :circuit_open}` if the circuit is open for this service,
+  otherwise executes the function and records success/failure.
+
+  ## Example
+
+      HttpClient.with_circuit_breaker(:github, fn ->
+        client |> HttpClient.get("/repos")
+      end)
+
+  """
+  def with_circuit_breaker(service, fun, opts \\ []) do
+    CircuitBreaker.call(service, fun, opts)
   end
 end

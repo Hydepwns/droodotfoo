@@ -15,6 +15,14 @@ defmodule DroodotfooWeb.Router do
     plug :accepts, ["json"]
   end
 
+  # Health check routes (no auth, no rate limiting)
+  scope "/health", DroodotfooWeb do
+    pipe_through :api
+
+    get "/", HealthController, :index
+    get "/ready", HealthController, :ready
+  end
+
   scope "/", DroodotfooWeb do
     pipe_through :browser
 

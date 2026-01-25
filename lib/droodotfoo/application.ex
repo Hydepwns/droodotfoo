@@ -17,6 +17,8 @@ defmodule Droodotfoo.Application do
         DroodotfooWeb.Telemetry,
         {DNSCluster, query: Application.get_env(:droodotfoo, :dns_cluster_query) || :ignore},
         {Phoenix.PubSub, name: Droodotfoo.PubSub},
+        # Circuit breaker for external API resilience
+        Droodotfoo.CircuitBreaker,
         # Start performance monitoring
         Droodotfoo.PerformanceMonitor,
         # Start performance cache and metrics
