@@ -36,7 +36,29 @@ if sentry_dsn = System.get_env("SENTRY_DSN") do
     dsn: sentry_dsn,
     environment_name: config_env(),
     enable_source_code_context: true,
-    root_source_code_paths: [File.cwd!()]
+    root_source_code_paths: [File.cwd!()],
+    # Filter out noisy events
+    before_send: {Droodotfoo.SentryFilter, :filter_event}
+end
+
+# OpenTelemetry configuration (production)
+# Export traces to Sentry via OTLP if SENTRY_DSN is set
+# Or to a custom OTLP endpoint if OTEL_EXPORTER_OTLP_ENDPOINT is set
+if otel_endpoint = System.get_env("OTEL_EXPORTER_OTLP_ENDPOINT") do
+  config :opentelemetry_exporter,
+    otlp_endpoint: otel_endpoint,
+    otlp_headers: (System.get_env("OTEL_EXPORTER_OTLP_HEADERS") || "")
+      |> String.split(",", trim: true)
+      |> Enum.map(fn header ->
+        case String.split(header, "=", parts: 2) do
+          [key, value] -> {String.trim(key), String.trim(value)}
+          _ -> nil
+        end
+      end)
+      |> Enum.reject(&is_nil/1)
+else
+  # Disable OTLP export if no endpoint configured
+  config :opentelemetry, traces_exporter: :none
 end
 
 # GitHub API token for higher rate limits (all environments, optional)
@@ -104,10 +126,8 @@ if config_env() == :prod do
       # Fly.io's proxy expects apps to listen on 0.0.0.0
       ip: {0, 0, 0, 0},
       port: port,
-      # Bandit back-pressure settings
+      # Bandit thousand_island settings
       thousand_island_options: [
-        # Cap concurrent connections to prevent memory exhaustion
-        max_connections: 16_384,
         # Timeout for reading request data (30s)
         read_timeout: 30_000,
         # Grace period for connections during shutdown (60s)

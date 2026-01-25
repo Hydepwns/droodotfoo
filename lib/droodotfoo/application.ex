@@ -7,6 +7,9 @@ defmodule Droodotfoo.Application do
 
   @impl true
   def start(_type, _args) do
+    # Set up OpenTelemetry instrumentation
+    setup_opentelemetry()
+
     # Add Sentry logger handler for capturing crashed process exceptions
     :logger.add_handler(:sentry_handler, Sentry.LoggerHandler, %{
       config: %{metadata: [:file, :line]}
@@ -115,5 +118,16 @@ defmodule Droodotfoo.Application do
     else
       base_opts
     end
+  end
+
+  # Set up OpenTelemetry instrumentation for Phoenix and Bandit
+  defp setup_opentelemetry do
+    # Attach Phoenix telemetry handlers for request tracing
+    :ok = OpentelemetryPhoenix.setup(adapter: :bandit)
+
+    # Attach Bandit telemetry handlers for HTTP server tracing
+    :ok = OpentelemetryBandit.setup()
+
+    :ok
   end
 end

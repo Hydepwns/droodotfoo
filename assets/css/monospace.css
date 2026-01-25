@@ -2,12 +2,15 @@
 /* Based on the-monospace-web principles */
 /* Core base styles only - specific components extracted to separate files */
 
-/* Font Face Declarations */
+/* Font Face Declarations
+   font-display: swap - Shows text immediately with fallback, swaps when font loads
+   This prevents layout shift warnings and ensures preloaded fonts are used */
 @font-face {
   font-family: "Monaspace Argon";
   src: url("/fonts/MonaspaceArgon-Regular.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
+  font-display: swap;
   font-variation-settings: "wght" 500;
 }
 
@@ -16,6 +19,7 @@
   src: url("/fonts/MonaspaceArgon-Bold.woff2") format("woff2");
   font-weight: 800;
   font-style: normal;
+  font-display: swap;
   font-variation-settings: "wght" 800;
 }
 
@@ -25,6 +29,7 @@
   src: url("/fonts/MonaspaceNeon-Regular.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
+  font-display: swap;
   font-variation-settings: "wght" 500;
 }
 
@@ -33,6 +38,7 @@
   src: url("/fonts/MonaspaceNeon-Bold.woff2") format("woff2");
   font-weight: 800;
   font-style: normal;
+  font-display: swap;
   font-variation-settings: "wght" 800;
 }
 
@@ -42,6 +48,7 @@
   src: url("/fonts/MonaspaceXenon-Regular.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
+  font-display: swap;
   font-variation-settings: "wght" 500;
 }
 
@@ -50,6 +57,7 @@
   src: url("/fonts/MonaspaceXenon-Bold.woff2") format("woff2");
   font-weight: 800;
   font-style: normal;
+  font-display: swap;
   font-variation-settings: "wght" 800;
 }
 
@@ -59,6 +67,7 @@
   src: url("/fonts/MonaspaceRadon-Regular.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
+  font-display: swap;
   font-variation-settings: "wght" 500;
 }
 
@@ -67,6 +76,7 @@
   src: url("/fonts/MonaspaceRadon-Bold.woff2") format("woff2");
   font-weight: 800;
   font-style: normal;
+  font-display: swap;
   font-variation-settings: "wght" 800;
 }
 
@@ -76,6 +86,7 @@
   src: url("/fonts/MonaspaceKrypton-Regular.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
+  font-display: swap;
   font-variation-settings: "wght" 500;
 }
 
@@ -84,6 +95,7 @@
   src: url("/fonts/MonaspaceKrypton-Bold.woff2") format("woff2");
   font-weight: 800;
   font-style: normal;
+  font-display: swap;
   font-variation-settings: "wght" 800;
 }
 

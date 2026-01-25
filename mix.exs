@@ -89,7 +89,7 @@ defmodule Droodotfoo.MixProject do
   def application do
     [
       mod: {Droodotfoo.Application, []},
-      extra_applications: [:logger, :runtime_tools, :sentry]
+      extra_applications: [:logger, :runtime_tools, :sentry, :opentelemetry]
     ]
   end
 
@@ -166,7 +166,13 @@ defmodule Droodotfoo.MixProject do
       {:ex_doc, "~> 0.30", only: :dev, runtime: false},
       # Error tracking
       {:sentry, "~> 10.2.0"},
-      {:hackney, "~> 1.8"}
+      {:hackney, "~> 1.8"},
+      # OpenTelemetry for distributed tracing and observability
+      {:opentelemetry, "~> 1.4"},
+      {:opentelemetry_api, "~> 1.3"},
+      {:opentelemetry_exporter, "~> 1.7"},
+      {:opentelemetry_phoenix, "~> 2.0"},
+      {:opentelemetry_bandit, "~> 0.2"}
     ]
   end
 

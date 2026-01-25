@@ -88,3 +88,6 @@ config :droodotfoo, :spotify,
   client_secret: System.get_env("SPOTIFY_CLIENT_SECRET"),
   redirect_uri:
     System.get_env("SPOTIFY_REDIRECT_URI") || "http://localhost:4000/auth/spotify/callback"
+
+# OpenTelemetry: disable tracing in dev by default (set OTEL_EXPORTER=otlp to enable)
+config :opentelemetry, traces_exporter: :none

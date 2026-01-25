@@ -67,6 +67,21 @@ config :logger, :default_formatter,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# OpenTelemetry configuration
+config :opentelemetry,
+  resource: [
+    service: [
+      name: "droodotfoo",
+      namespace: "droo.foo"
+    ]
+  ],
+  span_processor: :batch,
+  traces_exporter: :otlp
+
+# OpenTelemetry exporter (OTLP) - configured in runtime.exs for prod
+config :opentelemetry_exporter,
+  otlp_protocol: :http_protobuf
+
 # Configure Swoosh for email functionality
 config :droodotfoo, Droodotfoo.Mailer, adapter: Swoosh.Adapters.Local
 
