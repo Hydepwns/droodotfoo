@@ -13,6 +13,7 @@ defmodule DroodotfooWeb.ContentComponents do
   """
   def site_header(assigns) do
     assigns = assign(assigns, :today, Date.utc_today() |> Date.to_string())
+    assigns = assign(assigns, :version, Application.spec(:droodotfoo, :vsn) |> to_string())
 
     ~H"""
     <header class="site-header" role="banner">
@@ -25,7 +26,7 @@ defmodule DroodotfooWeb.ContentComponents do
             </.link>
           </td>
           <td class="header-meta-label">Version</td>
-          <td class="header-meta-value header-meta-value-right">v1.0.0</td>
+          <td class="header-meta-value header-meta-value-right">v{@version}</td>
         </tr>
         <tr>
           <td class="header-subtitle" colspan="2">Engineer building his Gundam</td>
