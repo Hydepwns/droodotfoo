@@ -16,21 +16,21 @@ defmodule Droodotfoo.Spotify.AuthTest do
   end
 
   setup do
-    # Clean up any existing ETS tables (may fail if table is :protected and owned by another process)
+    # Clear entries from ETS tables (tables may be owned by another process)
     try do
-      if :ets.info(:spotify_auth_state) != :undefined do
-        :ets.delete(:spotify_auth_state)
+      if :ets.whereis(:spotify_auth_state) != :undefined do
+        :ets.delete_all_objects(:spotify_auth_state)
       end
     rescue
-      ArgumentError -> :ok
+      _ -> :ok
     end
 
     try do
-      if :ets.info(:spotify_tokens) != :undefined do
-        :ets.delete(:spotify_tokens)
+      if :ets.whereis(:spotify_tokens) != :undefined do
+        :ets.delete_all_objects(:spotify_tokens)
       end
     rescue
-      ArgumentError -> :ok
+      _ -> :ok
     end
 
     :ok

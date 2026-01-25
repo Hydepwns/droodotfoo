@@ -76,7 +76,7 @@ defmodule Droodotfoo.Spotify.Auth do
         |> Client.authorize_url!(params)
 
       # Store state for verification with 5 minute expiry
-      ensure_ets_table(:spotify_auth_state, [:named_table, :protected])
+      ensure_ets_table(:spotify_auth_state, [:named_table, :public])
       expires_at = System.system_time(:second) + 300
       :ets.insert(:spotify_auth_state, {:state, state, expires_at})
 
@@ -220,8 +220,8 @@ defmodule Droodotfoo.Spotify.Auth do
     secret = Application.get_env(:droodotfoo, DroodotfooWeb.Endpoint)[:secret_key_base]
     encrypted = Plug.Crypto.encrypt(secret, "spotify_tokens", tokens)
 
-    # Using :protected for table access - data is encrypted for security
-    ensure_ets_table(:spotify_tokens, [:named_table, :protected])
+    # Using :public for table access - data is encrypted for security
+    ensure_ets_table(:spotify_tokens, [:named_table, :public])
     :ets.insert(:spotify_tokens, {:tokens, encrypted})
   end
 
