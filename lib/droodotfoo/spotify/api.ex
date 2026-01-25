@@ -11,6 +11,84 @@ defmodule Droodotfoo.Spotify.API do
 
   @base_url "https://api.spotify.com/v1"
 
+  # Type definitions
+
+  @type image :: %{height: integer() | nil, width: integer() | nil, url: String.t()}
+  @type artist :: %{id: String.t(), name: String.t()}
+  @type album :: %{id: String.t(), name: String.t(), images: [image()]}
+
+  @type track :: %{
+          id: String.t(),
+          name: String.t(),
+          artists: [artist()],
+          album: album(),
+          duration_ms: integer(),
+          explicit: boolean(),
+          popularity: integer() | nil,
+          preview_url: String.t() | nil,
+          external_urls: map()
+        }
+
+  @type playlist :: %{
+          id: String.t(),
+          name: String.t(),
+          description: String.t() | nil,
+          images: [image()],
+          owner: %{id: String.t(), display_name: String.t()},
+          public: boolean() | nil,
+          tracks: %{total: integer()}
+        }
+
+  @type device :: %{
+          id: String.t() | nil,
+          name: String.t(),
+          type: String.t(),
+          is_active: boolean(),
+          is_private_session: boolean(),
+          is_restricted: boolean(),
+          volume_percent: integer() | nil
+        }
+
+  @type context :: %{
+          type: String.t(),
+          href: String.t(),
+          external_urls: map(),
+          uri: String.t()
+        }
+
+  @type user :: %{
+          id: String.t(),
+          display_name: String.t() | nil,
+          email: String.t() | nil,
+          followers: integer(),
+          images: [image()],
+          country: String.t() | nil,
+          product: String.t() | nil
+        }
+
+  @type currently_playing :: %{
+          track: track() | nil,
+          is_playing: boolean(),
+          progress_ms: integer() | nil,
+          timestamp: integer(),
+          context: context() | nil,
+          device: device() | nil
+        }
+
+  @type playback_state :: %{
+          device: device() | nil,
+          repeat_state: String.t(),
+          shuffle_state: boolean(),
+          is_playing: boolean(),
+          timestamp: integer(),
+          progress_ms: integer() | nil,
+          item: track() | nil
+        }
+
+  @type playback_action :: :play | :pause | :next | :previous
+  @type search_type :: String.t()
+  @type api_error :: :no_auth_token | :no_track_playing | :no_active_device | term()
+
   # API Client Setup
 
   defp client do
@@ -32,6 +110,7 @@ defmodule Droodotfoo.Spotify.API do
   @doc """
   Gets the current user's profile information.
   """
+  @spec get_current_user() :: {:ok, user()} | {:error, api_error()}
   def get_current_user do
     Cache.fetch(
       :spotify,
@@ -58,6 +137,7 @@ defmodule Droodotfoo.Spotify.API do
   @doc """
   Gets the currently playing track.
   """
+  @spec get_currently_playing() :: {:ok, currently_playing()} | {:error, api_error()}
   def get_currently_playing do
     case make_request(:get, "/me/player/currently-playing") do
       {:ok, %{body: track_data}} when track_data != "" ->
@@ -75,6 +155,7 @@ defmodule Droodotfoo.Spotify.API do
   @doc """
   Gets the current playback state.
   """
+  @spec get_playback_state() :: {:ok, playback_state()} | {:error, api_error()}
   def get_playback_state do
     case make_request(:get, "/me/player") do
       {:ok, %{body: playback_data}} when playback_data != "" ->
@@ -92,6 +173,7 @@ defmodule Droodotfoo.Spotify.API do
   @doc """
   Controls playback (play, pause, next, previous).
   """
+  @spec control_playback(playback_action()) :: :ok | {:error, api_error()}
   def control_playback(action) do
     endpoint =
       case action do
@@ -112,6 +194,7 @@ defmodule Droodotfoo.Spotify.API do
   @doc """
   Sets the volume for the current device (0-100).
   """
+  @spec set_volume(0..100) :: :ok | {:error, api_error()}
   def set_volume(volume) when volume >= 0 and volume <= 100 do
     case make_request(:put, "/me/player/volume?volume_percent=#{volume}") do
       {:ok, _} -> :ok
@@ -124,6 +207,7 @@ defmodule Droodotfoo.Spotify.API do
   @doc """
   Gets the current user's playlists.
   """
+  @spec get_user_playlists(pos_integer()) :: {:ok, [playlist()]} | {:error, api_error()}
   def get_user_playlists(limit \\ 20) do
     Cache.fetch(
       :spotify,
@@ -148,6 +232,7 @@ defmodule Droodotfoo.Spotify.API do
   @doc """
   Gets tracks from a specific playlist.
   """
+  @spec get_playlist_tracks(String.t(), pos_integer()) :: {:ok, [track()]} | {:error, api_error()}
   def get_playlist_tracks(playlist_id, limit \\ 50) do
     Cache.fetch(
       :spotify,
@@ -176,6 +261,7 @@ defmodule Droodotfoo.Spotify.API do
   @doc """
   Searches for tracks, artists, albums, or playlists.
   """
+  @spec search(String.t(), search_type(), pos_integer()) :: {:ok, [map()]} | {:error, api_error()}
   def search(query, type \\ "track", limit \\ 20) do
     Cache.fetch(
       :spotify,
@@ -205,6 +291,7 @@ defmodule Droodotfoo.Spotify.API do
   @doc """
   Gets the user's available devices.
   """
+  @spec get_devices() :: {:ok, [device()]} | {:error, api_error()}
   def get_devices do
     Cache.fetch(
       :spotify,

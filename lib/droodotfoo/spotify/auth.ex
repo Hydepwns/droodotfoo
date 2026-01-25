@@ -9,6 +9,29 @@ defmodule Droodotfoo.Spotify.Auth do
 
   @spotify_base_url "https://accounts.spotify.com"
 
+  # Type definitions
+
+  @type config :: %{
+          client_id: String.t(),
+          client_secret: String.t(),
+          redirect_uri: String.t()
+        }
+
+  @type tokens :: %{
+          access_token: String.t(),
+          refresh_token: String.t() | nil,
+          expires_at: DateTime.t(),
+          token_type: String.t()
+        }
+
+  @type auth_error ::
+          :missing_credentials
+          | :invalid_state
+          | :auth_url_generation_failed
+          | :token_exchange_failed
+          | :token_refresh_failed
+          | :no_tokens
+
   # Required scopes for the application
   @scopes [
     "user-read-currently-playing",
@@ -22,6 +45,7 @@ defmodule Droodotfoo.Spotify.Auth do
   @doc """
   Gets the Spotify OAuth configuration from application config.
   """
+  @spec get_config() :: config()
   def get_config do
     %{
       client_id: Application.get_env(:droodotfoo, :spotify_client_id, ""),
@@ -38,6 +62,7 @@ defmodule Droodotfoo.Spotify.Auth do
   @doc """
   Creates an OAuth2 client for Spotify.
   """
+  @spec client() :: Client.t()
   def client do
     config = get_config()
 
@@ -56,6 +81,7 @@ defmodule Droodotfoo.Spotify.Auth do
   Generates the authorization URL for the OAuth flow.
   Returns {:ok, url} or {:error, reason}.
   """
+  @spec get_authorization_url() :: {:ok, String.t()} | {:error, auth_error()}
   def get_authorization_url do
     config = get_config()
 
@@ -92,6 +118,8 @@ defmodule Droodotfoo.Spotify.Auth do
   Exchanges the authorization code for access and refresh tokens.
   Returns {:ok, tokens} or {:error, reason}.
   """
+  @spec exchange_code_for_tokens(String.t(), String.t() | nil) ::
+          {:ok, tokens()} | {:error, auth_error()}
   def exchange_code_for_tokens(code, state \\ nil) do
     # Verify state if provided (optional for this implementation)
     if state && !verify_state(state) do
@@ -124,6 +152,7 @@ defmodule Droodotfoo.Spotify.Auth do
   Gets the current stored access token.
   Automatically refreshes if expired.
   """
+  @spec get_access_token() :: {:ok, String.t()} | {:error, auth_error()}
   def get_access_token do
     case get_stored_tokens() do
       nil ->
@@ -141,6 +170,7 @@ defmodule Droodotfoo.Spotify.Auth do
   @doc """
   Refreshes the access token using the refresh token.
   """
+  @spec refresh_access_token(String.t()) :: {:ok, String.t()} | {:error, auth_error()}
   def refresh_access_token(refresh_token) do
     client = client()
 
@@ -166,6 +196,7 @@ defmodule Droodotfoo.Spotify.Auth do
   @doc """
   Clears stored authentication tokens.
   """
+  @spec logout() :: :ok
   def logout do
     clear_stored_tokens()
     :ok
@@ -174,6 +205,7 @@ defmodule Droodotfoo.Spotify.Auth do
   @doc """
   Checks if the user is currently authenticated.
   """
+  @spec authenticated?() :: boolean()
   def authenticated? do
     case get_stored_tokens() do
       nil -> false

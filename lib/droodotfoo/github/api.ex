@@ -10,9 +10,98 @@ defmodule Droodotfoo.Github.API do
   @base_url "https://api.github.com"
   @user_agent "droodotfoo-terminal/1.0"
 
+  # Type definitions
+
+  @type user :: %{
+          login: String.t(),
+          name: String.t() | nil,
+          bio: String.t() | nil,
+          location: String.t() | nil,
+          company: String.t() | nil,
+          blog: String.t() | nil,
+          email: String.t() | nil,
+          avatar_url: String.t(),
+          public_repos: integer(),
+          public_gists: integer(),
+          followers: integer(),
+          following: integer(),
+          created_at: String.t(),
+          updated_at: String.t()
+        }
+
+  @type repo :: %{
+          id: integer(),
+          name: String.t(),
+          full_name: String.t(),
+          description: String.t() | nil,
+          owner: %{login: String.t(), avatar_url: String.t()},
+          html_url: String.t(),
+          language: String.t() | nil,
+          stargazers_count: integer(),
+          watchers_count: integer(),
+          forks_count: integer(),
+          open_issues_count: integer(),
+          created_at: String.t(),
+          updated_at: String.t(),
+          pushed_at: String.t() | nil,
+          size: integer(),
+          default_branch: String.t(),
+          topics: [String.t()]
+        }
+
+  @type event :: %{
+          id: String.t(),
+          type: String.t(),
+          actor: %{login: String.t(), avatar_url: String.t()},
+          repo: %{name: String.t()},
+          payload: map(),
+          created_at: String.t()
+        }
+
+  @type commit :: %{
+          sha: String.t(),
+          message: String.t(),
+          author: %{name: String.t(), email: String.t(), date: String.t()},
+          committer: %{name: String.t(), email: String.t(), date: String.t()},
+          html_url: String.t()
+        }
+
+  @type issue :: %{
+          number: integer(),
+          title: String.t(),
+          state: String.t(),
+          user: %{login: String.t()},
+          labels: [String.t()],
+          created_at: String.t(),
+          updated_at: String.t(),
+          html_url: String.t(),
+          comments: integer()
+        }
+
+  @type pull :: %{
+          number: integer(),
+          title: String.t(),
+          state: String.t(),
+          user: %{login: String.t()},
+          created_at: String.t(),
+          updated_at: String.t(),
+          html_url: String.t(),
+          merged: boolean() | nil,
+          draft: boolean()
+        }
+
+  @type api_error :: term()
+  @type repo_opts :: [sort: String.t(), per_page: pos_integer()]
+  @type event_opts :: [per_page: pos_integer()]
+  @type search_opts :: [sort: String.t(), order: String.t(), per_page: pos_integer()]
+  @type commit_opts :: [per_page: pos_integer()]
+  @type issue_opts :: [state: String.t(), per_page: pos_integer()]
+  @type pull_opts :: [state: String.t(), per_page: pos_integer()]
+
   @doc """
   Get user profile information.
   """
+  @spec get_user(String.t()) :: {:ok, user()} | {:error, api_error()}
   def get_user(username) do
     case make_request(:get, "/users/#{username}") do
       {:ok, %{body: user_data}} ->
@@ -26,6 +115,7 @@ defmodule Droodotfoo.Github.API do
   @doc """
   Get user's public repositories.
   """
+  @spec get_user_repos(String.t(), repo_opts()) :: {:ok, [repo()]} | {:error, api_error()}
   def get_user_repos(username, opts \\ []) do
     sort = Keyword.get(opts, :sort, "updated")
     per_page = Keyword.get(opts, :per_page, 30)
@@ -43,6 +133,7 @@ defmodule Droodotfoo.Github.API do
   @doc """
   Get user's public events (activity feed).
   """
+  @spec get_user_events(String.t(), event_opts()) :: {:ok, [event()]} | {:error, api_error()}
   def get_user_events(username, opts \\ []) do
     per_page = Keyword.get(opts, :per_page, 30)
 
@@ -59,6 +150,7 @@ defmodule Droodotfoo.Github.API do
   @doc """
   Search repositories.
   """
+  @spec search_repos(String.t(), search_opts()) :: {:ok, [repo()]} | {:error, api_error()}
   def search_repos(query, opts \\ []) do
     sort = Keyword.get(opts, :sort, "stars")
     order = Keyword.get(opts, :order, "desc")
@@ -82,6 +174,7 @@ defmodule Droodotfoo.Github.API do
   @doc """
   Get trending repositories (simulated via search with recent stars).
   """
+  @spec get_trending(String.t() | nil, search_opts()) :: {:ok, [repo()]} | {:error, api_error()}
   def get_trending(language \\ nil, opts \\ []) do
     per_page = Keyword.get(opts, :per_page, 20)
 
@@ -95,6 +188,7 @@ defmodule Droodotfoo.Github.API do
   @doc """
   Get repository details.
   """
+  @spec get_repo(String.t(), String.t()) :: {:ok, repo()} | {:error, api_error()}
   def get_repo(owner, repo_name) do
     case make_request(:get, "/repos/#{owner}/#{repo_name}") do
       {:ok, %{body: repo_data}} ->
@@ -108,6 +202,8 @@ defmodule Droodotfoo.Github.API do
   @doc """
   Get repository commits.
   """
+  @spec get_repo_commits(String.t(), String.t(), commit_opts()) ::
+          {:ok, [commit()]} | {:error, api_error()}
   def get_repo_commits(owner, repo_name, opts \\ []) do
     per_page = Keyword.get(opts, :per_page, 30)
 
@@ -124,6 +220,8 @@ defmodule Droodotfoo.Github.API do
   @doc """
   Get repository issues.
   """
+  @spec get_repo_issues(String.t(), String.t(), issue_opts()) ::
+          {:ok, [issue()]} | {:error, api_error()}
   def get_repo_issues(owner, repo_name, opts \\ []) do
     state = Keyword.get(opts, :state, "open")
     per_page = Keyword.get(opts, :per_page, 30)
@@ -144,6 +242,8 @@ defmodule Droodotfoo.Github.API do
   @doc """
   Get repository pull requests.
   """
+  @spec get_repo_pulls(String.t(), String.t(), pull_opts()) ::
+          {:ok, [pull()]} | {:error, api_error()}
   def get_repo_pulls(owner, repo_name, opts \\ []) do
     state = Keyword.get(opts, :state, "open")
     per_page = Keyword.get(opts, :per_page, 30)

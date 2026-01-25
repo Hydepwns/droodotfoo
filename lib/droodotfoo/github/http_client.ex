@@ -11,9 +11,19 @@ defmodule Droodotfoo.GitHub.HttpClient do
   @github_graphql_url "https://api.github.com/graphql"
   @max_retries 3
 
+  # Type definitions
+
+  @type http_response :: {:ok, Req.Response.t()} | {:error, term()}
+  @type api_result :: {:ok, term()} | {:error, api_error()}
+  @type api_error ::
+          :unauthorized | :rate_limited | :not_found | :no_token | :request_failed | term()
+  @type parser :: (term() -> term()) | :raw
+  @type request_opts :: [retry_count: non_neg_integer()]
+
   @doc """
   Make a REST API request with retry logic.
   """
+  @spec rest_request(String.t(), request_opts()) :: http_response()
   def rest_request(path, opts \\ []) do
     url = @github_rest_api_url <> path
     headers = build_rest_headers()
@@ -43,6 +53,7 @@ defmodule Droodotfoo.GitHub.HttpClient do
   @doc """
   Make a GraphQL API request.
   """
+  @spec graphql_request(String.t()) :: {:ok, String.t()} | {:error, term()}
   def graphql_request(query) do
     case github_token() do
       token when token in [nil, ""] ->
@@ -56,6 +67,7 @@ defmodule Droodotfoo.GitHub.HttpClient do
   @doc """
   Handle HTTP response status codes uniformly.
   """
+  @spec handle_response(http_response(), parser()) :: api_result()
   def handle_response({:ok, %{status: 200, body: body}}, parser) when is_function(parser, 1) do
     {:ok, parser.(body)}
   end
@@ -81,6 +93,7 @@ defmodule Droodotfoo.GitHub.HttpClient do
   @doc """
   Handle empty list response specifically.
   """
+  @spec handle_list_response(http_response(), parser()) :: api_result()
   def handle_list_response({:ok, %{status: 200, body: []}}, _parser), do: {:error, :empty}
 
   def handle_list_response({:ok, %{status: 200, body: [first | _]}}, parser),

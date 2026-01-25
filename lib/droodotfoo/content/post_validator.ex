@@ -10,11 +10,15 @@ defmodule Droodotfoo.Content.PostValidator do
   @max_tag_count 20
   @max_tag_length 50
 
+  @type metadata :: %{optional(String.t()) => term()}
+  @type validation_result :: {:ok, String.t(), metadata()} | {:error, String.t()}
+
   @doc """
   Validates post content and metadata before saving.
 
-  Returns {:ok, sanitized_params} or {:error, reason}.
+  Returns {:ok, content, sanitized_metadata} or {:error, reason}.
   """
+  @spec validate(String.t(), metadata()) :: validation_result()
   def validate(content, metadata) when is_binary(content) and is_map(metadata) do
     with :ok <- validate_content_size(content),
          :ok <- validate_title(metadata),

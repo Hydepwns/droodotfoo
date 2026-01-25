@@ -13,6 +13,15 @@ defmodule Droodotfoo.Content.PatternGenerator do
   # Refactored pattern modules
   alias Droodotfoo.Content.Patterns
 
+  @type pattern_style ::
+          :waves | :noise | :lines | :dots | :circuit | :glitch | :geometric | :grid
+  @type generate_opts :: [
+          width: pos_integer(),
+          height: pos_integer(),
+          style: pattern_style() | nil,
+          animate: boolean()
+        ]
+
   @doc """
   Generates an SVG pattern based on the post slug.
 
@@ -44,6 +53,7 @@ defmodule Droodotfoo.Content.PatternGenerator do
   Returns the generated SVG as a string. If validation fails, returns a
   simple fallback pattern instead of crashing.
   """
+  @spec generate_svg(String.t(), generate_opts()) :: String.t()
   def generate_svg(slug, opts \\ []) do
     # Validate and extract options
     case validate_options(slug, opts) do
