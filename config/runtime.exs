@@ -103,7 +103,16 @@ if config_env() == :prod do
       # Bind to all IPv4 interfaces for Fly.io compatibility
       # Fly.io's proxy expects apps to listen on 0.0.0.0
       ip: {0, 0, 0, 0},
-      port: port
+      port: port,
+      # Bandit back-pressure settings
+      thousand_island_options: [
+        # Cap concurrent connections to prevent memory exhaustion
+        max_connections: 16_384,
+        # Timeout for reading request data (30s)
+        read_timeout: 30_000,
+        # Grace period for connections during shutdown (60s)
+        shutdown_timeout: 60_000
+      ]
     ],
     secret_key_base: secret_key_base
   ]

@@ -66,6 +66,12 @@ defmodule DroodotfooWeb.Endpoint do
   plug Plug.RequestId
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
 
+  # Global IP rate limiting (200 req/min per IP)
+  plug DroodotfooWeb.Plugs.RateLimiter,
+    limit: 200,
+    window_ms: 60_000,
+    exclude_paths: ["/health", "/metrics", "/dev"]
+
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
