@@ -20,7 +20,9 @@ defmodule DroodotfooWeb.ContentComponents do
         <caption class="sr-only">Site header with metadata</caption>
         <tr>
           <td class="header-title" colspan="2">
-            <.link navigate={~p"/"} class="site-title" aria-label="DROO.FOO - Return to homepage">DROO.FOO</.link>
+            <.link navigate={~p"/"} class="site-title" aria-label="DROO.FOO - Return to homepage">
+              DROO.FOO
+            </.link>
           </td>
           <td class="header-meta-label">Version</td>
           <td class="header-meta-value header-meta-value-right">v1.0.0</td>
@@ -99,13 +101,21 @@ defmodule DroodotfooWeb.ContentComponents do
     ~H"""
     <nav class="site-nav-simple" aria-label="Primary navigation">
       <p>
-        <.link navigate={~p"/about"} aria-current={if @current_path == "/about", do: "page", else: false}>
+        <.link
+          navigate={~p"/about"}
+          aria-current={if @current_path == "/about", do: "page", else: false}
+        >
           About
         </.link>
         <span aria-hidden="true">·</span>
-        <.link navigate={~p"/now"} aria-current={if @current_path == "/now", do: "page", else: false}>Now</.link>
+        <.link navigate={~p"/now"} aria-current={if @current_path == "/now", do: "page", else: false}>
+          Now
+        </.link>
         <span aria-hidden="true">·</span>
-        <.link navigate={~p"/projects"} aria-current={if @current_path == "/projects", do: "page", else: false}>
+        <.link
+          navigate={~p"/projects"}
+          aria-current={if @current_path == "/projects", do: "page", else: false}
+        >
           Projects
         </.link>
         <span aria-hidden="true">·</span>
@@ -116,7 +126,10 @@ defmodule DroodotfooWeb.ContentComponents do
           Writing
         </.link>
         <span aria-hidden="true">·</span>
-        <.link navigate={~p"/sitemap"} aria-current={if @current_path == "/sitemap", do: "page", else: false}>
+        <.link
+          navigate={~p"/sitemap"}
+          aria-current={if @current_path == "/sitemap", do: "page", else: false}
+        >
           Sitemap
         </.link>
       </p>

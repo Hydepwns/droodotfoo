@@ -44,7 +44,8 @@ defmodule DroodotfooWeb.SitemapLive do
           <div>├── <.link navigate={~p"/now"}>Now</.link></div>
           <div>├── <.link navigate={~p"/projects"}>Projects</.link></div>
           <div>
-            ├── <.link navigate={~p"/posts"}>Writing</.link> <span class="text-muted">({length(@posts)} posts)</span>
+            ├── <.link navigate={~p"/posts"}>Writing</.link>
+            <span class="text-muted">({length(@posts)} posts)</span>
           </div>
           <div>├── <.link navigate={~p"/pattern-gallery"}>Pattern Gallery</.link></div>
           <div>└── <.link navigate={~p"/sitemap"}>Sitemap</.link></div>
@@ -58,7 +59,9 @@ defmodule DroodotfooWeb.SitemapLive do
             <div class="ascii-tree mt-1">
               <%= for {post, idx} <- Enum.with_index(@posts, 1) do %>
                 <div>
-                  {if idx == length(@posts), do: "└── ", else: "├── "}<.link navigate={~p"/posts/#{post.slug}"}>{post.title}</.link>
+                  {if idx == length(@posts), do: "└── ", else: "├── "}<.link navigate={
+                    ~p"/posts/#{post.slug}"
+                  }>{post.title}</.link>
                   <span class="text-muted">- {Date.to_string(post.date)}</span>
                 </div>
               <% end %>
