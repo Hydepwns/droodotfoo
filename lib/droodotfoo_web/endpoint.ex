@@ -14,32 +14,24 @@ defmodule DroodotfooWeb.Endpoint do
     same_site: "Lax"
   ]
 
+  # WebSocket origin checking: uses list format for reliability
+  # The "//" prefix matches any scheme (http or https)
+  @websocket_origins [
+    "//droo.foo",
+    "//www.droo.foo",
+    "//droodotfoo-lingering-shadow-740.fly.dev",
+    "//localhost"
+  ]
+
   socket "/live", Phoenix.LiveView.Socket,
     websocket: [
       connect_info: [session: @session_options],
-      check_origin: {__MODULE__, :check_origin, []}
+      check_origin: @websocket_origins
     ],
     longpoll: [
       connect_info: [session: @session_options],
-      check_origin: {__MODULE__, :check_origin, []}
+      check_origin: @websocket_origins
     ]
-
-  @allowed_origins [
-    "https://droo.foo",
-    "https://www.droo.foo",
-    "https://droodotfoo-lingering-shadow-740.fly.dev"
-  ]
-
-  @doc """
-  Validates WebSocket connection origins.
-  Production uses explicit allowlist, dev/test allows all origins.
-  """
-  def check_origin(origin) do
-    case Application.get_env(:droodotfoo, :environment, :dev) do
-      :prod -> origin in @allowed_origins
-      _ -> true
-    end
-  end
 
   # Serve at "/" the static files from "priv/static" directory.
   #
