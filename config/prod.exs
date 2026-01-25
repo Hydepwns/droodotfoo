@@ -39,5 +39,10 @@ config :droodotfoo, DroodotfooWeb.Endpoint,
 # Do not print debug messages in production
 config :logger, level: :info
 
+# Use JSON logging for easier parsing in log aggregators (Fly.io, etc.)
+config :logger, :default_formatter,
+  format: {Droodotfoo.Logger.JsonFormatter, :format},
+  metadata: [:request_id, :method, :path, :status, :duration_ms]
+
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.

@@ -8,6 +8,8 @@ defmodule DroodotfooWeb.HealthController do
 
   use DroodotfooWeb, :controller
 
+  alias Droodotfoo.CircuitBreaker
+
   @doc """
   Liveness probe - returns 200 if the application is running.
   Used by load balancers to check if the instance should receive traffic.
@@ -20,10 +22,10 @@ defmodule DroodotfooWeb.HealthController do
 
   @doc """
   Readiness probe - returns 200 if the application and its dependencies are ready.
-  Checks ETS tables and critical GenServers are running.
+  Checks ETS tables, critical GenServers, circuit breakers, and cache stats.
   """
   def ready(conn, _params) do
-    checks = %{
+    services = %{
       posts_cache: check_genserver(Droodotfoo.Content.Posts),
       pattern_cache: check_genserver(Droodotfoo.Content.PatternCache),
       spotify: check_genserver(Droodotfoo.Spotify),
@@ -31,15 +33,28 @@ defmodule DroodotfooWeb.HealthController do
       pubsub: check_pubsub()
     }
 
-    all_healthy = Enum.all?(checks, fn {_k, v} -> v == :ok end)
+    circuits = get_circuit_status()
+    caches = get_cache_stats()
 
-    status = if all_healthy, do: "ok", else: "degraded"
-    http_status = if all_healthy, do: 200, else: 503
+    # Services must be up, but open circuits only degrade (don't fail) the check
+    services_healthy = Enum.all?(services, fn {_k, v} -> v == :ok end)
+    circuits_healthy = Enum.all?(circuits, fn {_k, v} -> v.state == :closed end)
+
+    status =
+      cond do
+        not services_healthy -> "unhealthy"
+        not circuits_healthy -> "degraded"
+        true -> "ok"
+      end
+
+    http_status = if services_healthy, do: 200, else: 503
 
     response = %{
       status: status,
       timestamp: DateTime.utc_now(),
-      checks: Map.new(checks, fn {k, v} -> {k, to_string(v)} end)
+      services: Map.new(services, fn {k, v} -> {k, to_string(v)} end),
+      circuits: circuits,
+      caches: caches
     }
 
     conn
@@ -58,6 +73,45 @@ defmodule DroodotfooWeb.HealthController do
     case Process.whereis(Droodotfoo.PubSub) do
       nil -> :down
       _pid -> :ok
+    end
+  end
+
+  defp get_circuit_status do
+    case Process.whereis(CircuitBreaker) do
+      nil ->
+        %{}
+
+      _pid ->
+        CircuitBreaker.status()
+        |> Map.new(fn {name, info} ->
+          {name, %{state: info.state, failures: info.failure_count}}
+        end)
+    end
+  end
+
+  defp get_cache_stats do
+    %{
+      posts: get_ets_stats(:blog_posts_cache),
+      patterns: get_ets_stats(:pattern_cache),
+      github: get_ets_stats(:github_cache),
+      rate_limits: get_ets_stats(:global_rate_limiter)
+    }
+    |> Enum.reject(fn {_k, v} -> v == nil end)
+    |> Map.new()
+  end
+
+  defp get_ets_stats(table_name) do
+    case :ets.whereis(table_name) do
+      :undefined ->
+        nil
+
+      _ref ->
+        info = :ets.info(table_name)
+
+        %{
+          entries: Keyword.get(info, :size, 0),
+          memory_bytes: Keyword.get(info, :memory, 0) * :erlang.system_info(:wordsize)
+        }
     end
   end
 end

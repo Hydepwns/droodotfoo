@@ -15,18 +15,32 @@ defmodule DroodotfooWeb.HealthControllerTest do
       conn = get(conn, ~p"/health/ready")
 
       response = json_response(conn, 200)
-      assert response["status"] in ["ok", "degraded"]
-      assert is_map(response["checks"])
+      assert response["status"] in ["ok", "degraded", "unhealthy"]
+      assert is_map(response["services"])
     end
 
     test "includes critical service checks", %{conn: conn} do
       conn = get(conn, ~p"/health/ready")
 
       response = json_response(conn, 200)
-      checks = response["checks"]
+      services = response["services"]
 
-      assert Map.has_key?(checks, "posts_cache")
-      assert Map.has_key?(checks, "pubsub")
+      assert Map.has_key?(services, "posts_cache")
+      assert Map.has_key?(services, "pubsub")
+    end
+
+    test "includes circuit breaker status", %{conn: conn} do
+      conn = get(conn, ~p"/health/ready")
+
+      response = json_response(conn, 200)
+      assert Map.has_key?(response, "circuits")
+    end
+
+    test "includes cache stats", %{conn: conn} do
+      conn = get(conn, ~p"/health/ready")
+
+      response = json_response(conn, 200)
+      assert Map.has_key?(response, "caches")
     end
   end
 end
