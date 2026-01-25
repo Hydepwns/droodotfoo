@@ -9,8 +9,8 @@ defmodule Droodotfoo.AsciiChartTest do
 
       # Should return 5 block characters
       assert String.length(result) == 5
-      # Should contain block characters
-      assert result =~ ~r/[▁▂▃▄▅▆▇█]/
+      # Should contain ASCII block characters
+      assert result =~ ~r/[_.=+*#^-]/
     end
 
     test "handles empty data" do
@@ -18,7 +18,7 @@ defmodule Droodotfoo.AsciiChartTest do
     end
 
     test "handles single value" do
-      assert AsciiChart.sparkline([5]) == "▄"
+      assert AsciiChart.sparkline([5]) == "-"
     end
 
     test "respects width option" do
@@ -41,26 +41,26 @@ defmodule Droodotfoo.AsciiChartTest do
     test "generates full bar at 100%" do
       result = AsciiChart.bar_chart(100, max: 100, width: 10)
 
-      assert result == "██████████"
+      assert result == "##########"
     end
 
     test "generates half bar at 50%" do
       result = AsciiChart.bar_chart(50, max: 100, width: 10)
 
-      assert result == "█████░░░░░"
+      assert result == "#####....."
     end
 
     test "generates empty bar at 0%" do
       result = AsciiChart.bar_chart(0, max: 100, width: 10)
 
-      assert result == "░░░░░░░░░░"
+      assert result == ".........."
     end
 
     test "handles values over max" do
       result = AsciiChart.bar_chart(150, max: 100, width: 10)
 
       # Should cap at full width
-      assert result == "██████████"
+      assert result == "##########"
     end
   end
 
@@ -70,7 +70,7 @@ defmodule Droodotfoo.AsciiChartTest do
 
       assert result =~ "Memory"
       assert result =~ "75.5%"
-      assert result =~ ~r/[█░]/
+      assert result =~ ~r/[#.]/
     end
 
     test "pads label to specified width" do

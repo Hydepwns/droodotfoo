@@ -43,7 +43,7 @@ defmodule Droodotfoo.Spotify do
   use GenServer
   require Logger
 
-  alias Droodotfoo.Spotify.{API, Auth}
+  alias Droodotfoo.Spotify.{Auth, DataRefresher, PlaybackController, VolumeControl}
 
   defstruct [
     :auth_state,
@@ -277,15 +277,9 @@ defmodule Droodotfoo.Spotify do
   """
   @spec play_pause() :: :ok | {:error, error_reason()}
   def play_pause do
-    playback = playback_state()
-
-    action =
-      case playback do
-        %{is_playing: true} -> :pause
-        _ -> :play
-      end
-
-    control_playback(action)
+    playback_state()
+    |> PlaybackController.toggle_action()
+    |> control_playback()
   end
 
   @doc """
@@ -416,9 +410,7 @@ defmodule Droodotfoo.Spotify do
   def handle_call({:complete_auth, code}, _from, state) do
     case Auth.exchange_code_for_tokens(code) do
       {:ok, _tokens} ->
-        # Fetch initial user data
-        spawn(fn -> fetch_initial_data() end)
-
+        spawn(fn -> DataRefresher.fetch_initial_data() end)
         new_state = %{state | auth_state: :authenticated}
         {:reply, :ok, new_state}
 
@@ -467,15 +459,13 @@ defmodule Droodotfoo.Spotify do
   @impl true
   def handle_call({:control_playback, action}, _from, state) do
     if state.auth_state == :authenticated do
-      case API.control_playback(action) do
+      case PlaybackController.execute(action) do
         :ok ->
-          # Refresh playback state after control
-          spawn(fn -> refresh_playback_data() end)
+          spawn(fn -> DataRefresher.refresh_playback() end)
           {:reply, :ok, state}
 
-        {:error, reason} ->
-          Logger.error("Failed to control playback: #{inspect(reason)}")
-          {:reply, {:error, reason}, state}
+        {:error, _reason} = error ->
+          {:reply, error, state}
       end
     else
       {:reply, {:error, :not_authenticated}, state}
@@ -485,30 +475,15 @@ defmodule Droodotfoo.Spotify do
   @impl true
   def handle_call({:adjust_volume, direction}, _from, state) do
     if state.auth_state == :authenticated do
-      # Get current volume from playback state
-      current_volume =
-        case state.playback_state do
-          %{device: %{"volume_percent" => vol}} -> vol
-          # Default if unknown
-          _ -> 50
-        end
+      new_volume = VolumeControl.adjust(state.playback_state, direction)
 
-      # Adjust by 10%
-      new_volume =
-        case direction do
-          :up -> min(current_volume + 10, 100)
-          :down -> max(current_volume - 10, 0)
-        end
-
-      case API.set_volume(new_volume) do
+      case PlaybackController.set_volume(new_volume) do
         :ok ->
-          # Refresh playback state after volume change
-          spawn(fn -> refresh_playback_data() end)
+          spawn(fn -> DataRefresher.refresh_playback() end)
           {:reply, :ok, state}
 
-        {:error, reason} ->
-          Logger.error("Failed to adjust volume: #{inspect(reason)}")
-          {:reply, {:error, reason}, state}
+        {:error, _reason} = error ->
+          {:reply, error, state}
       end
     else
       {:reply, {:error, :not_authenticated}, state}
@@ -518,7 +493,7 @@ defmodule Droodotfoo.Spotify do
   @impl true
   def handle_cast(:refresh_now_playing, state) do
     if state.auth_state == :authenticated do
-      spawn(fn -> refresh_playback_data() end)
+      spawn(fn -> DataRefresher.refresh_playback() end)
     end
 
     {:noreply, state}
@@ -551,7 +526,7 @@ defmodule Droodotfoo.Spotify do
   @impl true
   def handle_info(:periodic_update, state) do
     if state.auth_state == :authenticated do
-      spawn(fn -> refresh_playback_data() end)
+      spawn(fn -> DataRefresher.refresh_playback() end)
     end
 
     schedule_periodic_update()
@@ -561,52 +536,6 @@ defmodule Droodotfoo.Spotify do
   # Private Functions
 
   defp schedule_periodic_update do
-    # Update every 5 seconds when authenticated
     Process.send_after(self(), :periodic_update, 5_000)
-  end
-
-  defp fetch_initial_data do
-    # Fetch user info
-    case API.get_current_user() do
-      {:ok, user} ->
-        GenServer.cast(__MODULE__, {:update_user, user})
-
-      {:error, reason} ->
-        Logger.error("Failed to fetch user data: #{inspect(reason)}")
-    end
-
-    # Fetch playlists
-    case API.get_user_playlists() do
-      {:ok, playlists} ->
-        GenServer.cast(__MODULE__, {:update_playlists, playlists})
-
-      {:error, reason} ->
-        Logger.error("Failed to fetch playlists: #{inspect(reason)}")
-    end
-
-    # Fetch current playback
-    refresh_playback_data()
-  end
-
-  defp refresh_playback_data do
-    # Get currently playing track
-    case API.get_currently_playing() do
-      {:ok, track} ->
-        GenServer.cast(__MODULE__, {:update_current_track, track})
-
-      {:error, reason} ->
-        Logger.debug("No currently playing track: #{inspect(reason)}")
-        GenServer.cast(__MODULE__, {:update_current_track, nil})
-    end
-
-    # Get playback state
-    case API.get_playback_state() do
-      {:ok, playback} ->
-        GenServer.cast(__MODULE__, {:update_playback_state, playback})
-
-      {:error, reason} ->
-        Logger.debug("No playback state: #{inspect(reason)}")
-        GenServer.cast(__MODULE__, {:update_playback_state, nil})
-    end
   end
 end
