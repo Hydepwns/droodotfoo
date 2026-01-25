@@ -23,7 +23,7 @@ defmodule Droodotfoo.MixProject do
       ],
       docs: [
         main: "readme",
-        name: "droo.foo Terminal",
+        name: "droo.foo",
         source_url: "https://github.com/hydepwns/droodotfoo",
         homepage_url: "https://droo.foo",
         extras: [
@@ -141,6 +141,8 @@ defmodule Droodotfoo.MixProject do
       # Code quality tools
       {:excoveralls, "~> 0.18", only: :test},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:usage_rules, "~> 0.1", only: [:dev]},
+      {:igniter, "~> 0.7", only: [:dev]},
       {:ex_check, "~> 0.16.0", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       # Blog system dependencies

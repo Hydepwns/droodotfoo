@@ -7,6 +7,7 @@ defmodule DroodotfooWeb.Router do
     plug :fetch_live_flash
     plug :put_root_layout, html: {DroodotfooWeb.Layouts, :root}
     plug :protect_from_forgery
+    plug :put_secure_browser_headers
     plug DroodotfooWeb.Plugs.ContentSecurityPolicy
   end
 
