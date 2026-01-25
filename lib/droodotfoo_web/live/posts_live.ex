@@ -44,9 +44,9 @@ defmodule DroodotfooWeb.PostsLive do
             <article class="post-item-with-image">
               <div class="post-item-content">
                 <h3 class="mb-0-5">
-                  <a href={"/posts/#{post.slug}"} class="link-reset">
+                  <.link navigate={~p"/posts/#{post.slug}"} class="link-reset">
                     {post.title}
-                  </a>
+                  </.link>
                 </h3>
                 <p class="text-muted-alt">
                   {Date.to_string(post.date)} · {post.read_time} min read

@@ -87,7 +87,7 @@ defmodule DroodotfooWeb.PostLive do
 
     <div class="monospace-container">
       <nav class="post-nav">
-        <a href="/" class="back-link">{PostFormatter.back_link()}</a>
+        <.link navigate={~p"/"} class="back-link">{PostFormatter.back_link()}</.link>
       </nav>
 
       <header class="post-header post-header-large">
@@ -116,7 +116,7 @@ defmodule DroodotfooWeb.PostLive do
       </article>
 
       <footer class="post-footer">
-        <a href="/" class="back-link">{PostFormatter.back_link()}</a>
+        <.link navigate={~p"/"} class="back-link">{PostFormatter.back_link()}</.link>
       </footer>
     </div>
     """

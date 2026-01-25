@@ -39,15 +39,15 @@ defmodule DroodotfooWeb.SitemapLive do
 
         <div class="ascii-tree">
           <div><strong>droo.foo</strong></div>
-          <div>├── <a href="/">Home</a></div>
-          <div>├── <a href="/about">About</a></div>
-          <div>├── <a href="/now">Now</a></div>
-          <div>├── <a href="/projects">Projects</a></div>
+          <div>├── <.link navigate={~p"/"}>Home</.link></div>
+          <div>├── <.link navigate={~p"/about"}>About</.link></div>
+          <div>├── <.link navigate={~p"/now"}>Now</.link></div>
+          <div>├── <.link navigate={~p"/projects"}>Projects</.link></div>
           <div>
-            ├── <a href="/posts">Writing</a> <span class="text-muted">({length(@posts)} posts)</span>
+            ├── <.link navigate={~p"/posts"}>Writing</.link> <span class="text-muted">({length(@posts)} posts)</span>
           </div>
-          <div>├── <a href="/pattern-gallery">Pattern Gallery</a></div>
-          <div>└── <a href="/sitemap">Sitemap</a></div>
+          <div>├── <.link navigate={~p"/pattern-gallery"}>Pattern Gallery</.link></div>
+          <div>└── <.link navigate={~p"/sitemap"}>Sitemap</.link></div>
         </div>
 
         <%= if length(@posts) > 0 do %>
@@ -58,7 +58,7 @@ defmodule DroodotfooWeb.SitemapLive do
             <div class="ascii-tree mt-1">
               <%= for {post, idx} <- Enum.with_index(@posts, 1) do %>
                 <div>
-                  {if idx == length(@posts), do: "└── ", else: "├── "}<a href={"/posts/#{post.slug}"}>{post.title}</a>
+                  {if idx == length(@posts), do: "└── ", else: "├── "}<.link navigate={~p"/posts/#{post.slug}"}>{post.title}</.link>
                   <span class="text-muted">- {Date.to_string(post.date)}</span>
                 </div>
               <% end %>

@@ -75,7 +75,7 @@ defmodule DroodotfooWeb.NowLive do
           (Ethereum client), <strong>raxol</strong>
           (terminal UI framework), and <strong>riddler</strong>
           (cross-chain solver).
-          See <a href="/projects">projects</a>.
+          See <.link navigate={~p"/projects"}>projects</.link>.
         </p>
 
         <hr />
@@ -153,7 +153,7 @@ defmodule DroodotfooWeb.NowLive do
               Mostly Cosmos SDK, Ethereum clients, and node operations.
             </p>
             <p class="text-muted mt-1">
-              <a href="/about">Experience here</a> if you want to work together.
+              <.link navigate={~p"/about"}>Experience here</.link> if you want to work together.
             </p>
           </div>
         <% end %>

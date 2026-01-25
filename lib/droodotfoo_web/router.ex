@@ -18,14 +18,17 @@ defmodule DroodotfooWeb.Router do
   scope "/", DroodotfooWeb do
     pipe_through :browser
 
-    live "/", DroodotfooLive
-    live "/about", AboutLive
-    live "/now", NowLive
-    live "/projects", ProjectsLive
-    live "/posts", PostsLive
-    live "/posts/:slug", PostLive
-    live "/sitemap", SitemapLive
-    live "/pattern-gallery", PatternGalleryLive
+    # All LiveViews share a session so navigation preserves the music player
+    live_session :default, layout: {DroodotfooWeb.Layouts, :app} do
+      live "/", DroodotfooLive
+      live "/about", AboutLive
+      live "/now", NowLive
+      live "/projects", ProjectsLive
+      live "/posts", PostsLive
+      live "/posts/:slug", PostLive
+      live "/sitemap", SitemapLive
+      live "/pattern-gallery", PatternGalleryLive
+    end
 
     # RSS feed
     get "/feed.xml", FeedController, :rss

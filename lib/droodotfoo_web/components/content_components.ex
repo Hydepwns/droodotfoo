@@ -4,7 +4,7 @@ defmodule DroodotfooWeb.ContentComponents do
   Provides consistent layout structure and reusable elements.
   """
 
-  use Phoenix.Component
+  use DroodotfooWeb, :html
 
   @doc """
   Site-wide header with droo.foo branding.
@@ -20,7 +20,7 @@ defmodule DroodotfooWeb.ContentComponents do
         <caption class="sr-only">Site header with metadata</caption>
         <tr>
           <td class="header-title" colspan="2">
-            <a href="/" class="site-title" aria-label="DROO.FOO - Return to homepage">DROO.FOO</a>
+            <.link navigate={~p"/"} class="site-title" aria-label="DROO.FOO - Return to homepage">DROO.FOO</.link>
           </td>
           <td class="header-meta-label">Version</td>
           <td class="header-meta-value header-meta-value-right">v1.0.0</td>
@@ -99,26 +99,26 @@ defmodule DroodotfooWeb.ContentComponents do
     ~H"""
     <nav class="site-nav-simple" aria-label="Primary navigation">
       <p>
-        <a href="/about" aria-current={if @current_path == "/about", do: "page", else: false}>
+        <.link navigate={~p"/about"} aria-current={if @current_path == "/about", do: "page", else: false}>
           About
-        </a>
+        </.link>
         <span aria-hidden="true">·</span>
-        <a href="/now" aria-current={if @current_path == "/now", do: "page", else: false}>Now</a>
+        <.link navigate={~p"/now"} aria-current={if @current_path == "/now", do: "page", else: false}>Now</.link>
         <span aria-hidden="true">·</span>
-        <a href="/projects" aria-current={if @current_path == "/projects", do: "page", else: false}>
+        <.link navigate={~p"/projects"} aria-current={if @current_path == "/projects", do: "page", else: false}>
           Projects
-        </a>
+        </.link>
         <span aria-hidden="true">·</span>
-        <a
-          href="/posts"
+        <.link
+          navigate={~p"/posts"}
           aria-current={if String.starts_with?(@current_path, "/posts"), do: "page", else: false}
         >
           Writing
-        </a>
+        </.link>
         <span aria-hidden="true">·</span>
-        <a href="/sitemap" aria-current={if @current_path == "/sitemap", do: "page", else: false}>
+        <.link navigate={~p"/sitemap"} aria-current={if @current_path == "/sitemap", do: "page", else: false}>
           Sitemap
-        </a>
+        </.link>
       </p>
     </nav>
     """
@@ -297,7 +297,7 @@ defmodule DroodotfooWeb.ContentComponents do
                 <strong class="series-current">{post.title}</strong>
                 <span class="text-muted">(current)</span>
               <% else %>
-                <a href={"/posts/#{post.slug}"}>{post.title}</a>
+                <.link navigate={~p"/posts/#{post.slug}"}>{post.title}</.link>
               <% end %>
             </li>
           <% end %>
