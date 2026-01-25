@@ -451,21 +451,36 @@
           });
         }
 
+        // Music player toggle helper
+        const toggleMusicPlayer = () => {
+          if (musicPlayer) {
+            musicPlayer.classList.toggle('music-player-minimized');
+            musicPlayer.classList.toggle('music-player-expanded');
+          }
+        };
+
         // Music player minimize/maximize toggle (desktop button)
         const musicToggleDesktop = document.getElementById('music-toggle-desktop');
         if (musicToggleDesktop && musicPlayer) {
-          musicToggleDesktop.addEventListener('click', () => {
-            musicPlayer.classList.toggle('music-player-minimized');
-            musicPlayer.classList.toggle('music-player-expanded');
-          });
+          musicToggleDesktop.addEventListener('click', toggleMusicPlayer);
         }
 
         // Music player minimize/maximize toggle (mobile hamburger menu)
         if (menuMusicToggle && musicPlayer) {
           menuMusicToggle.addEventListener('click', () => {
-            musicPlayer.classList.toggle('music-player-minimized');
-            musicPlayer.classList.toggle('music-player-expanded');
+            toggleMusicPlayer();
             hamburgerMenu.classList.remove('menu-open');
+          });
+        }
+
+        // Click minimized player pill to expand
+        if (musicPlayer) {
+          musicPlayer.addEventListener('click', (e) => {
+            // Only expand if currently minimized and clicked on the pill itself (not the iframe)
+            if (musicPlayer.classList.contains('music-player-minimized') &&
+                e.target === musicPlayer) {
+              toggleMusicPlayer();
+            }
           });
         }
       });
