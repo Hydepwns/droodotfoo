@@ -4,8 +4,10 @@ import Config
 config :esbuild,
   droodotfoo: [
     args: ~w(
-      js/app.js
+      js/app.ts
       --bundle
+      --splitting
+      --format=esm
       --target=es2022
       --outdir=../priv/static/assets/js
       --external:/fonts/*
@@ -13,10 +15,10 @@ config :esbuild,
       --minify
       --tree-shaking=true
       --metafile=meta.json
-      --drop:console
-      --drop:debugger
       --legal-comments=none
       --alias:@=.
+      --loader:.ts=ts
+      --loader:.tsx=tsx
     ),
     cd: Path.expand("../assets", __DIR__),
     env: %{
