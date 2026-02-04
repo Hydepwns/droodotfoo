@@ -212,10 +212,7 @@ defmodule DroodotfooWeb.ContactLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <.page_layout
-      page_title="Contact"
-      page_description="Get in touch via the form below"
-    >
+    <.page_layout page_title="Contact">
       <div class="contact-form">
         <.form
           for={%{}}
@@ -271,7 +268,7 @@ defmodule DroodotfooWeb.ContactLive do
             label="Message"
             value={@form_data.message}
             error={@form_errors[:message]}
-            placeholder="Tell me about your project, idea, or just say hello!"
+            placeholder="What's on your mind?"
             rows={6}
             required
           />

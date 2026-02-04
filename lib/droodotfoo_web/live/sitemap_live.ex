@@ -29,14 +29,9 @@ defmodule DroodotfooWeb.SitemapLive do
     ~H"""
     <.page_layout
       page_title="Sitemap"
-      page_description="Visual map of all pages on droo.foo"
       current_path={@current_path}
     >
       <section class="about-section">
-        <p class="mb-2">
-          Complete site structure for quick navigation. Click any link to jump to that page.
-        </p>
-
         <div class="ascii-tree">
           <div><strong>droo.foo</strong></div>
           <div>├── <.link navigate={~p"/"}>Home</.link></div>

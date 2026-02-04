@@ -23,8 +23,11 @@ defmodule DroodotfooWeb.AboutLive do
       ])
     ]
 
+    languages = extract_languages(resume.experience)
+
     socket
     |> assign(:resume, resume)
+    |> assign(:languages, languages)
     |> assign(:page_title, "About")
     |> assign(:current_path, "/about")
     |> assign(:json_ld, json_ld)
@@ -42,28 +45,20 @@ defmodule DroodotfooWeb.AboutLive do
       <section class="about-section">
         <h2 class="section-title">About</h2>
         <p>
-          I build blockchain infrastructure at axol.io. Before that, defense systems
-          where uptime requirements were strict and bugs had operational consequences.
-          Before that, startups where shipping broken code and fixing it fast was the norm.
+          I build blockchain infrastructure at
+          <a href="https://axol.io" target="_blank" rel="noopener">axol.io</a>.
+          Defense systems before that, where downtime had operational consequences.
+        </p>
+        <p class="mt-1">
+          Startups taught me to ship fast. Defense taught me to make things not break.
+          Blockchain requires both -- bugs are expensive and immutable.
+          No rollback makes you careful about what "done" means.
         </p>
 
-        <h3 class="mt-2">What I've learned</h3>
-        <p>
-          Startups taught me to ship fast and iterate. Defense taught me to make things
-          not break. Blockchain requires both: move quickly, but bugs are expensive and
-          immutable. No rollback makes you careful about what "done" means.
-        </p>
-
-        <p class="mt-2">{@resume.summary}</p>
-
-        <%= if @resume[:focus_areas] && length(@resume.focus_areas) > 0 do %>
+        <%= if @languages != [] do %>
           <div class="mt-2">
-            <h3>Focus Areas</h3>
-            <ul>
-              <%= for area <- @resume.focus_areas do %>
-                <li>{area}</li>
-              <% end %>
-            </ul>
+            <h3>Stack</h3>
+            <.tech_tags technologies={@languages} />
           </div>
         <% end %>
       </section>
@@ -208,5 +203,4 @@ defmodule DroodotfooWeb.AboutLive do
     """
   end
 
-  # format_date_range helper now imported from ViewHelpers
 end

@@ -31,15 +31,11 @@ Your default setting - the thing your days organize around, the metric by which 
 - Worship power, and you'll never stop feeling powerless. Someone's always stronger, always higher, always holding cards you'll never see. The vulnerability doesn't go away - it multiplies.
 - Worship money, and the treadmill speeds up with every milestone. The number that would have been enough five years ago is laughable now. The finish line was never there.
 
-These are outside-in strategies. Trying to shine by accumulating external validation. Trying to become worthy by building the perfect facade. The outside never touches the inside. You can collect achievements like trophies and still feel hollow. You can optimize your image until it's perfect and still not know who you are.
-
 ## Two Types of Suffering
 
 You will suffer either way. The question is which type.
 
-**Misalignment suffering** comes from external worship. You can do everything right and still lose because outcomes are only partially tied to effort. Genetics, markets, timing, luck - all outside your control. You're running on a treadmill where effort doesn't reliably produce results.
-
-Each form of external worship follows the same pattern: you can maintain your appearance perfectly and still age. Study constantly and still feel ignorant. Accumulate power and feel more vulnerable. Double your wealth and move the goalpost. You chase proxies that never satisfy, optimize metrics that don't touch the core. Win every external game and wake up empty anyway.
+**Misalignment suffering** comes from external worship. You can do everything right and still lose because outcomes are only partially tied to effort. Genetics, markets, timing, luck - all outside your control.
 
 **Meaningful fatigue** comes from internal alignment. The suffering comes from the difficulty of the work itself, not from chasing outcomes you can't control. Did you show up today? Did you do the work? Did you serve the thing that matters?
 
@@ -148,17 +144,13 @@ Would you do this work if no one would ever know you did it? If you couldn't sig
 
 Is the world better because you did this? Not "does it make you feel good" or "are people impressed" - does your contribution serve something beyond yourself?
 
-**The failure:** Confusing activity with contribution. Busy, working hard, but nothing changes. Or creating things that serve only ego - impressive at parties, meaningless in practice.
-
-**Doré:** His illustrations became the definitive imagery for sacred narratives in Western culture. When people visualize Paradise Lost, Dante's Divine Comedy, or biblical scenes, they see his vision. He shaped how millions understand light and darkness, heaven and hell, the divine breaking through into human experience.
+The easy trap is confusing activity with contribution. Busy, working hard, but nothing changes. Dore's illustrations became how millions of people visualize Paradise Lost, the Divine Comedy, biblical scenes. He shaped an entire culture's visual vocabulary for heaven and hell. That's impact. Most of us won't work at that scale, but the question still applies.
 
 ### The Skill-Passion Alignment Test
 
-Passion without skill is delusion - like tone-deaf reality show auditions where people are convinced they're meant to perform. Loving something doesn't mean it's your agalma. Your contribution must create value, not just express enthusiasm.
+Passion without skill is delusion - tone-deaf reality show auditions where people are convinced they're meant to perform. Loving something doesn't mean it's your agalma. Your contribution must create value, not just express enthusiasm.
 
-**The failure:** They love something but aren't good at it, and refuse to acknowledge the gap. Or they assume that because they enjoy it casually, they should build their life around it. Enjoyment under zero stakes tells you nothing.
-
-**Doré:** Ten thousand illustrations of genuine technical and artistic merit. He wasn't just passionate about sacred narratives - he had the skill to render them at a level that changed culture. The passion drove the work, but the skill made it matter.
+Enjoying something casually, under zero stakes, tells you nothing. Dore produced ten thousand illustrations of genuine technical merit. He wasn't just passionate about sacred narratives - he could render them at a level that changed culture. The passion drove the work, but the skill made it matter.
 
 <div style="text-align: center; margin: 2rem 0;">
   <img src="/images/blog/vision-empyrean-paradiso-canto-31.webp" alt="Vision of the Empyrean by Gustave Doré (1866) - The highest heaven depicted as radiant light with souls arranged in divine order" loading="lazy" style="max-width: 100%; height: auto;" />
@@ -174,19 +166,15 @@ If you can't answer these cleanly, either you haven't found it yet, or you've fo
 
 ## What This Is Not (And Common Mistakes)
 
-**Not "follow your passion":** Passion is a feeling. Feelings change. The person who's passionate about photography this year and woodworking next year and pottery the year after hasn't found their agalma - they're chasing novelty. The agalma reveals itself through what you keep returning to after the passion fades, when it's no longer new or exciting, when it's just work.
+**Not "follow your passion."** Passion is a feeling. Feelings change. Photography this year, woodworking next year, pottery the year after -- that's novelty, not signal. The agalma reveals itself through what you keep returning to after the passion fades, when it's no longer new or exciting, when it's just work. The test isn't whether you like it when it's easy - it's whether you still do it when it costs you, when nobody's watching.
 
-The related mistake: **mistaking hobby for purpose**. You enjoy something when there's no pressure, so you think it's your calling. But enjoyment under zero stakes tells you nothing. The test isn't whether you like it when it's easy - it's whether you still do it when it costs you, when nobody's watching.
+**Not "find your purpose."** Purpose implies a predetermined destiny waiting to be discovered, like you're a lock and there's one key that fits. You're not a static object. You're a pattern that emerges through action. And being good at something doesn't mean you should dedicate your life to it -- plenty of people are skilled at things that don't matter to them.
 
-**Not "find your purpose":** Purpose implies a predetermined destiny waiting to be discovered, like you're a lock and there's one key that fits. You're not a static object. You're a pattern that emerges through action. The agalma becomes visible when you commit to the work and pay attention to what persists.
+**Not "do what makes you happy."** Happiness is the wrong metric. The agalma often makes you miserable. It costs you. It demands things you don't want to give. Dore was unhappy about the art world's contempt. But he kept drawing biblical scenes anyway because the work mattered more than his comfort. If you're only willing to do what feels good, you've found a hobby, not an agalma.
 
-The related mistake: **confusing skill for calling**. You're good at something, so you assume it's your agalma. Competence isn't contribution. Plenty of people are skilled at things that don't matter to them - work they're good at, work that pays well, work that impresses others. Being able to do something well doesn't mean you should dedicate your life to it.
+The prestige trap is the subtlest version of all three. You chase what looks impressive rather than what matters. External worship wearing the mask of internal purpose.
 
-**Not "do what makes you happy":** Happiness is the wrong metric. The agalma often makes you miserable. It costs you. It demands things you don't want to give. Doré was unhappy about the art world's contempt. But he kept drawing biblical scenes anyway because the work mattered more than his comfort. If you're only willing to do what makes you happy, you haven't found your agalma - you've found a hobby.
-
-The related mistake: **the prestige trap**. You chase what looks impressive rather than what matters to you. This is external worship wearing the mask of internal purpose. You care more about how it sounds when you tell people than about doing the work.
-
-Your agalma isn't what excites you in the moment. It's what you return to when the excitement fades. The agalma is what you serve even when it costs you. Even when it doesn't make you happy. Even when the passion has drained away and all that's left is the conviction that this work matters.
+The agalma is what you serve even when it costs you. Even when the passion has drained away and all that's left is the conviction that this work matters.
 
 ## The Timeline Question
 
@@ -206,7 +194,7 @@ If you've been doing the same work for years and still asking "is this it?", eit
 
 ## The Obligation to Disseminate
 
-Your agalma reveals truth - not abstract philosophical truth, but the specific truth that emerges when you align your unique capabilities with genuine contribution. When Doré discovered his agalma, he didn't just find what he was good at. He found a truth about how sacred narratives could reach people at scale. That truth wasn't his to hoard.
+Your agalma reveals truth. When Dore discovered his, he didn't just find what he was good at. He found that sacred narratives could reach people at scale through illustration. That truth wasn't his to hoard.
 
 If you've found something true, you have a responsibility to disseminate it outward. Truth - real truth - doesn't belong to you. You're the vessel.
 
@@ -233,7 +221,7 @@ Doré operated in true dissemination mode. He could have chased gallery exhibiti
   <p style="font-size: 0.9em; color: #666; margin-top: 0.5rem;"><em>In the first circle of Purgatory, Dante and Virgil in front of Arachne, one of the figures representative of pride (Purgatory, canto 12).</em> Dante's Divine Comedy, 1868.</p>
 </div>
 
-Your agalma isn't just for you. It's a signal fire - light it and keep it burning. The dissemination isn't optional; it's the whole point. Truth hoarded becomes stagnant. Truth shared becomes a catalyst.
+Your agalma isn't just for you. It's a signal fire - light it and keep it burning. The dissemination isn't optional; it's the whole point.
 
 The Greeks understood something we've forgotten: the precious thing isn't always visible from the outside. Sometimes it's buried in the broken, the weird, the unexpected. Sometimes it's in you, waiting to be revealed through what you build.
 

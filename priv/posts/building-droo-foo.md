@@ -15,7 +15,7 @@ slug: "building-droo-foo"
 
 # Module 1: Proof of Architecture
 
-Like building a gundam—one module at a time, each proving the system before the next ships.
+Like building a gundam—one module at a time.
 
 This site is Module 1. If the content system isn't modular, [mana](/projects#mana) won't be. If the monospace grid breaks here, it breaks in [raxol](/projects#raxol). If patterns can't handle blog posts, they can't handle validator dashboards.
 
@@ -37,7 +37,7 @@ The architecture must satisfy:
 
 Additionally, it must pass the "squint test": visible monospace grid with precise character spacing, highly optimized for legibility and visual rhythm.
 
-We addressed font constraints quickly using the [monaspace font family](https://monaspace.githubnext.com/). Monaspace provides texture healing—a feature that adjusts letter spacing dynamically to create visually even text density while maintaining strict monospace alignment. Perfect for our character-perfect grid requirements.
+I addressed font constraints using the [monaspace font family](https://monaspace.githubnext.com/). Monaspace provides texture healing—adjusting letter spacing dynamically to create visually even text density while maintaining strict monospace alignment.
 
 **Character-perfect grid alignment became the first real problem.**
 
@@ -51,7 +51,7 @@ Every post needs a visual. Manual design doesn't scale, and the site looked too 
 
 Solution: deterministic pattern generation. Hash the slug, seed the RNG, generate SVG. Reproducible, cacheable, zero manual work.
 
-We chose to use functional programming patterns idiomatic to the Elixir language. Partially because writing dynamic programs and using imperative patterns gives me existential dread.
+I used functional patterns idiomatic to Elixir. Partially because imperative patterns give me existential dread.
 
 ```elixir
 def generate_svg(slug, opts \\ []) do
@@ -133,9 +133,7 @@ Implementation details and usage examples coming in a future post on API securit
 
 ---
 
-## What Broke (And How We Fixed It)
-
-Implementation collides with reality. Here's what broke, ordered by severity:
+## What Broke (And How I Fixed It)
 
 ### CSS Precision Crisis
 
@@ -149,7 +147,7 @@ The fix:
 2. CSS cascade control—no inherited text transforms or letter spacing
 3. JavaScript validation on resize to lock the grid
 
-Not sexy, but necessary. The monospace grid became our agalma—not just aesthetic preference, but the idealized constraint that drives every architectural decision. If this foundation breaks, everything built on it collapses.
+The monospace grid is the [agalma](/posts/the-agalma)—the idealized constraint driving every architectural decision. If this foundation breaks, everything built on it collapses.
 
 Next step: write tests for more browsers (Ladybird, Edge, terminal browsers) and observe rendering execution.
 
@@ -196,25 +194,14 @@ Not perfect yet. Still testing with NVDA, VoiceOver, and JAWS. But navigable and
 **Page load:** <200ms first paint, 50ms LiveView connection, zero layout shift
 **Build:** 8s full, <1s incremental
 
-## What It Enables
-
-The pieces compose:
-- Pattern generator → reusable library
-- Components → design system
-- Files → data layer
-- LiveView → real-time features
-
-This proves the architecture. Next: applying these patterns to validator dashboards, blockchain monitoring, and real-time terminal interfaces.
-
----
-
 ## What This Unlocks
 
-The architecture holds. The same patterns that render blog posts will render validator dashboards, blockchain monitoring, real-time terminal interfaces.
+- Pattern generator -> reusable library
+- Components -> design system
+- Files -> data layer
+- LiveView -> real-time features
 
-**Next:** [Raxol](/projects#raxol) applies this grid system to terminal UIs. Same constraints, different problem space. Then [mana](/projects#mana) (Ethereum client) and [riddler](/projects#riddler) (cross-chain solver) build on the proven foundation.
-
-Module 1 proves the system works. Each subsequent module inherits these patterns—monospace precision, deterministic generation, composable components, accessibility first.
+The same patterns that render blog posts will render validator dashboards and real-time terminal interfaces. [Raxol](/projects#raxol) applies this grid system to terminal UIs. Then [mana](/projects#mana) (Ethereum client) and [riddler](/projects#riddler) (cross-chain solver) build on the proven foundation.
 
 See all projects at [/projects](/projects). Track progress at [/now](/now).
 

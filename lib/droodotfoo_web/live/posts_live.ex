@@ -33,7 +33,7 @@ defmodule DroodotfooWeb.PostsLive do
     ~H"""
     <.page_layout
       page_title="Writing"
-      page_description="Thoughts on engineering, crypto, and building"
+      page_description="Notes on building things"
       current_path={@current_path}
     >
       <%= if @posts == [] do %>

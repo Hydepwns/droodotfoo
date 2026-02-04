@@ -6,9 +6,11 @@ defmodule DroodotfooWeb.NowLive do
   """
 
   use DroodotfooWeb, :live_view
+  use DroodotfooWeb.ContributionHelpers
   alias Droodotfoo.Resume.ResumeData
   alias DroodotfooWeb.SEO.JsonLD
   import DroodotfooWeb.ContentComponents
+  import DroodotfooWeb.GithubComponents
 
   @impl true
   def mount(_params, _session, socket) do
@@ -22,12 +24,15 @@ defmodule DroodotfooWeb.NowLive do
       ])
     ]
 
+    if connected?(socket), do: DroodotfooWeb.ContributionHelpers.init_contributions()
+
     socket
     |> assign(:resume, resume)
     |> assign(:last_updated, last_updated)
     |> assign(:page_title, "Now")
     |> assign(:current_path, "/now")
     |> assign(:json_ld, json_ld)
+    |> assign(DroodotfooWeb.ContributionHelpers.contribution_assigns())
     |> then(&{:ok, &1})
   end
 
@@ -40,6 +45,14 @@ defmodule DroodotfooWeb.NowLive do
       current_path={@current_path}
     >
       <section class="about-section">
+        <.contribution_graph
+          id="now-contributions"
+          grid={@contribution_grid}
+          loading={@contributions_loading}
+        />
+
+        <hr />
+
         <div class="text-muted mb-2">
           <strong>Last updated:</strong>
           {Date.to_string(@last_updated)}
@@ -58,8 +71,8 @@ defmodule DroodotfooWeb.NowLive do
           </div>
 
           <p class="experience-description">
-            Running validator infrastructure for transaction ordering and state transitions.
-            Currently operating on Aztec, Base, Optimism, and Ethereum mainnet.
+            Validators on Aztec, Base, Optimism, and Ethereum mainnet.
+            Transaction ordering and state transitions.
           </p>
 
           <div class="tech-tags mt-1">
@@ -82,8 +95,7 @@ defmodule DroodotfooWeb.NowLive do
 
         <h3 class="mt-2">Learning</h3>
         <p>
-          Reading production source code to understand tradeoffs in validator infrastructure
-          and cross-chain messaging:
+          Reading source to understand how these systems actually work:
         </p>
 
         <details class="experience-details" open>
@@ -129,7 +141,7 @@ defmodule DroodotfooWeb.NowLive do
         <p>
           Based in <strong>{@resume.personal_info.location}</strong>
           (<time>{@resume.personal_info.timezone}</time>).
-          Remote. Mostly protocol research, open-source work, and running validators.
+          Remote.
         </p>
 
         <%= if @resume.focus_areas && length(@resume.focus_areas) > 0 do %>
@@ -149,8 +161,7 @@ defmodule DroodotfooWeb.NowLive do
           <h3 class="mt-2">Availability</h3>
           <div class="experience-item">
             <p>
-              Open to consulting on validator infrastructure and protocol work.
-              Mostly Cosmos SDK, Ethereum clients, and node operations.
+              Open to consulting on Cosmos SDK, Ethereum clients, and node operations.
             </p>
             <p class="text-muted mt-1">
               <.link navigate={~p"/about"}>Experience here</.link> if you want to work together.
@@ -170,8 +181,7 @@ defmodule DroodotfooWeb.NowLive do
           >
             /now page movement
           </a>
-          by Derek Sivers. It's manually updated whenever my focus significantly shifts.
-          Think of it as a snapshot of what has my attention right now.
+          by Derek Sivers. Updated whenever my focus significantly shifts.
         </p>
       </section>
     </.page_layout>
