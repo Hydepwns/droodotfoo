@@ -220,47 +220,70 @@
     },
     "projects": [
       {
+        "name": "raxol",
+        "url": "https://github.com/Hydepwns/raxol",
+        "description": "Component-based terminal UIs for Elixir",
+        "language": "Elixir",
+        "status": "active",
+        "highlights": [
+          "Declarative markup with real-time Phoenix LiveView integration",
+          "ANSI, Sixel, and Kitty graphics protocol support",
+          "Character-perfect grid alignment for monospace displays"
+        ]
+      },
+      {
+        "name": "libsignal-protocol-nif",
+        "url": "https://github.com/Hydepwns/libsignal-protocol-nif",
+        "description": "Signal Protocol for BEAM (Erlang/Elixir/Gleam)",
+        "language": "C",
+        "status": "active",
+        "highlights": [
+          "Cross-platform NIF bindings for libsignal",
+          "End-to-end encryption primitives for distributed systems"
+        ]
+      },
+      {
+        "name": "mona.nvim",
+        "url": "https://github.com/Hydepwns/mona.nvim",
+        "description": "Monaspace font toolkit for Neovim",
+        "language": "Lua",
+        "status": "active",
+        "highlights": [
+          "Install, configure, and mix Monaspace font variants",
+          "Seamless integration with existing Neovim font config"
+        ]
+      },
+      {
+        "name": "LSPbridge",
+        "url": "https://github.com/Hydepwns/LSPbridge",
+        "description": "IDE diagnostics bridge for AI assistants",
+        "language": "Rust",
+        "status": "active",
+        "highlights": [
+          "Privacy-first: diagnostics never leave your machine without consent",
+          "Extensions for VS Code, Neovim, and Zed"
+        ]
+      },
+      {
+        "name": "phos",
+        "url": "https://github.com/Hydepwns/phos",
+        "description": "GRC replacement log colorizer",
+        "language": "Rust",
+        "status": "active",
+        "highlights": [
+          "Drop-in replacement for GRC with modern regex engine",
+          "Homebrew and DAppNode distribution"
+        ]
+      },
+      {
         "name": "mana",
         "url": "https://github.com/axol-io/mana",
         "description": "Ethereum protocol implementation in Elixir",
         "language": "Elixir",
         "status": "active",
-        "topics": [
-          "blockchain",
-          "elixir",
-          "ethereum",
-          "evm",
-          "protocol",
-          "web3"
-        ],
         "highlights": [
-          "Built on the BEAM VM: inherent concurrency, fault tolerance, and hot code reloading",
-          "Functional architecture: immutable state, pattern matching, and pipeline-driven data flow",
-          "Production-grade OTP: supervisors, GenServers, and distributed systems primitives",
-          "Memory efficient: significantly lower resource consumption than Geth or Erigon",
-          "Developer-friendly: readable codebase with clear separation of concerns"
-        ]
-      },
-      {
-        "name": "raxol",
-        "url": "https://github.com/Hydepwns/raxol",
-        "description": "Terminal UI framework for Elixir",
-        "language": "Elixir",
-        "status": "active",
-        "topics": [
-          "ansi",
-          "component-based",
-          "elixir",
-          "phoenix-liveview",
-          "terminal-ui",
-          "tui"
-        ],
-        "highlights": [
-          "Component-based architecture with declarative markup",
-          "Real-time updates via Phoenix LiveView integration",
-          "ANSI escape sequences for rich terminal rendering",
-          "Event handling system for keyboard and mouse interactions",
-          "Character-perfect grid alignment for monospace displays"
+          "Full EVM on the BEAM with OTP fault tolerance",
+          "Lower resource consumption than Geth or Erigon"
         ]
       },
       {
@@ -269,19 +292,75 @@
         "description": "Cross-chain bridge solver",
         "language": "Elixir",
         "status": "active",
-        "topics": [
-          "blockchain",
-          "cross-chain",
-          "defi",
-          "elixir",
-          "solver",
-          "web3"
-        ],
         "highlights": [
           "Across Protocol integration for multi-chain liquidity",
-          "Wormhole support in development (Solana and Sui bridges)",
-          "Automated rebalancing for cross-chain inventory",
-          "Real-time monitoring and execution of solver opportunities"
+          "Automated rebalancing and opportunity execution"
+        ]
+      },
+      {
+        "name": "zmin",
+        "url": "https://github.com/Hydepwns/zmin",
+        "description": "Ultra-fast JSON minifier with SIMD acceleration",
+        "language": "Zig",
+        "status": "active",
+        "highlights": [
+          "AVX2/AVX512 SIMD paths for throughput",
+          "Cross-platform bindings, zero dependencies"
+        ]
+      },
+      {
+        "name": "nix-mox",
+        "url": "https://github.com/Hydepwns/nix-mox",
+        "description": "NixOS configuration framework with Proxmox templates",
+        "language": "Nix",
+        "status": "active",
+        "highlights": [
+          "Declarative infrastructure for homelab and production",
+          "ZFS, Proxmox VM templates, and Nushell tooling"
+        ]
+      },
+      {
+        "name": "synthwave84-zed",
+        "url": "https://github.com/Hydepwns/synthwave84-zed",
+        "description": "Synthwave84 theme for Zed editor",
+        "language": "Shell",
+        "status": "active",
+        "highlights": [
+          "Ported Synthwave84 aesthetic to Zed's theme system",
+          "Monaspace font configuration included"
+        ]
+      },
+      {
+        "name": "dotfiles",
+        "url": "https://github.com/Hydepwns/dotfiles",
+        "description": "Cross-platform dotfiles with chezmoi and lazy loading",
+        "language": "Shell",
+        "status": "active",
+        "highlights": [
+          "95% shell startup speedup via lazy-loading",
+          "30+ conditional features driven by chezmoi templates"
+        ]
+      },
+      {
+        "name": "orbit-jump",
+        "url": "https://github.com/Hydepwns/orbit-jump",
+        "description": "Gravity-based jumping game",
+        "language": "Lua",
+        "status": "active",
+        "highlights": [
+          "Love2D physics engine with orbital mechanics",
+          "Monaspace typography integration"
+        ]
+      },
+      {
+        "name": "droodotfoo",
+        "url": "https://github.com/Hydepwns/droodotfoo",
+        "description": "This site -- Phoenix LiveView with monospace web design",
+        "language": "Elixir",
+        "status": "active",
+        "highlights": [
+          "Character-perfect grid using Wickstrom's monospace web technique",
+          "Two-phase async loading, GitHub/Spotify/Web3 integrations"
         ]
       }
     ]
