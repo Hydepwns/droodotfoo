@@ -33,6 +33,7 @@
 @import "./pattern_gallery.css";  /* Pattern gallery */
 @import "./resume.css";            /* Resume page */
 @import "./contact_form.css";      /* Contact form */
+@import "./contributions.css";     /* Contribution graph */
 
 /* === GLOBAL UTILITIES === */
 .spinner {

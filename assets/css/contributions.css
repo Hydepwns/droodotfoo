@@ -1,0 +1,285 @@
+/* Contribution Graph - Theme-aware GitHub-style contribution grid
+   Uses flexbox for layout -- zero inline styles on cells */
+
+/* Hook container needs position:relative for absolute tooltip.
+   Matched by attribute since IDs vary per page. */
+[phx-hook="ContributionGraphHook"] {
+  position: relative;
+}
+
+.contrib-graph {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1rem 0;
+  scrollbar-width: none; /* Firefox */
+}
+
+.contrib-graph::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+
+.contrib-body {
+  display: inline-flex;
+  gap: 4px;
+}
+
+/* Day labels (left column) */
+.contrib-day-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.contrib-day-spacer {
+  height: 12px;
+}
+
+.contrib-day-label {
+  height: 12px;
+  line-height: 12px;
+  font-size: 0.65rem;
+  color: var(--text-color);
+  opacity: 0.6;
+  text-align: right;
+  padding-right: 2px;
+  min-width: 3ch;
+}
+
+/* Main grid area */
+.contrib-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.contrib-month-row {
+  display: flex;
+  gap: 2px;
+  height: 12px;
+}
+
+.contrib-month-cell {
+  width: 12px;
+  font-size: 0.65rem;
+  line-height: 12px;
+  color: var(--text-color);
+  opacity: 0.6;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+.contrib-weeks {
+  display: flex;
+  gap: 2px;
+}
+
+.contrib-week {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Cells -- shared base */
+.contrib-cell {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  cursor: default;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.contrib-cell[data-count]:not([data-count="0"]) {
+  cursor: pointer;
+}
+
+.contrib-cell[data-date]:hover,
+.contrib-cell.contrib-active {
+  transform: scale(1.4);
+  z-index: 2;
+}
+
+.contrib-cell:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 1px;
+  z-index: 2;
+}
+
+/* Level 0: empty state */
+.contrib-level-0 {
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
+  opacity: 0.3;
+}
+
+/* Levels 1-4: single rule, intensity driven by custom property */
+.contrib-cell:not(.contrib-level-0) {
+  background: color-mix(in srgb, var(--accent-color) var(--intensity, 25%), var(--background-color));
+  border: 1px solid color-mix(in srgb, var(--accent-color) var(--intensity, 25%), transparent);
+}
+
+.contrib-level-1 { --intensity: 25%; }
+.contrib-level-2 { --intensity: 50%; }
+.contrib-level-3 { --intensity: 75%; }
+.contrib-level-4 { --intensity: 100%; box-shadow: 0 0 4px var(--accent-color); }
+
+.contrib-level-4:hover,
+.contrib-level-4.contrib-active {
+  box-shadow: 0 0 8px var(--accent-color), 0 0 16px var(--accent-color);
+}
+
+/* Tooltip -- positioned relative to hook container */
+.contrib-tooltip {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 10px;
+  background: var(--background-color);
+  border: 1px solid var(--accent-color);
+  color: var(--text-color);
+  font-size: 0.7rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.contrib-tooltip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+}
+
+.contrib-tooltip.above::after {
+  bottom: -10px;
+  border-top-color: var(--accent-color);
+}
+
+.contrib-tooltip.below::after {
+  top: -10px;
+  border-bottom-color: var(--accent-color);
+}
+
+.contrib-tooltip.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.contrib-tooltip strong {
+  color: var(--accent-color);
+}
+
+.contrib-tooltip-count {
+  opacity: 0.9;
+}
+
+.contrib-tooltip-types {
+  opacity: 0.6;
+  font-size: 0.6rem;
+}
+
+.contrib-tooltip-repos {
+  opacity: 0.5;
+  font-size: 0.6rem;
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Summary */
+.contrib-summary {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-color);
+  opacity: 0.8;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1ch;
+  align-items: center;
+}
+
+.contrib-accent {
+  color: var(--accent-color);
+}
+
+.contrib-divider {
+  opacity: 0.3;
+}
+
+/* Loading skeleton */
+.contrib-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.contrib-loading-grid {
+  display: grid;
+  grid-template-columns: repeat(53, 12px);
+  grid-template-rows: repeat(7, 12px);
+  gap: 2px;
+}
+
+.contrib-loading-cell {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--border-color);
+  opacity: 0.15;
+  animation: contrib-pulse 1.5s ease-in-out infinite;
+}
+
+.contrib-loading-cell:nth-child(odd) {
+  animation-delay: 0.3s;
+}
+
+@keyframes contrib-pulse {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 0.25; }
+}
+
+.contrib-source {
+  font-size: 0.65rem;
+  opacity: 0.4;
+}
+
+/* Mobile: smaller cells, fade hint on left edge */
+@media (max-width: 640px) {
+  .contrib-cell,
+  .contrib-loading-cell {
+    width: 10px;
+    height: 10px;
+  }
+
+  .contrib-day-label {
+    height: 10px;
+    line-height: 10px;
+    font-size: 0.6rem;
+  }
+
+  .contrib-day-spacer {
+    height: 10px;
+  }
+
+  .contrib-month-row {
+    height: 10px;
+  }
+
+  .contrib-month-cell {
+    width: 10px;
+    font-size: 0.6rem;
+    line-height: 10px;
+  }
+
+  .contrib-loading-grid {
+    grid-template-columns: repeat(53, 10px);
+    grid-template-rows: repeat(7, 10px);
+  }
+}
