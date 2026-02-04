@@ -41,7 +41,8 @@ defmodule Droodotfoo.GitHub.LanguageColors do
     "Assembly" => "#6E4C13",
     "WebAssembly" => "#04133b",
     "Solidity" => "#AA6746",
-    "Nix" => "#7e7eff"
+    "Nix" => "#7e7eff",
+    "Zig" => "#ec915c"
   }
 
   @doc """
