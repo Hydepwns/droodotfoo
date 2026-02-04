@@ -46,7 +46,8 @@ defmodule DroodotfooWeb.Plugs.RequestLogger do
         duration_us = System.monotonic_time(:microsecond) - start_time
         duration_ms = div(duration_us, 1000)
 
-        conn = Plug.Conn.put_resp_header(conn, "x-request-duration-ms", Integer.to_string(duration_ms))
+        conn =
+          Plug.Conn.put_resp_header(conn, "x-request-duration-ms", Integer.to_string(duration_ms))
 
         if duration_ms >= opts.slow_threshold_ms do
           log_slow_request(conn, duration_ms, opts.log_level)

@@ -43,7 +43,13 @@ defmodule DroodotfooWeb.Plugs.RateLimiterTest do
     end
 
     test "excludes specified paths", %{table_name: table_name} do
-      opts = RateLimiter.init(limit: 1, window_ms: 60_000, exclude_paths: ["/health"], table_name: table_name)
+      opts =
+        RateLimiter.init(
+          limit: 1,
+          window_ms: 60_000,
+          exclude_paths: ["/health"],
+          table_name: table_name
+        )
 
       # Exhaust limit on regular path
       conn = conn(:get, "/api")

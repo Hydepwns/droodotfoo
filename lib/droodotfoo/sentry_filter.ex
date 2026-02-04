@@ -31,11 +31,11 @@ defmodule Droodotfoo.SentryFilter do
       value = Map.get(ex, :value, "")
 
       # Common non-actionable exceptions
+      # Bot probing for vulnerabilities
       type in [
         "Phoenix.Router.NoRouteError",
         "Plug.Conn.InvalidQueryError"
       ] or
-        # Bot probing for vulnerabilities
         String.contains?(value, [
           ".php",
           ".asp",

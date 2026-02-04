@@ -137,7 +137,9 @@ defmodule Droodotfoo.CircuitBreaker do
     updated = record_failure(circuit, now)
 
     if updated.state == :open and circuit.state != :open do
-      Logger.error("Circuit breaker opened for #{service} after #{updated.failure_count} failures")
+      Logger.error(
+        "Circuit breaker opened for #{service} after #{updated.failure_count} failures"
+      )
     end
 
     {:reply, :ok, put_circuit(state, service, updated)}
@@ -221,7 +223,14 @@ defmodule Droodotfoo.CircuitBreaker do
   defp record_success(%{state: :half_open} = circuit) do
     # Service recovered, close the circuit
     Logger.info("Circuit breaker closed for #{circuit.name}, service recovered")
-    %{circuit | state: :closed, failure_count: 0, success_count: circuit.success_count + 1, half_open_attempts: 0}
+
+    %{
+      circuit
+      | state: :closed,
+        failure_count: 0,
+        success_count: circuit.success_count + 1,
+        half_open_attempts: 0
+    }
   end
 
   defp record_success(circuit) do
@@ -231,7 +240,13 @@ defmodule Droodotfoo.CircuitBreaker do
 
   defp record_failure(%{state: :half_open} = circuit, now) do
     # Still failing in half-open, go back to open
-    %{circuit | state: :open, failure_count: circuit.failure_count + 1, last_failure_time: now, half_open_attempts: 0}
+    %{
+      circuit
+      | state: :open,
+        failure_count: circuit.failure_count + 1,
+        last_failure_time: now,
+        half_open_attempts: 0
+    }
   end
 
   defp record_failure(circuit, now) do

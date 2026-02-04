@@ -47,7 +47,8 @@ end
 if otel_endpoint = System.get_env("OTEL_EXPORTER_OTLP_ENDPOINT") do
   config :opentelemetry_exporter,
     otlp_endpoint: otel_endpoint,
-    otlp_headers: (System.get_env("OTEL_EXPORTER_OTLP_HEADERS") || "")
+    otlp_headers:
+      (System.get_env("OTEL_EXPORTER_OTLP_HEADERS") || "")
       |> String.split(",", trim: true)
       |> Enum.map(fn header ->
         case String.split(header, "=", parts: 2) do
