@@ -19,7 +19,6 @@ defmodule Droodotfoo.Projects do
     :status,
     :highlights,
     :year,
-    :ascii_thumbnail,
     :github_data
   ]
 
@@ -43,7 +42,6 @@ defmodule Droodotfoo.Projects do
           status: :active | :completed | :archived,
           highlights: list(String.t()),
           year: integer(),
-          ascii_thumbnail: list(String.t()),
           github_data: github_data() | nil
         }
 
@@ -121,8 +119,7 @@ defmodule Droodotfoo.Projects do
       live_demo: is_live_demo?(type, raw_project),
       status: parse_status(raw_project[:status], default_status_for(type)),
       highlights: extract_highlights_for(type, raw_project),
-      year: extract_year_for(type, raw_project),
-      ascii_thumbnail: generate_thumbnail(type, raw_project.name)
+      year: extract_year_for(type, raw_project)
     }
   end
 
@@ -210,40 +207,4 @@ defmodule Droodotfoo.Projects do
   end
 
   defp extract_year(_), do: DateTime.utc_now().year
-
-  defp generate_thumbnail(:defense, name) do
-    [
-      "╭──────────────────────╮",
-      "│  DEFENSE PROJECT     │",
-      "│  ═══════════════     │",
-      "│                      │",
-      "│  ╔═══════════════╗   │",
-      "│  ║  CLASSIFIED   ║   │",
-      "│  ║   █████████   ║   │",
-      "│  ║   ░░░░░░░░░   ║   │",
-      "│  ╚═══════════════╝   │",
-      "│                      │",
-      "│  #{pad(name)}        │",
-      "╰──────────────────────╯"
-    ]
-  end
-
-  defp generate_thumbnail(:portfolio, name) do
-    [
-      "╭──────────────────────╮",
-      "│  OPEN SOURCE         │",
-      "│  ═══════════         │",
-      "│                      │",
-      "│      ╭─────────╮     │",
-      "│      │  CODE   │     │",
-      "│      │  ░▒▓▒░  │     │",
-      "│      │  ░▒▓▒░  │     │",
-      "│      ╰─────────╯     │",
-      "│                      │",
-      "│  #{pad(name)}        │",
-      "╰──────────────────────╯"
-    ]
-  end
-
-  defp pad(name), do: name |> String.slice(0..19) |> String.pad_trailing(21)
 end
