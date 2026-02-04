@@ -44,4 +44,41 @@ defmodule DroodotfooWeb.ViewHelpers do
   def format_status(:completed), do: "Completed"
   def format_status(:archived), do: "Archived"
   def format_status(_), do: "Unknown Status"
+
+  @doc """
+  Extracts languages from experience entries, ordered by frequency (most common first).
+
+  Each experience entry may have a `technologies` map with a `languages` key.
+  Languages appearing in more experience entries rank higher.
+
+  ## Examples
+
+      iex> ViewHelpers.extract_languages([
+      ...>   %{technologies: %{languages: ["Elixir", "TypeScript"]}},
+      ...>   %{technologies: %{languages: ["Elixir", "Rust"]}}
+      ...> ])
+      ["Elixir", "TypeScript", "Rust"]
+  """
+  @spec extract_languages([map()]) :: [String.t()]
+  def extract_languages(experience) when is_list(experience) do
+    experience
+    |> Enum.flat_map(fn
+      %{technologies: %{languages: langs}} when is_list(langs) ->
+        langs
+
+      %{technologies: techs} when is_map(techs) ->
+        case Map.get(techs, "languages") do
+          langs when is_list(langs) -> langs
+          _ -> []
+        end
+
+      _ ->
+        []
+    end)
+    |> Enum.frequencies()
+    |> Enum.sort_by(fn {_lang, count} -> -count end)
+    |> Enum.map(fn {lang, _count} -> lang end)
+  end
+
+  def extract_languages(_), do: []
 end
