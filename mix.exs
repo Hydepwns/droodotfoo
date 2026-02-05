@@ -156,6 +156,8 @@ defmodule Droodotfoo.MixProject do
       {:ethereumex, "~> 0.10"},
       {:ex_keccak, "~> 0.7"},
       {:ex_secp256k1, "~> 0.7"},
+      # Rustler for building NIFs from source when precompiled unavailable
+      {:rustler, "~> 0.36", optional: true},
       # E2E Encryption (Signal Protocol)
       {:libsignal_protocol, "~> 0.1.1"},
       # Email functionality

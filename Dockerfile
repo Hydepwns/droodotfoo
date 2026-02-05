@@ -20,12 +20,22 @@ ARG RUNNER_IMAGE="docker.io/debian:${DEBIAN_VERSION}"
 
 FROM ${BUILDER_IMAGE} AS builder
 
-# install build dependencies (including Node.js for npm and brotli for compression)
+# install build dependencies (including Node.js for npm, brotli for compression, and Rust for NIFs)
 RUN apt-get update \
   && apt-get install -y --no-install-recommends build-essential git curl brotli \
   && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
   && apt-get install -y nodejs \
   && rm -rf /var/lib/apt/lists/*
+
+# Install Rust for building NIFs from source (ex_keccak, ex_secp256k1)
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Force building Rust NIFs from source (GitHub release assets often blocked from CI)
+ENV EX_KECCAK_BUILD="1"
+ENV RUSTLER_BUILD="1"
+ENV AUTUMN_BUILD="1"
+ENV MDEX_BUILD="1"
 
 # prepare build dir
 WORKDIR /app

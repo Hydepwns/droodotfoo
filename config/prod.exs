@@ -1,5 +1,11 @@
 import Config
 
+# Force building Rust NIFs from source when precompiled binaries unavailable
+# This is needed because GitHub release assets are often blocked from CI builders
+config :rustler_precompiled, :force_build,
+  ex_keccak: true,
+  ex_secp256k1: true
+
 # Override esbuild config for production with optimizations
 config :esbuild,
   droodotfoo: [
