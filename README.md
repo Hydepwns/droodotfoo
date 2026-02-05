@@ -12,6 +12,7 @@ Personal portfolio and blog built with Phoenix LiveView, featuring generative ar
 ## Features
 
 ### Core Portfolio & Blog
+
 - **Monospace Web Design**: Character-perfect grid using 1ch units and rem-based line-height
 - **Blog System**: File-based markdown posts with YAML frontmatter and series support
 - **Generative Patterns**: Unique SVG patterns per post with 8 animation styles
@@ -21,6 +22,7 @@ Personal portfolio and blog built with Phoenix LiveView, featuring generative ar
 - **SEO Optimized**: JSON-LD structured data for enhanced search engine visibility
 
 ### Integrations
+
 - **Web3 Wallet**: Connect MetaMask for wallet authentication, ENS resolution, NFT/token viewing
 - **Spotify Player**: OAuth integration with playback controls, playlist browsing, and real-time progress
 - **GitHub Stats**: Repository visualization and contribution graphs
@@ -76,22 +78,26 @@ Visit [`localhost:4000`](http://localhost:4000)
 The site implements Wickström's monospace web technique for character-perfect grid alignment:
 
 **Horizontal Grid (1ch units):**
+
 - Each character occupies exactly 1ch width
 - Container widths snap to character boundaries: `calc(round(down, 80ch, 1ch))`
 - Table columns use character-based widths (8ch, 12ch, 20ch, etc.)
 
 **Vertical Grid (rem-based line-height):**
+
 - Fixed `--line-height: 1.5rem` for predictable calculations
 - Prevents line-height compounding in nested elements
 - Scales proportionally: 24px at 16px base, 21px at 14px mobile
 
 **Visual Refinements:**
+
 - Double-line horizontal rules with layered pseudo-elements
 - Precision table padding compensates for border thickness
 - Media element grid alignment (images/videos snap to line-height)
 - All spacing uses multiples of 1ch or line-height
 
 **Benefits:**
+
 - Zero layout shift (every character positioned exactly)
 - Maintainable vertical rhythm throughout content
 - Professional terminal-inspired aesthetic
@@ -125,6 +131,7 @@ Built with modular Phoenix LiveView architecture:
 - **Caching**: ETS for GitHub API, posts, patterns (568x speedup for patterns)
 - **Compression**: Brotli for static assets (JS, CSS, SVG, fonts)
 - **SEO**: JSON-LD structured data for enhanced search visibility
+- **Rust NIFs**: ex_keccak, ex_secp256k1 (Web3 crypto), autumn, mdex (compiled from source)
 - **Optional**: ethers.js (Web3), Three.js (STL viewer)
 - **Testing**: ExUnit with 963 tests passing
 
@@ -163,7 +170,7 @@ fly auth login
 
 # Create fly.toml and guides through setup
 # Fly.io will handle the routing from external ports (80/443) to your app's internal port 8080 (default)
-# Even though our config/runtime.exs specifies poft 4000
+# Even though our config/runtime.exs specifies port 4000
 fly launch
 # Or if you want to create the app manually:
 fly apps create droodotfoo
@@ -199,6 +206,17 @@ fly secrets set CDN_HOST="your-project.pages.dev"
 fly deploy
 ```
 
+### Rust NIF Compilation
+
+The Dockerfile compiles Rust NIFs from source because GitHub release assets are often blocked from CI builders. If deployment fails with NIF download errors, ensure these env vars are set in the Dockerfile:
+
+```dockerfile
+ENV EX_KECCAK_BUILD="1"
+ENV RUSTLER_BUILD="1"
+ENV AUTUMN_BUILD="1"
+ENV MDEX_BUILD="1"
+```
+
 ### Environment Variables
 
 See [docs/guides/deployment.md](docs/guides/deployment.md) for complete environment variable reference.
@@ -212,6 +230,7 @@ See [docs/guides/deployment.md](docs/guides/deployment.md) for complete environm
 See [docs/guides/security.md](docs/guides/security.md) for comprehensive security documentation.
 
 **Key Features:**
+
 - OAuth 2.0 for Spotify, Bearer token for Blog API
 - Rate limiting on all public endpoints
 - Input validation with path traversal prevention
@@ -220,10 +239,12 @@ See [docs/guides/security.md](docs/guides/security.md) for comprehensive securit
 ## Documentation
 
 ### Project Documentation
+
 - **[CLAUDE.md](CLAUDE.md)** - Project overview, patterns, and AI assistant context
 - **[AGENTS.md](AGENTS.md)** - Phoenix/Elixir development guidelines
 
 ### Guides (docs/)
+
 - **[docs/README.md](docs/README.md)** - Documentation index and quick start
 - **[docs/TODO.md](docs/TODO.md)** - Active tasks, priorities, and roadmap
 - **[docs/guides/deployment.md](docs/guides/deployment.md)** - Fly.io production deployment
@@ -232,6 +253,7 @@ See [docs/guides/security.md](docs/guides/security.md) for comprehensive securit
 - **[docs/guides/assets.md](docs/guides/assets.md)** - Image and asset optimization
 
 ### API Documentation (ExDoc)
+
 Generate comprehensive documentation with typespecs:
 
 ```bash
@@ -243,8 +265,8 @@ open doc/index.html
 ```
 
 **Includes:**
+
 - Module documentation with examples
 - Function signatures with @spec annotations
 - Type definitions and behaviors
 - Searchable interface
-

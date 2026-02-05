@@ -77,6 +77,7 @@ lib/droodotfoo_web/
 ### Caching Architecture
 
 All caches use ETS for performance:
+
 - **Pattern Cache** - 24-hour TTL, deterministic SVG patterns per post
 - **GitHub Cache** - 1-hour TTL for repository data
 - **Spotify Cache** - Currently playing data
@@ -85,6 +86,7 @@ All caches use ETS for performance:
 ### Two-Phase Loading Pattern
 
 Pages load instantly, then enrich with API data asynchronously:
+
 ```elixir
 def mount(_params, _session, socket) do
   if connected?(socket), do: send(self(), :load_data)
@@ -111,6 +113,7 @@ end
 [AGENTS.md](AGENTS.md) contains LLM usage rules synced from dependencies via the `usage_rules` package. These provide authoritative guidelines for Phoenix, LiveView, Ecto, HEEx templates, and Elixir patterns.
 
 After adding new dependencies, re-sync rules:
+
 ```bash
 mix usage_rules.sync AGENTS.md --all --link-to-folder deps --yes
 ```
@@ -153,8 +156,8 @@ date: "2025-01-18"
 description: "Description for SEO"
 tags: ["elixir", "phoenix"]
 slug: "post-slug"
-series: "Series Name"       # Optional: groups related posts
-series_order: 1             # Optional: position in series
+series: "Series Name" # Optional: groups related posts
+series_order: 1 # Optional: position in series
 ---
 ```
 
@@ -192,4 +195,33 @@ fly deploy                    # Deploy to Fly.io
 ./scripts/deploy-cdn.sh       # Deploy assets to CDN
 ```
 
+### Rust NIFs
+
+The project uses Rust-based NIFs (ex_keccak, ex_secp256k1, autumn, mdex) for Web3 and markdown parsing. The Dockerfile forces source compilation via environment variables because GitHub release assets are often blocked from CI builders:
+
+```dockerfile
+ENV EX_KECCAK_BUILD="1"
+ENV RUSTLER_BUILD="1"
+ENV AUTUMN_BUILD="1"
+ENV MDEX_BUILD="1"
+```
+
+If deployment fails with NIF download errors, verify these env vars are set in the Dockerfile.
+
 See [docs/guides/deployment.md](docs/guides/deployment.md) for full setup.
+
+## Phoenix v1.8 Notes
+
+Key conventions from [AGENTS.md](AGENTS.md):
+
+- **Always** begin LiveView templates with `<Layouts.app flash={@flash}>`
+- Use `<.input>` from core_components.ex for forms (not raw HTML inputs)
+- Use `<.icon name="hero-x-mark">` for icons (not Heroicons modules)
+- `<.flash_group>` only in layouts.ex, never in templates
+- Use `Req` for HTTP requests (already included), avoid HTTPoison/Tesla
+- Tailwind v4: no tailwind.config.js, uses `@import "tailwindcss"` syntax
+- Never use `@apply` in CSS, never inline `<script>` tags in templates
+
+## Markdown in Posts
+
+Blog post markdown is processed by MDEx. Inline styles in HTML elements may be stripped - use HTML attributes (`width`, `height`) instead of CSS properties (`aspect-ratio`, `z-index`) for embedded iframes.
