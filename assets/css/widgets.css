@@ -102,6 +102,24 @@
   }
 }
 
+/* Social Links - Icon-based */
+.social-links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 1rem 0;
+}
+
+.social-links a {
+  color: var(--text-color);
+  transition: color 0.2s ease;
+}
+
+.social-links a:hover {
+  color: var(--highlight-color, var(--text-color));
+}
+
 /* Social Links - Text-based (monospace-web style) */
 .social-text-links {
   display: flex;
