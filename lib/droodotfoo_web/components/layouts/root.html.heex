@@ -207,14 +207,13 @@
       {@inner_content}
     </main>
     
-<!-- Music Player (Spotify with YouTube fallback) - Site-wide, persists across pages -->
+<!-- Music Player (Spotify) - Site-wide, persists across pages -->
     <div
       id="music-player-widget"
       phx-update="ignore"
       class="music-player-persistent music-player-minimized"
     >
       <div class="music-player-content">
-        <!-- Spotify embed (primary) - loads eagerly for faster interaction -->
         <iframe
           id="spotify-player"
           title="Spotify Music Player"
@@ -226,22 +225,6 @@
           frameBorder="0"
           allowfullscreen=""
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          onerror="document.getElementById('spotify-player').style.display='none';document.getElementById('youtube-fallback').style.display='block';"
-        >
-        </iframe>
-        <!-- YouTube fallback -->
-        <iframe
-          id="youtube-fallback"
-          title="YouTube Music Player (Fallback)"
-          class="music-iframe youtube-iframe"
-          style="display:none;border-radius:8px;"
-          src="https://www.youtube.com/embed/-7umv_1WYDI?start=208&autoplay=1&mute=1"
-          width="100%"
-          height="152"
-          frameBorder="0"
-          allowfullscreen=""
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          loading="lazy"
         >
         </iframe>
       </div>
