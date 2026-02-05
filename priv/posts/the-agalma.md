@@ -242,13 +242,13 @@ The world has enough people keeping their lights hidden. Don't be one of them.
 </div>
 
 Overtime Bonus: Slavoj Žižek discussing the Agalma, and anti-metaphysical delights.
-<div style="position: relative; padding-bottom: 50%; height: 0; overflow: hidden; max-width: 100%; margin: 2rem 0;">
-  <iframe
-    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
-    src="https://www.youtube.com/embed/vydwrn_TQow?si=wHe4FKymWPLQFj05"
-    title="YouTube video player"
-    frameborder="0"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    allowfullscreen>
-  </iframe>
-</div>
+
+<iframe
+  width="100%"
+  height="400"
+  style="border: none; margin-bottom: 6rem;"
+  src="https://www.youtube.com/embed/vydwrn_TQow?si=wHe4FKymWPLQFj05"
+  title="YouTube video player"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+  allowfullscreen>
+</iframe>
