@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Phoenix LiveView portfolio and blog application with monospace web design. The project creates a character-perfect grid display using Wickstrom's monospace web technique with 1ch horizontal units and rem-based line-height.
+Phoenix LiveView web application with monospace web design. The project creates a character-perfect grid display using Wickstrom's monospace web technique with 1ch horizontal units and rem-based line-height.
 
 ## Development Commands
 
@@ -16,8 +16,9 @@ mix phx.server         # Start Phoenix server (port 4000)
 iex -S mix phx.server  # Start with interactive shell
 
 # Testing and quality
-mix test               # Run tests
-mix test test/path/to/specific_test.exs  # Run single test file
+mix test               # Run all tests
+mix test test/path_test.exs       # Run single file
+mix test test/path_test.exs:42    # Run specific test at line
 mix test --failed      # Re-run previously failed tests
 mix format             # Format code
 mix compile --warning-as-errors  # Check for compilation warnings
@@ -44,6 +45,12 @@ mix docs               # Generate ExDoc documentation
 
 # Usage Rules (sync LLM guidelines from dependencies)
 mix usage_rules.sync AGENTS.md --all --link-to-folder deps --yes
+
+# Tidewave MCP (AI-assisted dev)
+# 1. Start Phoenix server first
+./bin/dev              # or mix phx.server
+# 2. Restart Claude Code to connect (config in .mcp.json)
+# 3. Verify with /mcp command - tidewave should show green checkmark
 ```
 
 ## Architecture
@@ -172,12 +179,6 @@ Posts in a series display navigation with all related posts.
 Heavy libraries (THREE.js, ethers.js) are dynamically imported only when needed.
 
 ## Testing
-
-```bash
-mix test                              # Run all tests
-mix test test/specific_test.exs       # Single file
-mix test --failed                     # Re-run failed tests
-```
 
 - Use `LazyHTML` for HTML assertions in LiveView tests
 - Reference element IDs in tests: `assert has_element?(view, "#my-form")`
