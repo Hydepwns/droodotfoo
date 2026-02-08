@@ -6,8 +6,8 @@ defmodule DroodotfooWeb.SpotifyAuthController do
   use DroodotfooWeb, :controller
   require Logger
 
-  alias Droodotfoo.Spotify.{Auth, Manager}
   alias Droodotfoo.ErrorSanitizer
+  alias Droodotfoo.Spotify.{Auth, Manager}
 
   @doc """
   Initiates the Spotify OAuth flow.

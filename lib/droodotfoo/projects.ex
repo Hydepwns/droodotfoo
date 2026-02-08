@@ -116,7 +116,7 @@ defmodule Droodotfoo.Projects do
       topics: extract_topics_for(type, raw_project),
       github_url: extract_github_url_for(type, raw_project),
       demo_url: extract_demo_url_for(type, raw_project),
-      live_demo: is_live_demo?(type, raw_project),
+      live_demo: live_demo?(type, raw_project),
       status: parse_status(raw_project[:status], default_status_for(type)),
       highlights: extract_highlights_for(type, raw_project),
       year: extract_year_for(type, raw_project)
@@ -148,8 +148,8 @@ defmodule Droodotfoo.Projects do
   defp extract_demo_url_for(:portfolio, raw_project),
     do: if(raw_project[:status] == "active", do: raw_project.url)
 
-  defp is_live_demo?(:defense, _raw_project), do: false
-  defp is_live_demo?(:portfolio, raw_project), do: raw_project[:status] == "active"
+  defp live_demo?(:defense, _raw_project), do: false
+  defp live_demo?(:portfolio, raw_project), do: raw_project[:status] == "active"
 
   defp default_status_for(:defense), do: :completed
   defp default_status_for(:portfolio), do: :active

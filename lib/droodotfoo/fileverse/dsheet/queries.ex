@@ -4,7 +4,7 @@ defmodule Droodotfoo.Fileverse.DSheet.Queries do
   Creates sheets from different query types.
   """
 
-  alias Droodotfoo.Fileverse.DSheet.{Headers, MockData, Formatting}
+  alias Droodotfoo.Fileverse.DSheet.{Formatting, Headers, MockData}
 
   @doc """
   Execute a query and return a sheet.

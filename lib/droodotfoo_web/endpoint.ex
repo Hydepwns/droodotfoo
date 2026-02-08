@@ -51,6 +51,11 @@ defmodule DroodotfooWeb.Endpoint do
       "cache-control" => "public, max-age=31536000, immutable"
     }
 
+  # Tidewave MCP server for AI-assisted development
+  if Code.ensure_loaded?(Tidewave) do
+    plug Tidewave
+  end
+
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
   if code_reloading? do

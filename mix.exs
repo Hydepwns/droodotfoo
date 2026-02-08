@@ -143,6 +143,7 @@ defmodule Droodotfoo.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:usage_rules, "~> 0.1", only: [:dev]},
       {:igniter, "~> 0.7", only: [:dev]},
+      {:tidewave, "~> 0.5", only: :dev},
       {:ex_check, "~> 0.16.0", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
       # Blog system dependencies

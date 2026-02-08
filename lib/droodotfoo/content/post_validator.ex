@@ -52,9 +52,8 @@ defmodule Droodotfoo.Content.PostValidator do
   defp validate_and_sanitize_metadata(metadata) do
     with {:ok, metadata} <- validate_slug(metadata),
          {:ok, metadata} <- validate_description(metadata),
-         {:ok, metadata} <- validate_tags(metadata),
-         {:ok, metadata} <- validate_optional_fields(metadata) do
-      {:ok, metadata}
+         {:ok, metadata} <- validate_tags(metadata) do
+      validate_optional_fields(metadata)
     end
   end
 

@@ -25,10 +25,10 @@ defmodule Droodotfoo.Fileverse.Portal.Encryption do
   alias Droodotfoo.Fileverse.Portal.Chunker
 
   alias Droodotfoo.Fileverse.Portal.Encryption.{
-    CryptoOps,
-    SessionStore,
     ChunkHandler,
-    MetadataHandler
+    CryptoOps,
+    MetadataHandler,
+    SessionStore
   }
 
   @type encryption_session :: %{

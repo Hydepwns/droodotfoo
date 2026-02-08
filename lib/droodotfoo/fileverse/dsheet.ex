@@ -13,12 +13,12 @@ defmodule Droodotfoo.Fileverse.DSheet do
   """
 
   alias Droodotfoo.Fileverse.DSheet.{
-    Validation,
+    Exporters,
+    Formatting,
     Headers,
     MockData,
     Queries,
-    Exporters,
-    Formatting
+    Validation
   }
 
   @type cell :: %{

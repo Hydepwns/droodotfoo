@@ -16,10 +16,10 @@ defmodule Droodotfoo.Fileverse.Agent do
   require Logger
 
   alias Droodotfoo.Fileverse.Agent.{
-    IntentParser,
-    ResponseGenerator,
     InsightGenerator,
-    RecommendationEngine
+    IntentParser,
+    RecommendationEngine,
+    ResponseGenerator
   }
 
   @type agent_query :: %{

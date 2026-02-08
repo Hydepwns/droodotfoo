@@ -1,13 +1,13 @@
-# droo.foo
+# DROO.FOO
 
-Personal portfolio and blog built with Phoenix LiveView, featuring generative art patterns and monospace web aesthetics.
+Personal website built with LiveView, generative art patterns and monospace web aesthetics.
 
 ![Test Coverage](https://img.shields.io/badge/coverage-41.2%25-orange)
 ![Tests](https://img.shields.io/badge/tests-963%20passing-brightgreen)
 ![Elixir](https://img.shields.io/badge/elixir-1.17-purple)
 ![Phoenix](https://img.shields.io/badge/phoenix-1.8.1-orange)
 
-**Live Demo**: [droo.foo](https://droo.foo)
+**Live**: [DROO.FOO](https://droo.foo)
 
 ## Features
 

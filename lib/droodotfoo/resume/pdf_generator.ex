@@ -3,8 +3,8 @@ defmodule Droodotfoo.Resume.PDFGenerator do
   PDF generation for resume exports with multiple formats and real-time preview.
   """
 
-  alias Droodotfoo.Resume.ResumeData
   alias Droodotfoo.Resume.PDF.Templates
+  alias Droodotfoo.Resume.ResumeData
 
   @formats ~w(technical executive minimal detailed)
 

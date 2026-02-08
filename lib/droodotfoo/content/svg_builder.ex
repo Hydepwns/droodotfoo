@@ -6,7 +6,7 @@ defmodule Droodotfoo.Content.SVGBuilder do
   making SVG generation more testable and composable.
   """
 
-  alias Droodotfoo.Content.SVG.{Shapes, Filters, Gradients, Styles}
+  alias Droodotfoo.Content.SVG.{Filters, Gradients, Shapes, Styles}
 
   @type attributes :: %{optional(atom | String.t()) => String.t() | number}
   @type element :: %{

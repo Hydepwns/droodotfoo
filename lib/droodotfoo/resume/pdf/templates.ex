@@ -4,7 +4,7 @@ defmodule Droodotfoo.Resume.PDF.Templates do
   Provides unified template structure with format-specific content.
   """
 
-  alias Droodotfoo.Resume.PDF.{Styles, ItemFormatters}
+  alias Droodotfoo.Resume.PDF.{ItemFormatters, Styles}
 
   @doc """
   Generate complete HTML for the specified format.

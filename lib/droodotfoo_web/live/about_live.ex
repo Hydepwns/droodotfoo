@@ -45,8 +45,11 @@ defmodule DroodotfooWeb.AboutLive do
       <section class="about-section">
         <h2 class="section-title">About</h2>
         <p>
-          I build blockchain infrastructure at
-          <a href="https://axol.io" target="_blank" rel="noopener">axol.io</a>.
+          I build blockchain infrastructure at <a
+            href="https://axol.io"
+            target="_blank"
+            rel="noopener"
+          >axol.io</a>.
           Defense systems before that, where downtime had operational consequences.
         </p>
         <p class="mt-1">
@@ -202,5 +205,4 @@ defmodule DroodotfooWeb.AboutLive do
     </.page_layout>
     """
   end
-
 end

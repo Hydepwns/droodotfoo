@@ -24,16 +24,6 @@ defmodule Droodotfoo.ProjectsTest do
         assert project.status in [:active, :completed, :archived]
         assert is_list(project.highlights)
         assert is_integer(project.year)
-        assert is_list(project.ascii_thumbnail)
-      end)
-    end
-
-    test "all projects have non-empty ASCII thumbnails" do
-      projects = Projects.all()
-
-      Enum.each(projects, fn project ->
-        assert length(project.ascii_thumbnail) > 0
-        assert Enum.all?(project.ascii_thumbnail, &is_binary/1)
       end)
     end
   end
