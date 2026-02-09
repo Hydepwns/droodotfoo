@@ -195,11 +195,13 @@ defmodule Droodotfoo.MixProject do
       "assets.build": [
         "compile",
         "cmd npm --prefix ./assets run tailwind:build",
+        "cmd cd assets/gleam && gleam build && cp ffi.mjs canvas_ffi.mjs build/dev/javascript/ 2>/dev/null || echo 'Gleam not installed, skipping'",
         "esbuild droodotfoo",
         "cmd mkdir -p priv/static/astro && cp -r assets/astro/* priv/static/astro/"
       ],
       "assets.deploy": [
         "cmd npm --prefix ./assets run tailwind:deploy",
+        "cmd cd assets/gleam && gleam build && cp ffi.mjs canvas_ffi.mjs build/dev/javascript/ 2>/dev/null || echo 'Gleam not installed, skipping'",
         "esbuild droodotfoo --minify",
         "cmd mkdir -p priv/static/astro && cp -r assets/astro/* priv/static/astro/",
         "phx.digest",

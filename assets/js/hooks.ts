@@ -25,6 +25,7 @@ const LazyHooks: Record<string, () => Promise<any>> = {
   AstroSpotifyWidgetHook: () => import('./hooks/astro_spotify_widget.js').then(m => m.AstroSpotifyWidgetHook),
   Web3WalletHook: () => import('./hooks/web3_wallet.js').then(m => m.Web3WalletHook),
   PortalWebRTCHook: () => import('./hooks/portal_webrtc.js').then(m => m.PortalWebRTCHook),
+  FlowFieldHook: () => import('./hooks/flow_field').then(m => m.FlowFieldHook),
 };
 
 // Create proxy hooks that load real implementation on mount
@@ -63,4 +64,5 @@ export default {
   AstroSpotifyWidgetHook: createLazyHook('AstroSpotifyWidgetHook'),
   Web3WalletHook: createLazyHook('Web3WalletHook'),
   PortalWebRTCHook: createLazyHook('PortalWebRTCHook'),
+  FlowFieldHook: createLazyHook('FlowFieldHook'),
 };

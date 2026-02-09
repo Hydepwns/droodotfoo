@@ -55,6 +55,7 @@ droodotfoo-*.tar
 # In case you use Node.js/npm, you want to ignore these.
 npm-debug.log
 /assets/node_modules/
+/assets/gleam/build/
 /node_modules/
 /test/accessibility/node_modules/
 npm-debug.log*
