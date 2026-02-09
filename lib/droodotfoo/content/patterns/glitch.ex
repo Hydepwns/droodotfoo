@@ -7,6 +7,7 @@ defmodule Droodotfoo.Content.Patterns.Glitch do
   """
 
   alias Droodotfoo.Content.{PatternConfig, RandomGenerator, SVGBuilder}
+  alias Droodotfoo.Content.Patterns.Base
 
   @doc """
   Generates a glitch pattern.
@@ -76,14 +77,7 @@ defmodule Droodotfoo.Content.Patterns.Glitch do
         opacity: opacity
       })
 
-    bar_element =
-      if animate do
-        SVGBuilder.with_class(bar_element, "glitch-bar")
-      else
-        bar_element
-      end
-
-    {bar_element, rng}
+    {Base.maybe_animate(bar_element, animate, "glitch-bar"), rng}
   end
 
   # Private helper to generate a single scanline
@@ -103,39 +97,14 @@ defmodule Droodotfoo.Content.Patterns.Glitch do
         opacity: opacity
       })
 
-    line_element =
-      if animate do
-        SVGBuilder.with_class(line_element, "scanline")
-      else
-        line_element
-      end
-
-    {line_element, rng}
+    {Base.maybe_animate(line_element, animate, "scanline"), rng}
   end
 
   @doc """
   Convenience function to generate and render glitch pattern to SVG string.
-
-  Refined monochrome aesthetic with minimal grey tones.
   """
-  @spec generate_svg(String.t(), number, number, boolean) :: String.t()
-  def generate_svg(slug, width, height, animate \\ false) do
-    rng = RandomGenerator.new(slug)
-    {_palette_name, palette} = PatternConfig.choose_palette_for_style(slug, :glitch)
-    {elements, _rng} = generate(width, height, rng, palette, animate)
-
-    animations =
-      if animate do
-        Droodotfoo.Content.PatternAnimations.get_animations(:glitch)
-      else
-        ""
-      end
-
-    SVGBuilder.build_svg(elements,
-      width: width,
-      height: height,
-      background: palette.bg,
-      animations: animations
-    )
+  @spec generate_svg(String.t(), number, number, boolean, [String.t()]) :: String.t()
+  def generate_svg(slug, width, height, animate \\ false, tags \\ []) do
+    Base.generate_svg(__MODULE__, :glitch, slug, width, height, animate, tags)
   end
 end

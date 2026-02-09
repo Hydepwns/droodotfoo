@@ -7,6 +7,7 @@ defmodule Droodotfoo.Content.Patterns.Waves do
   """
 
   alias Droodotfoo.Content.{PatternConfig, RandomGenerator, SVGBuilder}
+  alias Droodotfoo.Content.Patterns.Base
 
   @doc """
   Generates a waves pattern.
@@ -71,40 +72,14 @@ defmodule Droodotfoo.Content.Patterns.Waves do
         opacity: opacity
       })
 
-    # Add animation class if requested
-    wave_element =
-      if animate do
-        SVGBuilder.with_class(wave_element, "wave-#{rem(index, 3)}")
-      else
-        wave_element
-      end
-
-    {wave_element, rng}
+    {Base.maybe_animate(wave_element, animate, "wave", index, 3), rng}
   end
 
   @doc """
   Convenience function to generate and render waves pattern to SVG string.
-
-  Refined monochrome aesthetic with minimal grey tones.
   """
-  @spec generate_svg(String.t(), number, number, boolean) :: String.t()
-  def generate_svg(slug, width, height, animate \\ false) do
-    rng = RandomGenerator.new(slug)
-    {_palette_name, palette} = PatternConfig.choose_palette_for_style(slug, :waves)
-    {elements, _rng} = generate(width, height, rng, palette, animate)
-
-    animations =
-      if animate do
-        Droodotfoo.Content.PatternAnimations.get_animations(:waves)
-      else
-        ""
-      end
-
-    SVGBuilder.build_svg(elements,
-      width: width,
-      height: height,
-      background: palette.bg,
-      animations: animations
-    )
+  @spec generate_svg(String.t(), number, number, boolean, [String.t()]) :: String.t()
+  def generate_svg(slug, width, height, animate \\ false, tags \\ []) do
+    Base.generate_svg(__MODULE__, :waves, slug, width, height, animate, tags)
   end
 end

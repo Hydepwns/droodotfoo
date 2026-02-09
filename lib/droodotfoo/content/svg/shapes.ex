@@ -8,7 +8,8 @@ defmodule Droodotfoo.Content.SVG.Shapes do
           tag: atom,
           attrs: attributes,
           class: String.t() | nil,
-          children: [element] | nil
+          children: [element] | nil,
+          smil: String.t() | nil
         }
 
   @doc """
@@ -20,7 +21,8 @@ defmodule Droodotfoo.Content.SVG.Shapes do
       tag: :circle,
       attrs: Map.merge(%{cx: cx, cy: cy, r: r}, attrs),
       class: nil,
-      children: nil
+      children: nil,
+      smil: nil
     }
   end
 
@@ -33,7 +35,8 @@ defmodule Droodotfoo.Content.SVG.Shapes do
       tag: :rect,
       attrs: Map.merge(%{x: x, y: y, width: width, height: height}, attrs),
       class: nil,
-      children: nil
+      children: nil,
+      smil: nil
     }
   end
 
@@ -46,7 +49,8 @@ defmodule Droodotfoo.Content.SVG.Shapes do
       tag: :line,
       attrs: Map.merge(%{x1: x1, y1: y1, x2: x2, y2: y2}, attrs),
       class: nil,
-      children: nil
+      children: nil,
+      smil: nil
     }
   end
 
@@ -59,7 +63,8 @@ defmodule Droodotfoo.Content.SVG.Shapes do
       tag: :path,
       attrs: Map.merge(%{d: d}, attrs),
       class: nil,
-      children: nil
+      children: nil,
+      smil: nil
     }
   end
 
@@ -72,7 +77,8 @@ defmodule Droodotfoo.Content.SVG.Shapes do
       tag: :polygon,
       attrs: Map.merge(%{points: points}, attrs),
       class: nil,
-      children: nil
+      children: nil,
+      smil: nil
     }
   end
 end

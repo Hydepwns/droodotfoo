@@ -17,6 +17,12 @@ defmodule Droodotfoo.Content.PatternAnimations do
   def get_animations(:glitch), do: glitch_animations()
   def get_animations(:geometric), do: geometric_animations()
   def get_animations(:grid), do: grid_animations()
+  def get_animations(:flow_field), do: flow_field_animations()
+  def get_animations(:interference), do: interference_animations()
+  def get_animations(:topology), do: topology_animations()
+  def get_animations(:voronoi), do: voronoi_animations()
+  def get_animations(:isometric), do: isometric_animations()
+  def get_animations(:composite), do: ""
   def get_animations(_), do: ""
 
   @doc """
@@ -408,6 +414,394 @@ defmodule Droodotfoo.Content.PatternAnimations do
       .grid-cell {
         animation: grid-breathe 6s ease-in-out infinite;
         animation-delay: calc(var(--delay, 0) * 0.12s);
+      }
+    </style>
+    """
+  end
+
+  @doc """
+  Flow field pattern animations - gentle flowing motion along paths.
+  """
+  def flow_field_animations do
+    """
+    <style>
+      @keyframes flow-drift-0 {
+        0% {
+          opacity: 0.4;
+          stroke-dashoffset: 0;
+          filter: blur(0px);
+        }
+        25% {
+          opacity: 0.7;
+          stroke-dashoffset: -50;
+          filter: blur(0.2px);
+        }
+        50% {
+          opacity: 1;
+          stroke-dashoffset: -100;
+          filter: blur(0px);
+        }
+        75% {
+          opacity: 0.6;
+          stroke-dashoffset: -150;
+          filter: blur(0.1px);
+        }
+        100% {
+          opacity: 0.4;
+          stroke-dashoffset: -200;
+          filter: blur(0px);
+        }
+      }
+      @keyframes flow-drift-1 {
+        0% {
+          opacity: 0.5;
+          stroke-dashoffset: 0;
+          transform: translateX(0);
+        }
+        50% {
+          opacity: 0.9;
+          stroke-dashoffset: -80;
+          transform: translateX(2px);
+        }
+        100% {
+          opacity: 0.5;
+          stroke-dashoffset: -160;
+          transform: translateX(0);
+        }
+      }
+      @keyframes flow-drift-2 {
+        0% {
+          opacity: 0.3;
+          stroke-dashoffset: 0;
+          transform: translateY(0);
+        }
+        33% {
+          opacity: 0.8;
+          stroke-dashoffset: -60;
+          transform: translateY(-1px);
+        }
+        66% {
+          opacity: 0.95;
+          stroke-dashoffset: -120;
+          transform: translateY(1px);
+        }
+        100% {
+          opacity: 0.3;
+          stroke-dashoffset: -180;
+          transform: translateY(0);
+        }
+      }
+      @keyframes flow-drift-3 {
+        0% {
+          opacity: 0.6;
+          stroke-dashoffset: 0;
+        }
+        25% {
+          opacity: 0.85;
+          stroke-dashoffset: -40;
+        }
+        75% {
+          opacity: 0.75;
+          stroke-dashoffset: -120;
+        }
+        100% {
+          opacity: 0.6;
+          stroke-dashoffset: -160;
+        }
+      }
+      .flow-line-0 {
+        stroke-dasharray: 20 10;
+        animation: flow-drift-0 8s linear infinite;
+      }
+      .flow-line-1 {
+        stroke-dasharray: 15 8;
+        animation: flow-drift-1 10s linear infinite;
+      }
+      .flow-line-2 {
+        stroke-dasharray: 25 12;
+        animation: flow-drift-2 12s linear infinite;
+      }
+      .flow-line-3 {
+        stroke-dasharray: 18 6;
+        animation: flow-drift-3 9s linear infinite;
+      }
+    </style>
+    """
+  end
+
+  @doc """
+  Interference pattern animations - pulsing and phase shift effects.
+  """
+  def interference_animations do
+    """
+    <style>
+      @keyframes interference-pulse {
+        0% {
+          opacity: 0.3;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.6;
+          transform: scale(1.002);
+        }
+        100% {
+          opacity: 0.3;
+          transform: scale(1);
+        }
+      }
+      @keyframes interference-phase-0 {
+        0% {
+          stroke-dashoffset: 0;
+          opacity: 0.4;
+        }
+        100% {
+          stroke-dashoffset: 50;
+          opacity: 0.4;
+        }
+      }
+      @keyframes interference-phase-1 {
+        0% {
+          stroke-dashoffset: 0;
+          opacity: 0.35;
+        }
+        100% {
+          stroke-dashoffset: -50;
+          opacity: 0.35;
+        }
+      }
+      @keyframes interference-grid-shift-0 {
+        0% {
+          transform: translateX(0) translateY(0);
+          opacity: 0.3;
+        }
+        50% {
+          transform: translateX(2px) translateY(1px);
+          opacity: 0.5;
+        }
+        100% {
+          transform: translateX(0) translateY(0);
+          opacity: 0.3;
+        }
+      }
+      @keyframes interference-grid-shift-1 {
+        0% {
+          transform: translateX(0) translateY(0);
+          opacity: 0.35;
+        }
+        50% {
+          transform: translateX(-2px) translateY(-1px);
+          opacity: 0.45;
+        }
+        100% {
+          transform: translateX(0) translateY(0);
+          opacity: 0.35;
+        }
+      }
+      .interference-ring {
+        animation: interference-pulse 4s ease-in-out infinite;
+        transform-origin: center;
+      }
+      .interference-wave-0 {
+        stroke-dasharray: 10 5;
+        animation: interference-phase-0 6s linear infinite;
+      }
+      .interference-wave-1 {
+        stroke-dasharray: 8 4;
+        animation: interference-phase-1 8s linear infinite;
+      }
+      .interference-wave-2 {
+        stroke-dasharray: 12 6;
+        animation: interference-phase-0 10s linear infinite;
+      }
+      .interference-grid-0 {
+        animation: interference-grid-shift-0 5s ease-in-out infinite;
+      }
+      .interference-grid-1 {
+        animation: interference-grid-shift-1 7s ease-in-out infinite;
+      }
+    </style>
+    """
+  end
+
+  @doc """
+  Topology pattern animations - contour line drawing effect.
+  """
+  def topology_animations do
+    """
+    <style>
+      @keyframes topo-draw-0 {
+        0% {
+          stroke-dashoffset: 1000;
+          opacity: 0.3;
+        }
+        50% {
+          stroke-dashoffset: 0;
+          opacity: 0.7;
+        }
+        100% {
+          stroke-dashoffset: -1000;
+          opacity: 0.3;
+        }
+      }
+      @keyframes topo-draw-1 {
+        0% {
+          stroke-dashoffset: 800;
+          opacity: 0.4;
+        }
+        50% {
+          stroke-dashoffset: 0;
+          opacity: 0.6;
+        }
+        100% {
+          stroke-dashoffset: -800;
+          opacity: 0.4;
+        }
+      }
+      @keyframes topo-draw-2 {
+        0% {
+          stroke-dashoffset: 600;
+          opacity: 0.35;
+        }
+        50% {
+          stroke-dashoffset: 0;
+          opacity: 0.65;
+        }
+        100% {
+          stroke-dashoffset: -600;
+          opacity: 0.35;
+        }
+      }
+      .topo-line-0 {
+        stroke-dasharray: 10 5;
+        animation: topo-draw-0 15s linear infinite;
+      }
+      .topo-line-1 {
+        stroke-dasharray: 8 4;
+        animation: topo-draw-1 18s linear infinite;
+      }
+      .topo-line-2 {
+        stroke-dasharray: 12 6;
+        animation: topo-draw-2 12s linear infinite;
+      }
+    </style>
+    """
+  end
+
+  @doc """
+  Voronoi pattern animations - cell pulsing effect.
+  """
+  def voronoi_animations do
+    """
+    <style>
+      @keyframes voronoi-pulse-0 {
+        0%, 100% {
+          opacity: 0.3;
+          stroke-width: 0.5;
+        }
+        50% {
+          opacity: 0.6;
+          stroke-width: 1.5;
+        }
+      }
+      @keyframes voronoi-pulse-1 {
+        0%, 100% {
+          opacity: 0.4;
+          stroke-width: 0.8;
+        }
+        50% {
+          opacity: 0.7;
+          stroke-width: 1.2;
+        }
+      }
+      @keyframes voronoi-pulse-2 {
+        0%, 100% {
+          opacity: 0.35;
+          stroke-width: 0.6;
+        }
+        50% {
+          opacity: 0.55;
+          stroke-width: 1.0;
+        }
+      }
+      @keyframes voronoi-point-pulse {
+        0%, 100% {
+          transform: scale(1);
+          opacity: 0.4;
+        }
+        50% {
+          transform: scale(1.5);
+          opacity: 0.8;
+        }
+      }
+      .voronoi-edge-0 {
+        animation: voronoi-pulse-0 6s ease-in-out infinite;
+      }
+      .voronoi-edge-1 {
+        animation: voronoi-pulse-1 8s ease-in-out infinite;
+      }
+      .voronoi-edge-2 {
+        animation: voronoi-pulse-2 10s ease-in-out infinite;
+      }
+      .voronoi-point-0 {
+        animation: voronoi-point-pulse 4s ease-in-out infinite;
+        transform-origin: center;
+      }
+      .voronoi-point-1 {
+        animation: voronoi-point-pulse 5s ease-in-out infinite;
+        animation-delay: 0.5s;
+        transform-origin: center;
+      }
+    </style>
+    """
+  end
+
+  @doc """
+  Isometric pattern animations - 3D cube depth effect.
+  """
+  def isometric_animations do
+    """
+    <style>
+      @keyframes iso-glow-0 {
+        0%, 100% {
+          opacity: 0.5;
+          filter: drop-shadow(0 0 0px #ffffff);
+        }
+        50% {
+          opacity: 0.8;
+          filter: drop-shadow(0 0 3px #ffffff);
+        }
+      }
+      @keyframes iso-glow-1 {
+        0%, 100% {
+          opacity: 0.35;
+          filter: drop-shadow(0 0 0px #ffffff);
+        }
+        50% {
+          opacity: 0.55;
+          filter: drop-shadow(0 0 2px #ffffff);
+        }
+      }
+      @keyframes iso-glow-2 {
+        0%, 100% {
+          opacity: 0.25;
+          filter: drop-shadow(0 0 0px #ffffff);
+        }
+        50% {
+          opacity: 0.4;
+          filter: drop-shadow(0 0 1px #ffffff);
+        }
+      }
+      .iso-face-0 {
+        animation: iso-glow-0 5s ease-in-out infinite;
+        animation-delay: calc(var(--index, 0) * 0.1s);
+      }
+      .iso-face-1 {
+        animation: iso-glow-1 6s ease-in-out infinite;
+        animation-delay: calc(var(--index, 0) * 0.12s);
+      }
+      .iso-face-2 {
+        animation: iso-glow-2 7s ease-in-out infinite;
+        animation-delay: calc(var(--index, 0) * 0.15s);
       }
     </style>
     """

@@ -124,6 +124,92 @@ defmodule Droodotfoo.Content.PatternConfig do
   end
 
   @doc """
+  Returns configuration for flow field pattern.
+  """
+  @spec flow_field_config :: pattern_config
+  def flow_field_config do
+    %{
+      particle_count: %{min: 80, max: 200},
+      steps: %{min: 30, max: 100},
+      step_length: 4,
+      stroke_width: %{min: 0.5, max: 2.5},
+      opacity: %{min: 0.15, max: 0.6}
+    }
+  end
+
+  @doc """
+  Returns configuration for interference pattern.
+  """
+  @spec interference_config :: pattern_config
+  def interference_config do
+    %{
+      # Concentric circles
+      center_count: %{min: 2, max: 4},
+      ring_spacing: %{min: 8, max: 20},
+      # Wave interference
+      wave_sources: %{min: 2, max: 5},
+      wave_frequency: %{min: 0.02, max: 0.08},
+      # Grid interference
+      grid_count: %{min: 2, max: 3},
+      grid_spacing: %{min: 6, max: 15},
+      # Common
+      stroke_width: %{min: 0.3, max: 1.0},
+      opacity: %{min: 0.2, max: 0.5}
+    }
+  end
+
+  @doc """
+  Returns configuration for topology (contour lines) pattern.
+  """
+  @spec topology_config :: pattern_config
+  def topology_config do
+    %{
+      contour_count: %{min: 8, max: 20},
+      noise_scale: %{min: 0.003, max: 0.008},
+      octaves: %{min: 2, max: 4},
+      stroke_width: %{min: 0.5, max: 1.5},
+      opacity: %{min: 0.3, max: 0.7}
+    }
+  end
+
+  @doc """
+  Returns configuration for Voronoi tessellation pattern.
+  """
+  @spec voronoi_config :: pattern_config
+  def voronoi_config do
+    %{
+      cell_count: %{min: 20, max: 60},
+      stroke_width: %{min: 0.5, max: 2.0},
+      opacity: %{min: 0.3, max: 0.6},
+      show_points_chance: 0.3
+    }
+  end
+
+  @doc """
+  Returns configuration for isometric 3D grid pattern.
+  """
+  @spec isometric_config :: pattern_config
+  def isometric_config do
+    %{
+      cube_size: %{min: 30, max: 60},
+      show_probability: %{min: 0.4, max: 0.8},
+      height_variation: %{min: 0.2, max: 1.0},
+      stroke_width: %{min: 0.5, max: 1.5},
+      opacity: %{min: 0.3, max: 0.6}
+    }
+  end
+
+  @doc """
+  Returns configuration for composite layered pattern.
+  """
+  @spec composite_config :: pattern_config
+  def composite_config do
+    %{
+      layer_count: %{min: 2, max: 3}
+    }
+  end
+
+  @doc """
   Returns default SVG dimensions.
   """
   @spec default_dimensions :: %{width: pos_integer, height: pos_integer}
@@ -139,7 +225,22 @@ defmodule Droodotfoo.Content.PatternConfig do
   """
   @spec available_styles :: [atom]
   def available_styles do
-    [:waves, :noise, :lines, :dots, :circuit, :glitch, :geometric, :grid]
+    [
+      :waves,
+      :noise,
+      :lines,
+      :dots,
+      :circuit,
+      :glitch,
+      :geometric,
+      :grid,
+      :flow_field,
+      :interference,
+      :topology,
+      :voronoi,
+      :isometric,
+      :composite
+    ]
   end
 
   @doc """
@@ -155,6 +256,12 @@ defmodule Droodotfoo.Content.PatternConfig do
   def get_config(:glitch), do: {:ok, glitch_config()}
   def get_config(:geometric), do: {:ok, geometric_config()}
   def get_config(:grid), do: {:ok, grid_config()}
+  def get_config(:flow_field), do: {:ok, flow_field_config()}
+  def get_config(:interference), do: {:ok, interference_config()}
+  def get_config(:topology), do: {:ok, topology_config()}
+  def get_config(:voronoi), do: {:ok, voronoi_config()}
+  def get_config(:isometric), do: {:ok, isometric_config()}
+  def get_config(:composite), do: {:ok, composite_config()}
   def get_config(_), do: {:error, :unknown_style}
 
   @doc """
@@ -234,5 +341,36 @@ defmodule Droodotfoo.Content.PatternConfig do
     # Combine slug and style for seed
     combined_seed = "#{slug}-#{style}"
     choose_palette(combined_seed)
+  end
+
+  @doc """
+  Chooses a color palette based on post tags.
+  Falls back to standard palette selection if no tags match.
+  """
+  @spec choose_palette_for_tags([String.t()], String.t()) ::
+          {atom, %{bg: String.t(), colors: [String.t()]}}
+  def choose_palette_for_tags(tags, slug) when is_list(tags) and is_binary(slug) do
+    alias Droodotfoo.Content.ColorExtractor
+
+    case ColorExtractor.extract_accent_color(tags) do
+      "#ffffff" ->
+        # No tag match, use standard palette
+        choose_palette(slug)
+
+      _accent ->
+        # Use tag-based palette
+        {:tag_based, ColorExtractor.palette_from_tags(tags)}
+    end
+  end
+
+  @doc """
+  Chooses a muted palette based on post tags.
+  Good for backgrounds where accent should be subtle.
+  """
+  @spec choose_muted_palette_for_tags([String.t()]) ::
+          {atom, %{bg: String.t(), colors: [String.t()]}}
+  def choose_muted_palette_for_tags(tags) when is_list(tags) do
+    alias Droodotfoo.Content.ColorExtractor
+    {:tag_based_muted, ColorExtractor.muted_palette_from_tags(tags)}
   end
 end

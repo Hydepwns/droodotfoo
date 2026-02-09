@@ -7,6 +7,7 @@ defmodule Droodotfoo.Content.Patterns.Geometric do
   """
 
   alias Droodotfoo.Content.{PatternConfig, RandomGenerator, SVGBuilder}
+  alias Droodotfoo.Content.Patterns.Base
 
   @doc """
   Generates a geometric pattern.
@@ -104,40 +105,14 @@ defmodule Droodotfoo.Content.Patterns.Geometric do
           {element, rng}
       end
 
-    # Add animation class if requested
-    shape_element =
-      if animate do
-        SVGBuilder.with_class(shape_element, "shape-rotate")
-      else
-        shape_element
-      end
-
-    {shape_element, rng}
+    {Base.maybe_animate(shape_element, animate, "shape-rotate"), rng}
   end
 
   @doc """
   Convenience function to generate and render geometric pattern to SVG string.
-
-  Refined monochrome aesthetic with minimal grey tones.
   """
-  @spec generate_svg(String.t(), number, number, boolean) :: String.t()
-  def generate_svg(slug, width, height, animate \\ false) do
-    rng = RandomGenerator.new(slug)
-    {_palette_name, palette} = PatternConfig.choose_palette_for_style(slug, :geometric)
-    {elements, _rng} = generate(width, height, rng, palette, animate)
-
-    animations =
-      if animate do
-        Droodotfoo.Content.PatternAnimations.get_animations(:geometric)
-      else
-        ""
-      end
-
-    SVGBuilder.build_svg(elements,
-      width: width,
-      height: height,
-      background: palette.bg,
-      animations: animations
-    )
+  @spec generate_svg(String.t(), number, number, boolean, [String.t()]) :: String.t()
+  def generate_svg(slug, width, height, animate \\ false, tags \\ []) do
+    Base.generate_svg(__MODULE__, :geometric, slug, width, height, animate, tags)
   end
 end

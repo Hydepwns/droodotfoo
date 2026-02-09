@@ -13,7 +13,8 @@ defmodule Droodotfoo.Content.SVGBuilder do
           tag: atom,
           attrs: attributes,
           class: String.t() | nil,
-          children: [element] | nil
+          children: [element] | nil,
+          smil: String.t() | nil
         }
 
   # Shape primitives - delegate to Shapes module
@@ -64,23 +65,46 @@ defmodule Droodotfoo.Content.SVGBuilder do
   end
 
   @doc """
+  Adds SMIL animation content to an element.
+  The SMIL string will be inserted as a child of the element.
+  """
+  @spec with_smil(element, String.t()) :: element
+  def with_smil(element, smil_content) do
+    Map.put(element, :smil, smil_content)
+  end
+
+  @doc """
   Renders a single element to an SVG string.
   """
   @spec render_element(element) :: String.t()
-  def render_element(%{tag: tag, attrs: attrs, class: class_name, children: children}) do
+  def render_element(element) do
+    %{tag: tag, attrs: attrs, class: class_name} = element
+    children = Map.get(element, :children)
+    smil = Map.get(element, :smil)
+
     attrs_str = Enum.map_join(attrs, " ", fn {key, value} -> "#{key}=\"#{value}\"" end)
     class_str = if class_name, do: " class=\"#{class_name}\"", else: ""
 
-    case children do
-      nil ->
+    case {children, smil} do
+      {nil, nil} ->
         "<#{tag} #{attrs_str}#{class_str}/>"
 
-      [] ->
+      {nil, smil_content} when is_binary(smil_content) ->
+        "<#{tag} #{attrs_str}#{class_str}>#{smil_content}</#{tag}>"
+
+      {[], nil} ->
         "<#{tag} #{attrs_str}#{class_str}></#{tag}>"
 
-      children_list ->
+      {[], smil_content} when is_binary(smil_content) ->
+        "<#{tag} #{attrs_str}#{class_str}>#{smil_content}</#{tag}>"
+
+      {children_list, nil} ->
         children_str = Enum.map_join(children_list, "\n", &render_element/1)
         "<#{tag} #{attrs_str}#{class_str}>\n#{children_str}\n</#{tag}>"
+
+      {children_list, smil_content} ->
+        children_str = Enum.map_join(children_list, "\n", &render_element/1)
+        "<#{tag} #{attrs_str}#{class_str}>\n#{smil_content}\n#{children_str}\n</#{tag}>"
     end
   end
 

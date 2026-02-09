@@ -7,6 +7,7 @@ defmodule Droodotfoo.Content.Patterns.Grid do
   """
 
   alias Droodotfoo.Content.{PatternConfig, RandomGenerator, SVGBuilder}
+  alias Droodotfoo.Content.Patterns.Base
 
   @doc """
   Generates a grid pattern.
@@ -84,14 +85,7 @@ defmodule Droodotfoo.Content.Patterns.Grid do
             opacity: opacity
           })
 
-        cell_element =
-          if animate do
-            SVGBuilder.with_class(cell_element, "grid-cell")
-          else
-            cell_element
-          end
-
-        {cell_element, rng}
+        {Base.maybe_animate(cell_element, animate, "grid-cell"), rng}
       else
         {nil, rng}
       end
@@ -101,27 +95,9 @@ defmodule Droodotfoo.Content.Patterns.Grid do
 
   @doc """
   Convenience function to generate and render grid pattern to SVG string.
-
-  Refined monochrome aesthetic with minimal grey tones.
   """
-  @spec generate_svg(String.t(), number, number, boolean) :: String.t()
-  def generate_svg(slug, width, height, animate \\ false) do
-    rng = RandomGenerator.new(slug)
-    {_palette_name, palette} = PatternConfig.choose_palette_for_style(slug, :grid)
-    {elements, _rng} = generate(width, height, rng, palette, animate)
-
-    animations =
-      if animate do
-        Droodotfoo.Content.PatternAnimations.get_animations(:grid)
-      else
-        ""
-      end
-
-    SVGBuilder.build_svg(elements,
-      width: width,
-      height: height,
-      background: palette.bg,
-      animations: animations
-    )
+  @spec generate_svg(String.t(), number, number, boolean, [String.t()]) :: String.t()
+  def generate_svg(slug, width, height, animate \\ false, tags \\ []) do
+    Base.generate_svg(__MODULE__, :grid, slug, width, height, animate, tags)
   end
 end
