@@ -1,17 +1,11 @@
 /// Deterministic noise generation for flow fields
 /// Uses layered sine waves for smooth, continuous noise
-
 import gleam/int
 import gleam/list
 
 /// Noise configuration
 pub type NoiseConfig {
-  NoiseConfig(
-    scale: Float,
-    octaves: Int,
-    persistence: Float,
-    seed: Float,
-  )
+  NoiseConfig(scale: Float, octaves: Int, persistence: Float, seed: Float)
 }
 
 /// Default noise configuration
@@ -29,10 +23,13 @@ pub fn sample(x: Float, y: Float, config: NoiseConfig) -> Float {
     |> list.fold(0.0, fn(acc, octave) {
       let frequency = int_pow(2.0, octave)
       let amplitude = float_pow(config.persistence, int.to_float(octave))
-      acc +. simple_noise(scaled_x *. frequency, scaled_y *. frequency, config.seed) *. amplitude
+      acc
+      +. simple_noise(scaled_x *. frequency, scaled_y *. frequency, config.seed)
+      *. amplitude
     })
 
-  let total_amplitude = calculate_total_amplitude(config.octaves, config.persistence)
+  let total_amplitude =
+    calculate_total_amplitude(config.octaves, config.persistence)
   total /. total_amplitude
 }
 

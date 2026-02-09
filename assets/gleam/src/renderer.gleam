@@ -1,7 +1,6 @@
 /// Canvas rendering for flow field visualization
-
-import gleam/list
 import flow_field.{type FlowFieldState, type Particle}
+import gleam/list
 
 /// Opaque canvas context type
 pub type Context
@@ -10,7 +9,9 @@ pub type Context
 pub fn render(ctx: Context, state: FlowFieldState) -> Context {
   // Apply fade effect for trails
   ctx
-  |> set_fill_style("rgba(0, 0, 0, " <> float_to_string(state.config.fade_speed) <> ")")
+  |> set_fill_style(
+    "rgba(0, 0, 0, " <> float_to_string(state.config.fade_speed) <> ")",
+  )
   |> fill_rect(0.0, 0.0, state.config.width, state.config.height)
 
   // Render all particles
@@ -24,14 +25,13 @@ pub fn render(ctx: Context, state: FlowFieldState) -> Context {
 /// Render all particles as lines
 fn render_particles(ctx: Context, particles: List(Particle)) -> Context {
   particles
-  |> list.fold(ctx, fn(ctx, particle) {
-    render_particle(ctx, particle)
-  })
+  |> list.fold(ctx, fn(ctx, particle) { render_particle(ctx, particle) })
 }
 
 /// Render a single particle as a line segment
 fn render_particle(ctx: Context, particle: Particle) -> Context {
-  let #(prev_x, prev_y, x, y, opacity) = flow_field.get_particle_render_data(particle)
+  let #(prev_x, prev_y, x, y, opacity) =
+    flow_field.get_particle_render_data(particle)
 
   case opacity >. 0.01 {
     True ->
@@ -69,7 +69,13 @@ fn set_line_cap(ctx: Context, cap: String) -> Context
 fn set_global_alpha(ctx: Context, alpha: Float) -> Context
 
 @external(javascript, "../ffi.mjs", "fillRect")
-fn fill_rect(ctx: Context, x: Float, y: Float, width: Float, height: Float) -> Context
+fn fill_rect(
+  ctx: Context,
+  x: Float,
+  y: Float,
+  width: Float,
+  height: Float,
+) -> Context
 
 @external(javascript, "../ffi.mjs", "beginPath")
 fn begin_path(ctx: Context) -> Context

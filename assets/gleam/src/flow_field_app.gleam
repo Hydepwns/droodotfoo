@@ -1,17 +1,11 @@
 /// Main entry point for flow field visualization
 /// Exports API for JavaScript LiveView hook integration
-
 import flow_field.{type FlowFieldState}
 import renderer.{type Context}
 
 /// Application state wrapper
 pub type App {
-  App(
-    state: FlowFieldState,
-    ctx: Context,
-    animation_id: Int,
-    last_time: Float,
-  )
+  App(state: FlowFieldState, ctx: Context, animation_id: Int, last_time: Float)
 }
 
 /// Create a new flow field application
@@ -43,11 +37,13 @@ pub fn stop(app: App) -> Nil {
 /// Update and render one frame (called from JS animation loop)
 pub fn tick(app: App) -> App {
   let current_time = now()
-  let dt = { current_time -. app.last_time } /. 1000.0  // Convert to seconds
+  let dt = { current_time -. app.last_time } /. 1000.0
+  // Convert to seconds
 
   // Cap dt to prevent jumps
   let capped_dt = case dt >. 0.1 {
-    True -> 0.016  // ~60fps
+    True -> 0.016
+    // ~60fps
     False -> dt
   }
 
@@ -72,7 +68,8 @@ pub fn on_mouse_leave(app: App) -> App {
 /// Update configuration (e.g., particle count, colors)
 pub fn set_particle_count(app: App, count: Int) -> App {
   let old_config = app.state.config
-  let new_config = flow_field.FlowFieldConfig(..old_config, particle_count: count)
+  let new_config =
+    flow_field.FlowFieldConfig(..old_config, particle_count: count)
   let new_state = flow_field.init(new_config)
   App(..app, state: new_state)
 }
