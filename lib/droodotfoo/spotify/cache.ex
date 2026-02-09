@@ -1,172 +1,176 @@
 defmodule Droodotfoo.Spotify.Cache do
   @moduledoc """
-  GenServer for caching Spotify data with TTL support.
-  Reduces API calls and improves response times.
+  ETS-based cache for Spotify data with TTL support.
+  Runs as a GenServer to manage cache lifecycle and cleanup.
   """
 
   use GenServer
+  require Logger
 
-  # 5 minutes
-  @default_ttl_ms 5 * 60 * 1000
-  # 1 minute
-  @cleanup_interval_ms 60 * 1000
+  @table_name :spotify_cache
+  @default_ttl :timer.minutes(5)
+  @cleanup_interval :timer.minutes(1)
+  @max_entries 100
 
-  defstruct [:data, :expiry_times]
+  @type cache_key :: atom() | String.t()
+  @type cache_value :: term()
 
-  # Client API
+  ## Client API
 
+  @doc """
+  Starts the cache GenServer.
+  """
   def start_link(opts \\ []) do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
   @doc """
-  Gets a cached value by key. Returns {:ok, value} if found and not expired,
-  {:error, :not_found} otherwise.
+  Gets a cached value by key.
+
+  Returns `{:ok, value}` if found and not expired, `{:error, :not_found}` otherwise.
   """
+  @spec get(cache_key()) :: {:ok, cache_value()} | {:error, :not_found}
   def get(key) do
-    GenServer.call(__MODULE__, {:get, key})
+    case :ets.lookup(@table_name, key) do
+      [{^key, value, expires_at, _cached_at}] ->
+        if System.system_time(:millisecond) < expires_at do
+          {:ok, value}
+        else
+          :ets.delete(@table_name, key)
+          {:error, :not_found}
+        end
+
+      [] ->
+        {:error, :not_found}
+    end
+  rescue
+    ArgumentError ->
+      {:error, :not_found}
   end
 
   @doc """
   Puts a value in the cache with optional TTL in milliseconds.
   """
-  def put(key, value, ttl_ms \\ @default_ttl_ms) do
-    GenServer.call(__MODULE__, {:put, key, value, ttl_ms})
+  @spec put(cache_key(), cache_value(), integer()) :: :ok
+  def put(key, value, ttl_ms \\ @default_ttl) do
+    now = System.system_time(:millisecond)
+    expires_at = now + ttl_ms
+
+    maybe_evict_oldest()
+    :ets.insert(@table_name, {key, value, expires_at, now})
+    :ok
+  rescue
+    ArgumentError ->
+      Logger.error("Failed to insert into Spotify cache table")
+      :ok
   end
 
   @doc """
   Deletes a key from the cache.
   """
+  @spec delete(cache_key()) :: :ok
   def delete(key) do
-    GenServer.call(__MODULE__, {:delete, key})
+    :ets.delete(@table_name, key)
+    :ok
+  rescue
+    ArgumentError ->
+      Logger.warning("Spotify cache: cannot delete key, table not initialized")
+      :ok
   end
 
   @doc """
   Clears all cached data.
   """
+  @spec clear() :: :ok
   def clear do
-    GenServer.call(__MODULE__, :clear)
+    :ets.delete_all_objects(@table_name)
+    :ok
+  rescue
+    ArgumentError ->
+      Logger.warning("Spotify cache: cannot clear, table not initialized")
+      :ok
   end
 
   @doc """
   Returns cache statistics.
   """
+  @spec stats() :: map()
   def stats do
-    GenServer.call(__MODULE__, :stats)
+    now = System.system_time(:millisecond)
+    all_entries = :ets.tab2list(@table_name)
+
+    active_count = Enum.count(all_entries, fn {_k, _v, exp, _c} -> exp > now end)
+    total = length(all_entries)
+
+    %{
+      total_keys: total,
+      active_keys: active_count,
+      expired_keys: total - active_count,
+      memory_bytes: :ets.info(@table_name, :memory) * :erlang.system_info(:wordsize)
+    }
+  rescue
+    ArgumentError ->
+      %{total_keys: 0, active_keys: 0, expired_keys: 0, memory_bytes: 0}
   end
 
-  # Server Callbacks
+  ## GenServer Callbacks
 
   @impl true
   def init(_opts) do
+    :ets.new(@table_name, [
+      :named_table,
+      :public,
+      :set,
+      read_concurrency: true,
+      write_concurrency: true
+    ])
+
     schedule_cleanup()
+    Logger.info("Spotify cache initialized")
 
-    state = %__MODULE__{
-      data: %{},
-      expiry_times: %{}
-    }
-
-    {:ok, state}
-  end
-
-  @impl true
-  def handle_call({:get, key}, _from, state) do
-    now = System.monotonic_time(:millisecond)
-
-    case Map.get(state.expiry_times, key) do
-      nil ->
-        {:reply, {:error, :not_found}, state}
-
-      expiry_time when expiry_time <= now ->
-        # Expired, remove and return not found
-        new_data = Map.delete(state.data, key)
-        new_expiry_times = Map.delete(state.expiry_times, key)
-        new_state = %{state | data: new_data, expiry_times: new_expiry_times}
-        {:reply, {:error, :not_found}, new_state}
-
-      _ ->
-        # Not expired, return value
-        value = Map.get(state.data, key)
-        {:reply, {:ok, value}, state}
-    end
-  end
-
-  @impl true
-  def handle_call({:put, key, value, ttl_ms}, _from, state) do
-    now = System.monotonic_time(:millisecond)
-    expiry_time = now + ttl_ms
-
-    new_data = Map.put(state.data, key, value)
-    new_expiry_times = Map.put(state.expiry_times, key, expiry_time)
-
-    new_state = %{state | data: new_data, expiry_times: new_expiry_times}
-
-    {:reply, :ok, new_state}
-  end
-
-  @impl true
-  def handle_call({:delete, key}, _from, state) do
-    new_data = Map.delete(state.data, key)
-    new_expiry_times = Map.delete(state.expiry_times, key)
-
-    new_state = %{state | data: new_data, expiry_times: new_expiry_times}
-
-    {:reply, :ok, new_state}
-  end
-
-  @impl true
-  def handle_call(:clear, _from, state) do
-    new_state = %{state | data: %{}, expiry_times: %{}}
-    {:reply, :ok, new_state}
-  end
-
-  @impl true
-  def handle_call(:stats, _from, state) do
-    now = System.monotonic_time(:millisecond)
-
-    active_keys = Enum.count(state.expiry_times, fn {_key, expiry} -> expiry > now end)
-
-    stats = %{
-      total_keys: map_size(state.data),
-      active_keys: active_keys,
-      expired_keys: map_size(state.data) - active_keys
-    }
-
-    {:reply, stats, state}
+    {:ok, %{}}
   end
 
   @impl true
   def handle_info(:cleanup, state) do
-    now = System.monotonic_time(:millisecond)
-
-    # Find expired keys
-    expired_keys =
-      state.expiry_times
-      |> Enum.filter(fn {_key, expiry} -> expiry <= now end)
-      |> Enum.map(fn {key, _expiry} -> key end)
-
-    # Remove expired keys
-    new_data =
-      Enum.reduce(expired_keys, state.data, fn key, acc ->
-        Map.delete(acc, key)
-      end)
-
-    new_expiry_times =
-      Enum.reduce(expired_keys, state.expiry_times, fn key, acc ->
-        Map.delete(acc, key)
-      end)
-
-    new_state = %{state | data: new_data, expiry_times: new_expiry_times}
-
-    # Schedule next cleanup
+    cleanup_expired()
     schedule_cleanup()
-
-    {:noreply, new_state}
+    {:noreply, state}
   end
 
-  # Private Functions
+  ## Private Functions
+
+  defp maybe_evict_oldest do
+    size = :ets.info(@table_name, :size)
+
+    if size >= @max_entries do
+      case :ets.select(@table_name, [{{:"$1", :_, :_, :"$4"}, [], [{{:"$4", :"$1"}}]}], 1) do
+        {[{_oldest_time, oldest_key} | _], _} ->
+          :ets.delete(@table_name, oldest_key)
+
+        _ ->
+          :ok
+      end
+    end
+  rescue
+    ArgumentError ->
+      Logger.debug("Spotify cache: eviction skipped, table not ready")
+  end
+
+  defp cleanup_expired do
+    now = System.system_time(:millisecond)
+
+    expired_keys =
+      @table_name
+      |> :ets.select([{{:"$1", :_, :"$3", :_}, [{:<, :"$3", now}], [:"$1"]}])
+
+    Enum.each(expired_keys, &:ets.delete(@table_name, &1))
+  rescue
+    ArgumentError ->
+      Logger.debug("Spotify cache: cleanup skipped, table not ready")
+  end
 
   defp schedule_cleanup do
-    Process.send_after(self(), :cleanup, @cleanup_interval_ms)
+    Process.send_after(self(), :cleanup, @cleanup_interval)
   end
 end

@@ -138,6 +138,7 @@ defmodule Droodotfoo.Content.PatternCache do
       :ok
     rescue
       ArgumentError ->
+        Logger.warning("Pattern cache: cannot invalidate key, table not initialized")
         :ok
     end
   end

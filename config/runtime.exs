@@ -93,7 +93,12 @@ if config_env() == :prod do
       """
 
   host = System.get_env("PHX_HOST") || "example.com"
-  port = String.to_integer(System.get_env("PORT") || "4000")
+
+  port =
+    case Integer.parse(System.get_env("PORT") || "4000") do
+      {port, ""} -> port
+      _ -> raise "PORT must be a valid integer"
+    end
 
   # CDN configuration for Cloudflare Pages
   # If CDN_HOST is set, static assets will be served from there
@@ -113,8 +118,14 @@ if config_env() == :prod do
     url: System.get_env("ETHEREUM_RPC_URL") || "https://eth.llamarpc.com",
     http_options: [timeout: 30_000, recv_timeout: 30_000]
 
+  chain_id =
+    case Integer.parse(System.get_env("CHAIN_ID") || "1") do
+      {id, ""} -> id
+      _ -> 1
+    end
+
   config :droodotfoo, Droodotfoo.Web3.Manager,
-    default_chain_id: String.to_integer(System.get_env("CHAIN_ID") || "1"),
+    default_chain_id: chain_id,
     opensea_api_key: System.get_env("OPENSEA_API_KEY"),
     alchemy_api_key: System.get_env("ALCHEMY_API_KEY"),
     etherscan_api_key: System.get_env("ETHERSCAN_API_KEY"),

@@ -11,6 +11,7 @@ defmodule DroodotfooWeb.DroodotfooLive do
   alias Droodotfoo.Content.Posts
   alias DroodotfooWeb.SEO.JsonLD
   import DroodotfooWeb.ContentComponents
+  require Logger
 
   @impl true
   def mount(_params, _session, socket) do
@@ -22,7 +23,9 @@ defmodule DroodotfooWeb.DroodotfooLive do
       try do
         Posts.list_posts() |> Enum.take(5)
       rescue
-        _ -> []
+        error ->
+          Logger.error("Failed to load posts for homepage: #{inspect(error)}")
+          []
       end
 
     # Generate JSON-LD schemas for homepage

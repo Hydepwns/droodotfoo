@@ -288,7 +288,7 @@
       },
       {
         "name": "riddler",
-        "url": "https://github.com/axol-io/riddler",
+        "url": "https://github.com/axol-io/Riddler",
         "description": "Cross-chain bridge solver",
         "language": "Elixir",
         "status": "active",

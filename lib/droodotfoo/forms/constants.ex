@@ -117,10 +117,18 @@ defmodule Droodotfoo.Forms.Constants do
     Enum.any?(@spam_keywords, &String.contains?(text_lower, &1))
   end
 
-  def blocked_domain?(email) do
-    domain = email |> String.split("@") |> List.last()
-    domain in @blocked_domains
+  def blocked_domain?(email) when is_binary(email) do
+    case String.split(email, "@") do
+      [_local, domain] when is_binary(domain) ->
+        String.downcase(domain) in @blocked_domains
+
+      _ ->
+        # Malformed email - let other validation catch it
+        false
+    end
   end
+
+  def blocked_domain?(_), do: false
 
   def validate_field_length(field, value) when field in [:name, :subject, :message] do
     case field do

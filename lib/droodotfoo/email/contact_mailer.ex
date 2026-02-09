@@ -4,7 +4,6 @@ defmodule Droodotfoo.Email.ContactMailer do
   """
 
   use Swoosh.Mailer, otp_app: :droodotfoo
-  import Swoosh.Email
   require Logger
 
   alias Droodotfoo.Email.ContactEmail
@@ -95,22 +94,12 @@ defmodule Droodotfoo.Email.ContactMailer do
     }
   end
 
-  # Private helper functions
+  # Use public functions from ContactEmail module to avoid duplication
   defp contact_notification_email(contact_data) do
-    new()
-    |> to("drew@axol.io")
-    |> from("no-reply@droo.foo")
-    |> subject("New Contact Form Submission - #{contact_data.subject}")
-    |> html_body(ContactEmail.contact_notification_html(contact_data))
-    |> text_body(ContactEmail.contact_notification_text(contact_data))
+    ContactEmail.contact_notification_email(contact_data)
   end
 
   defp contact_confirmation_email(contact_data) do
-    new()
-    |> to(contact_data.email)
-    |> from("no-reply@droo.foo")
-    |> subject("Thank you for contacting droo.foo")
-    |> html_body(ContactEmail.contact_confirmation_html(contact_data))
-    |> text_body(ContactEmail.contact_confirmation_text(contact_data))
+    ContactEmail.contact_confirmation_email(contact_data)
   end
 end

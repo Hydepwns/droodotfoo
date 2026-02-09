@@ -165,12 +165,24 @@ defmodule Droodotfoo.Core.Config do
   """
   def max_game_score, do: Application.get_env(:droodotfoo, :max_game_score, 999_999)
 
+  # URL Configuration
+
+  @doc """
+  Gets the base URL for the application.
+  """
+  def base_url, do: Application.get_env(:droodotfoo, :base_url, "https://droo.foo")
+
   # Email Configuration
 
   @doc """
-  Gets the admin email address.
+  Gets the admin email address for notifications.
   """
-  def admin_email, do: Application.get_env(:droodotfoo, :admin_email, "admin@droo.foo")
+  def admin_email, do: Application.get_env(:droodotfoo, :admin_email, "drew@axol.io")
+
+  @doc """
+  Gets the no-reply email address for outgoing emails.
+  """
+  def noreply_email, do: Application.get_env(:droodotfoo, :noreply_email, "no-reply@droo.foo")
 
   @doc """
   Gets the contact form email address.

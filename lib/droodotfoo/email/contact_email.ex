@@ -4,17 +4,15 @@ defmodule Droodotfoo.Email.ContactEmail do
   """
 
   import Swoosh.Email
-
-  @from_email "no-reply@droo.foo"
-  @admin_email "drew@axol.io"
+  alias Droodotfoo.Core.Config
 
   @doc """
   Sends notification email to admin about new contact form submission.
   """
   def contact_notification_email(contact_data) do
     new()
-    |> to(@admin_email)
-    |> from(@from_email)
+    |> to(Config.admin_email())
+    |> from(Config.noreply_email())
     |> subject("New Contact Form Submission - #{contact_data.subject}")
     |> html_body(contact_notification_html(contact_data))
     |> text_body(contact_notification_text(contact_data))
@@ -26,7 +24,7 @@ defmodule Droodotfoo.Email.ContactEmail do
   def contact_confirmation_email(contact_data) do
     new()
     |> to(contact_data.email)
-    |> from(@from_email)
+    |> from(Config.noreply_email())
     |> subject("Thank you for contacting DROO")
     |> html_body(contact_confirmation_html(contact_data))
     |> text_body(contact_confirmation_text(contact_data))

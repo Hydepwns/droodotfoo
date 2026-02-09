@@ -172,12 +172,7 @@ defmodule DroodotfooWeb.ContactLive do
   end
 
   defp reset_form(socket) do
-    empty_form =
-      Constants.form_fields()
-      |> Enum.map(fn field -> {field, ""} end)
-      |> Enum.into(%{})
-
-    assign(socket, :form_data, empty_form)
+    assign(socket, :form_data, create_empty_form())
   end
 
   # Template helper functions
@@ -297,8 +292,10 @@ defmodule DroodotfooWeb.ContactLive do
           </div>
         </.form>
 
-        <%= if @submission_status do %>
-          <.status_message type={elem(@submission_status, 0)} message={elem(@submission_status, 1)} />
+        <%= case @submission_status do %>
+          <% {type, message} -> %>
+            <.status_message type={type} message={message} />
+          <% nil -> %>
         <% end %>
 
         {render_rate_limit_info(@rate_limit_status)}

@@ -138,8 +138,10 @@
     <!-- Skip to main content link for screen readers -->
     <a href="#main-content" class="skip-to-content">Skip to main content</a>
     
-<!-- Debug Mode Indicator -->
-    <div id="debug-indicator" aria-live="polite" aria-atomic="true">[DEBUG MODE]</div>
+<%= if Application.get_env(:droodotfoo, :environment) == :dev do %>
+    <!-- Debug Mode Indicator (dev only) -->
+    <div id="debug-indicator" aria-live="polite" aria-atomic="true"></div>
+    <% end %>
     
 <!-- Theme Change Indicator -->
     <div id="theme-indicator" role="status" aria-live="polite" aria-atomic="true"></div>

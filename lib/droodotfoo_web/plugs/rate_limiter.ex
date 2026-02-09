@@ -139,7 +139,10 @@ defmodule DroodotfooWeb.Plugs.RateLimiter do
         try do
           :ets.new(table_name, [:named_table, :public, :set, {:write_concurrency, true}])
         rescue
-          ArgumentError -> :ok
+          ArgumentError ->
+            # Race condition: another process created the table first
+            Logger.debug("Rate limiter table #{table_name} already exists")
+            :ok
         end
 
       _ ->

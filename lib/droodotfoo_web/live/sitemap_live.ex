@@ -7,6 +7,7 @@ defmodule DroodotfooWeb.SitemapLive do
   use DroodotfooWeb, :live_view
   alias Droodotfoo.Content.Posts
   import DroodotfooWeb.ContentComponents
+  require Logger
 
   @impl true
   def mount(_params, _session, socket) do
@@ -14,7 +15,9 @@ defmodule DroodotfooWeb.SitemapLive do
       try do
         Posts.list_posts()
       rescue
-        _ -> []
+        error ->
+          Logger.error("Failed to load posts for sitemap: #{inspect(error)}")
+          []
       end
 
     socket

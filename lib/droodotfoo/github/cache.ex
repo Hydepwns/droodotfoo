@@ -9,6 +9,7 @@ defmodule Droodotfoo.GitHub.Cache do
 
   @table_name :github_repo_cache
   @default_ttl :timer.hours(1)
+  @max_entries 1000
 
   @type cache_key :: {String.t(), String.t()}
   @type cache_value :: term()
@@ -60,6 +61,7 @@ defmodule Droodotfoo.GitHub.Cache do
     now = System.system_time(:millisecond)
     expires_at = now + ttl
 
+    maybe_evict_oldest()
     :ets.insert(@table_name, {key, value, expires_at, now})
     :ok
   rescue
@@ -90,6 +92,7 @@ defmodule Droodotfoo.GitHub.Cache do
     :ok
   rescue
     ArgumentError ->
+      Logger.warning("GitHub cache: cannot delete key, table not initialized")
       :ok
   end
 
@@ -137,6 +140,25 @@ defmodule Droodotfoo.GitHub.Cache do
   end
 
   ## Private Functions
+
+  defp maybe_evict_oldest do
+    size = :ets.info(@table_name, :size)
+
+    if size >= @max_entries do
+      # Find and delete oldest entry by cached_at timestamp
+      case :ets.select(@table_name, [{{:"$1", :_, :_, :"$4"}, [], [{{:"$4", :"$1"}}]}], 1) do
+        {[{_oldest_time, oldest_key} | _], _} ->
+          :ets.delete(@table_name, oldest_key)
+          Logger.debug("Evicted oldest cache entry to maintain max size")
+
+        _ ->
+          :ok
+      end
+    end
+  rescue
+    ArgumentError ->
+      Logger.debug("GitHub cache: eviction skipped, table not ready")
+  end
 
   defp cleanup_expired do
     now = System.system_time(:millisecond)

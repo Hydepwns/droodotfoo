@@ -15,11 +15,6 @@ defmodule Droodotfoo.Contact.ValidatorTest do
 
   describe "validate_contact_form/1" do
     setup do
-      # Initialize ETS table if needed
-      unless :ets.whereis(:contact_rate_limit) != :undefined do
-        Validator.init_rate_limit_table()
-      end
-
       valid_params = %{
         "name" => "John Doe",
         "email" => "john@example.com",
@@ -308,112 +303,8 @@ defmodule Droodotfoo.Contact.ValidatorTest do
     end
   end
 
-  describe "rate limiting" do
-    setup do
-      # Clean up any existing table
-      if :ets.whereis(:contact_rate_limit) != :undefined do
-        :ets.delete(:contact_rate_limit)
-      end
-
-      Validator.init_rate_limit_table()
-      :ok
-    end
-
-    test "init_rate_limit_table/0 creates ETS table" do
-      if :ets.whereis(:contact_rate_limit) != :undefined do
-        :ets.delete(:contact_rate_limit)
-      end
-
-      Validator.init_rate_limit_table()
-      assert :ets.whereis(:contact_rate_limit) != :undefined
-    end
-
-    test "check_rate_limit/1 allows first submission" do
-      assert {:ok, :allowed} = Validator.check_rate_limit("192.168.1.1")
-    end
-
-    test "check_rate_limit/1 allows submissions under limit" do
-      ip = "192.168.1.2"
-      Validator.record_submission(ip)
-      Validator.record_submission(ip)
-
-      assert {:ok, :allowed} = Validator.check_rate_limit(ip)
-    end
-
-    test "check_rate_limit/1 blocks after rate limit exceeded" do
-      ip = "192.168.1.3"
-
-      # Record 3 submissions (the limit)
-      Validator.record_submission(ip)
-      Validator.record_submission(ip)
-      Validator.record_submission(ip)
-
-      # Fourth check should be blocked
-      assert {:error, _message} = Validator.check_rate_limit(ip)
-    end
-
-    test "check_rate_limit/1 allows submission after time window passes" do
-      ip = "192.168.1.4"
-
-      # Record submissions with old timestamp
-      two_hours_ago = DateTime.utc_now() |> DateTime.add(-7200, :second)
-      :ets.insert(:contact_rate_limit, {ip, 3, two_hours_ago})
-
-      # Should be allowed since it's been over an hour
-      assert {:ok, :allowed} = Validator.check_rate_limit(ip)
-    end
-
-    test "record_submission/1 creates new entry for IP" do
-      ip = "192.168.1.5"
-      Validator.record_submission(ip)
-
-      [{^ip, count, _timestamp}] = :ets.lookup(:contact_rate_limit, ip)
-      assert count == 1
-    end
-
-    test "record_submission/1 increments count for existing IP" do
-      ip = "192.168.1.6"
-      Validator.record_submission(ip)
-      Validator.record_submission(ip)
-      Validator.record_submission(ip)
-
-      [{^ip, count, _timestamp}] = :ets.lookup(:contact_rate_limit, ip)
-      assert count == 3
-    end
-
-    test "cleanup_rate_limit/0 removes old entries" do
-      # Add an old entry
-      old_ip = "192.168.1.7"
-      two_hours_ago = DateTime.utc_now() |> DateTime.add(-7200, :second)
-      :ets.insert(:contact_rate_limit, {old_ip, 2, two_hours_ago})
-
-      # Add a recent entry
-      recent_ip = "192.168.1.8"
-      now = DateTime.utc_now()
-      :ets.insert(:contact_rate_limit, {recent_ip, 1, now})
-
-      # Cleanup should remove old entry
-      removed_count = Validator.cleanup_rate_limit()
-      assert removed_count == 1
-
-      # Old entry should be gone
-      assert :ets.lookup(:contact_rate_limit, old_ip) == []
-
-      # Recent entry should remain
-      assert [{^recent_ip, 1, ^now}] = :ets.lookup(:contact_rate_limit, recent_ip)
-    end
-
-    test "cleanup_rate_limit/0 returns count of removed entries" do
-      # Add multiple old entries
-      two_hours_ago = DateTime.utc_now() |> DateTime.add(-7200, :second)
-      :ets.insert(:contact_rate_limit, {"192.168.1.9", 1, two_hours_ago})
-      :ets.insert(:contact_rate_limit, {"192.168.1.10", 2, two_hours_ago})
-      :ets.insert(:contact_rate_limit, {"192.168.1.11", 3, two_hours_ago})
-
-      removed_count = Validator.cleanup_rate_limit()
-      assert removed_count == 3
-    end
-  end
+  # Rate limiting is now handled by Droodotfoo.Contact.RateLimiter GenServer
+  # See test/droodotfoo/rate_limiter_test.exs for rate limiting tests
 
   # Helper function to extract error messages from changeset
   defp errors_on(changeset, field) do
