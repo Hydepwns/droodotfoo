@@ -331,6 +331,28 @@
         ]
       },
       {
+        "name": "zoir",
+        "url": "https://github.com/Hydepwns/zoir",
+        "description": "Noir language support for Zed",
+        "language": "Rust",
+        "status": "active",
+        "highlights": [
+          "Full Noir syntax highlighting via tree-sitter",
+          "Zed extension for zero-knowledge development"
+        ]
+      },
+      {
+        "name": "tree-sitter-noir",
+        "url": "https://github.com/Hydepwns/tree-sitter-noir",
+        "description": "Tree-sitter grammar for Noir language",
+        "language": "C",
+        "status": "active",
+        "highlights": [
+          "Complete Noir syntax parsing",
+          "Powers zoir and other editor integrations"
+        ]
+      },
+      {
         "name": "dotfiles",
         "url": "https://github.com/Hydepwns/dotfiles",
         "description": "Cross-platform dotfiles with chezmoi and lazy loading",
