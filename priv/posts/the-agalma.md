@@ -6,6 +6,7 @@ author: "DROO AMOR"
 tags: ["values", "character", "philosophy", "principles", "meaning", "contribution", "purpose"]
 slug: "the-agalma"
 reading_time: "17 min"
+pattern_style: "flow_field"
 ---
 
 <div class="post-pattern-header">
@@ -22,7 +23,7 @@ Everyone worships something. You don't choose whether to worship - only what. An
 
 > "In the day-to-day trenches of adult life, there is actually no such thing as atheism. There is no such thing as not worshipping. Everybody worships. The only choice we get is what to worship."
 >
-> — David Foster Wallace, *This Is Water*
+> — David Foster Wallace, _This Is Water_
 
 Your default setting - the thing your days organize around, the metric by which you measure whether today mattered - that's your altar. Few consciously choose it. It's inherited from culture, from parents, from the path of least resistance.
 
@@ -54,12 +55,12 @@ Find something internal worth suffering for.
 
 ## The Ancient Answer
 
-The ancient Greeks had a word for something precious hidden inside something ordinary: *agalma* (ἄγαλμα).
+The ancient Greeks had a word for something precious hidden inside something ordinary: _agalma_ (ἄγαλμα).
 Originally, it meant a statue or votive offering - something that delights the gods. But over time, philosophers evolved it into something more interesting: the hidden treasure within a person that makes them worth knowing.
 
 <img src="/images/blog/greek-agalma.webp" alt="Ancient Greek statue of Silenus - unassuming exterior hiding sacred treasure within" loading="lazy" class="post-image-float-right" />
 
-Greek statues were marble shells that once held something sacred. The word evolved from "that which pleases the gods" to "the thing of value hidden inside." Plato used it in the *Symposium* when Alcibiades compared Socrates to ugly Silenus figurines that, when cracked open, revealed golden treasures inside.
+Greek statues were marble shells that once held something sacred. The word evolved from "that which pleases the gods" to "the thing of value hidden inside." Plato used it in the _Symposium_ when Alcibiades compared Socrates to ugly Silenus figurines that, when cracked open, revealed golden treasures inside.
 
 The French illustrator Gustave Doré offers the clearest example of someone who found their agalma and honored it completely - we'll return to his story throughout.
 
@@ -82,6 +83,7 @@ You don't commit to the thing. You commit to the process of discovery.
 **Start with a constraint**: Pick one direction - doesn't matter which, as long as it genuinely pulls you forward - and commit to ninety days of consistent output. Not to find your agalma (you won't, not yet), but to generate signal. Build something, ship something, finish something. The constraint isn't the goal; it's the instrument for revealing the pattern.
 
 **What "paying attention" means**: After each piece of work, ask three questions:
+
 - Would I do this again even if no one paid me?
 - Notice whether this drained you in the right way (meaningful fatigue) or the wrong way (hollow exhaustion).
 - When you think about next steps, which part of this work keeps calling you back?
@@ -112,7 +114,7 @@ Doré would create the master drawing in pen and ink, then hand it off to skille
 
 He didn't just make art. He shaped how millions of people visualize the divine. His illustrations for Paradise Lost, Dante's Divine Comedy, and the Bible became the definitive imagery for angels, demons, and spiritual revelation in Western culture.
 
-> *When you picture hell or heaven, you're seeing Doré's vision.*
+> _When you picture hell or heaven, you're seeing Doré's vision._
 
 Doré could have chased what the art world valued in his time: oil paintings, gallery exhibitions, critical prestige. That was the path to being called a "serious artist." Instead, he chose illustration - considered commercial, lowbrow, mere craft. He faced contempt from the establishment his entire life. Paris never gave him the recognition he wanted. But he kept drawing, kept building his workshops, kept disseminating his vision of the divine at a scale no "serious artist" could touch.
 
@@ -158,6 +160,7 @@ Enjoying something casually, under zero stakes, tells you nothing. Dore produced
 </div>
 
 Once you've found it and tested it, the questions become different:
+
 - Does this project serve the agalma, or does it serve your ego?
 - Are you disseminating truth, or managing your image?
 - Is this contribution creating value beyond yourself?
@@ -178,7 +181,7 @@ The agalma is what you serve even when it costs you. Even when the passion has d
 
 ## The Timeline Question
 
-*"How long should I try before I know?"*
+_"How long should I try before I know?"_
 
 Wrong question. There's no fixed timeline. Some people find the pattern in months. For others it takes decades. Doré drew commercially for years before the sacred narrative pattern became clear.
 

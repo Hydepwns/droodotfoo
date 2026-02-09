@@ -5,6 +5,7 @@ description: "I am building my gundam slowly, one module at a time."
 author: "DROO AMOR"
 tags: ["elixir", "phoenix", "architecture", "systems"]
 slug: "building-droo-foo"
+pattern_style: "circuit"
 ---
 
 <div class="post-pattern-header">
@@ -137,12 +138,13 @@ Implementation details and usage examples coming in a future post on API securit
 
 ### CSS Precision Crisis
 
-**Safari** rendered 1ch at *~0.1ch* wider than **Chrome**—enough to misalign the grid after 80 characters.
+**Safari** rendered 1ch at _~0.1ch_ wider than **Chrome**—enough to misalign the grid after 80 characters.
 **Firefox** had different quirks with `font-feature-settings`.
 
-**Why this mattered:** The monospace grid isn't aesthetic—it's __architectural__. If the grid breaks here, Raxol breaks. The terminal framework depends on character-perfect alignment.
+**Why this mattered:** The monospace grid isn't aesthetic—it's **architectural**. If the grid breaks here, Raxol breaks. The terminal framework depends on character-perfect alignment.
 
 The fix:
+
 1. `font-feature-settings: 'liga' 0, 'calt' 0` to disable ligatures
 2. CSS cascade control—no inherited text transforms or letter spacing
 3. JavaScript validation on resize to lock the grid
@@ -163,6 +165,7 @@ Built a caching layer with ETS (Erlang's in-memory key-value store). One GenServ
 ### Pattern Generation Iterations
 
 Pattern generation went through three iterations. Version three was a complete refactor:
+
 1. Each pattern type became its own module
 2. Pattern selection used pattern matching on hash ranges
 3. SVG builder became a pure function—same input, same output, every time
@@ -171,16 +174,17 @@ Pattern generation went through three iterations. Version three was a complete r
 
 ### Accessibility: The Hidden Complexity
 
-**ARIA roles conflicting with semantic HTML.** Terminal grids don't map cleanly to web semantics. The terminal is a grid of cells *and* a dynamic application. Screen readers expected one thing, the DOM provided another.
+**ARIA roles conflicting with semantic HTML.** Terminal grids don't map cleanly to web semantics. The terminal is a grid of cells _and_ a dynamic application. Screen readers expected one thing, the DOM provided another.
 
 **Why this mattered:** Claiming accessibility as a first-class constraint means nothing if screen readers can't navigate the interface or keyboard users get trapped in the grid.
 
 Two-part problem:
 
 1. **Structure:** Terminal cells needed proper ARIA roles without breaking semantic HTML. Grid must be navigable but not chatty.
-2. **Updates:** LiveView pushes updates constantly. Screen readers needed to know *when* content changed without announcing every cell modification.
+2. **Updates:** LiveView pushes updates constantly. Screen readers needed to know _when_ content changed without announcing every cell modification.
 
 The fix:
+
 1. **Roving tabindex** for keyboard navigation—only one focusable element at a time, arrow keys move focus
 2. **`aria-live="polite"`** regions for terminal output—screen readers announce new content without interrupting
 3. **Semantic grouping** with proper role hierarchy—terminal as application, grid structure underneath

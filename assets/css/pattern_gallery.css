@@ -203,9 +203,9 @@
 
 .pattern-modal-content {
   position: relative;
-  max-width: 1400px;
+  max-width: min(1400px, 90vw);
   width: 100%;
-  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: scaleIn 0.2s ease-out;
 }
 
 @keyframes scaleIn {
@@ -243,7 +243,6 @@
   background: var(--accent-color, #00ff00);
   color: var(--bg-primary);
   border-color: var(--accent-color, #00ff00);
-  transform: rotate(90deg);
 }
 
 .pattern-modal-header {
@@ -269,6 +268,7 @@
 .pattern-modal-preview {
   width: 100%;
   aspect-ratio: 1200 / 630;
+  max-height: 70vh;
   background: #000;
   border: 2px solid var(--border-color);
   border-radius: 4px;
