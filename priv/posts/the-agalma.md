@@ -10,8 +10,8 @@ pattern_style: "flow_field"
 ---
 
 <div class="post-pattern-header">
-  <object data="/patterns/the-agalma?animate=true" type="image/svg+xml">
-    <img src="/patterns/the-agalma" alt="Generative pattern for the-agalma" />
+  <object data="/patterns/the-agalma?style=flow_field&animate=true" type="image/svg+xml">
+    <img src="/patterns/the-agalma?style=flow_field" alt="Generative pattern for the-agalma" />
   </object>
 </div>
 

@@ -70,6 +70,14 @@ defmodule DroodotfooWeb.PatternController do
   defp parse_style("glitch"), do: :glitch
   defp parse_style("geometric"), do: :geometric
   defp parse_style("grid"), do: :grid
+  defp parse_style("flow_field"), do: :flow_field
+  defp parse_style("interference"), do: :interference
+  defp parse_style("topology"), do: :topology
+  defp parse_style("voronoi"), do: :voronoi
+  defp parse_style("isometric"), do: :isometric
+  defp parse_style("constellation"), do: :constellation
+  defp parse_style("aurora"), do: :aurora
+  defp parse_style("composite"), do: :composite
   defp parse_style(_), do: nil
 
   # Parse integer with fallback

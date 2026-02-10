@@ -210,6 +210,33 @@ defmodule Droodotfoo.Content.PatternConfig do
   end
 
   @doc """
+  Returns configuration for constellation pattern.
+  """
+  @spec constellation_config :: pattern_config
+  def constellation_config do
+    %{
+      star_count: %{min: 40, max: 100},
+      star_size: %{min: 1, max: 4},
+      brightness: %{min: 0.3, max: 0.9},
+      connection_distance: %{min: 80, max: 150}
+    }
+  end
+
+  @doc """
+  Returns configuration for aurora pattern.
+  """
+  @spec aurora_config :: pattern_config
+  def aurora_config do
+    %{
+      band_count: %{min: 5, max: 12},
+      amplitude: %{min: 30, max: 80},
+      frequency: %{min: 0.005, max: 0.015},
+      thickness: %{min: 15, max: 50},
+      opacity: %{min: 0.2, max: 0.5}
+    }
+  end
+
+  @doc """
   Returns default SVG dimensions.
   """
   @spec default_dimensions :: %{width: pos_integer, height: pos_integer}
@@ -239,6 +266,8 @@ defmodule Droodotfoo.Content.PatternConfig do
       :topology,
       :voronoi,
       :isometric,
+      :constellation,
+      :aurora,
       :composite
     ]
   end
@@ -261,6 +290,8 @@ defmodule Droodotfoo.Content.PatternConfig do
   def get_config(:topology), do: {:ok, topology_config()}
   def get_config(:voronoi), do: {:ok, voronoi_config()}
   def get_config(:isometric), do: {:ok, isometric_config()}
+  def get_config(:constellation), do: {:ok, constellation_config()}
+  def get_config(:aurora), do: {:ok, aurora_config()}
   def get_config(:composite), do: {:ok, composite_config()}
   def get_config(_), do: {:error, :unknown_style}
 

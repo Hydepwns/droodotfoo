@@ -22,6 +22,8 @@ defmodule Droodotfoo.Content.PatternAnimations do
   def get_animations(:topology), do: topology_animations()
   def get_animations(:voronoi), do: voronoi_animations()
   def get_animations(:isometric), do: isometric_animations()
+  def get_animations(:constellation), do: constellation_animations()
+  def get_animations(:aurora), do: aurora_animations()
   def get_animations(:composite), do: ""
   def get_animations(_), do: ""
 
@@ -420,110 +422,131 @@ defmodule Droodotfoo.Content.PatternAnimations do
   end
 
   @doc """
-  Flow field pattern animations - gentle flowing motion along paths.
+  Flow field pattern animations - emergence effect where paths draw themselves,
+  linger, then fade and redraw in a continuous cycle.
   """
   def flow_field_animations do
     """
     <style>
-      @keyframes flow-drift-0 {
+      @keyframes flow-emerge-0 {
         0% {
-          opacity: 0.4;
-          stroke-dashoffset: 0;
-          filter: blur(0px);
+          stroke-dashoffset: 1000;
+          opacity: 0;
         }
-        25% {
-          opacity: 0.7;
-          stroke-dashoffset: -50;
-          filter: blur(0.2px);
-        }
-        50% {
-          opacity: 1;
-          stroke-dashoffset: -100;
-          filter: blur(0px);
-        }
-        75% {
+        5% {
           opacity: 0.6;
-          stroke-dashoffset: -150;
-          filter: blur(0.1px);
         }
-        100% {
-          opacity: 0.4;
-          stroke-dashoffset: -200;
-          filter: blur(0px);
-        }
-      }
-      @keyframes flow-drift-1 {
-        0% {
-          opacity: 0.5;
+        40% {
           stroke-dashoffset: 0;
-          transform: translateX(0);
-        }
-        50% {
-          opacity: 0.9;
-          stroke-dashoffset: -80;
-          transform: translateX(2px);
-        }
-        100% {
-          opacity: 0.5;
-          stroke-dashoffset: -160;
-          transform: translateX(0);
-        }
-      }
-      @keyframes flow-drift-2 {
-        0% {
-          opacity: 0.3;
-          stroke-dashoffset: 0;
-          transform: translateY(0);
-        }
-        33% {
           opacity: 0.8;
-          stroke-dashoffset: -60;
-          transform: translateY(-1px);
         }
-        66% {
-          opacity: 0.95;
-          stroke-dashoffset: -120;
-          transform: translateY(1px);
+        60% {
+          stroke-dashoffset: 0;
+          opacity: 0.8;
+        }
+        95% {
+          opacity: 0;
         }
         100% {
-          opacity: 0.3;
-          stroke-dashoffset: -180;
-          transform: translateY(0);
+          stroke-dashoffset: 0;
+          opacity: 0;
         }
       }
-      @keyframes flow-drift-3 {
+      @keyframes flow-emerge-1 {
         0% {
-          opacity: 0.6;
+          stroke-dashoffset: 800;
+          opacity: 0;
+        }
+        8% {
+          opacity: 0.5;
+        }
+        45% {
           stroke-dashoffset: 0;
+          opacity: 0.7;
         }
-        25% {
-          opacity: 0.85;
-          stroke-dashoffset: -40;
+        65% {
+          stroke-dashoffset: 0;
+          opacity: 0.7;
         }
-        75% {
-          opacity: 0.75;
-          stroke-dashoffset: -120;
+        92% {
+          opacity: 0;
         }
         100% {
+          stroke-dashoffset: 0;
+          opacity: 0;
+        }
+      }
+      @keyframes flow-emerge-2 {
+        0% {
+          stroke-dashoffset: 1200;
+          opacity: 0;
+        }
+        3% {
+          opacity: 0.4;
+        }
+        35% {
+          stroke-dashoffset: 0;
           opacity: 0.6;
-          stroke-dashoffset: -160;
+        }
+        55% {
+          stroke-dashoffset: 0;
+          opacity: 0.6;
+        }
+        90% {
+          opacity: 0;
+        }
+        100% {
+          stroke-dashoffset: 0;
+          opacity: 0;
+        }
+      }
+      @keyframes flow-emerge-3 {
+        0% {
+          stroke-dashoffset: 600;
+          opacity: 0;
+        }
+        10% {
+          opacity: 0.7;
+        }
+        50% {
+          stroke-dashoffset: 0;
+          opacity: 0.9;
+        }
+        70% {
+          stroke-dashoffset: 0;
+          opacity: 0.9;
+        }
+        97% {
+          opacity: 0;
+        }
+        100% {
+          stroke-dashoffset: 0;
+          opacity: 0;
         }
       }
       .flow-line-0 {
-        stroke-dasharray: 20 10;
-        animation: flow-drift-0 8s linear infinite;
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+        animation: flow-emerge-0 6s ease-out infinite;
+        animation-delay: calc(var(--i, 0) * 0.08s);
       }
       .flow-line-1 {
-        stroke-dasharray: 15 8;
-        animation: flow-drift-1 10s linear infinite;
+        stroke-dasharray: 800;
+        stroke-dashoffset: 800;
+        animation: flow-emerge-1 7s ease-out infinite;
+        animation-delay: calc(var(--i, 0) * 0.12s);
       }
       .flow-line-2 {
-        stroke-dasharray: 25 12;
-        animation: flow-drift-2 12s linear infinite;
+        stroke-dasharray: 1200;
+        stroke-dashoffset: 1200;
+        animation: flow-emerge-2 8s ease-out infinite;
+        animation-delay: calc(var(--i, 0) * 0.06s);
       }
       .flow-line-3 {
-        stroke-dasharray: 18 6;
-        animation: flow-drift-3 9s linear infinite;
+        stroke-dasharray: 600;
+        stroke-dashoffset: 600;
+        animation: flow-emerge-3 5s ease-out infinite;
+        animation-delay: calc(var(--i, 0) * 0.1s);
       }
     </style>
     """
@@ -802,6 +825,315 @@ defmodule Droodotfoo.Content.PatternAnimations do
       .iso-face-2 {
         animation: iso-glow-2 7s ease-in-out infinite;
         animation-delay: calc(var(--index, 0) * 0.15s);
+      }
+    </style>
+    """
+  end
+
+  @doc """
+  Constellation pattern animations - stars fade in, lines draw themselves.
+  """
+  def constellation_animations do
+    """
+    <style>
+      @keyframes star-appear-0 {
+        0% {
+          opacity: 0;
+          transform: scale(0);
+        }
+        30% {
+          opacity: 0.9;
+          transform: scale(1.3);
+        }
+        50% {
+          opacity: 0.7;
+          transform: scale(1);
+        }
+        70% {
+          opacity: 0.9;
+          transform: scale(1.1);
+        }
+        100% {
+          opacity: 0.6;
+          transform: scale(1);
+        }
+      }
+      @keyframes star-appear-1 {
+        0% {
+          opacity: 0;
+          transform: scale(0);
+        }
+        40% {
+          opacity: 0.8;
+          transform: scale(1.2);
+        }
+        60% {
+          opacity: 0.6;
+          transform: scale(0.9);
+        }
+        100% {
+          opacity: 0.5;
+          transform: scale(1);
+        }
+      }
+      @keyframes star-appear-2 {
+        0% {
+          opacity: 0;
+          transform: scale(0);
+        }
+        25% {
+          opacity: 1;
+          transform: scale(1.4);
+        }
+        50% {
+          opacity: 0.8;
+          transform: scale(1);
+        }
+        75% {
+          opacity: 0.9;
+          transform: scale(1.2);
+        }
+        100% {
+          opacity: 0.7;
+          transform: scale(1);
+        }
+      }
+      @keyframes line-draw-0 {
+        0% {
+          stroke-dashoffset: 300;
+          opacity: 0;
+        }
+        20% {
+          opacity: 0.3;
+        }
+        80% {
+          stroke-dashoffset: 0;
+          opacity: 0.3;
+        }
+        100% {
+          stroke-dashoffset: 0;
+          opacity: 0.2;
+        }
+      }
+      @keyframes line-draw-1 {
+        0% {
+          stroke-dashoffset: 250;
+          opacity: 0;
+        }
+        25% {
+          opacity: 0.25;
+        }
+        85% {
+          stroke-dashoffset: 0;
+          opacity: 0.25;
+        }
+        100% {
+          stroke-dashoffset: 0;
+          opacity: 0.15;
+        }
+      }
+      @keyframes line-draw-2 {
+        0% {
+          stroke-dashoffset: 350;
+          opacity: 0;
+        }
+        15% {
+          opacity: 0.35;
+        }
+        75% {
+          stroke-dashoffset: 0;
+          opacity: 0.35;
+        }
+        100% {
+          stroke-dashoffset: 0;
+          opacity: 0.25;
+        }
+      }
+      @keyframes line-draw-3 {
+        0% {
+          stroke-dashoffset: 200;
+          opacity: 0;
+        }
+        30% {
+          opacity: 0.2;
+        }
+        90% {
+          stroke-dashoffset: 0;
+          opacity: 0.2;
+        }
+        100% {
+          stroke-dashoffset: 0;
+          opacity: 0.1;
+        }
+      }
+      .constellation-star-0 {
+        transform-origin: center;
+        animation: star-appear-0 4s ease-out infinite;
+        animation-delay: calc(var(--i, 0) * 0.1s);
+      }
+      .constellation-star-1 {
+        transform-origin: center;
+        animation: star-appear-1 5s ease-out infinite;
+        animation-delay: calc(var(--i, 0) * 0.12s);
+      }
+      .constellation-star-2 {
+        transform-origin: center;
+        animation: star-appear-2 6s ease-out infinite;
+        animation-delay: calc(var(--i, 0) * 0.08s);
+      }
+      .constellation-line-0 {
+        stroke-dasharray: 300;
+        stroke-dashoffset: 300;
+        animation: line-draw-0 5s ease-out infinite;
+        animation-delay: calc(var(--i, 0) * 0.15s);
+      }
+      .constellation-line-1 {
+        stroke-dasharray: 250;
+        stroke-dashoffset: 250;
+        animation: line-draw-1 6s ease-out infinite;
+        animation-delay: calc(var(--i, 0) * 0.18s);
+      }
+      .constellation-line-2 {
+        stroke-dasharray: 350;
+        stroke-dashoffset: 350;
+        animation: line-draw-2 7s ease-out infinite;
+        animation-delay: calc(var(--i, 0) * 0.12s);
+      }
+      .constellation-line-3 {
+        stroke-dasharray: 200;
+        stroke-dashoffset: 200;
+        animation: line-draw-3 4s ease-out infinite;
+        animation-delay: calc(var(--i, 0) * 0.2s);
+      }
+    </style>
+    """
+  end
+
+  @doc """
+  Aurora pattern animations - flowing bands that emerge and shimmer.
+  """
+  def aurora_animations do
+    """
+    <style>
+      @keyframes aurora-emerge-0 {
+        0% {
+          stroke-dashoffset: 2000;
+          opacity: 0;
+          transform: translateY(0);
+        }
+        20% {
+          opacity: 0.4;
+        }
+        50% {
+          stroke-dashoffset: 0;
+          opacity: 0.5;
+          transform: translateY(-5px);
+        }
+        70% {
+          opacity: 0.4;
+          transform: translateY(3px);
+        }
+        100% {
+          stroke-dashoffset: 0;
+          opacity: 0.3;
+          transform: translateY(0);
+        }
+      }
+      @keyframes aurora-emerge-1 {
+        0% {
+          stroke-dashoffset: 1800;
+          opacity: 0;
+          transform: translateY(0);
+        }
+        25% {
+          opacity: 0.35;
+        }
+        55% {
+          stroke-dashoffset: 0;
+          opacity: 0.45;
+          transform: translateY(-8px);
+        }
+        75% {
+          opacity: 0.35;
+          transform: translateY(5px);
+        }
+        100% {
+          stroke-dashoffset: 0;
+          opacity: 0.25;
+          transform: translateY(0);
+        }
+      }
+      @keyframes aurora-emerge-2 {
+        0% {
+          stroke-dashoffset: 2200;
+          opacity: 0;
+          transform: translateY(0);
+        }
+        15% {
+          opacity: 0.5;
+        }
+        45% {
+          stroke-dashoffset: 0;
+          opacity: 0.55;
+          transform: translateY(-3px);
+        }
+        65% {
+          opacity: 0.45;
+          transform: translateY(7px);
+        }
+        100% {
+          stroke-dashoffset: 0;
+          opacity: 0.35;
+          transform: translateY(0);
+        }
+      }
+      @keyframes aurora-emerge-3 {
+        0% {
+          stroke-dashoffset: 1600;
+          opacity: 0;
+          transform: translateY(0);
+        }
+        30% {
+          opacity: 0.3;
+        }
+        60% {
+          stroke-dashoffset: 0;
+          opacity: 0.4;
+          transform: translateY(-10px);
+        }
+        80% {
+          opacity: 0.3;
+          transform: translateY(2px);
+        }
+        100% {
+          stroke-dashoffset: 0;
+          opacity: 0.2;
+          transform: translateY(0);
+        }
+      }
+      .aurora-band-0 {
+        stroke-dasharray: 2000;
+        stroke-dashoffset: 2000;
+        animation: aurora-emerge-0 8s ease-in-out infinite;
+        animation-delay: calc(var(--i, 0) * 0.3s);
+      }
+      .aurora-band-1 {
+        stroke-dasharray: 1800;
+        stroke-dashoffset: 1800;
+        animation: aurora-emerge-1 9s ease-in-out infinite;
+        animation-delay: calc(var(--i, 0) * 0.35s);
+      }
+      .aurora-band-2 {
+        stroke-dasharray: 2200;
+        stroke-dashoffset: 2200;
+        animation: aurora-emerge-2 10s ease-in-out infinite;
+        animation-delay: calc(var(--i, 0) * 0.25s);
+      }
+      .aurora-band-3 {
+        stroke-dasharray: 1600;
+        stroke-dashoffset: 1600;
+        animation: aurora-emerge-3 7s ease-in-out infinite;
+        animation-delay: calc(var(--i, 0) * 0.4s);
       }
     </style>
     """

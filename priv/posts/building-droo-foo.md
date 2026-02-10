@@ -9,8 +9,8 @@ pattern_style: "circuit"
 ---
 
 <div class="post-pattern-header">
-  <object data="/patterns/building-droo-foo?animate=true" type="image/svg+xml" style="width: 100%; height: 300px; display: block;">
-    <img src="/patterns/building-droo-foo" alt="Generative pattern for building-droo-foo" style="width: 100%; height: 300px; object-fit: cover;" />
+  <object data="/patterns/building-droo-foo?style=circuit&animate=true" type="image/svg+xml" style="width: 100%; height: 300px; display: block;">
+    <img src="/patterns/building-droo-foo?style=circuit" alt="Generative pattern for building-droo-foo" style="width: 100%; height: 300px; object-fit: cover;" />
   </object>
 </div>
 

@@ -15,7 +15,15 @@ defmodule DroodotfooWeb.PatternGalleryLive do
     %{name: "circuit", description: "Circuit board traces"},
     %{name: "glitch", description: "Corrupted data effect"},
     %{name: "geometric", description: "Circles, triangles, squares"},
-    %{name: "grid", description: "Cellular grid pattern"}
+    %{name: "grid", description: "Cellular grid pattern"},
+    %{name: "flow_field", description: "Organic flowing curves (emergence)"},
+    %{name: "interference", description: "Wave interference patterns"},
+    %{name: "topology", description: "Topographic contour lines"},
+    %{name: "voronoi", description: "Cellular tessellation"},
+    %{name: "isometric", description: "3D isometric grid"},
+    %{name: "constellation", description: "Stars with connecting lines"},
+    %{name: "aurora", description: "Northern lights bands"},
+    %{name: "composite", description: "Layered multi-pattern"}
   ]
 
   @impl true
