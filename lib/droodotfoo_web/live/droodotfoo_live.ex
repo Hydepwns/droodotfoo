@@ -69,7 +69,7 @@ defmodule DroodotfooWeb.DroodotfooLive do
               </div>
               <div class="post-item-image">
                 <object
-                  data={"#{Posts.social_image_url(post)}?animate=true"}
+                  data={append_query(Posts.social_image_url(post), "animate=true")}
                   type="image/svg+xml"
                   aria-label={"Pattern for #{post.title}"}
                 >
@@ -134,5 +134,13 @@ defmodule DroodotfooWeb.DroodotfooLive do
       </section>
     </div>
     """
+  end
+
+  defp append_query(url, query) do
+    if String.contains?(url, "?") do
+      "#{url}&#{query}"
+    else
+      "#{url}?#{query}"
+    end
   end
 end

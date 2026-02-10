@@ -39,19 +39,36 @@ defmodule Droodotfoo.Zed do
       )
 
     case HttpClient.get(client, "/extensions?filter=#{extension_id}") do
-      {:ok, %{body: %{"data" => extensions}}} ->
-        count =
-          case Enum.find(extensions, &(&1["id"] == extension_id)) do
-            %{"download_count" => c} -> c
-            _ -> 0
-          end
+      {:ok, %{body: body}} ->
+        with {:ok, %{"data" => extensions}} <- decode_body(body) do
+          count =
+            case Enum.find(extensions, &(&1["id"] == extension_id)) do
+              %{"download_count" => c} -> c
+              _ -> 0
+            end
 
-        Cache.put(cache_key, count, ttl: @cache_ttl)
-        {:ok, count}
+          Cache.put(cache_key, count, ttl: @cache_ttl)
+          {:ok, count}
+        else
+          {:error, reason} ->
+            Logger.warning("Zed API decode error for #{extension_id}: #{inspect(reason)}")
+            {:error, reason}
+        end
 
       {:error, reason} ->
         Logger.warning("Zed API error for #{extension_id}: #{inspect(reason)}")
         {:error, reason}
     end
   end
+
+  defp decode_body(body) when is_map(body), do: {:ok, body}
+
+  defp decode_body(body) when is_binary(body) do
+    case Jason.decode(body) do
+      {:ok, decoded} -> {:ok, decoded}
+      {:error, _} -> {:error, :invalid_json}
+    end
+  end
+
+  defp decode_body(_body), do: {:error, :unexpected_body}
 end
