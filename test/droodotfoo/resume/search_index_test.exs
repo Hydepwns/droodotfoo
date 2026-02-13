@@ -14,7 +14,7 @@ defmodule Droodotfoo.Resume.SearchIndexTest do
 
       assert result.match_count > 0
       assert result.query == "Elixir"
-      assert length(result.results.experience) > 0
+      assert result.results.experience != []
     end
 
     test "searches with fuzzy matching for typos", %{resume_data: resume_data} do
@@ -28,13 +28,13 @@ defmodule Droodotfoo.Resume.SearchIndexTest do
       result = SearchIndex.search(resume_data, "submarine")
 
       assert result.match_count > 0
-      assert length(result.results.experience) > 0 or length(result.results.defense_projects) > 0
+      assert result.results.experience != [] or result.results.defense_projects != []
     end
 
     test "returns suggestions for related terms", %{resume_data: resume_data} do
       result = SearchIndex.search(resume_data, "block")
 
-      assert length(result.suggestions) > 0
+      assert result.suggestions != []
     end
 
     test "handles empty query", %{resume_data: resume_data} do

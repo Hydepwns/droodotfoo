@@ -148,7 +148,7 @@ defmodule Droodotfoo.Web3.Token do
 
   """
   @spec price_chart([float()]) :: String.t()
-  def price_chart(prices) when is_list(prices) and length(prices) > 0 do
+  def price_chart(prices) when is_list(prices) and prices != [] do
     min_price = Enum.min(prices)
     max_price = Enum.max(prices)
     range = max_price - min_price

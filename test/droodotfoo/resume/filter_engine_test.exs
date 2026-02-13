@@ -17,7 +17,7 @@ defmodule Droodotfoo.Resume.FilterEngineTest do
         })
 
       assert result.match_count > 0
-      assert length(result.experience) > 0
+      assert result.experience != []
 
       # Check that all matched experience entries contain Elixir
       Enum.each(result.experience, fn exp ->
@@ -35,7 +35,7 @@ defmodule Droodotfoo.Resume.FilterEngineTest do
         })
 
       assert result.match_count > 0
-      assert length(result.experience) > 0
+      assert result.experience != []
     end
 
     test "filters by company name", %{resume_data: resume_data} do
@@ -46,7 +46,7 @@ defmodule Droodotfoo.Resume.FilterEngineTest do
         })
 
       assert result.match_count > 0
-      assert length(result.experience) > 0
+      assert result.experience != []
 
       # Check that matched company is correct
       exp = List.first(result.experience)
@@ -61,7 +61,7 @@ defmodule Droodotfoo.Resume.FilterEngineTest do
         })
 
       assert result.match_count > 0
-      assert length(result.experience) > 0
+      assert result.experience != []
 
       exp = List.first(result.experience)
       assert exp.position =~ "CEO"
@@ -75,7 +75,7 @@ defmodule Droodotfoo.Resume.FilterEngineTest do
         })
 
       assert result.match_count > 0
-      assert length(result.experience) > 0
+      assert result.experience != []
     end
 
     test "filters by text search across descriptions", %{resume_data: resume_data} do
@@ -148,7 +148,7 @@ defmodule Droodotfoo.Resume.FilterEngineTest do
 
       if map_size(result.portfolio) > 0 do
         projects = Map.get(result.portfolio, :projects, [])
-        assert length(projects) > 0
+        assert projects != []
 
         # Check that at least one project is Elixir
         assert Enum.any?(projects, fn proj ->
@@ -164,7 +164,7 @@ defmodule Droodotfoo.Resume.FilterEngineTest do
           include_sections: [:certifications]
         })
 
-      if length(result.certifications) > 0 do
+      if result.certifications != [] do
         cert = List.first(result.certifications)
         cert_text = "#{cert.name} #{cert.issuer}"
         assert String.contains?(String.downcase(cert_text), "security")

@@ -40,16 +40,17 @@ defmodule Droodotfoo.Zed do
 
     case HttpClient.get(client, "/extensions?filter=#{extension_id}") do
       {:ok, %{body: body}} ->
-        with {:ok, %{"data" => extensions}} <- decode_body(body) do
-          count =
-            case Enum.find(extensions, &(&1["id"] == extension_id)) do
-              %{"download_count" => c} -> c
-              _ -> 0
-            end
+        case decode_body(body) do
+          {:ok, %{"data" => extensions}} ->
+            count =
+              case Enum.find(extensions, &(&1["id"] == extension_id)) do
+                %{"download_count" => c} -> c
+                _ -> 0
+              end
 
-          Cache.put(cache_key, count, ttl: @cache_ttl)
-          {:ok, count}
-        else
+            Cache.put(cache_key, count, ttl: @cache_ttl)
+            {:ok, count}
+
           {:error, reason} ->
             Logger.warning("Zed API decode error for #{extension_id}: #{inspect(reason)}")
             {:error, reason}

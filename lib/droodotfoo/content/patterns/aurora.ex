@@ -119,8 +119,7 @@ defmodule Droodotfoo.Content.Patterns.Aurora do
 
     extended
     |> Enum.chunk_every(4, 1, :discard)
-    |> Enum.map(&catmull_to_bezier/1)
-    |> Enum.join(" ")
+    |> Enum.map_join(" ", &catmull_to_bezier/1)
   end
 
   defp catmull_to_bezier([{x0, y0}, {x1, y1}, {x2, y2}, {x3, y3}]) do

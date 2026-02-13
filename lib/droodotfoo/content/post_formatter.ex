@@ -24,7 +24,7 @@ defmodule Droodotfoo.Content.PostFormatter do
         [
           {"Published", Date.to_string(post.date)},
           {"Reading", "#{post.read_time} min"},
-          if(length(post.tags) > 0, do: {"Tags", Enum.join(post.tags, ", ")}, else: nil)
+          if(post.tags != [], do: {"Tags", Enum.join(post.tags, ", ")}, else: nil)
         ]
         |> Enum.filter(&(&1 != nil))
     }

@@ -178,7 +178,7 @@ defmodule DroodotfooWeb.Plugs.RateLimiter do
 
         Enum.each(old_keys, fn key -> :ets.delete(table_name, key) end)
 
-        if length(old_keys) > 0 do
+        if old_keys != [] do
           Logger.debug("Global rate limiter: cleaned up #{length(old_keys)} old entries")
         end
     end

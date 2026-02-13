@@ -151,7 +151,7 @@ defmodule Droodotfoo.Content.RandomGenerator do
       true
   """
   @spec choice(t, [any]) :: {any, t}
-  def choice(rng, list) when is_list(list) and length(list) > 0 do
+  def choice(rng, list) when is_list(list) and list != [] do
     {index, new_rng} = uniform_int(rng, length(list))
     {Enum.at(list, index - 1), new_rng}
   end

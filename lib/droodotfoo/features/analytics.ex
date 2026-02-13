@@ -142,7 +142,7 @@ defmodule Droodotfoo.Features.Analytics do
         _ -> false
       end)
 
-    if length(completed) > 0 do
+    if completed != [] do
       total = Enum.reduce(completed, 0, fn {_id, _start, duration}, acc -> acc + duration end)
       div(total, length(completed))
     else

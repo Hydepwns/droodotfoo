@@ -72,7 +72,7 @@ defmodule Droodotfoo.Fileverse.AgentTest do
 
       assert {:ok, recommendations} = Agent.get_recommendations(wallet_address: wallet_address)
       assert is_list(recommendations)
-      assert length(recommendations) > 0
+      assert recommendations != []
 
       recommendation = List.first(recommendations)
       assert is_atom(recommendation.type)
@@ -168,9 +168,9 @@ defmodule Droodotfoo.Fileverse.AgentTest do
       assert is_list(help_data.examples)
       assert is_list(help_data.capabilities)
 
-      assert length(help_data.commands) > 0
-      assert length(help_data.examples) > 0
-      assert length(help_data.capabilities) > 0
+      assert help_data.commands != []
+      assert help_data.examples != []
+      assert help_data.capabilities != []
     end
   end
 end

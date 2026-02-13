@@ -133,7 +133,7 @@ defmodule Droodotfoo.BootSequenceTest do
     test "returns a list of welcome lines" do
       lines = BootSequence.welcome_message()
       assert is_list(lines)
-      assert length(lines) > 0
+      assert lines != []
     end
 
     test "welcome message contains instructions" do

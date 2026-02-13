@@ -177,7 +177,7 @@ defmodule Droodotfoo.PerformanceMonitorTest do
 
       metrics = PerformanceMonitor.get_metrics()
 
-      assert length(metrics.memory_usage) > 0
+      assert metrics.memory_usage != []
       # Memory in MB
       assert hd(metrics.memory_usage) > 0
     end
@@ -188,7 +188,7 @@ defmodule Droodotfoo.PerformanceMonitorTest do
 
       metrics = PerformanceMonitor.get_metrics()
 
-      assert length(metrics.process_count) > 0
+      assert metrics.process_count != []
       assert hd(metrics.process_count) > 0
     end
 
@@ -198,7 +198,7 @@ defmodule Droodotfoo.PerformanceMonitorTest do
 
       metrics = PerformanceMonitor.get_metrics()
 
-      assert length(metrics.message_queue_lengths) > 0
+      assert metrics.message_queue_lengths != []
       queue_info = hd(metrics.message_queue_lengths)
       assert is_map(queue_info)
       assert Map.has_key?(queue_info, :total)
@@ -446,7 +446,7 @@ defmodule Droodotfoo.PerformanceMonitorTest do
       Process.sleep(10)
 
       metrics = PerformanceMonitor.get_metrics()
-      assert length(metrics.memory_usage) > 0
+      assert metrics.memory_usage != []
     end
   end
 end

@@ -71,7 +71,7 @@ defmodule Droodotfoo.Resume.PresetManagerTest do
       presets = PresetManager.list_presets()
 
       assert is_list(presets)
-      assert length(presets) > 0
+      assert presets != []
 
       # Should include system presets
       assert Enum.any?(presets, fn preset -> preset.name == "blockchain" end)

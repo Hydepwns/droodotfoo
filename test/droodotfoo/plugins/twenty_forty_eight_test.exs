@@ -356,7 +356,7 @@ defmodule Droodotfoo.Plugins.TwentyFortyEightTest do
         TwentyFortyEight.handle_input("ArrowRight", state_with_grid, %{})
 
       # Should have move history now
-      assert length(new_state.move_history) > 0
+      assert new_state.move_history != []
       assert new_state.can_undo == true
     end
 

@@ -73,7 +73,7 @@ defmodule Droodotfoo.Performance.MonitorTest do
       stats = Monitor.ets_stats()
 
       assert is_list(stats)
-      assert length(stats) > 0
+      assert stats != []
 
       first = List.first(stats)
       assert is_atom(first.name)

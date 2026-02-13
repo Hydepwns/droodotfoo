@@ -94,7 +94,7 @@ defmodule Droodotfoo.ProjectsTest do
     test "filters projects by exact tech match" do
       elixir_projects = Projects.filter_by_tech("Elixir")
 
-      assert length(elixir_projects) > 0
+      assert elixir_projects != []
 
       assert Enum.all?(elixir_projects, fn p ->
                Enum.any?(p.tech_stack, &(&1 == "Elixir"))
@@ -106,7 +106,7 @@ defmodule Droodotfoo.ProjectsTest do
       elixir_upper = Projects.filter_by_tech("ELIXIR")
 
       assert length(elixir_lower) == length(elixir_upper)
-      assert length(elixir_lower) > 0
+      assert elixir_lower != []
     end
 
     test "returns empty list for non-existent tech" do
@@ -166,7 +166,7 @@ defmodule Droodotfoo.ProjectsTest do
           p.github_url != nil or p.demo_url != nil
         end)
 
-      assert length(with_urls) > 0
+      assert with_urls != []
     end
   end
 end

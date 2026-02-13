@@ -26,7 +26,7 @@ defmodule DroodotfooWeb.PatternControllerTest do
       assert Enum.any?(cache_control, &(&1 =~ "public"))
 
       etag = get_resp_header(conn, "etag")
-      assert length(etag) > 0
+      assert etag != []
     end
 
     test "generates deterministic pattern for same slug", %{conn: conn} do

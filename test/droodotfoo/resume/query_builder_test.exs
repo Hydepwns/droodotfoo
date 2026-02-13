@@ -60,7 +60,7 @@ defmodule Droodotfoo.Resume.QueryBuilderTest do
         QueryBuilder.new()
         |> QueryBuilder.set_date_range("invalid", "2024-12")
 
-      assert length(builder.errors) > 0
+      assert builder.errors != []
     end
   end
 
@@ -86,7 +86,7 @@ defmodule Droodotfoo.Resume.QueryBuilderTest do
         QueryBuilder.new()
         |> QueryBuilder.set_logic(:invalid)
 
-      assert length(builder.errors) > 0
+      assert builder.errors != []
     end
   end
 
@@ -112,7 +112,7 @@ defmodule Droodotfoo.Resume.QueryBuilderTest do
       {:error, errors} = QueryBuilder.build(builder)
 
       assert is_list(errors)
-      assert length(errors) > 0
+      assert errors != []
     end
 
     test "excludes empty fields from options" do
