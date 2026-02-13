@@ -180,9 +180,9 @@ defmodule Droodotfoo.Content.Patterns.Isometric do
 
   defp build_face(vertices, stroke_width, opacity, index, face_type, animate) do
     points =
-      vertices
-      |> Enum.map(fn {x, y} -> "#{Base.round_coord(x)},#{Base.round_coord(y)}" end)
-      |> Enum.join(" ")
+      Enum.map_join(vertices, " ", fn {x, y} ->
+        "#{Base.round_coord(x)},#{Base.round_coord(y)}"
+      end)
 
     element =
       SVGBuilder.polygon(points, %{})

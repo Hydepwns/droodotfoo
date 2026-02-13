@@ -53,7 +53,7 @@ defmodule Droodotfoo.AdvancedSearchTest do
     test "finds matches with characters in order" do
       results = AdvancedSearch.fuzzy_search("elx", @sample_content, false)
 
-      assert length(results) > 0
+      assert results != []
       # Should match "Elixir" in multiple places
       assert Enum.any?(results, fn r ->
                String.contains?(String.downcase(r.line), "elixir")
@@ -64,7 +64,7 @@ defmodule Droodotfoo.AdvancedSearchTest do
       results = AdvancedSearch.fuzzy_search("elixir", @sample_content, false)
 
       # Results should be found
-      assert length(results) > 0
+      assert results != []
 
       # Lines with exact "elixir" should score higher
       top_result = List.first(results)
@@ -75,7 +75,7 @@ defmodule Droodotfoo.AdvancedSearchTest do
       results_insensitive = AdvancedSearch.fuzzy_search("ELIXIR", @sample_content, false)
       results_sensitive = AdvancedSearch.fuzzy_search("ELIXIR", @sample_content, true)
 
-      assert length(results_insensitive) > 0
+      assert results_insensitive != []
       assert results_sensitive == []
     end
   end
@@ -111,7 +111,7 @@ defmodule Droodotfoo.AdvancedSearchTest do
       results = AdvancedSearch.regex_search("^[A-Z]\\w+", @sample_content, false)
 
       # Should match lines starting with capital letters
-      assert length(results) > 0
+      assert results != []
 
       assert Enum.all?(results, fn r ->
                String.match?(r.line, ~r/^[A-Z]/)
@@ -121,7 +121,7 @@ defmodule Droodotfoo.AdvancedSearchTest do
     test "handles complex regex patterns" do
       results = AdvancedSearch.regex_search("(Elixir|Ruby|JavaScript)", @sample_content, false)
 
-      assert length(results) > 0
+      assert results != []
 
       assert Enum.any?(results, fn r ->
                String.contains?(r.line, "Elixir") or
@@ -142,7 +142,7 @@ defmodule Droodotfoo.AdvancedSearchTest do
       updated = AdvancedSearch.search(search, "elixir", @sample_content)
 
       assert updated.query == "elixir"
-      assert length(updated.results) > 0
+      assert updated.results != []
       assert "elixir" in updated.history
     end
 
@@ -400,7 +400,7 @@ defmodule Droodotfoo.AdvancedSearchTest do
 
       # Perform fuzzy search
       search = AdvancedSearch.search(search, "prog", @sample_content)
-      assert length(search.results) > 0
+      assert search.results != []
 
       # Switch to exact mode
       search = AdvancedSearch.set_mode(search, :exact)
@@ -413,7 +413,7 @@ defmodule Droodotfoo.AdvancedSearchTest do
       # Try regex search
       search = AdvancedSearch.set_mode(search, :regex)
       search = AdvancedSearch.search(search, "^[A-Z]", @sample_content)
-      assert length(search.results) > 0
+      assert search.results != []
 
       # Check history accumulated
       assert length(search.history) == 3

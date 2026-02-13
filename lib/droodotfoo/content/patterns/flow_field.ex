@@ -183,8 +183,7 @@ defmodule Droodotfoo.Content.Patterns.FlowField do
 
     extended
     |> Enum.chunk_every(4, 1, :discard)
-    |> Enum.map(&catmull_to_bezier/1)
-    |> Enum.join(" ")
+    |> Enum.map_join(" ", &catmull_to_bezier/1)
   end
 
   # Convert 4 Catmull-Rom points to a cubic bezier curve

@@ -208,11 +208,9 @@ defmodule Droodotfoo.Content.Patterns.Topology do
   end
 
   defp build_contour_paths(segments) do
-    segments
-    |> Enum.map(fn {{x1, y1}, {x2, y2}} ->
+    Enum.map_join(segments, " ", fn {{x1, y1}, {x2, y2}} ->
       "M#{Base.round_coord(x1)},#{Base.round_coord(y1)} L#{Base.round_coord(x2)},#{Base.round_coord(y2)}"
     end)
-    |> Enum.join(" ")
   end
 
   @doc """

@@ -145,9 +145,7 @@ defmodule Droodotfoo.Content.Patterns.Composite do
 
     animations =
       if animate do
-        @available_layers
-        |> Enum.map(&PatternAnimations.get_animations/1)
-        |> Enum.join("\n")
+        Enum.map_join(@available_layers, "\n", &PatternAnimations.get_animations/1)
       else
         ""
       end
@@ -172,9 +170,7 @@ defmodule Droodotfoo.Content.Patterns.Composite do
 
     animations =
       if animate do
-        layer_styles
-        |> Enum.map(&PatternAnimations.get_animations/1)
-        |> Enum.join("\n")
+        Enum.map_join(layer_styles, "\n", &PatternAnimations.get_animations/1)
       else
         ""
       end
