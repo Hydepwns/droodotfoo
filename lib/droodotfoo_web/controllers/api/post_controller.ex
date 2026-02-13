@@ -8,6 +8,7 @@ defmodule DroodotfooWeb.PostController do
   alias Droodotfoo.Content.PostRateLimiter
   alias Droodotfoo.Content.Posts
   alias Droodotfoo.ErrorSanitizer
+  alias DroodotfooWeb.Plugs.ClientIP
 
   @doc """
   Create a new blog post from Obsidian.
@@ -100,27 +101,5 @@ defmodule DroodotfooWeb.PostController do
 
   defp validate_params(_), do: {:error, :invalid_params}
 
-  defp get_ip_address(conn) do
-    # Fly.io sets Fly-Client-IP with verified client IP (can't be spoofed)
-    # This prevents IP spoofing via X-Forwarded-For header manipulation
-    case get_req_header(conn, "fly-client-ip") do
-      [ip | _] ->
-        ip |> String.trim()
-
-      [] ->
-        # Fallback to X-Forwarded-For (take rightmost IP as it's most trusted)
-        # Note: This is less secure than Fly-Client-IP
-        case get_req_header(conn, "x-forwarded-for") do
-          [ips] ->
-            ips
-            |> String.split(",")
-            |> List.last()
-            |> String.trim()
-
-          [] ->
-            # Final fallback to remote_ip
-            conn.remote_ip |> :inet.ntoa() |> to_string()
-        end
-    end
-  end
+  defp get_ip_address(conn), do: ClientIP.from_conn(conn)
 end

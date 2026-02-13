@@ -111,11 +111,17 @@ defmodule DroodotfooWeb.PatternGalleryLive do
                   data={"/patterns/#{@slug}?style=#{style.name}&animate=#{@animate}"}
                   type="image/svg+xml"
                   aria-label={"#{style.name} pattern"}
+                  role="img"
+                  width="1200"
+                  height="630"
                 >
                   <img
                     src={"/patterns/#{@slug}?style=#{style.name}&animate=#{@animate}"}
                     alt={"#{style.name} pattern"}
+                    width="1200"
+                    height="630"
                     loading="lazy"
+                    decoding="async"
                   />
                 </object>
               </div>
@@ -150,10 +156,16 @@ defmodule DroodotfooWeb.PatternGalleryLive do
                   data={"/patterns/#{@slug}?style=#{@preview_pattern}&animate=true"}
                   type="image/svg+xml"
                   aria-label={"#{@preview_pattern} pattern animated"}
+                  role="img"
+                  width="1200"
+                  height="630"
                 >
                   <img
                     src={"/patterns/#{@slug}?style=#{@preview_pattern}&animate=true"}
                     alt={"#{@preview_pattern} pattern animated"}
+                    width="1200"
+                    height="630"
+                    decoding="async"
                   />
                 </object>
               </div>

@@ -1,0 +1,14 @@
+# Security Policy for droo.foo
+# https://securitytxt.org/
+
+Contact: mailto:drew@axol.io
+Contact: https://github.com/Hydepwns/droodotfoo/security/advisories/new
+Expires: 2027-01-01T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://droo.foo/.well-known/security.txt
+
+# Scope
+# This policy applies to the droo.foo website and related services.
+
+# Acknowledgments
+# We appreciate responsible disclosure of security vulnerabilities.

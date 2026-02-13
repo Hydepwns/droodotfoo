@@ -65,7 +65,7 @@ defmodule DroodotfooWeb.SpotifyAuthController do
     Logger.warning("Spotify auth error: #{error}")
 
     conn
-    |> put_flash(:error, "Authentication cancelled or failed: #{error}")
+    |> put_flash(:error, spotify_error_message(error))
     |> redirect(to: "/")
   end
 
@@ -74,6 +74,15 @@ defmodule DroodotfooWeb.SpotifyAuthController do
     |> put_flash(:error, "Invalid authentication callback")
     |> redirect(to: "/")
   end
+
+  # Whitelist known Spotify OAuth errors to prevent XSS via error parameter
+  defp spotify_error_message("access_denied"), do: "Authentication cancelled: access denied"
+  defp spotify_error_message("invalid_scope"), do: "Authentication failed: invalid scope"
+  defp spotify_error_message("invalid_state"), do: "Authentication failed: invalid state"
+  defp spotify_error_message("invalid_client"), do: "Authentication failed: invalid client"
+  defp spotify_error_message("invalid_request"), do: "Authentication failed: invalid request"
+  defp spotify_error_message("server_error"), do: "Authentication failed: server error"
+  defp spotify_error_message(_), do: "Authentication cancelled or failed"
 
   @doc """
   Logs out from Spotify (clears tokens).

@@ -3,6 +3,7 @@ defmodule DroodotfooWeb.PatternController do
   require Logger
 
   alias Droodotfoo.Content.{PatternCache, PatternRateLimiter}
+  alias DroodotfooWeb.Plugs.ClientIP
 
   @doc """
   Serves a generated SVG pattern for a post slug.
@@ -26,7 +27,7 @@ defmodule DroodotfooWeb.PatternController do
   """
   def show(conn, %{"slug" => slug} = params) do
     # Check rate limit
-    ip_address = get_ip_address(conn)
+    ip_address = ClientIP.from_conn(conn)
 
     case PatternRateLimiter.check_rate_limit(ip_address) do
       {:ok, :allowed} ->
@@ -103,28 +104,5 @@ defmodule DroodotfooWeb.PatternController do
     opts_string = Enum.map_join(opts, "-", fn {k, v} -> "#{k}:#{v}" end)
     hash = :crypto.hash(:md5, "#{slug}-#{opts_string}") |> Base.encode16(case: :lower)
     ~s("#{hash}")
-  end
-
-  # Extract IP address from connection headers
-  defp get_ip_address(conn) do
-    # Fly.io sets Fly-Client-IP with verified client IP (can't be spoofed)
-    case get_req_header(conn, "fly-client-ip") do
-      [ip | _] ->
-        ip |> String.trim()
-
-      [] ->
-        # Fallback to X-Forwarded-For
-        case get_req_header(conn, "x-forwarded-for") do
-          [forwarded | _] ->
-            forwarded
-            |> String.split(",")
-            |> List.last()
-            |> String.trim()
-
-          [] ->
-            # Final fallback to remote_ip
-            to_string(:inet_parse.ntoa(conn.remote_ip))
-        end
-    end
   end
 end

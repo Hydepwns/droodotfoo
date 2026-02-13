@@ -20,6 +20,7 @@ defmodule DroodotfooWeb.Plugs.ContentSecurityPolicy do
     |> Plug.Conn.put_resp_header("x-frame-options", "SAMEORIGIN")
     |> Plug.Conn.put_resp_header("x-xss-protection", "1; mode=block")
     |> Plug.Conn.put_resp_header("referrer-policy", "strict-origin-when-cross-origin")
+    |> Plug.Conn.put_resp_header("permissions-policy", permissions_policy())
     # Prevent caching of dynamic content (LiveView pages, API responses)
     # Static assets are cached via Plug.Static headers in endpoint.ex
     |> Plug.Conn.put_resp_header("cache-control", "no-cache, no-store, must-revalidate")
@@ -37,9 +38,14 @@ defmodule DroodotfooWeb.Plugs.ContentSecurityPolicy do
     host = get_host(conn)
 
     # Build CSP policy with nonce-based inline script protection
-    # Note:
+    #
+    # Security notes:
     # - 'nonce-{nonce}' allows inline scripts with matching nonce attribute
-    # - 'unsafe-inline' kept for styles only (consider using nonces here too)
+    # - 'unsafe-inline' intentionally kept for styles because:
+    #   1. Phoenix LiveView injects inline styles for DOM patching
+    #   2. HEEx templates use inline style attributes for dynamic styling
+    #   3. Nonce-based styles would require modifying every style="" attribute
+    #   Style injection XSS is lower risk than script injection
     # - Removed chrome-extension/moz-extension (overly permissive)
     # - 'unsafe-eval' removed after security audit (no WASM/eval usage found)
     [
@@ -64,5 +70,34 @@ defmodule DroodotfooWeb.Plugs.ContentSecurityPolicy do
       "localhost" -> "http://localhost:4000"
       host -> "https://#{host}"
     end
+  end
+
+  defp permissions_policy do
+    # Restrict browser features to minimize attack surface
+    # - Disabled: geolocation, camera, microphone, payment, usb, etc.
+    # - Allowed: fullscreen (YouTube/Spotify embeds), picture-in-picture
+    [
+      "accelerometer=()",
+      "ambient-light-sensor=()",
+      "autoplay=(self)",
+      "battery=()",
+      "camera=()",
+      "display-capture=()",
+      "document-domain=()",
+      "encrypted-media=(self)",
+      "fullscreen=(self)",
+      "geolocation=()",
+      "gyroscope=()",
+      "magnetometer=()",
+      "microphone=()",
+      "midi=()",
+      "payment=()",
+      "picture-in-picture=(self)",
+      "publickey-credentials-get=()",
+      "screen-wake-lock=()",
+      "usb=()",
+      "xr-spatial-tracking=()"
+    ]
+    |> Enum.join(", ")
   end
 end

@@ -28,5 +28,31 @@ defmodule DroodotfooWeb.FeedControllerTest do
       assert body =~ "<item>"
       assert body =~ "</item>"
     end
+
+    test "post items have required RSS fields", %{conn: conn} do
+      conn = get(conn, "/feed.xml")
+      body = response(conn, 200)
+
+      # Each item should have title, link, guid, pubDate
+      assert body =~ "<title>"
+      assert body =~ "<link>https://droo.foo/posts/"
+      assert body =~ "<guid>https://droo.foo/posts/"
+      assert body =~ "<pubDate>"
+    end
+
+    test "includes atom self-referencing link", %{conn: conn} do
+      conn = get(conn, "/feed.xml")
+      body = response(conn, 200)
+
+      assert body =~ ~s(xmlns:atom="http://www.w3.org/2005/Atom")
+      assert body =~ ~s(href="https://droo.foo/feed.xml")
+    end
+
+    test "includes lastBuildDate", %{conn: conn} do
+      conn = get(conn, "/feed.xml")
+      body = response(conn, 200)
+
+      assert body =~ "<lastBuildDate>"
+    end
   end
 end

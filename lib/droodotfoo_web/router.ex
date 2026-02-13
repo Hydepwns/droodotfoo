@@ -34,6 +34,8 @@ defmodule DroodotfooWeb.Router do
       live "/projects", ProjectsLive
       live "/posts", PostsLive
       live "/posts/:slug", PostLive
+      live "/contact", ContactLive
+      live "/resume", ResumeLive
       live "/sitemap", SitemapLive
       live "/pattern-gallery", PatternGalleryLive
     end

@@ -46,20 +46,33 @@ defmodule DroodotfooWeb.SitemapController do
   end
 
   defp static_urls do
-    today = Date.utc_today() |> Date.to_iso8601()
+    # Use latest post date for content-driven pages, fixed dates for static pages
+    # This provides accurate signals to search engines about actual content updates
+    latest_post_date = get_latest_post_date()
 
     [
-      {"/", today, "daily", "1.0"},
-      {"/about", today, "monthly", "0.9"},
-      {"/now", today, "weekly", "0.8"},
-      {"/resume", today, "monthly", "0.9"},
-      {"/projects", today, "weekly", "0.9"},
-      {"/posts", today, "weekly", "0.9"},
-      {"/contact", today, "monthly", "0.7"},
-      {"/pattern-gallery", today, "monthly", "0.7"},
-      {"/sitemap", today, "monthly", "0.6"},
-      {"/feed.xml", today, "daily", "0.8"}
+      # Dynamic: changes when new posts are published
+      {"/", latest_post_date, "daily", "1.0"},
+      {"/posts", latest_post_date, "weekly", "0.9"},
+      {"/feed.xml", latest_post_date, "daily", "0.8"},
+      # Semi-dynamic: projects may update periodically
+      {"/projects", latest_post_date, "weekly", "0.9"},
+      # Dynamic: "now" page updates weekly by design
+      {"/now", latest_post_date, "weekly", "0.8"},
+      # Static: rarely change, use fixed dates
+      {"/about", "2025-01-01", "monthly", "0.9"},
+      {"/resume", "2025-01-01", "monthly", "0.9"},
+      {"/contact", "2025-01-01", "monthly", "0.7"},
+      {"/pattern-gallery", "2025-01-01", "monthly", "0.7"},
+      {"/sitemap", "2025-01-01", "monthly", "0.6"}
     ]
+  end
+
+  defp get_latest_post_date do
+    case Posts.list_posts() do
+      [latest | _] -> Date.to_iso8601(latest.date)
+      [] -> Date.utc_today() |> Date.to_iso8601()
+    end
   end
 
   defp post_urls do

@@ -67,11 +67,17 @@ defmodule DroodotfooWeb.PostsLive do
                   data={"#{Posts.social_image_url(post)}?animate=true"}
                   type="image/svg+xml"
                   aria-label={"Pattern for #{post.title}"}
+                  role="img"
+                  width="1200"
+                  height="630"
                 >
                   <img
                     src={Posts.social_image_url(post)}
                     alt={"Pattern for #{post.title}"}
+                    width="1200"
+                    height="630"
                     loading="lazy"
+                    decoding="async"
                   />
                 </object>
               </div>

@@ -8,6 +8,7 @@ defmodule DroodotfooWeb.ContactLive do
   alias Droodotfoo.Contact.{RateLimiter, Validator}
   alias Droodotfoo.Email.ContactMailer
   alias Droodotfoo.Forms.Constants
+  alias DroodotfooWeb.Plugs.ClientIP
   alias DroodotfooWeb.SEO.JsonLD
   import DroodotfooWeb.ContentComponents
 
@@ -146,6 +147,7 @@ defmodule DroodotfooWeb.ContactLive do
     |> assign(:is_submitting, false)
     |> reset_form()
     |> assign(:form_errors, %{})
+    |> push_event("focus", %{target: "contact_name"})
     |> then(&{:noreply, &1})
   end
 
@@ -158,12 +160,24 @@ defmodule DroodotfooWeb.ContactLive do
 
   defp handle_validation_errors(socket, changeset) do
     form_errors = extract_errors(changeset)
+    first_error_field = get_first_error_field(changeset)
 
     socket
     |> assign(:form_errors, form_errors)
     |> assign(:submission_status, {:error, "Please fix the errors below"})
     |> assign(:is_submitting, false)
+    |> push_event("focus", %{target: first_error_field})
     |> then(&{:noreply, &1})
+  end
+
+  defp get_first_error_field(changeset) do
+    # Return the first field with an error, in form field order
+    field_order = [:name, :email, :subject, :message]
+
+    Enum.find(field_order, :name, fn field ->
+      Keyword.has_key?(changeset.errors, field)
+    end)
+    |> then(&"contact_#{&1}")
   end
 
   defp extract_errors(changeset) do
@@ -192,17 +206,7 @@ defmodule DroodotfooWeb.ContactLive do
     """
   end
 
-  defp get_client_ip(socket) do
-    # Get client IP from connection
-    case socket.private[:connect_info] do
-      %{peer_data: %{address: {a, b, c, d}}} ->
-        "#{a}.#{b}.#{c}.#{d}"
-
-      _ ->
-        # Fallback for development
-        "127.0.0.1"
-    end
-  end
+  defp get_client_ip(socket), do: ClientIP.from_socket(socket)
 
   @impl true
   def render(assigns) do
@@ -214,6 +218,7 @@ defmodule DroodotfooWeb.ContactLive do
           id="contact-form"
           phx-submit="submit"
           phx-change="validate"
+          phx-hook="FocusHook"
           class="contact-form-inner"
         >
           <!-- Honeypot field (hidden from users) -->
@@ -234,6 +239,7 @@ defmodule DroodotfooWeb.ContactLive do
             error={@form_errors[:name]}
             placeholder="Your full name"
             required
+            autofocus
           />
 
           <.form_input

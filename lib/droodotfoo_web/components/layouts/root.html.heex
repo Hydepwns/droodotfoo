@@ -33,6 +33,7 @@
     
 <!-- Open Graph Meta Tags -->
     <meta property="og:site_name" content="DROO.FOO" />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:title" content={assigns[:og_title] || assigns[:page_title] || "DROO.FOO"} />
     <meta
       property="og:description"
@@ -76,6 +77,7 @@
     
 <!-- Article-specific Meta Tags (for blog posts) -->
     <%= if assigns[:og_type] == "article" do %>
+      <meta property="article:author" content="https://droo.foo" />
       <%= if assigns[:published_time] do %>
         <meta property="article:published_time" content={assigns[:published_time]} />
       <% end %>
@@ -224,7 +226,7 @@
           src="https://open.spotify.com/embed/playlist/6qfswybTWZ4FtWACSJVSPT?utm_source=generator&theme=0&autoplay=false"
           width="100%"
           height="152"
-          frameBorder="0"
+          frameborder="0"
           allowfullscreen=""
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
         >
@@ -232,247 +234,5 @@
       </div>
     </div>
 
-    <script nonce={@csp_nonce}>
-      // Theme cycling functionality
-      const themes = ['theme-synthwave84', 'theme-hotline', 'theme-matrix', 'theme-cyberpunk', 'theme-phosphor', 'theme-amber', 'theme-high-contrast'];
-      const themeNames = ['Synthwave84', 'Hotline', 'Matrix', 'Cyberpunk', 'Phosphor', 'Amber', 'High Contrast'];
-      let currentThemeIndex = 0;
-      let themeIndicatorTimeout;
-
-      // Show theme name indicator
-      const showThemeIndicator = (themeName) => {
-        const indicator = document.getElementById('theme-indicator');
-        indicator.textContent = `THEME: ${themeName}`;
-        indicator.classList.add('show');
-
-        // Clear existing timeout
-        if (themeIndicatorTimeout) {
-          clearTimeout(themeIndicatorTimeout);
-        }
-
-        // Hide after 2 seconds
-        themeIndicatorTimeout = setTimeout(() => {
-          indicator.classList.remove('show');
-        }, 2000);
-      };
-
-      // Get current theme from CSS classes on html element
-      const getCurrentThemeIndex = () => {
-        const classList = document.documentElement.classList;
-        for (let i = 0; i < themes.length; i++) {
-          if (classList.contains(themes[i])) {
-            return i;
-          }
-        }
-        return 0;
-      };
-
-      // Load saved theme on page load (run immediately)
-      const savedTheme = localStorage.getItem('phx:theme');
-      if (savedTheme && themes.includes(savedTheme)) {
-        themes.forEach(t => document.documentElement.classList.remove(t));
-        document.documentElement.classList.add(savedTheme);
-        currentThemeIndex = themes.indexOf(savedTheme);
-      } else {
-        // Set default theme if none saved (High Contrast - black and white)
-        document.documentElement.classList.add(themes[6]);
-        localStorage.setItem('phx:theme', themes[6]);
-      }
-
-      // Music player starts minimized by default (no auto-load)
-      // User must click the music toggle button to expand it
-      // No special mobile handling needed - minimized is default for all devices
-
-      // Theme toggle button click handler
-      document.addEventListener('DOMContentLoaded', () => {
-        const button = document.getElementById('theme-toggle');
-        if (button) {
-          button.addEventListener('click', () => {
-            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
-            const newTheme = themes[currentThemeIndex];
-
-            // Remove all theme classes
-            themes.forEach(t => document.documentElement.classList.remove(t));
-
-            // Add new theme class
-            document.documentElement.classList.add(newTheme);
-
-            // Store in localStorage
-            localStorage.setItem('phx:theme', newTheme);
-
-            // Show theme indicator
-            showThemeIndicator(themeNames[currentThemeIndex]);
-          });
-        }
-      });
-
-      // Keyboard shortcut 'T' (uppercase only) for theme toggle
-      // Lowercase 't' is disabled to avoid conflicts with terminal command input
-      // Use capturing phase to intercept before LiveView processes it
-      let lastThemeChange = 0;
-      const themeChangeDelay = 100; // Minimum 100ms between theme changes
-
-      document.addEventListener('keydown', (e) => {
-        // Only uppercase 'T' triggers theme toggle
-        // Disabled lowercase 't' to prevent interference with command bar typing
-        const isRegularInput = e.target.matches('input, textarea, select') && e.target.id !== 'terminal-input';
-
-        if (e.key === 'T' && !isRegularInput && !e.repeat) {
-          const now = Date.now();
-          if (now - lastThemeChange >= themeChangeDelay) {
-            lastThemeChange = now;
-            e.preventDefault();
-            e.stopPropagation();
-
-            // Cycle theme directly instead of clicking button for faster response
-            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
-            const newTheme = themes[currentThemeIndex];
-
-            // Remove all theme classes
-            themes.forEach(t => document.documentElement.classList.remove(t));
-
-            // Add new theme class
-            document.documentElement.classList.add(newTheme);
-
-            // Store in localStorage
-            localStorage.setItem('phx:theme', newTheme);
-
-            // Show theme indicator
-            showThemeIndicator(themeNames[currentThemeIndex]);
-          }
-        }
-      }, true); // true = use capturing phase
-
-      // Debug mode toggle functionality
-      const getDebugMode = () => localStorage.getItem('phx:debug') === 'true';
-      const setDebugMode = (value) => localStorage.setItem('phx:debug', value);
-
-      // Function to apply debug mode state
-      const applyDebugMode = () => {
-        const debugMode = getDebugMode();
-        if (debugMode) {
-          document.documentElement.classList.add('debug-mode');
-        } else {
-          document.documentElement.classList.remove('debug-mode');
-        }
-      };
-
-      // Apply debug mode on initial load
-      applyDebugMode();
-
-      // Reapply debug mode after LiveView navigation
-      window.addEventListener('phx:page-loading-stop', applyDebugMode);
-
-      const toggleDebugMode = () => {
-        const currentMode = getDebugMode();
-        setDebugMode(!currentMode);
-        applyDebugMode();
-      };
-
-      // Keyboard shortcut 'D' (uppercase only) for debug toggle
-      document.addEventListener('keydown', (e) => {
-        const isRegularInput = e.target.matches('input, textarea, select') && e.target.id !== 'terminal-input';
-
-        if (e.key === 'D' && !isRegularInput && !e.repeat) {
-          e.preventDefault();
-          e.stopPropagation();
-          toggleDebugMode();
-        }
-      }, true);
-
-      // Hamburger Menu functionality
-      document.addEventListener('DOMContentLoaded', () => {
-        const hamburgerToggle = document.getElementById('hamburger-toggle');
-        const hamburgerMenu = document.getElementById('hamburger-menu');
-        const menuClose = document.getElementById('menu-close');
-        const menuThemeToggle = document.getElementById('menu-theme-toggle');
-        const menuDebugToggle = document.getElementById('menu-debug-toggle');
-        const menuMusicToggle = document.getElementById('menu-music-toggle');
-        const musicPlayer = document.getElementById('music-player-widget');
-        const debugToggle = document.getElementById('debug-toggle');
-
-        // Open hamburger menu
-        if (hamburgerToggle) {
-          hamburgerToggle.addEventListener('click', () => {
-            hamburgerMenu.classList.add('menu-open');
-          });
-        }
-
-        // Close hamburger menu
-        if (menuClose) {
-          menuClose.addEventListener('click', () => {
-            hamburgerMenu.classList.remove('menu-open');
-          });
-        }
-
-        // Close menu when clicking outside
-        hamburgerMenu.addEventListener('click', (e) => {
-          if (e.target === hamburgerMenu) {
-            hamburgerMenu.classList.remove('menu-open');
-          }
-        });
-
-        // Theme toggle from menu
-        if (menuThemeToggle) {
-          menuThemeToggle.addEventListener('click', () => {
-            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
-            const newTheme = themes[currentThemeIndex];
-            themes.forEach(t => document.documentElement.classList.remove(t));
-            document.documentElement.classList.add(newTheme);
-            localStorage.setItem('phx:theme', newTheme);
-            showThemeIndicator(themeNames[currentThemeIndex]);
-            hamburgerMenu.classList.remove('menu-open');
-          });
-        }
-
-        // Debug toggle from desktop button
-        if (debugToggle) {
-          debugToggle.addEventListener('click', () => {
-            toggleDebugMode();
-          });
-        }
-
-        // Debug toggle from menu
-        if (menuDebugToggle) {
-          menuDebugToggle.addEventListener('click', () => {
-            toggleDebugMode();
-            hamburgerMenu.classList.remove('menu-open');
-          });
-        }
-
-        // Music player toggle helper
-        const toggleMusicPlayer = () => {
-          if (musicPlayer) {
-            musicPlayer.classList.toggle('music-player-minimized');
-            musicPlayer.classList.toggle('music-player-expanded');
-          }
-        };
-
-        // Music player minimize/maximize toggle (desktop button)
-        const musicToggleDesktop = document.getElementById('music-toggle-desktop');
-        if (musicToggleDesktop && musicPlayer) {
-          musicToggleDesktop.addEventListener('click', toggleMusicPlayer);
-        }
-
-        // Music player minimize/maximize toggle (mobile hamburger menu)
-        if (menuMusicToggle && musicPlayer) {
-          menuMusicToggle.addEventListener('click', () => {
-            toggleMusicPlayer();
-            hamburgerMenu.classList.remove('menu-open');
-          });
-        }
-
-        // Click minimized player pill to expand
-        if (musicPlayer) {
-          musicPlayer.addEventListener('click', (e) => {
-            // Only expand if currently minimized and clicked on the pill itself (not the iframe)
-            if (musicPlayer.classList.contains('music-player-minimized') &&
-                e.target === musicPlayer) {
-              toggleMusicPlayer();
-            }
-          });
-        }
-      });
-    </script>
-  </body>
+    </body>
 </html>

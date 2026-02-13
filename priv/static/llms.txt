@@ -1,23 +1,24 @@
 # DROO.FOO
 
 > Personal website of DROO AMOR - software engineer, blockchain researcher, and builder.
-> Built with Elixir/Phoenix LiveView and Raxol terminal UI framework. Features a monospace-web
-> aesthetic, file-based content system, and terminal-style interface.
+> Built with Elixir/Phoenix LiveView featuring a monospace-web aesthetic using Wickstrom's
+> character-perfect grid technique, file-based content system, and generative SVG patterns.
 
 DROO.FOO is both a portfolio and an experimental platform showcasing:
-- Phoenix LiveView applications with real-time terminal UIs
+- Phoenix LiveView applications with real-time interactions
 - Blockchain/Web3 projects and research
 - Technical writing on Elixir, Phoenix, and distributed systems
 - Open-source contributions and creative coding experiments
 
 ## Core Pages
 
-- [Home](https://droo.foo/): Terminal-style interface with Raxol framework
+- [Home](https://droo.foo/): Latest posts and social links
 - [About](https://droo.foo/about): Background, skills, and experience
 - [Now](https://droo.foo/now): Current projects and focus areas
 - [Projects](https://droo.foo/projects): Portfolio of work and open-source contributions
 - [Writing](https://droo.foo/posts): Technical blog posts and articles
-- [Sitemap](https://droo.foo/sitemap): Complete site structure
+- [Resume](https://droo.foo/resume): Professional experience and skills
+- [Contact](https://droo.foo/contact): Get in touch
 
 ## Featured Content
 
@@ -33,15 +34,16 @@ DROO.FOO is both a portfolio and an experimental platform showcasing:
 ## Key Technologies
 
 - **Framework**: Elixir, Phoenix 1.8, Phoenix LiveView
-- **Terminal UI**: Raxol (custom terminal rendering library)
-- **Content**: File-based markdown with MDEx parser
-- **Styling**: Monaspace Argon monospace font, character-grid CSS
+- **Content**: File-based markdown with MDEx parser, generative SVG patterns
+- **Styling**: Monaspace Argon monospace font, 1ch character-grid CSS
+- **Web3**: Ethereum integration (ENS, NFTs, tokens)
 - **Infrastructure**: Fly.io hosting, Cloudflare Pages CDN
 
 ## Contact & Social
 
-- **GitHub**: [@hydepwns](https://github.com/hydepwns)
-- **Email**: droo@droo.foo
+- **GitHub**: [@Hydepwns](https://github.com/Hydepwns)
+- **X/Twitter**: [@MF_DROO](https://x.com/MF_DROO)
+- **Email**: drew@axol.io
 - **Location**: Remote / Traveling
 
 ## Optional
