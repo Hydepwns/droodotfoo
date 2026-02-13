@@ -85,39 +85,32 @@ defmodule Droodotfoo.Application do
 
   # ChromicPDF children - only start in dev/test (Chrome doesn't work reliably in Fly.io)
   if Mix.env() in [:dev, :test] do
-    defp chromic_pdf_children, do: [{ChromicPDF, chromic_pdf_opts()}]
+    defp chromic_pdf_children do
+      chrome_path =
+        [
+          "/usr/bin/chromium",
+          "/usr/bin/chromium-browser",
+          "/usr/bin/google-chrome",
+          "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+          "/Applications/Chromium.app/Contents/MacOS/Chromium"
+        ]
+        |> Enum.find(&File.exists?/1)
+
+      base_opts = [
+        discard_utility_output: true,
+        no_sandbox: true,
+        session_pool: [timeout: 15_000, init_timeout: 15_000]
+      ]
+
+      opts =
+        if chrome_path,
+          do: Keyword.put(base_opts, :chrome_executable, chrome_path),
+          else: base_opts
+
+      [{ChromicPDF, opts}]
+    end
   else
     defp chromic_pdf_children, do: []
-  end
-
-  defp chromic_pdf_opts do
-    # Try to find Chrome/Chromium in common locations
-    chrome_path =
-      [
-        "/usr/bin/chromium",
-        "/usr/bin/chromium-browser",
-        "/usr/bin/google-chrome",
-        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-        "/Applications/Chromium.app/Contents/MacOS/Chromium"
-      ]
-      |> Enum.find(&File.exists?/1)
-
-    base_opts = [
-      discard_utility_output: true,
-      # Disable sandboxing for containerized environments (Fly.io, Docker)
-      no_sandbox: true,
-      # Increase timeouts to prevent initialization failures
-      session_pool: [
-        timeout: 15_000,
-        init_timeout: 15_000
-      ]
-    ]
-
-    if chrome_path do
-      Keyword.put(base_opts, :chrome_executable, chrome_path)
-    else
-      base_opts
-    end
   end
 
   # Set up OpenTelemetry instrumentation for Phoenix and Bandit
