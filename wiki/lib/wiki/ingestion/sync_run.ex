@@ -71,6 +71,57 @@ defmodule Wiki.Ingestion.SyncRun do
     |> Wiki.Repo.one()
   end
 
+  @doc "List recent sync runs across all sources."
+  @spec list_recent(integer()) :: [t()]
+  def list_recent(limit \\ 20) do
+    __MODULE__
+    |> order_by([r], desc: r.started_at)
+    |> limit(^limit)
+    |> Wiki.Repo.all()
+  end
+
+  @doc "List recent sync runs for a specific source."
+  @spec list_by_source(atom(), integer()) :: [t()]
+  def list_by_source(source, limit \\ 10) do
+    __MODULE__
+    |> where([r], r.source == ^source)
+    |> order_by([r], desc: r.started_at)
+    |> limit(^limit)
+    |> Wiki.Repo.all()
+  end
+
+  @doc "Get the currently running sync for a source, if any."
+  @spec running?(atom()) :: t() | nil
+  def running?(source) do
+    __MODULE__
+    |> where([r], r.source == ^source and r.status == :running)
+    |> order_by([r], desc: r.started_at)
+    |> limit(1)
+    |> Wiki.Repo.one()
+  end
+
+  @doc "Get status summary for all sources."
+  @spec source_statuses() :: [map()]
+  def source_statuses do
+    Enum.map(@sources, fn source ->
+      last_run =
+        __MODULE__
+        |> where([r], r.source == ^source)
+        |> order_by([r], desc: r.started_at)
+        |> limit(1)
+        |> Wiki.Repo.one()
+
+      running = running?(source)
+
+      %{
+        source: source,
+        last_run: last_run,
+        running: running != nil,
+        last_success: last_completed_at(source)
+      }
+    end)
+  end
+
   defp changeset(attrs), do: changeset(%__MODULE__{}, attrs)
 
   defp changeset(run, attrs) do
