@@ -176,6 +176,7 @@ defmodule Wiki.Ingestion.OSRSPipeline do
 
       case Repo.insert(Article.changeset(attrs)) do
         {:ok, article} ->
+          Wiki.Cache.invalidate(@source, slug)
           Logger.info("Created article: #{page.title}")
           {:created, article}
 
@@ -203,6 +204,7 @@ defmodule Wiki.Ingestion.OSRSPipeline do
 
       case Repo.update(Article.changeset(existing, attrs)) do
         {:ok, article} ->
+          Wiki.Cache.invalidate(@source, slug)
           Logger.info("Updated article: #{page.title}")
           {:updated, article}
 

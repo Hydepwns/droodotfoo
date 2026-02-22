@@ -9,7 +9,7 @@ defmodule Wiki.Content do
   import Ecto.Query
 
   alias Wiki.Content.{Article, Redirect}
-  alias Wiki.{Repo, Storage}
+  alias Wiki.{Cache, Repo}
 
   @type source :: :osrs | :nlab | :wikipedia | :vintage_machinery | :wikiart
 
@@ -139,13 +139,8 @@ defmodule Wiki.Content do
 
   # Private helpers
 
-  defp load_html(%Article{rendered_html_key: nil}), do: ""
-
-  defp load_html(%Article{rendered_html_key: key}) do
-    case Storage.get_html(key) do
-      {:ok, html} -> html
-      {:error, _} -> ""
-    end
+  defp load_html(%Article{} = article) do
+    Cache.fetch_html(article)
   end
 
   defp order_by_field(query, :title), do: order_by(query, [a], asc: a.title)

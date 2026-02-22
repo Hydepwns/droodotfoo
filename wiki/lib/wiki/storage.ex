@@ -84,8 +84,13 @@ defmodule Wiki.Storage do
 
   # Key construction
 
-  defp html_key(source, slug), do: "#{source}/#{sanitize_slug(slug)}/rendered.html"
-  defp raw_key(source, slug), do: "#{source}/#{sanitize_slug(slug)}/raw.txt"
+  @doc "Generate storage key for rendered HTML."
+  @spec html_key(source(), String.t()) :: String.t()
+  def html_key(source, slug), do: "#{source}/#{sanitize_slug(slug)}/rendered.html"
+
+  @doc "Generate storage key for raw content."
+  @spec raw_key(source(), String.t()) :: String.t()
+  def raw_key(source, slug), do: "#{source}/#{sanitize_slug(slug)}/raw.txt"
 
   defp sanitize_slug(slug) do
     slug
