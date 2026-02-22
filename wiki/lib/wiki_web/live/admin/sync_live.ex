@@ -66,6 +66,10 @@ defmodule WikiWeb.Admin.SyncLive do
         %{} |> Wiki.Ingestion.OSRSSyncWorker.new() |> Oban.insert()
         {:noreply, put_flash(socket, :info, "OSRS sync queued")}
 
+      :nlab ->
+        %{} |> Wiki.Ingestion.NLabSyncWorker.new() |> Oban.insert()
+        {:noreply, put_flash(socket, :info, "nLab sync queued")}
+
       _ ->
         {:noreply, put_flash(socket, :error, "Sync not implemented for #{source}")}
     end
@@ -78,6 +82,10 @@ defmodule WikiWeb.Admin.SyncLive do
       :osrs ->
         %{full_sync: true} |> Wiki.Ingestion.OSRSSyncWorker.new() |> Oban.insert()
         {:noreply, put_flash(socket, :info, "OSRS full sync queued")}
+
+      :nlab ->
+        %{full_sync: true} |> Wiki.Ingestion.NLabSyncWorker.new() |> Oban.insert()
+        {:noreply, put_flash(socket, :info, "nLab full sync queued")}
 
       _ ->
         {:noreply, put_flash(socket, :error, "Full sync not implemented for #{source}")}

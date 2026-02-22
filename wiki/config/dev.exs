@@ -19,6 +19,12 @@ config :wiki, Wiki.Ingestion.MediaWikiClient,
   user_agent: "DrooFoo-WikiMirror/1.0 (https://droo.foo; dev@droo.foo)",
   rate_limit_ms: 1_000
 
+# nLab client for development
+config :wiki, Wiki.Ingestion.NLabClient,
+  repo_url: "https://github.com/ncatlab/nlab-content.git",
+  local_path: Path.expand("../priv/nlab-content", __DIR__),
+  branch: "master"
+
 # MinIO/S3 for development (local MinIO or mock)
 config :ex_aws,
   access_key_id: "minioadmin",
