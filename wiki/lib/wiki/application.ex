@@ -5,6 +5,9 @@ defmodule Wiki.Application do
 
   @impl true
   def start(_type, _args) do
+    # Initialize rate limiter ETS table
+    Wiki.Ingestion.MediaWikiClient.init()
+
     children = [
       # Data layer
       Wiki.Repo,

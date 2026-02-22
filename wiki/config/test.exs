@@ -16,6 +16,28 @@ config :wiki, Wiki.Repo,
 # Oban testing mode - jobs execute inline
 config :wiki, Oban, testing: :inline
 
+# MediaWiki client for tests (uses Bypass)
+config :wiki, Wiki.Ingestion.MediaWikiClient,
+  base_url: "http://localhost:9999/api.php",
+  user_agent: "DrooFoo-WikiMirror/1.0 (test)",
+  rate_limit_ms: 0
+
+# MinIO/S3 mock for tests
+config :ex_aws,
+  access_key_id: "test",
+  secret_access_key: "test",
+  region: "us-east-1"
+
+config :ex_aws, :s3,
+  scheme: "http://",
+  host: "localhost",
+  port: 9000
+
+config :wiki, Wiki.Storage,
+  bucket_wiki: "test-wiki",
+  bucket_library: "test-library",
+  bucket_backups: "test-backups"
+
 # Disable PromEx polling in tests (avoids sandbox ownership issues)
 config :wiki, Wiki.PromEx, disabled: true
 

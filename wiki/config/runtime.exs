@@ -9,8 +9,7 @@ if System.get_env("PHX_SERVER") do
   config :wiki, WikiWeb.Endpoint, server: true
 end
 
-config :wiki, WikiWeb.Endpoint,
-  http: [port: String.to_integer(System.get_env("PORT", "4040"))]
+config :wiki, WikiWeb.Endpoint, http: [port: String.to_integer(System.get_env("PORT", "4040"))]
 
 if config_env() == :prod do
   # --- Database ---

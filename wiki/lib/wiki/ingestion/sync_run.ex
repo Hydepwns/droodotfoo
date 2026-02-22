@@ -31,20 +31,32 @@ defmodule Wiki.Ingestion.SyncRun do
 
   @doc "Insert a new running sync run."
   def start!(source, strategy) do
-    changeset(%{source: source, strategy: strategy, status: :running, started_at: DateTime.utc_now()})
+    changeset(%{
+      source: source,
+      strategy: strategy,
+      status: :running,
+      started_at: DateTime.utc_now()
+    })
     |> Wiki.Repo.insert!()
   end
 
   @doc "Mark a sync run completed or failed."
   def complete!(run, {:ok, stats}) do
     run
-    |> changeset(Map.put(stats, :status, :completed) |> Map.put(:completed_at, DateTime.utc_now()))
+    |> changeset(
+      Map.put(stats, :status, :completed)
+      |> Map.put(:completed_at, DateTime.utc_now())
+    )
     |> Wiki.Repo.update!()
   end
 
   def complete!(run, {:error, reason}) do
     run
-    |> changeset(%{status: :failed, error_message: to_string(reason), completed_at: DateTime.utc_now()})
+    |> changeset(%{
+      status: :failed,
+      error_message: to_string(reason),
+      completed_at: DateTime.utc_now()
+    })
     |> Wiki.Repo.update!()
   end
 
@@ -63,8 +75,17 @@ defmodule Wiki.Ingestion.SyncRun do
 
   defp changeset(run, attrs) do
     cast(run, attrs, [
-      :source, :strategy, :pages_processed, :pages_created, :pages_updated,
-      :pages_unchanged, :errors, :started_at, :completed_at, :status, :error_message
+      :source,
+      :strategy,
+      :pages_processed,
+      :pages_created,
+      :pages_updated,
+      :pages_unchanged,
+      :errors,
+      :started_at,
+      :completed_at,
+      :status,
+      :error_message
     ])
   end
 end

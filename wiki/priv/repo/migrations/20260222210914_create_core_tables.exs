@@ -30,10 +30,10 @@ defmodule Wiki.Repo.Migrations.CreateCoreTables do
 
     # Full-text search index
     execute """
-    CREATE INDEX articles_fts_idx ON articles
-    USING gin(to_tsvector('english', coalesce(title, '') || ' ' || coalesce(extracted_text, '')))
-    """,
-    "DROP INDEX articles_fts_idx"
+            CREATE INDEX articles_fts_idx ON articles
+            USING gin(to_tsvector('english', coalesce(title, '') || ' ' || coalesce(extracted_text, '')))
+            """,
+            "DROP INDEX articles_fts_idx"
 
     # --- Revisions ---
 

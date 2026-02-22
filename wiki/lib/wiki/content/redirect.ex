@@ -10,7 +10,7 @@ defmodule Wiki.Content.Redirect do
 
   @type t :: %__MODULE__{}
 
-  @sources ~w(osrs nlab wikipedia)a
+  @sources ~w(osrs nlab wikipedia vintage_machinery wikiart)a
 
   schema "wiki_redirects" do
     field :source, Ecto.Enum, values: @sources

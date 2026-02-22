@@ -21,7 +21,8 @@ config :wiki, :cachex,
 config :wiki, Oban,
   engine: Oban.Engines.Basic,
   repo: Wiki.Repo,
-  queues: false  # Disabled by default, enabled in dev/prod
+  # Disabled by default, enabled in dev/prod
+  queues: false
 
 # Configure the endpoint
 config :wiki, WikiWeb.Endpoint,
