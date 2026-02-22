@@ -145,9 +145,75 @@ defmodule Wiki.Storage do
     end
   end
 
+  # ===========================================================================
+  # Backups
+  # ===========================================================================
+
+  @doc """
+  Upload a database backup to the backups bucket.
+
+  Returns :ok on success.
+  """
+  @spec put_backup(String.t(), binary()) :: :ok | {:error, term()}
+  def put_backup(filename, body) when is_binary(body) do
+    key = "droo-wiki-db/#{filename}"
+
+    case upload(backups_bucket(), key, body, content_type: "application/gzip") do
+      :ok ->
+        Logger.info("Uploaded backup: #{key} (#{format_size(byte_size(body))})")
+        :ok
+
+      error ->
+        error
+    end
+  end
+
+  @doc """
+  List all backups in the backups bucket.
+  """
+  @spec list_backups() :: [map()]
+  def list_backups do
+    backups_bucket()
+    |> ExAws.S3.list_objects(prefix: "droo-wiki-db/")
+    |> ExAws.stream!()
+    |> Enum.map(fn obj ->
+      %{
+        key: obj.key,
+        size: String.to_integer(obj.size),
+        last_modified: obj.last_modified
+      }
+    end)
+    |> Enum.sort_by(& &1.last_modified, :desc)
+  end
+
+  @doc """
+  Delete old backups, keeping the most recent N.
+  """
+  @spec prune_backups(integer()) :: :ok
+  def prune_backups(keep \\ 7) do
+    backups = list_backups()
+
+    backups
+    |> Enum.drop(keep)
+    |> Enum.each(fn backup ->
+      delete(backups_bucket(), backup.key)
+      Logger.info("Pruned old backup: #{backup.key}")
+    end)
+
+    :ok
+  end
+
+  defp format_size(bytes) when bytes < 1024, do: "#{bytes} B"
+  defp format_size(bytes) when bytes < 1024 * 1024, do: "#{Float.round(bytes / 1024, 1)} KB"
+  defp format_size(bytes), do: "#{Float.round(bytes / 1024 / 1024, 1)} MB"
+
   # Bucket names from config
 
   defp wiki_bucket do
     Application.get_env(:wiki, __MODULE__)[:bucket_wiki] || "droo-wiki"
+  end
+
+  defp backups_bucket do
+    Application.get_env(:wiki, __MODULE__)[:bucket_backups] || "xochimilco-backups"
   end
 end
