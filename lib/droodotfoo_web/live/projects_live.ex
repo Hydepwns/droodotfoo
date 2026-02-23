@@ -41,6 +41,7 @@ defmodule DroodotfooWeb.ProjectsLive do
   def handle_info(:enrich_github_data, socket) do
     enriched_projects =
       Projects.with_github_data()
+      |> Projects.with_forgejo_mirrors()
       |> enrich_zed_downloads()
 
     json_ld = [
@@ -119,6 +120,16 @@ defmodule DroodotfooWeb.ProjectsLive do
           <span :if={@updated != "-" && @updated != "..."} class="project-updated">
             updated {@updated}
           </span>
+          <a
+            :if={@project.forgejo_url}
+            href={@project.forgejo_url}
+            target="_blank"
+            rel="noopener"
+            class="project-mirror"
+            title="Mirrored on git.droo.foo"
+          >
+            [mirror]
+          </a>
         </div>
       </header>
 

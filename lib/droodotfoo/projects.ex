@@ -14,6 +14,7 @@ defmodule Droodotfoo.Projects do
     :tech_stack,
     :topics,
     :github_url,
+    :forgejo_url,
     :demo_url,
     :live_demo,
     :status,
@@ -37,6 +38,7 @@ defmodule Droodotfoo.Projects do
           tech_stack: list(String.t()),
           topics: list(String.t()),
           github_url: String.t() | nil,
+          forgejo_url: String.t() | nil,
           demo_url: String.t() | nil,
           live_demo: boolean(),
           status: :active | :completed | :archived,
@@ -84,6 +86,25 @@ defmodule Droodotfoo.Projects do
   @spec enrich_with_github_data(t()) :: t()
   def enrich_with_github_data(project) do
     Droodotfoo.GitHub.enrich_project(project)
+  end
+
+  @doc "Enriches projects with Forgejo mirror URLs"
+  @spec with_forgejo_mirrors(list(t())) :: list(t())
+  def with_forgejo_mirrors(projects) do
+    Enum.map(projects, fn project ->
+      repo_name = extract_repo_name(project.github_url)
+      forgejo_url = if repo_name, do: Droodotfoo.Forgejo.mirror_url(repo_name)
+      %{project | forgejo_url: forgejo_url}
+    end)
+  end
+
+  defp extract_repo_name(nil), do: nil
+
+  defp extract_repo_name(url) when is_binary(url) do
+    case Regex.run(~r{github\.com/[^/]+/([^/]+?)(?:\.git)?$}, url) do
+      [_, name] -> name
+      _ -> nil
+    end
   end
 
   @doc "Returns a color-coded status indicator for a project"
