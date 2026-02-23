@@ -4,14 +4,33 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
-    <.live_title default="Wiki" suffix=" · Phoenix Framework">
+    <.live_title default="wiki.droo.foo" suffix=" | droo.foo">
       {assigns[:page_title]}
     </.live_title>
+
+    <%!-- Preload Monaspace fonts for performance --%>
+    <link
+      rel="preload"
+      href="/fonts/MonaspaceArgon-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/MonaspaceArgon-Bold.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
     <script>
       (() => {
+        const THEMES = ["system", "light", "dark", "synthwave84", "hotline", "matrix", "cyberpunk", "phosphor", "amber", "high-contrast"];
+
         const setTheme = (theme) => {
           if (theme === "system") {
             localStorage.removeItem("phx:theme");
@@ -21,12 +40,38 @@
             document.documentElement.setAttribute("data-theme", theme);
           }
         };
+
+        // Apply saved theme on page load
         if (!document.documentElement.hasAttribute("data-theme")) {
           setTheme(localStorage.getItem("phx:theme") || "system");
         }
-        window.addEventListener("storage", (e) => e.key === "phx:theme" && setTheme(e.newValue || "system"));
-        
-        window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
+
+        // Sync across tabs
+        window.addEventListener("storage", (e) => {
+          if (e.key === "phx:theme") {
+            setTheme(e.newValue || "system");
+          }
+        });
+
+        // Handle theme changes from LiveView
+        window.addEventListener("phx:set-theme", (e) => {
+          const theme = e.target?.dataset?.phxTheme || e.detail?.theme;
+          if (theme && THEMES.includes(theme)) {
+            setTheme(theme);
+          }
+        });
+
+        // Cycle through themes (for keyboard shortcut)
+        window.cycleTheme = () => {
+          const current = localStorage.getItem("phx:theme") || "system";
+          const idx = THEMES.indexOf(current);
+          const next = THEMES[(idx + 1) % THEMES.length];
+          setTheme(next);
+          return next;
+        };
+
+        // Get current theme
+        window.getCurrentTheme = () => localStorage.getItem("phx:theme") || "system";
       })();
     </script>
   </head>

@@ -1,9 +1,7 @@
 defmodule WikiWeb.Library.ReaderLive do
   @moduledoc """
   Document reader/viewer.
-
-  For PDFs, uses PDF.js via a JavaScript hook.
-  For text/markdown/HTML, renders inline.
+  Terminal aesthetic matching droo.foo.
   """
 
   use WikiWeb, :live_view
@@ -29,7 +27,8 @@ defmodule WikiWeb.Library.ReaderLive do
            document: document,
            download_url: download_url,
            content: content,
-           page_title: document.title
+           page_title: String.upcase(document.title),
+           current_path: "/doc/#{slug}"
          )}
     end
   end
@@ -37,53 +36,28 @@ defmodule WikiWeb.Library.ReaderLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash}>
-      <div class="max-w-6xl mx-auto px-4 py-8">
-        <header class="mb-6">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <.link navigate="/" class="text-zinc-400 hover:text-white">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-              </.link>
-              <h1 class="text-xl font-mono font-bold">{@document.title}</h1>
-            </div>
+    <Layouts.app flash={@flash} current_path={@current_path}>
+      <section class="section-spaced">
+        <div class="flex items-center justify-between">
+          <h2 class="section-header-bordered" style="margin-bottom: 0; flex: 1;">
+            <.link navigate="/" class="text-muted-alt">{"[<-]"}</.link>
+            {String.upcase(@document.title)}
+          </h2>
+          <a href={@download_url} download={@document.title} class="btn">
+            [DOWNLOAD]
+          </a>
+        </div>
 
-            <div class="flex items-center gap-3">
-              <a
-                href={@download_url}
-                download={@document.title}
-                class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded font-mono text-sm"
-              >
-                Download
-              </a>
-            </div>
-          </div>
+        <p class="text-muted-alt mt-2">
+          <span class="source-badge">{type_abbr(@document.content_type)}</span>
+          {Document.format_size(@document.file_size)} · Uploaded {format_date(@document.inserted_at)}
+          <span :for={tag <- @document.tags}> ·  {tag}</span>
+        </p>
+      </section>
 
-          <div class="flex items-center gap-4 mt-2 text-sm text-zinc-500 font-mono">
-            <span>{Document.type_label(@document.content_type)}</span>
-            <span>{Document.format_size(@document.file_size)}</span>
-            <span>Uploaded {format_date(@document.inserted_at)}</span>
-          </div>
-
-          <div :if={@document.tags != []} class="flex gap-2 mt-3">
-            <span
-              :for={tag <- @document.tags}
-              class="px-2 py-0.5 bg-zinc-800 text-zinc-400 rounded text-xs font-mono"
-            >
-              {tag}
-            </span>
-          </div>
-        </header>
-
+      <section class="section-spaced">
         <.viewer document={@document} download_url={@download_url} content={@content} />
-      </div>
+      </section>
     </Layouts.app>
     """
   end
@@ -94,18 +68,14 @@ defmodule WikiWeb.Library.ReaderLive do
       id="pdf-viewer"
       phx-hook="PdfViewer"
       data-url={@download_url}
-      class="w-full bg-zinc-900 rounded-lg overflow-hidden"
+      class="w-full bg-alt border"
       style="height: calc(100vh - 200px);"
     >
-      <div class="flex items-center justify-center h-full text-zinc-500 font-mono">
+      <div class="flex items-center justify-center h-full text-muted">
         <div class="text-center">
-          <div class="animate-pulse mb-2">Loading PDF...</div>
-          <a
-            href={@download_url}
-            target="_blank"
-            class="text-blue-400 hover:underline text-sm"
-          >
-            Open in new tab
+          <div class="loading mb-2">Loading PDF</div>
+          <a href={@download_url} target="_blank">
+            [OPEN IN NEW TAB]
           </a>
         </div>
       </div>
@@ -115,7 +85,7 @@ defmodule WikiWeb.Library.ReaderLive do
 
   defp viewer(%{document: %{content_type: "text/markdown"}} = assigns) do
     ~H"""
-    <article class="prose prose-invert max-w-none font-mono bg-zinc-900 rounded-lg p-6">
+    <article class="article-body bg-alt border p-4">
       {raw(render_markdown(@content))}
     </article>
     """
@@ -123,13 +93,13 @@ defmodule WikiWeb.Library.ReaderLive do
 
   defp viewer(%{document: %{content_type: "text/plain"}} = assigns) do
     ~H"""
-    <pre class="bg-zinc-900 rounded-lg p-6 overflow-x-auto font-mono text-sm text-zinc-300 whitespace-pre-wrap">{@content}</pre>
+    <pre class="bg-alt border p-4 overflow-x-auto text-sm whitespace-pre-wrap">{@content}</pre>
     """
   end
 
   defp viewer(%{document: %{content_type: "text/html"}} = assigns) do
     ~H"""
-    <div class="bg-zinc-900 rounded-lg p-6">
+    <div class="bg-alt border p-4">
       <iframe
         srcdoc={@content}
         class="w-full border-0"
@@ -143,16 +113,12 @@ defmodule WikiWeb.Library.ReaderLive do
 
   defp viewer(assigns) do
     ~H"""
-    <div class="bg-zinc-900 rounded-lg p-8 text-center">
-      <p class="text-zinc-400 font-mono mb-4">
+    <div class="bg-alt border p-4 text-center">
+      <p class="text-muted mb-4">
         Preview not available for this file type.
       </p>
-      <a
-        href={@download_url}
-        download
-        class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded font-mono"
-      >
-        Download File
+      <a href={@download_url} download class="btn">
+        [DOWNLOAD FILE]
       </a>
     </div>
     """
@@ -171,7 +137,6 @@ defmodule WikiWeb.Library.ReaderLive do
   defp render_markdown(nil), do: ""
 
   defp render_markdown(content) do
-    # Basic markdown rendering - can be enhanced with MDEx if available
     content
     |> String.replace(~r/^### (.+)$/m, "<h3>\\1</h3>")
     |> String.replace(~r/^## (.+)$/m, "<h2>\\1</h2>")
@@ -185,6 +150,18 @@ defmodule WikiWeb.Library.ReaderLive do
   end
 
   defp format_date(datetime) do
-    Calendar.strftime(datetime, "%B %d, %Y")
+    Calendar.strftime(datetime, "%Y-%m-%d")
   end
+
+  defp type_abbr("application/pdf"), do: "PDF"
+  defp type_abbr("application/msword"), do: "DOC"
+
+  defp type_abbr("application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+    do: "DOCX"
+
+  defp type_abbr("application/vnd.oasis.opendocument.text"), do: "ODT"
+  defp type_abbr("text/plain"), do: "TXT"
+  defp type_abbr("text/markdown"), do: "MD"
+  defp type_abbr("text/html"), do: "HTML"
+  defp type_abbr(_), do: "FILE"
 end

@@ -1,11 +1,7 @@
 defmodule WikiWeb.ArticleLive do
   @moduledoc """
   Single LiveView for all wiki sources.
-
-  The source is derived from the URL path via handle_params.
-  Content is loaded asynchronously after mount.
-  Shows related articles from other sources in a sidebar.
-  Users can suggest edits via a modal form.
+  Terminal aesthetic styling matching droo.foo.
   """
 
   use WikiWeb, :live_view
@@ -32,10 +28,12 @@ defmodule WikiWeb.ArticleLive do
   def handle_params(params, uri, socket) do
     {source, slug} = source_and_slug_from_uri(uri, params)
 
+    current_path = URI.parse(uri).path
+
     socket =
       socket
       |> assign(source: source, slug: slug, loading: true, error: nil, related: [])
-      |> assign(page_title: format_title(slug))
+      |> assign(page_title: format_title(slug), current_path: current_path)
 
     if connected?(socket) do
       send(self(), {:load_article, source, slug})
@@ -53,7 +51,7 @@ defmodule WikiWeb.ArticleLive do
         {:noreply,
          socket
          |> assign(article: article, html: html, loading: false, related: related)
-         |> assign(page_title: article.title)}
+         |> assign(page_title: String.upcase(article.title))}
 
       {:error, :not_found} ->
         {:noreply, assign(socket, loading: false, error: :not_found)}
@@ -133,15 +131,15 @@ defmodule WikiWeb.ArticleLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash}>
-      <div class="max-w-6xl mx-auto px-4 py-8">
-        <div class="flex gap-8">
-          <article role="article" aria-label={@slug} class="flex-1 min-w-0">
-            <.source_badge source={@source} />
+    <Layouts.app flash={@flash} current_path={@current_path}>
+      <div class="flex gap-4">
+        <article role="article" aria-label={@slug} class="flex-1 min-w-0">
+          <section class="section-spaced">
+            <p><.source_badge source={@source} /></p>
 
-            <h1 class="text-2xl font-mono font-bold mt-4 mb-6">
-              {if @article, do: @article.title, else: format_title(@slug)}
-            </h1>
+            <h2 class="section-header-bordered">
+              {if @article, do: String.upcase(@article.title), else: format_title(@slug)}
+            </h2>
 
             <.loading :if={@loading} />
 
@@ -150,16 +148,16 @@ defmodule WikiWeb.ArticleLive do
             <div
               :if={@article && !@loading}
               id="article-content"
-              class="article-body font-mono prose prose-invert max-w-none"
+              class="article-body"
             >
               {raw(@html)}
             </div>
 
             <.article_meta :if={@article} article={@article} />
-          </article>
+          </section>
+        </article>
 
-          <.related_sidebar :if={@related != []} related={@related} />
-        </div>
+        <.related_sidebar :if={@related != []} related={@related} />
       </div>
 
       <.edit_modal :if={@show_edit_form} form={@edit_form} submitting={@edit_submitting} />
@@ -169,22 +167,22 @@ defmodule WikiWeb.ArticleLive do
 
   defp related_sidebar(assigns) do
     ~H"""
-    <aside class="w-64 flex-shrink-0 hidden lg:block">
-      <div class="sticky top-8 border border-zinc-800 rounded-lg p-4">
-        <h2 class="text-sm font-mono font-bold text-zinc-400 mb-3">Related Articles</h2>
-        <ul class="space-y-3">
-          <li :for={rel <- @related} class="text-sm">
+    <aside class="w-64 flex-shrink-0 hidden-mobile">
+      <div class="sidebar">
+        <h2 class="sidebar-title">RELATED ARTICLES</h2>
+        <ul>
+          <li :for={rel <- @related} class="mb-2">
             <.link
               navigate={article_path(rel.source, rel.slug)}
-              class="block hover:bg-zinc-800/50 rounded p-2 -mx-2 transition-colors"
+              class="block p-1"
             >
-              <div class="flex items-center gap-2 mb-1">
+              <div class="flex items-center gap-1 mb-1">
                 <.mini_source_badge source={rel.source} />
-                <span class="font-mono text-white truncate">{rel.title}</span>
+                <span class="truncate">{rel.title}</span>
               </div>
-              <div class="flex items-center gap-2 text-xs text-zinc-500 font-mono">
+              <div class="flex items-center gap-1 text-xs text-muted">
                 <span>{format_relationship(rel.relationship)}</span>
-                <span class="text-zinc-600">|</span>
+                <span>|</span>
                 <span>{format_confidence(rel.confidence)}</span>
               </div>
             </.link>
@@ -196,29 +194,18 @@ defmodule WikiWeb.ArticleLive do
   end
 
   defp mini_source_badge(assigns) do
-    colors = %{
-      osrs: "bg-amber-900 text-amber-300",
-      nlab: "bg-blue-900 text-blue-300",
-      wikipedia: "bg-zinc-700 text-zinc-300",
-      vintage_machinery: "bg-orange-900 text-orange-300",
-      wikiart: "bg-purple-900 text-purple-300"
-    }
-
     labels = %{
-      osrs: "OSRS",
-      nlab: "nLab",
-      wikipedia: "Wiki",
+      osrs: "OS",
+      nlab: "NL",
+      wikipedia: "WP",
       vintage_machinery: "VM",
-      wikiart: "Art"
+      wikiart: "AR"
     }
 
-    assigns =
-      assigns
-      |> assign(:color, Map.get(colors, assigns.source, "bg-zinc-800 text-zinc-400"))
-      |> assign(:label, Map.get(labels, assigns.source, "?"))
+    assigns = assign(assigns, :label, Map.get(labels, assigns.source, "?"))
 
     ~H"""
-    <span class={"flex-shrink-0 px-1.5 py-0.5 rounded text-xs font-mono #{@color}"}>
+    <span class="badge text-xs">
       {@label}
     </span>
     """
@@ -226,28 +213,28 @@ defmodule WikiWeb.ArticleLive do
 
   defp source_badge(assigns) do
     labels = %{
-      osrs: "OSRS Wiki",
-      nlab: "nLab",
-      wikipedia: "Wikipedia",
-      vintage_machinery: "Vintage Machinery",
-      wikiart: "WikiArt"
+      osrs: "OSRS WIKI",
+      nlab: "NLAB",
+      wikipedia: "WIKIPEDIA",
+      vintage_machinery: "VINTAGE MACHINERY",
+      wikiart: "WIKIART"
     }
 
-    colors = %{
-      osrs: "bg-amber-800 text-amber-100",
-      nlab: "bg-blue-800 text-blue-100",
-      wikipedia: "bg-zinc-700 text-zinc-100",
-      vintage_machinery: "bg-orange-800 text-orange-100",
-      wikiart: "bg-purple-800 text-purple-100"
-    }
+    class =
+      case assigns.source do
+        :osrs -> "source-badge source-badge-osrs"
+        :nlab -> "source-badge source-badge-nlab"
+        :wikipedia -> "source-badge source-badge-wikipedia"
+        _ -> "source-badge"
+      end
 
     assigns =
       assigns
       |> assign(:label, Map.get(labels, assigns.source, to_string(assigns.source)))
-      |> assign(:color, Map.get(colors, assigns.source, "bg-zinc-800 text-zinc-300"))
+      |> assign(:class, class)
 
     ~H"""
-    <span class={"inline-flex items-center rounded-md px-2 py-1 text-xs font-mono #{@color}"}>
+    <span class={@class}>
       {@label}
     </span>
     """
@@ -255,8 +242,8 @@ defmodule WikiWeb.ArticleLive do
 
   defp loading(assigns) do
     ~H"""
-    <div class="text-zinc-500 font-mono animate-pulse">
-      Loading article...
+    <div class="text-muted loading">
+      Loading article
     </div>
     """
   end
@@ -266,16 +253,11 @@ defmodule WikiWeb.ArticleLive do
     assigns = assign(assigns, :upstream_url, upstream_url)
 
     ~H"""
-    <div class="text-zinc-500 font-mono space-y-4">
+    <div class="text-muted py-4">
       <p>Article not found in local cache.</p>
-      <p :if={@upstream_url}>
-        <a
-          href={@upstream_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-blue-400 hover:underline"
-        >
-          View on source wiki ->
+      <p :if={@upstream_url} class="mt-2">
+        <a href={@upstream_url} target="_blank" rel="noopener noreferrer">
+          [VIEW ON SOURCE WIKI ->]
         </a>
       </p>
     </div>
@@ -284,8 +266,8 @@ defmodule WikiWeb.ArticleLive do
 
   defp article_meta(assigns) do
     ~H"""
-    <footer class="mt-8 pt-4 border-t border-zinc-700 text-sm text-zinc-500 font-mono">
-      <div class="flex flex-wrap items-center gap-4">
+    <footer class="mt-4 pt-2 border-t text-sm text-muted">
+      <div class="flex flex-wrap items-center gap-2">
         <span :if={@article.license}>License: {@article.license}</span>
         <span :if={@article.synced_at}>
           Last synced: {Calendar.strftime(@article.synced_at, "%Y-%m-%d %H:%M UTC")}
@@ -295,16 +277,12 @@ defmodule WikiWeb.ArticleLive do
           href={@article.upstream_url}
           target="_blank"
           rel="noopener noreferrer"
-          class="text-blue-400 hover:underline"
         >
-          View original
+          [VIEW ORIGINAL]
         </a>
-        <span class="text-zinc-600">|</span>
-        <button
-          phx-click="show_edit_form"
-          class="text-blue-400 hover:underline cursor-pointer"
-        >
-          Suggest edit
+        <span>|</span>
+        <button phx-click="show_edit_form" class="cursor-pointer">
+          [SUGGEST EDIT]
         </button>
       </div>
     </footer>
@@ -315,74 +293,62 @@ defmodule WikiWeb.ArticleLive do
     ~H"""
     <div
       id="edit-modal"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+      class="modal-backdrop"
       phx-click="hide_edit_form"
     >
-      <div
-        class="bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden"
-        phx-click-away="hide_edit_form"
-        onclick="event.stopPropagation()"
-      >
-        <div class="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
-          <h2 class="font-mono font-bold text-white">Suggest Edit</h2>
-          <button phx-click="hide_edit_form" class="text-zinc-400 hover:text-white text-lg">
-            [x]
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h2 class="modal-title">SUGGEST EDIT</h2>
+          <button phx-click="hide_edit_form" class="modal-close">
+            [X]
           </button>
         </div>
 
-        <form phx-submit="submit_edit" phx-change="validate_edit" class="p-4 space-y-4">
-          <div>
-            <label class="block text-xs text-zinc-500 font-mono mb-1">
+        <form phx-submit="submit_edit" phx-change="validate_edit" class="modal-body">
+          <div class="mb-2">
+            <label class="block text-xs text-muted mb-1">
               Edited content:
             </label>
             <textarea
               name="suggested_content"
               rows="12"
               required
-              class="w-full bg-zinc-950 border border-zinc-700 rounded px-3 py-2 font-mono text-sm text-white focus:outline-none focus:border-zinc-500"
+              class="w-full text-sm"
             >{@form[:suggested_content].value}</textarea>
           </div>
 
-          <div>
-            <label class="block text-xs text-zinc-500 font-mono mb-1">
+          <div class="mb-2">
+            <label class="block text-xs text-muted mb-1">
               Reason for edit (optional):
             </label>
             <textarea
               name="reason"
               rows="2"
               maxlength="2000"
-              class="w-full bg-zinc-950 border border-zinc-700 rounded px-3 py-2 font-mono text-sm text-white focus:outline-none focus:border-zinc-500"
+              class="w-full text-sm"
               placeholder="Why are you suggesting this change?"
             >{@form[:reason].value}</textarea>
           </div>
 
-          <div>
-            <label class="block text-xs text-zinc-500 font-mono mb-1">
+          <div class="mb-2">
+            <label class="block text-xs text-muted mb-1">
               Email (optional, for attribution):
             </label>
             <input
               type="email"
               name="submitter_email"
               value={@form[:submitter_email].value}
-              class="w-full bg-zinc-950 border border-zinc-700 rounded px-3 py-2 font-mono text-sm text-white focus:outline-none focus:border-zinc-500"
+              class="w-full text-sm"
               placeholder="your@email.com"
             />
           </div>
 
-          <div class="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              phx-click="hide_edit_form"
-              class="px-4 py-2 text-zinc-400 hover:text-white font-mono text-sm"
-            >
-              Cancel
+          <div class="flex justify-end gap-2 mt-4">
+            <button type="button" phx-click="hide_edit_form" class="btn">
+              CANCEL
             </button>
-            <button
-              type="submit"
-              disabled={@submitting}
-              class="px-4 py-2 bg-blue-700 hover:bg-blue-600 disabled:bg-zinc-700 text-white font-mono text-sm rounded transition-colors"
-            >
-              {if @submitting, do: "Submitting...", else: "Submit"}
+            <button type="submit" disabled={@submitting} class="btn">
+              {if @submitting, do: "SUBMITTING...", else: "SUBMIT"}
             </button>
           </div>
         </form>
@@ -418,6 +384,7 @@ defmodule WikiWeb.ArticleLive do
     |> String.split(" ")
     |> Enum.map(&String.capitalize/1)
     |> Enum.join(" ")
+    |> String.upcase()
   end
 
   defp article_path(:osrs, slug), do: ~p"/osrs/#{slug}"

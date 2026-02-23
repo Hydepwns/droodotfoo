@@ -1,6 +1,7 @@
 defmodule WikiWeb.SearchLive do
   @moduledoc """
-  Cross-source search page with full-text search.
+  Cross-source search page with keyword, semantic, and hybrid search modes.
+  Terminal aesthetic matching droo.foo.
   """
 
   use WikiWeb, :live_view
@@ -18,7 +19,9 @@ defmodule WikiWeb.SearchLive do
        source_filter: nil,
        source_counts: source_counts,
        total_count: 0,
-       page_title: "Search"
+       search_mode: :hybrid,
+       page_title: "SEARCH",
+       current_path: "/search"
      )}
   end
 
@@ -26,10 +29,11 @@ defmodule WikiWeb.SearchLive do
   def handle_params(params, _uri, socket) do
     query = params["q"] || ""
     source = parse_source(params["source"])
+    mode = parse_mode(params["mode"])
 
     socket =
       socket
-      |> assign(query: query, source_filter: source)
+      |> assign(query: query, source_filter: source, search_mode: mode)
       |> do_search()
 
     {:noreply, socket}
@@ -38,25 +42,24 @@ defmodule WikiWeb.SearchLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash}>
-      <div class="max-w-4xl mx-auto px-4 py-8">
-        <h1 class="text-2xl font-mono font-bold mb-6">Search</h1>
+    <Layouts.app flash={@flash} current_path={@current_path}>
+      <section class="section-spaced">
+        <h2 class="section-header-bordered">
+          SEARCH
+        </h2>
 
-        <form phx-submit="search" phx-change="search" class="mb-6">
-          <div class="flex gap-4">
+        <form phx-submit="search" phx-change="search">
+          <div class="flex gap-2 mb-2">
             <input
               type="text"
               name="q"
               value={@query}
               placeholder="Search articles..."
-              class="flex-1 px-4 py-2 bg-zinc-900 border border-zinc-700 rounded font-mono text-white focus:border-blue-500 focus:outline-none"
+              class="flex-1"
               autofocus
               phx-debounce="300"
             />
-            <select
-              name="source"
-              class="px-4 py-2 bg-zinc-900 border border-zinc-700 rounded font-mono text-white"
-            >
+            <select name="source">
               <option value="">All sources</option>
               <option
                 :for={{source, count} <- @source_counts}
@@ -67,71 +70,80 @@ defmodule WikiWeb.SearchLive do
               </option>
             </select>
           </div>
+
+          <div class="flex gap-1">
+            <.mode_button mode={:hybrid} current={@search_mode} label="HYBRID" />
+            <.mode_button mode={:keyword} current={@search_mode} label="KEYWORD" />
+            <.mode_button mode={:semantic} current={@search_mode} label="SEMANTIC" />
+          </div>
         </form>
+      </section>
 
-        <.no_results :if={@query != "" && @results == []} query={@query} />
+      <section :if={@query == ""} class="section-spaced">
+        <p class="text-muted-alt">
+          Enter a search term to find articles across all sources.
+        </p>
+      </section>
 
-        <.empty_state :if={@query == ""} />
+      <section :if={@query != "" && @results == []} class="section-spaced">
+        <p class="text-muted-alt">
+          No results found for "{@query}".
+        </p>
+      </section>
 
-        <.results_list :if={@results != []} results={@results} total={@total_count} query={@query} />
-      </div>
+      <section :if={@results != []} class="section-spaced">
+        <h2 class="section-header-bordered">
+          RESULTS
+        </h2>
+        <p class="text-muted-alt mb-2">
+          Found {@total_count} results for "{@query}"
+        </p>
+
+        <article :for={result <- @results} class="post-item">
+          <h3 class="mb-0-5">
+            <.link navigate={article_path(result)} class="link-reset">
+              {result.title}
+            </.link>
+            <.source_badge source={result.source} />
+          </h3>
+          <p class="text-muted-alt">
+            {raw(result.snippet)}
+          </p>
+        </article>
+      </section>
     </Layouts.app>
     """
   end
 
-  defp empty_state(assigns) do
-    ~H"""
-    <div class="text-zinc-500 font-mono">
-      Enter a search term to find articles across all sources.
-    </div>
-    """
-  end
+  defp mode_button(assigns) do
+    active = assigns.mode == assigns.current
+    assigns = assign(assigns, :active, active)
 
-  defp no_results(assigns) do
     ~H"""
-    <div class="text-zinc-500 font-mono">
-      No results found for "<span class="text-white">{@query}</span>".
-    </div>
-    """
-  end
-
-  defp results_list(assigns) do
-    ~H"""
-    <div>
-      <p class="text-zinc-500 text-sm font-mono mb-4">
-        Found {@total} results for "<span class="text-white">{@query}</span>"
-      </p>
-
-      <ul class="space-y-4">
-        <li :for={result <- @results} class="border-b border-zinc-800 pb-4">
-          <div class="flex items-center gap-2 mb-1">
-            <.source_badge source={result.source} />
-            <.link navigate={article_path(result)} class="text-blue-400 hover:underline font-mono">
-              {result.title}
-            </.link>
-          </div>
-          <p class="text-zinc-400 text-sm font-mono mt-1 leading-relaxed">
-            {raw(result.snippet)}
-          </p>
-        </li>
-      </ul>
-    </div>
+    <button
+      type="button"
+      phx-click="set_mode"
+      phx-value-mode={@mode}
+      class={["btn text-sm", @active && "bg-accent"]}
+    >
+      {@label}
+    </button>
     """
   end
 
   defp source_badge(assigns) do
-    color =
+    class =
       case assigns.source do
-        :osrs -> "bg-amber-900 text-amber-200"
-        :nlab -> "bg-blue-900 text-blue-200"
-        :wikipedia -> "bg-zinc-700 text-zinc-200"
-        _ -> "bg-zinc-800 text-zinc-300"
+        :osrs -> "source-badge source-badge-osrs"
+        :nlab -> "source-badge source-badge-nlab"
+        :wikipedia -> "source-badge source-badge-wikipedia"
+        _ -> "source-badge"
       end
 
-    assigns = assign(assigns, :color, color)
+    assigns = assign(assigns, :class, class)
 
     ~H"""
-    <span class={"text-xs px-1.5 py-0.5 rounded font-mono #{@color}"}>
+    <span class={@class}>
       {source_label(@source)}
     </span>
     """
@@ -145,7 +157,20 @@ defmodule WikiWeb.SearchLive do
       socket
       |> assign(query: query, source_filter: source)
       |> do_search()
-      |> push_patch_if_changed(query, source)
+      |> push_patch_if_changed(query, source, socket.assigns.search_mode)
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("set_mode", %{"mode" => mode}, socket) do
+    mode = parse_mode(mode)
+
+    socket =
+      socket
+      |> assign(search_mode: mode)
+      |> do_search()
+      |> push_patch_if_changed(socket.assigns.query, socket.assigns.source_filter, mode)
 
     {:noreply, socket}
   end
@@ -154,19 +179,21 @@ defmodule WikiWeb.SearchLive do
     assign(socket, results: [], total_count: 0)
   end
 
-  defp do_search(%{assigns: %{query: query, source_filter: source}} = socket) do
-    opts = if source, do: [source: source], else: []
+  defp do_search(%{assigns: %{query: query, source_filter: source, search_mode: mode}} = socket) do
+    opts = [mode: mode]
+    opts = if source, do: Keyword.put(opts, :source, source), else: opts
     results = Search.search(query, opts)
     total = Search.count(query, opts)
 
     assign(socket, results: results, total_count: total)
   end
 
-  defp push_patch_if_changed(socket, query, source) do
+  defp push_patch_if_changed(socket, query, source, mode) do
     params =
       %{}
       |> then(fn p -> if query != "", do: Map.put(p, "q", query), else: p end)
       |> then(fn p -> if source, do: Map.put(p, "source", source), else: p end)
+      |> then(fn p -> if mode != :hybrid, do: Map.put(p, "mode", mode), else: p end)
 
     push_patch(socket, to: ~p"/search?#{params}")
   end
@@ -185,12 +212,17 @@ defmodule WikiWeb.SearchLive do
     end
   end
 
+  defp parse_mode("keyword"), do: :keyword
+  defp parse_mode("semantic"), do: :semantic
+  defp parse_mode("hybrid"), do: :hybrid
+  defp parse_mode(_), do: :hybrid
+
   defp source_label(:osrs), do: "OSRS"
-  defp source_label(:nlab), do: "nLab"
-  defp source_label(:wikipedia), do: "Wikipedia"
-  defp source_label(:vintage_machinery), do: "Vintage"
-  defp source_label(:wikiart), do: "Art"
-  defp source_label(source), do: to_string(source)
+  defp source_label(:nlab), do: "NLAB"
+  defp source_label(:wikipedia), do: "WIKI"
+  defp source_label(:vintage_machinery), do: "VM"
+  defp source_label(:wikiart), do: "ART"
+  defp source_label(source), do: to_string(source) |> String.upcase()
 
   defp article_path(%{source: :osrs, slug: slug}), do: ~p"/osrs/#{slug}"
   defp article_path(%{source: :nlab, slug: slug}), do: ~p"/nlab/#{slug}"
