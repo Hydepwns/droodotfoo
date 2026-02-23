@@ -30,6 +30,8 @@ defmodule Wiki.Content.Article do
 
     has_many :revisions, Wiki.Content.Revision
     has_many :cross_references, Wiki.Content.CrossReference
+    has_many :outbound_links, Wiki.Content.CrossLink, foreign_key: :source_article_id
+    has_many :inbound_links, Wiki.Content.CrossLink, foreign_key: :target_article_id
 
     timestamps(type: :utc_datetime)
   end

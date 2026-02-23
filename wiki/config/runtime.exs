@@ -84,6 +84,21 @@ if config_env() == :prod do
     user_agent: "DrooFoo-WikiMirror/1.0 (https://droo.foo; contact@droo.foo)",
     rate_limit_ms: 1_000
 
+  # --- VintageMachinery Client ---
+
+  config :wiki, Wiki.Ingestion.VintageMachineryClient,
+    base_url: "https://vintagemachinery.org",
+    local_path: System.get_env("VM_MIRROR_PATH", "/var/lib/wiki/vintage-machinery"),
+    rate_limit_ms: 2_000,
+    include_paths: ["pubs/", "mfgindex/"]
+
+  # --- Wikipedia Client ---
+
+  config :wiki, Wiki.Ingestion.WikipediaClient,
+    base_url: "https://en.wikipedia.org/api/rest_v1",
+    user_agent: "DrooFoo-WikiMirror/1.0 (https://droo.foo; contact@droo.foo)",
+    rate_limit_ms: 1_000
+
   # --- Oban ---
 
   config :wiki, Oban,
@@ -98,6 +113,12 @@ if config_env() == :prod do
          {"*/15 * * * *", Wiki.Ingestion.OSRSSyncWorker},
          # nLab sync daily at 4am
          {"0 4 * * *", Wiki.Ingestion.NLabSyncWorker},
+         # VintageMachinery sync weekly on Sunday at 2am
+         {"0 2 * * 0", Wiki.Ingestion.VintageMachinerySyncWorker},
+         # Wikipedia refresh weekly on Saturday at 2am
+         {"0 2 * * 6", Wiki.Ingestion.WikipediaSyncWorker},
+         # Cross-source link detection daily at 5am (after syncs)
+         {"0 5 * * *", Wiki.CrossLinkWorker},
          # PostgreSQL backup daily at 3am
          {"0 3 * * *", Wiki.Backup.PostgresWorker}
        ]}

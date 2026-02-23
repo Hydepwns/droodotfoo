@@ -47,6 +47,8 @@ defmodule WikiWeb.Router do
     live "/osrs/:slug", ArticleLive, :show
     live "/nlab/:slug", ArticleLive, :show
     live "/wikipedia/:slug", ArticleLive, :show
+    live "/art/:slug", ArticleLive, :show
+    live "/machines/:slug", ArticleLive, :show
 
     # Auto parts catalog
     live "/parts", Parts.IndexLive, :index
@@ -74,6 +76,11 @@ defmodule WikiWeb.Router do
 
     live "/sync", SyncLive, :index
     live "/pending", PendingLive, :index
+
+    # WikiArt curation
+    live "/art", ArtLive.Index, :index
+    live "/art/add", ArtLive.Form, :new
+    live "/art/:slug/edit", ArtLive.Form, :edit
   end
 
   # ===========================================================================
