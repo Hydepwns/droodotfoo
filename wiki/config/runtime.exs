@@ -26,7 +26,8 @@ if config_env() == :prod do
   config :wiki, Wiki.Repo,
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE", "10")),
-    socket_options: maybe_ipv6
+    socket_options: maybe_ipv6,
+    types: Wiki.PostgresTypes
 
   # --- Phoenix ---
 
@@ -99,12 +100,19 @@ if config_env() == :prod do
     user_agent: "DrooFoo-WikiMirror/1.0 (https://droo.foo; contact@droo.foo)",
     rate_limit_ms: 1_000
 
+  # --- Ollama (embeddings) ---
+
+  config :wiki, Wiki.Ollama,
+    base_url: System.get_env("OLLAMA_URL", "http://mini-axol.tail9b2ce8.ts.net:11434"),
+    model: System.get_env("OLLAMA_MODEL", "nomic-embed-text"),
+    timeout: String.to_integer(System.get_env("OLLAMA_TIMEOUT", "60000"))
+
   # --- Oban ---
 
   config :wiki, Oban,
     engine: Oban.Engines.Basic,
     repo: Wiki.Repo,
-    queues: [ingestion: 2, images: 4, backups: 1],
+    queues: [ingestion: 2, images: 4, backups: 1, embeddings: 1],
     plugins: [
       Oban.Plugins.Pruner,
       {Oban.Plugins.Cron,
@@ -120,7 +128,9 @@ if config_env() == :prod do
          # Cross-source link detection daily at 5am (after syncs)
          {"0 5 * * *", Wiki.CrossLinkWorker},
          # PostgreSQL backup daily at 3am
-         {"0 3 * * *", Wiki.Backup.PostgresWorker}
+         {"0 3 * * *", Wiki.Backup.PostgresWorker},
+         # Embedding refresh nightly at 6am (after all syncs complete)
+         {"0 6 * * *", Wiki.EmbeddingWorker}
        ]}
     ]
 

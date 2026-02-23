@@ -8,10 +8,18 @@ config :wiki, Wiki.Repo,
   database: "wiki_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
-  pool_size: 10
+  pool_size: 10,
+  types: Wiki.PostgresTypes
 
 # Oban queues for development
-config :wiki, Oban, queues: [ingestion: 2, images: 4, backups: 1]
+config :wiki, Oban, queues: [ingestion: 2, images: 4, backups: 1, embeddings: 1]
+
+# Ollama for local development (run: ollama serve)
+# Override via OLLAMA_URL env var to use remote Ollama
+config :wiki, Wiki.Ollama,
+  base_url: System.get_env("OLLAMA_URL", "http://localhost:11434"),
+  model: "nomic-embed-text",
+  timeout: 60_000
 
 # MediaWiki client for development
 config :wiki, Wiki.Ingestion.MediaWikiClient,

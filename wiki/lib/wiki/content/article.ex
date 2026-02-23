@@ -4,6 +4,7 @@ defmodule Wiki.Content.Article do
 
   Content is stored in MinIO (rendered HTML, raw wikitext/markdown).
   Metadata and FTS index are stored in PostgreSQL.
+  Vector embeddings (768 dims) are stored for semantic search.
   """
 
   use Ecto.Schema
@@ -28,6 +29,10 @@ defmodule Wiki.Content.Article do
     field :metadata, :map, default: %{}
     field :synced_at, :utc_datetime
 
+    # Semantic search embeddings (nomic-embed-text, 768 dimensions)
+    field :embedding, Pgvector.Ecto.Vector
+    field :embedded_at, :utc_datetime
+
     has_many :revisions, Wiki.Content.Revision
     has_many :cross_references, Wiki.Content.CrossReference
     has_many :outbound_links, Wiki.Content.CrossLink, foreign_key: :source_article_id
@@ -38,7 +43,7 @@ defmodule Wiki.Content.Article do
 
   @required ~w(source slug title)a
   @optional ~w(extracted_text rendered_html_key raw_content_key upstream_url
-               upstream_hash status license metadata synced_at)a
+               upstream_hash status license metadata synced_at embedding embedded_at)a
 
   def changeset(article \\ %__MODULE__{}, attrs) do
     article

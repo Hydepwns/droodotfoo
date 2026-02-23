@@ -83,6 +83,9 @@ defmodule Wiki.MixProject do
       {:ex_aws_s3, "~> 2.5"},
       {:sweet_xml, "~> 0.7"},
 
+      # Vector embeddings for semantic search
+      {:pgvector, "~> 0.3"},
+
       # Observability
       {:prom_ex, "~> 1.11"},
 

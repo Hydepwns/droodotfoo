@@ -1,20 +1,31 @@
 defmodule Wiki.Search do
   @moduledoc """
-  Cross-source full-text search via PostgreSQL.
+  Cross-source search via PostgreSQL with multiple modes.
+
+  Supports three search modes:
+  - `:keyword` - Traditional full-text search (default for fast results)
+  - `:semantic` - Vector similarity search using embeddings
+  - `:hybrid` - Combines keyword and semantic using Reciprocal Rank Fusion
 
   Uses PostgreSQL's built-in full-text search with:
   - `to_tsvector` for indexing title + extracted_text
   - `plainto_tsquery` for user queries
   - `ts_rank` for relevance ordering
   - `ts_headline` for result snippets
+
+  Uses pgvector for semantic search with:
+  - `<=>` operator for cosine distance
+  - HNSW index for fast approximate nearest neighbor
   """
 
   import Ecto.Query
 
   alias Wiki.Content.Article
+  alias Wiki.Ollama
   alias Wiki.Repo
 
   @type source :: :osrs | :nlab | :wikipedia | :vintage_machinery | :wikiart
+  @type search_mode :: :keyword | :semantic | :hybrid
 
   @type result :: %{
           id: integer(),
@@ -25,6 +36,9 @@ defmodule Wiki.Search do
           rank: float()
         }
 
+  # RRF constant (typically 60)
+  @rrf_k 60
+
   @doc """
   Search articles by query string.
 
@@ -32,6 +46,7 @@ defmodule Wiki.Search do
   - `:source` - Filter to a specific source (default: all sources)
   - `:limit` - Max results (default: 30)
   - `:offset` - Pagination offset (default: 0)
+  - `:mode` - Search mode: :keyword, :semantic, or :hybrid (default: :keyword)
 
   Returns results ordered by relevance with highlighted snippets.
   """
@@ -45,12 +60,23 @@ defmodule Wiki.Search do
       source = Keyword.get(opts, :source)
       limit = Keyword.get(opts, :limit, 30)
       offset = Keyword.get(opts, :offset, 0)
+      mode = Keyword.get(opts, :mode, :keyword)
 
-      do_search(query, source, limit, offset)
+      case mode do
+        :keyword -> keyword_search(query, source, limit, offset)
+        :semantic -> semantic_search(query, source, limit, offset)
+        :hybrid -> hybrid_search(query, source, limit, offset)
+      end
     end
   end
 
-  defp do_search(query, source, limit, offset) do
+  @doc """
+  Keyword-based full-text search.
+
+  Fast lexical matching using PostgreSQL FTS.
+  """
+  @spec keyword_search(String.t(), source() | nil, integer(), integer()) :: [result()]
+  def keyword_search(query, source, limit, offset) do
     base_query()
     |> maybe_filter_source(source)
     |> where_matches(query)
@@ -59,6 +85,120 @@ defmodule Wiki.Search do
     |> limit(^limit)
     |> offset(^offset)
     |> Repo.all()
+  end
+
+  @doc """
+  Semantic search using vector similarity.
+
+  Generates embedding for query and finds nearest neighbors.
+  Falls back to keyword search if embedding fails.
+  """
+  @spec semantic_search(String.t(), source() | nil, integer(), integer()) :: [result()]
+  def semantic_search(query, source, limit, offset) do
+    case Ollama.embed(query) do
+      {:ok, query_embedding} ->
+        do_semantic_search(query, query_embedding, source, limit, offset)
+
+      {:error, _reason} ->
+        keyword_search(query, source, limit, offset)
+    end
+  end
+
+  defp do_semantic_search(query, query_embedding, source, limit, offset) do
+    base_query()
+    |> maybe_filter_source(source)
+    |> where([a], not is_nil(a.embedding))
+    |> order_by([a], asc: fragment("? <=> ?::vector", a.embedding, ^query_embedding))
+    |> select_semantic(query)
+    |> limit(^limit)
+    |> offset(^offset)
+    |> Repo.all()
+  end
+
+  defp select_semantic(db_query, search_term) do
+    select(db_query, [a], %{
+      id: a.id,
+      source: a.source,
+      slug: a.slug,
+      title: a.title,
+      snippet:
+        fragment(
+          "ts_headline('english', coalesce(?, ''), plainto_tsquery('english', ?), 'MaxFragments=2,MaxWords=30,StartSel=<mark>,StopSel=</mark>')",
+          a.extracted_text,
+          ^search_term
+        ),
+      rank: 1.0
+    })
+  end
+
+  @doc """
+  Hybrid search combining keyword and semantic results.
+
+  Uses Reciprocal Rank Fusion (RRF) to merge rankings:
+    RRF(d) = sum(1 / (k + rank_i(d)))
+
+  Falls back to keyword search if embedding fails.
+  """
+  @spec hybrid_search(String.t(), source() | nil, integer(), integer()) :: [result()]
+  def hybrid_search(query, source, limit, offset) do
+    case Ollama.embed(query) do
+      {:ok, query_embedding} ->
+        do_hybrid_search(query, query_embedding, source, limit, offset)
+
+      {:error, _reason} ->
+        keyword_search(query, source, limit, offset)
+    end
+  end
+
+  defp do_hybrid_search(query, query_embedding, source, limit, offset) do
+    # Fetch enough results from each method to cover offset + limit after merging
+    # We need at least (offset + limit) from each source since RRF can interleave
+    fetch_limit = max(limit * 2, offset + limit)
+
+    keyword_results = keyword_search(query, source, fetch_limit, 0)
+    semantic_results = do_semantic_search(query, query_embedding, source, fetch_limit, 0)
+
+    merge_rrf(keyword_results, semantic_results)
+    |> Enum.drop(offset)
+    |> Enum.take(limit)
+  end
+
+  defp merge_rrf(keyword_results, semantic_results) do
+    keyword_ranks = rank_map(keyword_results)
+    semantic_ranks = rank_map(semantic_results)
+
+    all_ids =
+      MapSet.union(MapSet.new(Map.keys(keyword_ranks)), MapSet.new(Map.keys(semantic_ranks)))
+
+    results_by_id =
+      (keyword_results ++ semantic_results)
+      |> Enum.uniq_by(& &1.id)
+      |> Map.new(&{&1.id, &1})
+
+    all_ids
+    |> Enum.map(fn id ->
+      keyword_rank = Map.get(keyword_ranks, id)
+      semantic_rank = Map.get(semantic_ranks, id)
+
+      rrf_score = rrf_score(keyword_rank, semantic_rank)
+      result = Map.get(results_by_id, id)
+
+      Map.put(result, :rank, rrf_score)
+    end)
+    |> Enum.sort_by(& &1.rank, :desc)
+  end
+
+  defp rank_map(results) do
+    results
+    |> Enum.with_index(1)
+    |> Map.new(fn {result, rank} -> {result.id, rank} end)
+  end
+
+  defp rrf_score(nil, semantic_rank), do: 1 / (@rrf_k + semantic_rank)
+  defp rrf_score(keyword_rank, nil), do: 1 / (@rrf_k + keyword_rank)
+
+  defp rrf_score(keyword_rank, semantic_rank) do
+    1 / (@rrf_k + keyword_rank) + 1 / (@rrf_k + semantic_rank)
   end
 
   defp base_query do
@@ -149,7 +289,7 @@ defmodule Wiki.Search do
   @doc """
   Count total search results for a query.
 
-  Useful for pagination.
+  Useful for pagination. Only counts keyword matches.
   """
   @spec count(String.t(), keyword()) :: integer()
   def count(query, opts \\ []) when is_binary(query) do
@@ -175,5 +315,14 @@ defmodule Wiki.Search do
     from(a in Article, group_by: a.source, select: {a.source, count(a.id)})
     |> Repo.all()
     |> Map.new()
+  end
+
+  @doc """
+  Get count of articles with embeddings.
+  """
+  @spec embedded_count() :: integer()
+  def embedded_count do
+    from(a in Article, where: not is_nil(a.embedding))
+    |> Repo.aggregate(:count)
   end
 end

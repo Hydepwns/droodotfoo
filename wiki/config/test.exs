@@ -11,7 +11,8 @@ config :wiki, Wiki.Repo,
   hostname: "localhost",
   database: "wiki_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
-  pool_size: System.schedulers_online() * 2
+  pool_size: System.schedulers_online() * 2,
+  types: Wiki.PostgresTypes
 
 # Oban testing mode - jobs execute inline
 config :wiki, Oban, testing: :inline
@@ -21,6 +22,12 @@ config :wiki, Wiki.Ingestion.MediaWikiClient,
   base_url: "http://localhost:9999/api.php",
   user_agent: "DrooFoo-WikiMirror/1.0 (test)",
   rate_limit_ms: 0
+
+# Ollama for tests (uses Bypass)
+config :wiki, Wiki.Ollama,
+  base_url: "http://localhost:9998",
+  model: "nomic-embed-text",
+  timeout: 5_000
 
 # MinIO/S3 mock for tests
 config :ex_aws,
