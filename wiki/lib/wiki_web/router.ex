@@ -76,6 +76,7 @@ defmodule WikiWeb.Router do
 
     live "/sync", SyncLive, :index
     live "/pending", PendingLive, :index
+    live "/pending/:id", PendingLive, :show
 
     # WikiArt curation
     live "/art", ArtLive.Index, :index

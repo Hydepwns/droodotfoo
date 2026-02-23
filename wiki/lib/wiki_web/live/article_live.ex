@@ -5,6 +5,7 @@ defmodule WikiWeb.ArticleLive do
   The source is derived from the URL path via handle_params.
   Content is loaded asynchronously after mount.
   Shows related articles from other sources in a sidebar.
+  Users can suggest edits via a modal form.
   """
 
   use WikiWeb, :live_view
@@ -14,7 +15,17 @@ defmodule WikiWeb.ArticleLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, article: nil, html: "", loading: true, error: nil, related: [])}
+    {:ok,
+     assign(socket,
+       article: nil,
+       html: "",
+       loading: true,
+       error: nil,
+       related: [],
+       show_edit_form: false,
+       edit_form: nil,
+       edit_submitting: false
+     )}
   end
 
   @impl true
@@ -50,6 +61,76 @@ defmodule WikiWeb.ArticleLive do
   end
 
   @impl true
+  def handle_event("show_edit_form", _params, socket) do
+    form =
+      %{"suggested_content" => socket.assigns.html, "reason" => "", "submitter_email" => ""}
+      |> to_form()
+
+    {:noreply, assign(socket, show_edit_form: true, edit_form: form)}
+  end
+
+  def handle_event("hide_edit_form", _params, socket) do
+    {:noreply, assign(socket, show_edit_form: false, edit_form: nil)}
+  end
+
+  def handle_event(
+        "validate_edit",
+        %{"suggested_content" => _, "reason" => _, "submitter_email" => _} = params,
+        socket
+      ) do
+    {:noreply, assign(socket, edit_form: to_form(params))}
+  end
+
+  def handle_event("submit_edit", params, socket) do
+    ip = get_client_ip(socket)
+
+    attrs = %{
+      article_id: socket.assigns.article.id,
+      suggested_content: params["suggested_content"],
+      reason: params["reason"],
+      submitter_email: params["submitter_email"],
+      submitter_ip: ip
+    }
+
+    case Content.create_pending_edit(attrs) do
+      {:ok, _edit} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Edit suggestion submitted. Thank you!")
+         |> assign(show_edit_form: false, edit_form: nil)}
+
+      {:error, :rate_limited} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Rate limit reached. Please try again later.")
+         |> assign(edit_submitting: false)}
+
+      {:error, changeset} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Failed to submit: #{format_errors(changeset)}")
+         |> assign(edit_submitting: false)}
+    end
+  end
+
+  defp format_errors(%Ecto.Changeset{} = changeset) do
+    Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
+      Enum.reduce(opts, msg, fn {key, value}, acc ->
+        String.replace(acc, "%{#{key}}", to_string(value))
+      end)
+    end)
+    |> Enum.map(fn {k, v} -> "#{k}: #{Enum.join(v, ", ")}" end)
+    |> Enum.join("; ")
+  end
+
+  defp get_client_ip(socket) do
+    case get_connect_info(socket, :peer_data) do
+      %{address: addr} -> :inet.ntoa(addr) |> to_string()
+      _ -> "unknown"
+    end
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash}>
@@ -80,6 +161,8 @@ defmodule WikiWeb.ArticleLive do
           <.related_sidebar :if={@related != []} related={@related} />
         </div>
       </div>
+
+      <.edit_modal :if={@show_edit_form} form={@edit_form} submitting={@edit_submitting} />
     </Layouts.app>
     """
   end
@@ -202,7 +285,7 @@ defmodule WikiWeb.ArticleLive do
   defp article_meta(assigns) do
     ~H"""
     <footer class="mt-8 pt-4 border-t border-zinc-700 text-sm text-zinc-500 font-mono">
-      <div class="flex flex-wrap gap-4">
+      <div class="flex flex-wrap items-center gap-4">
         <span :if={@article.license}>License: {@article.license}</span>
         <span :if={@article.synced_at}>
           Last synced: {Calendar.strftime(@article.synced_at, "%Y-%m-%d %H:%M UTC")}
@@ -216,8 +299,95 @@ defmodule WikiWeb.ArticleLive do
         >
           View original
         </a>
+        <span class="text-zinc-600">|</span>
+        <button
+          phx-click="show_edit_form"
+          class="text-blue-400 hover:underline cursor-pointer"
+        >
+          Suggest edit
+        </button>
       </div>
     </footer>
+    """
+  end
+
+  defp edit_modal(assigns) do
+    ~H"""
+    <div
+      id="edit-modal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+      phx-click="hide_edit_form"
+    >
+      <div
+        class="bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden"
+        phx-click-away="hide_edit_form"
+        onclick="event.stopPropagation()"
+      >
+        <div class="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
+          <h2 class="font-mono font-bold text-white">Suggest Edit</h2>
+          <button phx-click="hide_edit_form" class="text-zinc-400 hover:text-white text-lg">
+            [x]
+          </button>
+        </div>
+
+        <form phx-submit="submit_edit" phx-change="validate_edit" class="p-4 space-y-4">
+          <div>
+            <label class="block text-xs text-zinc-500 font-mono mb-1">
+              Edited content:
+            </label>
+            <textarea
+              name="suggested_content"
+              rows="12"
+              required
+              class="w-full bg-zinc-950 border border-zinc-700 rounded px-3 py-2 font-mono text-sm text-white focus:outline-none focus:border-zinc-500"
+            >{@form[:suggested_content].value}</textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs text-zinc-500 font-mono mb-1">
+              Reason for edit (optional):
+            </label>
+            <textarea
+              name="reason"
+              rows="2"
+              maxlength="2000"
+              class="w-full bg-zinc-950 border border-zinc-700 rounded px-3 py-2 font-mono text-sm text-white focus:outline-none focus:border-zinc-500"
+              placeholder="Why are you suggesting this change?"
+            >{@form[:reason].value}</textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs text-zinc-500 font-mono mb-1">
+              Email (optional, for attribution):
+            </label>
+            <input
+              type="email"
+              name="submitter_email"
+              value={@form[:submitter_email].value}
+              class="w-full bg-zinc-950 border border-zinc-700 rounded px-3 py-2 font-mono text-sm text-white focus:outline-none focus:border-zinc-500"
+              placeholder="your@email.com"
+            />
+          </div>
+
+          <div class="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              phx-click="hide_edit_form"
+              class="px-4 py-2 text-zinc-400 hover:text-white font-mono text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={@submitting}
+              class="px-4 py-2 bg-blue-700 hover:bg-blue-600 disabled:bg-zinc-700 text-white font-mono text-sm rounded transition-colors"
+            >
+              {if @submitting, do: "Submitting...", else: "Submit"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
     """
   end
 

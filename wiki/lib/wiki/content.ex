@@ -8,8 +8,8 @@ defmodule Wiki.Content do
 
   import Ecto.Query
 
-  alias Wiki.Content.{Article, Redirect}
-  alias Wiki.{Cache, Repo}
+  alias Wiki.Content.{Article, PendingEdit, Redirect, Revision}
+  alias Wiki.{Cache, Repo, Storage}
 
   @type source :: :osrs | :nlab | :wikipedia | :vintage_machinery | :wikiart
 
@@ -158,4 +158,156 @@ defmodule Wiki.Content do
     |> Enum.reject(&(&1 == ""))
     |> Enum.join(" & ")
   end
+
+  # --- Pending Edits ---
+
+  @max_pending_per_ip 5
+  @max_submissions_per_day 10
+
+  @doc """
+  List pending edits by status.
+
+  Options:
+  - :status - filter by status (default: :pending)
+  - :limit - max results (default: 50)
+  """
+  @spec list_pending_edits(keyword()) :: [PendingEdit.t()]
+  def list_pending_edits(opts \\ []) do
+    status = Keyword.get(opts, :status, :pending)
+    limit = Keyword.get(opts, :limit, 50)
+
+    from(pe in PendingEdit,
+      where: pe.status == ^status,
+      preload: [:article],
+      order_by: [asc: pe.inserted_at],
+      limit: ^limit
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Get a pending edit by ID with article preloaded.
+  """
+  @spec get_pending_edit(integer()) :: PendingEdit.t() | nil
+  def get_pending_edit(id) do
+    Repo.get(PendingEdit, id)
+    |> Repo.preload(:article)
+  end
+
+  @doc """
+  Create a pending edit suggestion.
+
+  Returns error if rate limited.
+  """
+  @spec create_pending_edit(map()) ::
+          {:ok, PendingEdit.t()} | {:error, :rate_limited | Ecto.Changeset.t()}
+  def create_pending_edit(attrs) do
+    ip = attrs[:submitter_ip] || attrs["submitter_ip"]
+
+    if rate_limited?(ip) do
+      {:error, :rate_limited}
+    else
+      %PendingEdit{}
+      |> PendingEdit.changeset(attrs)
+      |> Repo.insert()
+    end
+  end
+
+  @doc """
+  Approve a pending edit.
+
+  Updates the article content and creates a revision.
+  """
+  @spec approve_pending_edit(PendingEdit.t(), String.t() | nil) ::
+          {:ok, PendingEdit.t()} | {:error, term()}
+  def approve_pending_edit(%PendingEdit{} = pending_edit, reviewer_note \\ nil) do
+    Repo.transaction(fn ->
+      # Update article content
+      article = get_article_by_id(pending_edit.article_id)
+      new_html = pending_edit.suggested_content
+
+      # Store new content in MinIO
+      case Storage.put_html(article.source, article.slug, new_html) do
+        {:ok, _key} -> :ok
+        {:error, reason} -> Repo.rollback({:storage_error, reason})
+      end
+
+      # Invalidate cache
+      Cache.invalidate(article.source, article.slug)
+
+      # Create revision
+      content_hash = :crypto.hash(:sha256, new_html) |> Base.encode16(case: :lower)
+
+      %Revision{}
+      |> Revision.changeset(%{
+        article_id: article.id,
+        content_hash: content_hash,
+        editor: pending_edit.submitter_email || "anonymous",
+        comment: pending_edit.reason || "Community edit"
+      })
+      |> Repo.insert!()
+
+      # Mark edit as approved
+      pending_edit
+      |> PendingEdit.review_changeset(%{
+        status: :approved,
+        reviewer_note: reviewer_note,
+        reviewed_at: DateTime.utc_now()
+      })
+      |> Repo.update!()
+    end)
+  end
+
+  @doc """
+  Reject a pending edit with an optional note.
+  """
+  @spec reject_pending_edit(PendingEdit.t(), String.t() | nil) ::
+          {:ok, PendingEdit.t()} | {:error, Ecto.Changeset.t()}
+  def reject_pending_edit(%PendingEdit{} = pending_edit, reviewer_note \\ nil) do
+    pending_edit
+    |> PendingEdit.review_changeset(%{
+      status: :rejected,
+      reviewer_note: reviewer_note,
+      reviewed_at: DateTime.utc_now()
+    })
+    |> Repo.update()
+  end
+
+  @doc """
+  Count pending edits by status.
+  """
+  @spec count_pending_edits_by_status() :: %{atom() => integer()}
+  def count_pending_edits_by_status do
+    from(pe in PendingEdit, group_by: pe.status, select: {pe.status, count(pe.id)})
+    |> Repo.all()
+    |> Map.new()
+  end
+
+  defp rate_limited?(ip) when is_binary(ip) do
+    # Check pending count for this IP
+    pending_count =
+      from(pe in PendingEdit,
+        where: pe.submitter_ip == ^ip and pe.status == :pending,
+        select: count(pe.id)
+      )
+      |> Repo.one()
+
+    if pending_count >= @max_pending_per_ip do
+      true
+    else
+      # Check 24h submission count
+      day_ago = DateTime.utc_now() |> DateTime.add(-24 * 60 * 60, :second)
+
+      day_count =
+        from(pe in PendingEdit,
+          where: pe.submitter_ip == ^ip and pe.inserted_at > ^day_ago,
+          select: count(pe.id)
+        )
+        |> Repo.one()
+
+      day_count >= @max_submissions_per_day
+    end
+  end
+
+  defp rate_limited?(_), do: true
 end
