@@ -27,7 +27,7 @@ defmodule Droodotfoo.Wiki.Ingestion.OSRSSyncWorker do
 
   require Logger
 
-  alias Droodotfoo.Wiki.Ingestion.{OSRSPipeline, SyncRun}
+  alias Droodotfoo.Wiki.Ingestion.{OSRSPipeline, SyncRun, SyncWorkerHelper}
 
   @main_categories ~w(Items Monsters NPCs Quests Locations)
 
@@ -46,24 +46,7 @@ defmodule Droodotfoo.Wiki.Ingestion.OSRSSyncWorker do
   end
 
   defp sync_recent_changes do
-    run = SyncRun.start!(:osrs, "recent_changes")
-    since = SyncRun.last_completed_at(:osrs)
-
-    Logger.info("OSRS sync: recent changes since #{inspect(since)}")
-
-    result = OSRSPipeline.sync_recent_changes(since)
-
-    case result do
-      {:ok, stats} ->
-        SyncRun.complete!(run, {:ok, to_sync_stats(stats)})
-        Logger.info("OSRS sync completed: #{inspect(stats)}")
-        :ok
-
-      {:error, reason} ->
-        SyncRun.complete!(run, {:error, reason})
-        Logger.error("OSRS sync failed: #{inspect(reason)}")
-        {:error, reason}
-    end
+    SyncWorkerHelper.sync_recent_changes(:osrs, &OSRSPipeline.sync_recent_changes/1, "OSRS sync")
   end
 
   defp sync_category(category) do
@@ -71,19 +54,8 @@ defmodule Droodotfoo.Wiki.Ingestion.OSRSSyncWorker do
 
     Logger.info("OSRS sync: category #{category}")
 
-    result = OSRSPipeline.sync_category(category)
-
-    case result do
-      {:ok, stats} ->
-        SyncRun.complete!(run, {:ok, to_sync_stats(stats)})
-        Logger.info("OSRS sync #{category} completed: #{inspect(stats)}")
-        :ok
-
-      {:error, reason} ->
-        SyncRun.complete!(run, {:error, reason})
-        Logger.error("OSRS sync #{category} failed: #{inspect(reason)}")
-        {:error, reason}
-    end
+    OSRSPipeline.sync_category(category)
+    |> SyncWorkerHelper.handle_result(run, "OSRS sync #{category}")
   end
 
   defp full_sync do
@@ -118,18 +90,9 @@ defmodule Droodotfoo.Wiki.Ingestion.OSRSSyncWorker do
       SyncRun.complete!(run, {:error, "#{combined.errors} category sync failures"})
       {:error, "partial failure"}
     else
-      SyncRun.complete!(run, {:ok, to_sync_stats(combined)})
-      Logger.info("OSRS full sync completed: #{inspect(combined)}")
+      SyncRun.complete!(run, {:ok, SyncWorkerHelper.to_sync_stats(combined)})
+      SyncWorkerHelper.log_stats("OSRS full sync", combined)
       :ok
     end
-  end
-
-  defp to_sync_stats(stats) do
-    %{
-      pages_processed: stats.created + stats.updated + stats.unchanged + stats.errors,
-      pages_created: stats.created,
-      pages_updated: stats.updated,
-      pages_unchanged: stats.unchanged
-    }
   end
 end

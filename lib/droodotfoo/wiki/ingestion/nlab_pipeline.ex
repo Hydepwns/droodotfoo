@@ -9,11 +9,8 @@ defmodule Droodotfoo.Wiki.Ingestion.NLabPipeline do
   require Logger
 
   alias Droodotfoo.Wiki.Content.Article
-  alias Droodotfoo.Wiki.Ingestion.{NLabClient, MathRenderer}
+  alias Droodotfoo.Wiki.Ingestion.{Common, NLabClient, MathRenderer}
   alias Droodotfoo.Wiki.{Cache, Storage}
-  alias Droodotfoo.Repo
-
-  import Ecto.Query
 
   @source :nlab
   @license "CC BY-SA 4.0"
@@ -44,9 +41,7 @@ defmodule Droodotfoo.Wiki.Ingestion.NLabPipeline do
   """
   @spec process_pages([String.t()]) :: %{String.t() => result()}
   def process_pages(slugs) when is_list(slugs) do
-    slugs
-    |> Enum.map(fn slug -> {slug, process_page(slug)} end)
-    |> Map.new()
+    Common.process_pages_sequential(slugs, &process_page/1)
   end
 
   @doc """
@@ -65,7 +60,7 @@ defmodule Droodotfoo.Wiki.Ingestion.NLabPipeline do
       Logger.info("Processing #{length(slugs)} nLab pages")
 
       results = process_pages(slugs)
-      {:ok, aggregate_stats(results)}
+      {:ok, Common.aggregate_stats(results)}
     end
   end
 
@@ -87,7 +82,7 @@ defmodule Droodotfoo.Wiki.Ingestion.NLabPipeline do
       else
         Logger.info("Processing #{length(slugs)} modified nLab pages")
         results = process_pages(slugs)
-        {:ok, aggregate_stats(results)}
+        {:ok, Common.aggregate_stats(results)}
       end
     end
   end
@@ -96,88 +91,76 @@ defmodule Droodotfoo.Wiki.Ingestion.NLabPipeline do
 
   defp upsert_article(page) do
     html = render_page(page)
-    content_hash = hash_content(html)
+    content_hash = Common.hash_content(html)
 
-    existing =
-      Repo.one(
-        from(a in Article,
-          where: a.source == @source and a.slug == ^page.slug
-        )
-      )
-
-    cond do
-      is_nil(existing) ->
-        create_article(page, html, content_hash)
-
-      existing.upstream_hash != content_hash ->
-        update_article(existing, page, html, content_hash)
-
-      true ->
-        {:unchanged, existing}
-    end
+    @source
+    |> Common.find_article(page.slug)
+    |> do_upsert(page, html, content_hash)
   end
 
-  defp create_article(page, html, content_hash) do
+  defp do_upsert(nil, page, html, content_hash) do
+    save_article(:insert, nil, page, html, content_hash)
+  end
+
+  defp do_upsert(%Article{upstream_hash: hash} = existing, _page, _html, hash) do
+    {:unchanged, existing}
+  end
+
+  defp do_upsert(existing, page, html, content_hash) do
+    save_article(:update, existing, page, html, content_hash)
+  end
+
+  defp save_article(operation, existing, page, html, content_hash) do
     with {:ok, html_key} <- Storage.put_html(@source, page.slug, html),
-         {:ok, raw_key} <- Storage.put_raw(@source, page.slug, page.content) do
-      attrs = %{
-        source: @source,
-        slug: page.slug,
-        title: page.title,
-        extracted_text: extract_text(html),
-        rendered_html_key: html_key,
-        raw_content_key: raw_key,
-        upstream_url: upstream_url(page.slug),
-        upstream_hash: content_hash,
-        status: :synced,
-        license: @license,
-        metadata: %{
-          "categories" => page.categories,
-          "has_math" => MathRenderer.has_math?(page.content)
-        },
-        synced_at: DateTime.utc_now()
-      }
-
-      case Repo.insert(Article.changeset(attrs)) do
-        {:ok, article} ->
-          Cache.invalidate(@source, page.slug)
-          Logger.info("Created nLab article: #{page.title}")
-          {:created, article}
-
-        {:error, changeset} ->
-          {:error, {:insert_failed, changeset}}
-      end
+         {:ok, raw_key} <- Storage.put_raw(@source, page.slug, page.content),
+         attrs = build_article_attrs(operation, page, html, html_key, raw_key, content_hash),
+         {:ok, article} <- Common.persist_article(operation, existing, attrs) do
+      Cache.invalidate(@source, page.slug)
+      log_operation(operation, page.title)
+      {Common.operation_result(operation), article}
+    else
+      {:error, changeset} -> {:error, {:"#{operation}_failed", changeset}}
     end
   end
 
-  defp update_article(existing, page, html, content_hash) do
-    with {:ok, html_key} <- Storage.put_html(@source, page.slug, html),
-         {:ok, raw_key} <- Storage.put_raw(@source, page.slug, page.content) do
-      attrs = %{
-        title: page.title,
-        extracted_text: extract_text(html),
-        rendered_html_key: html_key,
-        raw_content_key: raw_key,
-        upstream_hash: content_hash,
-        status: :synced,
-        metadata: %{
-          "categories" => page.categories,
-          "has_math" => MathRenderer.has_math?(page.content)
-        },
-        synced_at: DateTime.utc_now()
-      }
-
-      case Repo.update(Article.changeset(existing, attrs)) do
-        {:ok, article} ->
-          Cache.invalidate(@source, page.slug)
-          Logger.info("Updated nLab article: #{page.title}")
-          {:updated, article}
-
-        {:error, changeset} ->
-          {:error, {:update_failed, changeset}}
-      end
-    end
+  defp build_article_attrs(:insert, page, html, html_key, raw_key, content_hash) do
+    %{
+      source: @source,
+      slug: page.slug,
+      title: page.title,
+      extracted_text: Common.extract_text(html),
+      rendered_html_key: html_key,
+      raw_content_key: raw_key,
+      upstream_url: Common.upstream_url(@upstream_base, page.slug),
+      upstream_hash: content_hash,
+      status: :synced,
+      license: @license,
+      metadata: %{
+        "categories" => page.categories,
+        "has_math" => MathRenderer.has_math?(page.content)
+      },
+      synced_at: DateTime.utc_now()
+    }
   end
+
+  defp build_article_attrs(:update, page, html, html_key, raw_key, content_hash) do
+    %{
+      title: page.title,
+      extracted_text: Common.extract_text(html),
+      rendered_html_key: html_key,
+      raw_content_key: raw_key,
+      upstream_hash: content_hash,
+      status: :synced,
+      metadata: %{
+        "categories" => page.categories,
+        "has_math" => MathRenderer.has_math?(page.content)
+      },
+      synced_at: DateTime.utc_now()
+    }
+  end
+
+  defp log_operation(:insert, title), do: Logger.info("Created nLab article: #{title}")
+  defp log_operation(:update, title), do: Logger.info("Updated nLab article: #{title}")
 
   defp render_page(page) do
     page.content
@@ -238,33 +221,7 @@ defmodule Droodotfoo.Wiki.Ingestion.NLabPipeline do
     |> String.replace(">", "&gt;")
   end
 
-  defp extract_text(html) do
-    html
-    |> Floki.parse_document!()
-    |> Floki.text(sep: " ")
-    |> String.replace(~r/\s+/, " ")
-    |> String.trim()
-    |> String.slice(0, 100_000)
-  end
-
-  defp hash_content(html) do
-    :crypto.hash(:sha256, html) |> Base.encode16(case: :lower)
-  end
-
-  defp upstream_url(slug) do
-    @upstream_base <> URI.encode(slug, &URI.char_unreserved?/1)
-  end
-
   defp default_since do
     DateTime.utc_now() |> DateTime.add(-7 * 24 * 3600, :second)
-  end
-
-  defp aggregate_stats(results) do
-    Enum.reduce(results, %{created: 0, updated: 0, unchanged: 0, errors: 0}, fn
-      {_slug, {:created, _}}, acc -> Map.update!(acc, :created, &(&1 + 1))
-      {_slug, {:updated, _}}, acc -> Map.update!(acc, :updated, &(&1 + 1))
-      {_slug, {:unchanged, _}}, acc -> Map.update!(acc, :unchanged, &(&1 + 1))
-      {_slug, {:error, _}}, acc -> Map.update!(acc, :errors, &(&1 + 1))
-    end)
   end
 end

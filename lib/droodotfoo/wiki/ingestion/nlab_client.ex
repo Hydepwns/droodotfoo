@@ -228,10 +228,12 @@ defmodule Droodotfoo.Wiki.Ingestion.NLabClient do
     end
   end
 
+  alias Droodotfoo.Wiki.Ingestion.Common
+
   defp parse_page(slug, content, file_path) do
     {frontmatter, body} = extract_frontmatter(content)
 
-    title = frontmatter["title"] || humanize_slug(slug)
+    title = frontmatter["title"] || Common.humanize_slug(slug)
     categories = parse_categories(frontmatter["categories"])
     last_modified = get_file_mtime(file_path)
 
@@ -278,14 +280,6 @@ defmodule Droodotfoo.Wiki.Ingestion.NLabClient do
     |> String.split(",")
     |> Enum.map(&String.trim/1)
     |> Enum.reject(&(&1 == ""))
-  end
-
-  defp humanize_slug(slug) do
-    slug
-    |> String.replace(~r/[-_]/, " ")
-    |> String.split(" ")
-    |> Enum.map(&String.capitalize/1)
-    |> Enum.join(" ")
   end
 
   defp get_file_mtime(path) do

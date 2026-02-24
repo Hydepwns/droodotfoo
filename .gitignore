@@ -123,3 +123,6 @@ docs/art/
 
 # Claude
 .claude/
+
+# Test posts
+/priv/posts/test-post.md

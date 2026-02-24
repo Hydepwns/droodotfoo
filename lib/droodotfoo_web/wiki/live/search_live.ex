@@ -6,7 +6,7 @@ defmodule DroodotfooWeb.Wiki.SearchLive do
 
   use Phoenix.LiveView, layout: false
 
-  alias DroodotfooWeb.Wiki.Layouts
+  alias DroodotfooWeb.Wiki.{Helpers, Layouts}
   alias Droodotfoo.Wiki.Search
 
   @impl true
@@ -29,7 +29,7 @@ defmodule DroodotfooWeb.Wiki.SearchLive do
   @impl true
   def handle_params(params, _uri, socket) do
     query = params["q"] || ""
-    source = parse_source(params["source"])
+    source = Helpers.parse_source(params["source"])
     mode = parse_mode(params["mode"])
 
     socket =
@@ -67,7 +67,7 @@ defmodule DroodotfooWeb.Wiki.SearchLive do
                 value={source}
                 selected={@source_filter == source}
               >
-                {source_label(source)} ({count})
+                {Helpers.source_label(source)} ({count})
               </option>
             </select>
           </div>
@@ -102,7 +102,7 @@ defmodule DroodotfooWeb.Wiki.SearchLive do
 
         <article :for={result <- @results} class="post-item">
           <h3 class="mb-0-5">
-            <.link navigate={article_path(result)} class="link-reset">
+            <.link navigate={Helpers.article_path(result)} class="link-reset">
               {result.title}
             </.link>
             <.source_badge source={result.source} />
@@ -133,26 +133,21 @@ defmodule DroodotfooWeb.Wiki.SearchLive do
   end
 
   defp source_badge(assigns) do
-    class =
-      case assigns.source do
-        :osrs -> "source-badge source-badge-osrs"
-        :nlab -> "source-badge source-badge-nlab"
-        :wikipedia -> "source-badge source-badge-wikipedia"
-        _ -> "source-badge"
-      end
-
-    assigns = assign(assigns, :class, class)
+    assigns =
+      assigns
+      |> assign(:class, Helpers.source_badge_class(assigns.source))
+      |> assign(:label, Helpers.source_label(assigns.source))
 
     ~H"""
     <span class={@class}>
-      {source_label(@source)}
+      {@label}
     </span>
     """
   end
 
   @impl true
   def handle_event("search", %{"q" => query} = params, socket) do
-    source = parse_source(params["source"])
+    source = Helpers.parse_source(params["source"])
 
     socket =
       socket
@@ -199,34 +194,8 @@ defmodule DroodotfooWeb.Wiki.SearchLive do
     push_patch(socket, to: "/search?#{URI.encode_query(params)}")
   end
 
-  defp parse_source(""), do: nil
-  defp parse_source(nil), do: nil
-
-  defp parse_source(source) when is_binary(source) do
-    case source do
-      "osrs" -> :osrs
-      "nlab" -> :nlab
-      "wikipedia" -> :wikipedia
-      "vintage_machinery" -> :vintage_machinery
-      "wikiart" -> :wikiart
-      _ -> nil
-    end
-  end
-
   defp parse_mode("keyword"), do: :keyword
   defp parse_mode("semantic"), do: :semantic
   defp parse_mode("hybrid"), do: :hybrid
   defp parse_mode(_), do: :hybrid
-
-  defp source_label(:osrs), do: "OSRS"
-  defp source_label(:nlab), do: "NLAB"
-  defp source_label(:wikipedia), do: "WIKI"
-  defp source_label(:vintage_machinery), do: "VM"
-  defp source_label(:wikiart), do: "ART"
-  defp source_label(source), do: to_string(source) |> String.upcase()
-
-  defp article_path(%{source: :osrs, slug: slug}), do: "/osrs/#{slug}"
-  defp article_path(%{source: :nlab, slug: slug}), do: "/nlab/#{slug}"
-  defp article_path(%{source: :wikipedia, slug: slug}), do: "/wikipedia/#{slug}"
-  defp article_path(%{source: source, slug: slug}), do: "/#{source}/#{slug}"
 end

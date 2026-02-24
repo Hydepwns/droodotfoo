@@ -107,10 +107,12 @@ defmodule Droodotfoo.Wiki.Ingestion.WikipediaClient do
 
   # Private
 
+  alias Droodotfoo.Wiki.Ingestion.Common
+
   defp build_page(slug, summary, html) do
     %{
       slug: slug,
-      title: summary["title"] || humanize_slug(slug),
+      title: summary["title"] || Common.humanize_slug(slug),
       html: html,
       extract: summary["extract"] || "",
       description: summary["description"],
@@ -166,14 +168,6 @@ defmodule Droodotfoo.Wiki.Ingestion.WikipediaClient do
       {:ok, dt, _} -> dt
       _ -> nil
     end
-  end
-
-  defp humanize_slug(slug) do
-    slug
-    |> String.replace("_", " ")
-    |> String.split(" ")
-    |> Enum.map(&String.capitalize/1)
-    |> Enum.join(" ")
   end
 
   defp base_url, do: config(:base_url) || "https://en.wikipedia.org/api/rest_v1"

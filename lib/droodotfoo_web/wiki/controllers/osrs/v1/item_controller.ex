@@ -10,6 +10,7 @@ defmodule DroodotfooWeb.Wiki.OSRS.V1.ItemController do
   use DroodotfooWeb.Wiki, :controller
 
   alias Droodotfoo.Wiki.OSRS
+  alias DroodotfooWeb.Wiki.OSRS.V1.Params
 
   action_fallback DroodotfooWeb.Wiki.OSRS.V1.FallbackController
 
@@ -36,16 +37,7 @@ defmodule DroodotfooWeb.Wiki.OSRS.V1.ItemController do
     opts = parse_item_params(params)
     items = OSRS.list_items(opts)
     total = OSRS.count_items(opts)
-
-    limit = Keyword.get(opts, :limit, 100)
-    offset = Keyword.get(opts, :offset, 0)
-
-    meta = %{
-      total: total,
-      limit: limit,
-      offset: offset,
-      has_more: offset + length(items) < total
-    }
+    meta = Params.build_meta(opts, length(items), total)
 
     render(conn, :index, items: items, meta: meta)
   end
@@ -59,7 +51,7 @@ defmodule DroodotfooWeb.Wiki.OSRS.V1.ItemController do
 
   """
   def show(conn, %{"id" => id}) do
-    with {:ok, item_id} <- parse_id(id),
+    with {:ok, item_id} <- Params.parse_id(id),
          %OSRS.Item{} = item <- OSRS.get_item(item_id) do
       render(conn, :show, item: item)
     else
@@ -77,35 +69,12 @@ defmodule DroodotfooWeb.Wiki.OSRS.V1.ItemController do
 
   defp parse_item_params(params) do
     []
-    |> maybe_add(:members, params["members"])
-    |> maybe_add(:tradeable, params["tradeable"])
-    |> maybe_add(:equipable, params["equipable"])
-    |> maybe_add(:stackable, params["stackable"])
-    |> maybe_add(:name, params["name"])
-    |> maybe_add(:limit, parse_int(params["limit"]))
-    |> maybe_add(:offset, parse_int(params["offset"]))
-  end
-
-  defp maybe_add(opts, _key, nil), do: opts
-  defp maybe_add(opts, key, "true"), do: Keyword.put(opts, key, true)
-  defp maybe_add(opts, key, "false"), do: Keyword.put(opts, key, false)
-  defp maybe_add(opts, key, value) when is_binary(value), do: Keyword.put(opts, key, value)
-  defp maybe_add(opts, key, value) when is_integer(value), do: Keyword.put(opts, key, value)
-  defp maybe_add(opts, _key, _value), do: opts
-
-  defp parse_int(nil), do: nil
-
-  defp parse_int(str) when is_binary(str) do
-    case Integer.parse(str) do
-      {n, ""} -> n
-      _ -> nil
-    end
-  end
-
-  defp parse_id(str) when is_binary(str) do
-    case Integer.parse(str) do
-      {n, ""} when n > 0 -> {:ok, n}
-      _ -> :error
-    end
+    |> Params.maybe_add(:members, params["members"])
+    |> Params.maybe_add(:tradeable, params["tradeable"])
+    |> Params.maybe_add(:equipable, params["equipable"])
+    |> Params.maybe_add(:stackable, params["stackable"])
+    |> Params.maybe_add(:name, params["name"])
+    |> Params.maybe_add(:limit, Params.parse_int(params["limit"]))
+    |> Params.maybe_add(:offset, Params.parse_int(params["offset"]))
   end
 end

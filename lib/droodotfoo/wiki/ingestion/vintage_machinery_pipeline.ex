@@ -16,11 +16,8 @@ defmodule Droodotfoo.Wiki.Ingestion.VintageMachineryPipeline do
   require Logger
 
   alias Droodotfoo.Wiki.Content.Article
-  alias Droodotfoo.Wiki.Ingestion.VintageMachineryClient
+  alias Droodotfoo.Wiki.Ingestion.{Common, VintageMachineryClient}
   alias Droodotfoo.Wiki.{Cache, Storage}
-  alias Droodotfoo.Repo
-
-  import Ecto.Query
 
   @source :vintage_machinery
   @license "Used with permission"
@@ -52,14 +49,7 @@ defmodule Droodotfoo.Wiki.Ingestion.VintageMachineryPipeline do
   """
   @spec process_pages([String.t()]) :: %{String.t() => result()}
   def process_pages(slugs) when is_list(slugs) do
-    slugs
-    |> Task.async_stream(&process_page/1, max_concurrency: 4, timeout: 60_000)
-    |> Enum.zip(slugs)
-    |> Enum.map(fn
-      {{:ok, result}, slug} -> {slug, result}
-      {{:exit, reason}, slug} -> {slug, {:error, reason}}
-    end)
-    |> Map.new()
+    Common.process_pages_concurrent(slugs, &process_page/1, max_concurrency: 4)
   end
 
   @doc """
@@ -78,7 +68,7 @@ defmodule Droodotfoo.Wiki.Ingestion.VintageMachineryPipeline do
       Logger.info("Processing #{length(slugs)} VintageMachinery pages")
 
       results = process_pages(slugs)
-      {:ok, aggregate_stats(results)}
+      {:ok, Common.aggregate_stats(results)}
     end
   end
 
@@ -100,7 +90,7 @@ defmodule Droodotfoo.Wiki.Ingestion.VintageMachineryPipeline do
       else
         Logger.info("Processing #{length(slugs)} modified VintageMachinery pages")
         results = process_pages(slugs)
-        {:ok, aggregate_stats(results)}
+        {:ok, Common.aggregate_stats(results)}
       end
     end
   end
@@ -109,15 +99,11 @@ defmodule Droodotfoo.Wiki.Ingestion.VintageMachineryPipeline do
 
   defp upsert_article(page) do
     html = clean_html(page.raw_html)
-    content_hash = hash_content(html)
+    content_hash = Common.hash_content(html)
 
     @source
-    |> find_existing(page.slug)
+    |> Common.find_article(page.slug)
     |> do_upsert(page, html, content_hash)
-  end
-
-  defp find_existing(source, slug) do
-    Repo.one(from(a in Article, where: a.source == ^source and a.slug == ^slug))
   end
 
   defp do_upsert(nil, page, html, content_hash) do
@@ -136,10 +122,10 @@ defmodule Droodotfoo.Wiki.Ingestion.VintageMachineryPipeline do
     with {:ok, html_key} <- Storage.put_html(@source, page.slug, html),
          {:ok, raw_key} <- Storage.put_raw(@source, page.slug, page.raw_html),
          attrs = build_article_attrs(page, html_key, raw_key, content_hash),
-         {:ok, article} <- persist_article(operation, existing, attrs) do
+         {:ok, article} <- Common.persist_article(operation, existing, attrs) do
       Cache.invalidate(@source, page.slug)
       log_operation(operation, page.title)
-      {operation_result(operation), article}
+      {Common.operation_result(operation), article}
     else
       {:error, changeset} -> {:error, {:"#{operation}_failed", changeset}}
     end
@@ -162,53 +148,20 @@ defmodule Droodotfoo.Wiki.Ingestion.VintageMachineryPipeline do
     }
   end
 
-  defp persist_article(:insert, _existing, attrs) do
-    Repo.insert(Article.changeset(attrs))
-  end
-
-  defp persist_article(:update, existing, attrs) do
-    Repo.update(Article.changeset(existing, attrs))
-  end
-
-  defp operation_result(:insert), do: :created
-  defp operation_result(:update), do: :updated
-
   defp log_operation(:insert, title),
     do: Logger.info("Created VintageMachinery article: #{title}")
 
   defp log_operation(:update, title),
     do: Logger.info("Updated VintageMachinery article: #{title}")
 
+  @unwanted_selectors ~w(nav header footer .navigation .sidebar #menu script style noscript)
+
   defp clean_html(html) do
-    # Parse and clean the HTML
-    case Floki.parse_document(html) do
-      {:ok, doc} ->
-        doc
-        |> remove_navigation()
-        |> remove_scripts()
-        |> rewrite_links()
-        |> Floki.raw_html()
-
-      _ ->
-        html
-    end
-  end
-
-  defp remove_navigation(doc) do
-    doc
-    |> Floki.filter_out("nav")
-    |> Floki.filter_out("header")
-    |> Floki.filter_out("footer")
-    |> Floki.filter_out(".navigation")
-    |> Floki.filter_out(".sidebar")
-    |> Floki.filter_out("#menu")
-  end
-
-  defp remove_scripts(doc) do
-    doc
-    |> Floki.filter_out("script")
-    |> Floki.filter_out("style")
-    |> Floki.filter_out("noscript")
+    Common.clean_html(html, fn doc ->
+      doc
+      |> Common.filter_out_all(@unwanted_selectors)
+      |> rewrite_links()
+    end)
   end
 
   defp rewrite_links(doc) do
@@ -263,10 +216,6 @@ defmodule Droodotfoo.Wiki.Ingestion.VintageMachineryPipeline do
   defp normalize_image_link("/" <> _ = src), do: "https://vintagemachinery.org#{src}"
   defp normalize_image_link(src), do: "https://vintagemachinery.org/#{src}"
 
-  defp hash_content(html) do
-    :crypto.hash(:sha256, html) |> Base.encode16(case: :lower)
-  end
-
   defp upstream_url(slug) do
     path = String.replace(slug, "__", "/")
     @upstream_base <> path
@@ -275,14 +224,5 @@ defmodule Droodotfoo.Wiki.Ingestion.VintageMachineryPipeline do
   defp default_since do
     # Default to 30 days ago (site updates infrequently)
     DateTime.utc_now() |> DateTime.add(-30 * 24 * 3600, :second)
-  end
-
-  defp aggregate_stats(results) do
-    Enum.reduce(results, %{created: 0, updated: 0, unchanged: 0, errors: 0}, fn
-      {_slug, {:created, _}}, acc -> Map.update!(acc, :created, &(&1 + 1))
-      {_slug, {:updated, _}}, acc -> Map.update!(acc, :updated, &(&1 + 1))
-      {_slug, {:unchanged, _}}, acc -> Map.update!(acc, :unchanged, &(&1 + 1))
-      {_slug, {:error, _}}, acc -> Map.update!(acc, :errors, &(&1 + 1))
-    end)
   end
 end

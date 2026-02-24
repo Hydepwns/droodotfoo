@@ -9,11 +9,9 @@ defmodule Droodotfoo.Wiki.Ingestion.OSRSPipeline do
   require Logger
 
   alias Droodotfoo.Wiki.Content.Article
-  alias Droodotfoo.Wiki.Ingestion.{MediaWikiClient, InfoboxParser}
+  alias Droodotfoo.Wiki.Ingestion.{Common, MediaWikiClient, InfoboxParser}
   alias Droodotfoo.Repo
   alias Droodotfoo.Wiki.Storage
-
-  import Ecto.Query
 
   @source :osrs
   @license "CC BY-NC-SA 3.0"
@@ -49,11 +47,7 @@ defmodule Droodotfoo.Wiki.Ingestion.OSRSPipeline do
   """
   @spec process_pages([String.t()]) :: %{String.t() => result()}
   def process_pages(titles) when is_list(titles) do
-    titles
-    |> Enum.map(fn title ->
-      {title, process_page(title)}
-    end)
-    |> Map.new()
+    Common.process_pages_sequential(titles, &process_page/1)
   end
 
   @doc """
@@ -70,7 +64,7 @@ defmodule Droodotfoo.Wiki.Ingestion.OSRSPipeline do
       {:ok, changes} ->
         titles = changes |> Enum.map(& &1.title) |> Enum.uniq()
         results = process_pages(titles)
-        {:ok, aggregate_stats(results)}
+        {:ok, Common.aggregate_stats(results)}
 
       {:error, reason} ->
         {:error, reason}
@@ -93,7 +87,7 @@ defmodule Droodotfoo.Wiki.Ingestion.OSRSPipeline do
       {:ok, titles} ->
         Logger.info("Processing #{length(titles)} pages from #{category}")
         results = process_pages(titles)
-        {:ok, aggregate_stats(results)}
+        {:ok, Common.aggregate_stats(results)}
 
       {:error, reason} ->
         {:error, reason}
@@ -136,84 +130,70 @@ defmodule Droodotfoo.Wiki.Ingestion.OSRSPipeline do
 
   defp upsert_article(page) do
     slug = slugify(page.title)
-    content_hash = hash_content(page.html)
+    content_hash = Common.hash_content(page.html)
 
-    existing =
-      Repo.one(
-        from(a in Article,
-          where: a.source == @source and a.slug == ^slug
-        )
-      )
-
-    cond do
-      is_nil(existing) ->
-        create_article(page, slug, content_hash)
-
-      existing.upstream_hash != content_hash ->
-        update_article(existing, page, content_hash)
-
-      true ->
-        {:unchanged, existing}
-    end
+    @source
+    |> Common.find_article(slug)
+    |> do_upsert(page, slug, content_hash)
   end
 
-  defp create_article(page, slug, content_hash) do
+  defp do_upsert(nil, page, slug, content_hash) do
+    save_article(:insert, nil, page, slug, content_hash)
+  end
+
+  defp do_upsert(%Article{upstream_hash: hash} = existing, _page, _slug, hash) do
+    {:unchanged, existing}
+  end
+
+  defp do_upsert(existing, page, slug, content_hash) do
+    save_article(:update, existing, page, slug, content_hash)
+  end
+
+  defp save_article(operation, existing, page, slug, content_hash) do
     with {:ok, html_key} <- Storage.put_html(@source, slug, page.html),
-         {:ok, raw_key} <- maybe_store_raw(page, slug) do
-      attrs = %{
-        source: @source,
-        slug: slug,
-        title: page.title,
-        extracted_text: extract_text(page.html),
-        rendered_html_key: html_key,
-        raw_content_key: raw_key,
-        upstream_url: upstream_url(page.title),
-        upstream_hash: content_hash,
-        status: :synced,
-        license: @license,
-        metadata: extract_metadata(page),
-        synced_at: DateTime.utc_now()
-      }
-
-      case Repo.insert(Article.changeset(attrs)) do
-        {:ok, article} ->
-          Droodotfoo.Wiki.Cache.invalidate(@source, slug)
-          Logger.info("Created article: #{page.title}")
-          {:created, article}
-
-        {:error, changeset} ->
-          {:error, {:insert_failed, changeset}}
-      end
+         {:ok, raw_key} <- maybe_store_raw(page, slug),
+         attrs = build_article_attrs(operation, page, slug, html_key, raw_key, content_hash),
+         {:ok, article} <- Common.persist_article(operation, existing, attrs) do
+      Droodotfoo.Wiki.Cache.invalidate(@source, slug)
+      log_operation(operation, page.title)
+      {Common.operation_result(operation), article}
+    else
+      {:error, changeset} -> {:error, {:"#{operation}_failed", changeset}}
     end
   end
 
-  defp update_article(existing, page, content_hash) do
-    slug = existing.slug
-
-    with {:ok, html_key} <- Storage.put_html(@source, slug, page.html),
-         {:ok, raw_key} <- maybe_store_raw(page, slug) do
-      attrs = %{
-        title: page.title,
-        extracted_text: extract_text(page.html),
-        rendered_html_key: html_key,
-        raw_content_key: raw_key,
-        upstream_hash: content_hash,
-        status: :synced,
-        metadata: extract_metadata(page),
-        synced_at: DateTime.utc_now()
-      }
-
-      case Repo.update(Article.changeset(existing, attrs)) do
-        {:ok, article} ->
-          Droodotfoo.Wiki.Cache.invalidate(@source, slug)
-          Logger.info("Updated article: #{page.title}")
-          {:updated, article}
-
-        {:error, changeset} ->
-          {:error, {:update_failed, changeset}}
-      end
-    end
+  defp build_article_attrs(:insert, page, slug, html_key, raw_key, content_hash) do
+    %{
+      source: @source,
+      slug: slug,
+      title: page.title,
+      extracted_text: Common.extract_text(page.html),
+      rendered_html_key: html_key,
+      raw_content_key: raw_key,
+      upstream_url: Common.upstream_url(@upstream_base, page.title),
+      upstream_hash: content_hash,
+      status: :synced,
+      license: @license,
+      metadata: extract_metadata(page),
+      synced_at: DateTime.utc_now()
+    }
   end
+
+  defp build_article_attrs(:update, page, _slug, html_key, raw_key, content_hash) do
+    %{
+      title: page.title,
+      extracted_text: Common.extract_text(page.html),
+      rendered_html_key: html_key,
+      raw_content_key: raw_key,
+      upstream_hash: content_hash,
+      status: :synced,
+      metadata: extract_metadata(page),
+      synced_at: DateTime.utc_now()
+    }
+  end
+
+  defp log_operation(:insert, title), do: Logger.info("Created OSRS article: #{title}")
+  defp log_operation(:update, title), do: Logger.info("Updated OSRS article: #{title}")
 
   defp maybe_store_raw(%{wikitext: nil}, _slug), do: {:ok, nil}
   defp maybe_store_raw(%{wikitext: ""}, _slug), do: {:ok, nil}
@@ -293,23 +273,6 @@ defmodule Droodotfoo.Wiki.Ingestion.OSRSPipeline do
     |> String.downcase()
     |> String.replace(~r/[^a-z0-9]+/, "-")
     |> String.trim("-")
-  end
-
-  defp hash_content(html) do
-    :crypto.hash(:sha256, html) |> Base.encode16(case: :lower)
-  end
-
-  defp upstream_url(title) do
-    @upstream_base <> URI.encode(title, &URI.char_unreserved?/1)
-  end
-
-  defp extract_text(html) do
-    html
-    |> Floki.parse_document!()
-    |> Floki.text(sep: " ")
-    |> String.replace(~r/\s+/, " ")
-    |> String.trim()
-    |> String.slice(0, 100_000)
   end
 
   defp extract_metadata(page) do
@@ -392,14 +355,5 @@ defmodule Droodotfoo.Wiki.Ingestion.OSRSPipeline do
     |> String.split(~r/[,;]/)
     |> Enum.map(&String.trim/1)
     |> Enum.reject(&(&1 == ""))
-  end
-
-  defp aggregate_stats(results) do
-    Enum.reduce(results, %{created: 0, updated: 0, unchanged: 0, errors: 0}, fn
-      {_title, {:created, _}}, acc -> Map.update!(acc, :created, &(&1 + 1))
-      {_title, {:updated, _}}, acc -> Map.update!(acc, :updated, &(&1 + 1))
-      {_title, {:unchanged, _}}, acc -> Map.update!(acc, :unchanged, &(&1 + 1))
-      {_title, {:error, _}}, acc -> Map.update!(acc, :errors, &(&1 + 1))
-    end)
   end
 end

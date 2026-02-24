@@ -19,11 +19,8 @@ defmodule Droodotfoo.Wiki.Ingestion.WikipediaPipeline do
   require Logger
 
   alias Droodotfoo.Wiki.Content.Article
-  alias Droodotfoo.Wiki.Ingestion.WikipediaClient
+  alias Droodotfoo.Wiki.Ingestion.{Common, WikipediaClient}
   alias Droodotfoo.Wiki.{Cache, Storage}
-  alias Droodotfoo.Repo
-
-  import Ecto.Query
 
   @source :wikipedia
   @license "CC BY-SA 4.0"
@@ -55,14 +52,7 @@ defmodule Droodotfoo.Wiki.Ingestion.WikipediaPipeline do
   """
   @spec process_pages([String.t()]) :: %{String.t() => result()}
   def process_pages(slugs) when is_list(slugs) do
-    slugs
-    |> Task.async_stream(&process_page/1, max_concurrency: 2, timeout: 60_000)
-    |> Enum.zip(slugs)
-    |> Enum.map(fn
-      {{:ok, result}, slug} -> {slug, result}
-      {{:exit, reason}, slug} -> {slug, {:error, reason}}
-    end)
-    |> Map.new()
+    Common.process_pages_concurrent(slugs, &process_page/1, max_concurrency: 2)
   end
 
   @doc """
@@ -82,7 +72,7 @@ defmodule Droodotfoo.Wiki.Ingestion.WikipediaPipeline do
       Logger.info("Importing #{length(slugs)} Wikipedia pages for query: #{query}")
 
       results = process_pages(slugs)
-      {:ok, aggregate_stats(results)}
+      {:ok, Common.aggregate_stats(results)}
     end
   end
 
@@ -103,7 +93,7 @@ defmodule Droodotfoo.Wiki.Ingestion.WikipediaPipeline do
       Logger.info("Importing #{length(slugs)} related Wikipedia pages for: #{slug}")
 
       results = process_pages(slugs)
-      {:ok, aggregate_stats(results)}
+      {:ok, Common.aggregate_stats(results)}
     end
   end
 
@@ -118,30 +108,23 @@ defmodule Droodotfoo.Wiki.Ingestion.WikipediaPipeline do
           | {:error, term()}
   def refresh_all(opts \\ []) do
     limit = Keyword.get(opts, :limit, 1000)
-
-    slugs =
-      from(a in Article, where: a.source == @source, select: a.slug, limit: ^limit)
-      |> Repo.all()
+    slugs = Common.list_article_slugs(@source, limit)
 
     Logger.info("Refreshing #{length(slugs)} Wikipedia articles")
 
     results = process_pages(slugs)
-    {:ok, aggregate_stats(results)}
+    {:ok, Common.aggregate_stats(results)}
   end
 
   # Private functions
 
   defp upsert_article(page) do
     html = clean_html(page.html)
-    content_hash = hash_content(html)
+    content_hash = Common.hash_content(html)
 
     @source
-    |> find_existing(page.slug)
+    |> Common.find_article(page.slug)
     |> do_upsert(page, html, content_hash)
-  end
-
-  defp find_existing(source, slug) do
-    Repo.one(from(a in Article, where: a.source == ^source and a.slug == ^slug))
   end
 
   defp do_upsert(nil, page, html, content_hash) do
@@ -160,10 +143,10 @@ defmodule Droodotfoo.Wiki.Ingestion.WikipediaPipeline do
     with {:ok, html_key} <- Storage.put_html(@source, page.slug, html),
          {:ok, raw_key} <- Storage.put_raw(@source, page.slug, page.html),
          attrs = build_article_attrs(page, html_key, raw_key, content_hash),
-         {:ok, article} <- persist_article(operation, existing, attrs) do
+         {:ok, article} <- Common.persist_article(operation, existing, attrs) do
       Cache.invalidate(@source, page.slug)
       log_operation(operation, page.title)
-      {operation_result(operation), article}
+      {Common.operation_result(operation), article}
     else
       {:error, changeset} -> {:error, {:"#{operation}_failed", changeset}}
     end
@@ -177,7 +160,7 @@ defmodule Droodotfoo.Wiki.Ingestion.WikipediaPipeline do
       extracted_text: page.extract,
       rendered_html_key: html_key,
       raw_content_key: raw_key,
-      upstream_url: upstream_url(page.slug),
+      upstream_url: Common.upstream_url(@upstream_base, page.slug),
       upstream_hash: content_hash,
       status: :synced,
       license: @license,
@@ -189,42 +172,17 @@ defmodule Droodotfoo.Wiki.Ingestion.WikipediaPipeline do
     }
   end
 
-  defp persist_article(:insert, _existing, attrs) do
-    Repo.insert(Article.changeset(attrs))
-  end
-
-  defp persist_article(:update, existing, attrs) do
-    Repo.update(Article.changeset(existing, attrs))
-  end
-
-  defp operation_result(:insert), do: :created
-  defp operation_result(:update), do: :updated
-
   defp log_operation(:insert, title), do: Logger.info("Created Wikipedia article: #{title}")
   defp log_operation(:update, title), do: Logger.info("Updated Wikipedia article: #{title}")
 
+  @unwanted_selectors ~w(script style .mw-editsection .navbox .sistersitebox .noprint #coordinates)
+
   defp clean_html(html) do
-    case Floki.parse_document(html) do
-      {:ok, doc} ->
-        doc
-        |> remove_unwanted_elements()
-        |> rewrite_links()
-        |> Floki.raw_html()
-
-      _ ->
-        html
-    end
-  end
-
-  defp remove_unwanted_elements(doc) do
-    doc
-    |> Floki.filter_out("script")
-    |> Floki.filter_out("style")
-    |> Floki.filter_out(".mw-editsection")
-    |> Floki.filter_out(".navbox")
-    |> Floki.filter_out(".sistersitebox")
-    |> Floki.filter_out(".noprint")
-    |> Floki.filter_out("#coordinates")
+    Common.clean_html(html, fn doc ->
+      doc
+      |> Common.filter_out_all(@unwanted_selectors)
+      |> rewrite_links()
+    end)
   end
 
   defp rewrite_links(doc) do
@@ -252,23 +210,6 @@ defmodule Droodotfoo.Wiki.Ingestion.WikipediaPipeline do
     Enum.map(attrs, fn
       {"src", "//" <> rest} -> {"src", "https://#{rest}"}
       other -> other
-    end)
-  end
-
-  defp hash_content(html) do
-    :crypto.hash(:sha256, html) |> Base.encode16(case: :lower)
-  end
-
-  defp upstream_url(slug) do
-    @upstream_base <> URI.encode(slug)
-  end
-
-  defp aggregate_stats(results) do
-    Enum.reduce(results, %{created: 0, updated: 0, unchanged: 0, errors: 0}, fn
-      {_slug, {:created, _}}, acc -> Map.update!(acc, :created, &(&1 + 1))
-      {_slug, {:updated, _}}, acc -> Map.update!(acc, :updated, &(&1 + 1))
-      {_slug, {:unchanged, _}}, acc -> Map.update!(acc, :unchanged, &(&1 + 1))
-      {_slug, {:error, _}}, acc -> Map.update!(acc, :errors, &(&1 + 1))
     end)
   end
 end

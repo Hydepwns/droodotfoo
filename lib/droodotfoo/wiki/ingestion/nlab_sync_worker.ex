@@ -25,7 +25,7 @@ defmodule Droodotfoo.Wiki.Ingestion.NLabSyncWorker do
 
   require Logger
 
-  alias Droodotfoo.Wiki.Ingestion.{NLabPipeline, SyncRun}
+  alias Droodotfoo.Wiki.Ingestion.{NLabPipeline, SyncRun, SyncWorkerHelper}
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: args}) do
@@ -42,24 +42,7 @@ defmodule Droodotfoo.Wiki.Ingestion.NLabSyncWorker do
   end
 
   defp sync_recent_changes do
-    run = SyncRun.start!(:nlab, "recent_changes")
-    since = SyncRun.last_completed_at(:nlab)
-
-    Logger.info("nLab sync: recent changes since #{inspect(since)}")
-
-    result = NLabPipeline.sync_recent_changes(since)
-
-    case result do
-      {:ok, stats} ->
-        SyncRun.complete!(run, {:ok, to_sync_stats(stats)})
-        Logger.info("nLab sync completed: #{inspect(stats)}")
-        :ok
-
-      {:error, reason} ->
-        SyncRun.complete!(run, {:error, reason})
-        Logger.error("nLab sync failed: #{inspect(reason)}")
-        {:error, reason}
-    end
+    SyncWorkerHelper.sync_recent_changes(:nlab, &NLabPipeline.sync_recent_changes/1, "nLab sync")
   end
 
   defp sync_since(since) do
@@ -67,19 +50,8 @@ defmodule Droodotfoo.Wiki.Ingestion.NLabSyncWorker do
 
     Logger.info("nLab sync: changes since #{since}")
 
-    result = NLabPipeline.sync_recent_changes(since)
-
-    case result do
-      {:ok, stats} ->
-        SyncRun.complete!(run, {:ok, to_sync_stats(stats)})
-        Logger.info("nLab sync completed: #{inspect(stats)}")
-        :ok
-
-      {:error, reason} ->
-        SyncRun.complete!(run, {:error, reason})
-        Logger.error("nLab sync failed: #{inspect(reason)}")
-        {:error, reason}
-    end
+    NLabPipeline.sync_recent_changes(since)
+    |> SyncWorkerHelper.handle_result(run, "nLab sync")
   end
 
   defp full_sync do
@@ -87,28 +59,8 @@ defmodule Droodotfoo.Wiki.Ingestion.NLabSyncWorker do
 
     Logger.info("nLab full sync starting")
 
-    result = NLabPipeline.sync_all()
-
-    case result do
-      {:ok, stats} ->
-        SyncRun.complete!(run, {:ok, to_sync_stats(stats)})
-        Logger.info("nLab full sync completed: #{inspect(stats)}")
-        :ok
-
-      {:error, reason} ->
-        SyncRun.complete!(run, {:error, reason})
-        Logger.error("nLab full sync failed: #{inspect(reason)}")
-        {:error, reason}
-    end
-  end
-
-  defp to_sync_stats(stats) do
-    %{
-      pages_processed: stats.created + stats.updated + stats.unchanged + stats.errors,
-      pages_created: stats.created,
-      pages_updated: stats.updated,
-      pages_unchanged: stats.unchanged
-    }
+    NLabPipeline.sync_all()
+    |> SyncWorkerHelper.handle_result(run, "nLab full sync")
   end
 
   defp parse_datetime(str) when is_binary(str) do

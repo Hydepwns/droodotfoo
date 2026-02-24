@@ -10,6 +10,7 @@ defmodule DroodotfooWeb.Wiki.OSRS.V1.MonsterController do
   use DroodotfooWeb.Wiki, :controller
 
   alias Droodotfoo.Wiki.OSRS
+  alias DroodotfooWeb.Wiki.OSRS.V1.Params
 
   action_fallback DroodotfooWeb.Wiki.OSRS.V1.FallbackController
 
@@ -37,16 +38,7 @@ defmodule DroodotfooWeb.Wiki.OSRS.V1.MonsterController do
     opts = parse_monster_params(params)
     monsters = OSRS.list_monsters(opts)
     total = OSRS.count_monsters(opts)
-
-    limit = Keyword.get(opts, :limit, 100)
-    offset = Keyword.get(opts, :offset, 0)
-
-    meta = %{
-      total: total,
-      limit: limit,
-      offset: offset,
-      has_more: offset + length(monsters) < total
-    }
+    meta = Params.build_meta(opts, length(monsters), total)
 
     render(conn, :index, monsters: monsters, meta: meta)
   end
@@ -60,7 +52,7 @@ defmodule DroodotfooWeb.Wiki.OSRS.V1.MonsterController do
 
   """
   def show(conn, %{"id" => id}) do
-    with {:ok, monster_id} <- parse_id(id),
+    with {:ok, monster_id} <- Params.parse_id(id),
          %OSRS.Monster{} = monster <- OSRS.get_monster(monster_id) do
       render(conn, :show, monster: monster)
     else
@@ -78,35 +70,12 @@ defmodule DroodotfooWeb.Wiki.OSRS.V1.MonsterController do
 
   defp parse_monster_params(params) do
     []
-    |> maybe_add(:members, params["members"])
-    |> maybe_add(:name, params["name"])
-    |> maybe_add(:min_combat, parse_int(params["min_combat"]))
-    |> maybe_add(:max_combat, parse_int(params["max_combat"]))
-    |> maybe_add(:slayer_level, parse_int(params["slayer_level"]))
-    |> maybe_add(:limit, parse_int(params["limit"]))
-    |> maybe_add(:offset, parse_int(params["offset"]))
-  end
-
-  defp maybe_add(opts, _key, nil), do: opts
-  defp maybe_add(opts, key, "true"), do: Keyword.put(opts, key, true)
-  defp maybe_add(opts, key, "false"), do: Keyword.put(opts, key, false)
-  defp maybe_add(opts, key, value) when is_binary(value), do: Keyword.put(opts, key, value)
-  defp maybe_add(opts, key, value) when is_integer(value), do: Keyword.put(opts, key, value)
-  defp maybe_add(opts, _key, _value), do: opts
-
-  defp parse_int(nil), do: nil
-
-  defp parse_int(str) when is_binary(str) do
-    case Integer.parse(str) do
-      {n, ""} -> n
-      _ -> nil
-    end
-  end
-
-  defp parse_id(str) when is_binary(str) do
-    case Integer.parse(str) do
-      {n, ""} when n > 0 -> {:ok, n}
-      _ -> :error
-    end
+    |> Params.maybe_add(:members, params["members"])
+    |> Params.maybe_add(:name, params["name"])
+    |> Params.maybe_add(:min_combat, Params.parse_int(params["min_combat"]))
+    |> Params.maybe_add(:max_combat, Params.parse_int(params["max_combat"]))
+    |> Params.maybe_add(:slayer_level, Params.parse_int(params["slayer_level"]))
+    |> Params.maybe_add(:limit, Params.parse_int(params["limit"]))
+    |> Params.maybe_add(:offset, Params.parse_int(params["offset"]))
   end
 end

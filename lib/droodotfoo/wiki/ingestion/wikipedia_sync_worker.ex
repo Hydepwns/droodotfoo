@@ -28,7 +28,7 @@ defmodule Droodotfoo.Wiki.Ingestion.WikipediaSyncWorker do
 
   require Logger
 
-  alias Droodotfoo.Wiki.Ingestion.{SyncRun, WikipediaPipeline}
+  alias Droodotfoo.Wiki.Ingestion.{SyncRun, SyncWorkerHelper, WikipediaPipeline}
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: args}) do
@@ -71,41 +71,15 @@ defmodule Droodotfoo.Wiki.Ingestion.WikipediaSyncWorker do
     limit = args["limit"] || 10
     run = SyncRun.start!(:wikipedia, "search:#{query}")
 
-    case WikipediaPipeline.import_search(query, limit: limit) do
-      {:ok, stats} ->
-        SyncRun.complete!(run, {:ok, stats})
-        log_stats("search import", stats)
-        :ok
-
-      {:error, reason} = error ->
-        SyncRun.complete!(run, error)
-        Logger.error("Wikipedia search import failed: #{inspect(reason)}")
-        error
-    end
+    WikipediaPipeline.import_search(query, limit: limit)
+    |> SyncWorkerHelper.handle_result(run, "Wikipedia search import", transform: false)
   end
 
   defp refresh_all(args) do
     limit = args["limit"] || 1000
     run = SyncRun.start!(:wikipedia, "refresh")
 
-    case WikipediaPipeline.refresh_all(limit: limit) do
-      {:ok, stats} ->
-        SyncRun.complete!(run, {:ok, stats})
-        log_stats("refresh", stats)
-        :ok
-
-      {:error, reason} = error ->
-        SyncRun.complete!(run, error)
-        Logger.error("Wikipedia refresh failed: #{inspect(reason)}")
-        error
-    end
-  end
-
-  defp log_stats(operation, stats) do
-    Logger.info(
-      "Wikipedia #{operation} complete: " <>
-        "#{stats.created} created, #{stats.updated} updated, " <>
-        "#{stats.unchanged} unchanged, #{stats.errors} errors"
-    )
+    WikipediaPipeline.refresh_all(limit: limit)
+    |> SyncWorkerHelper.handle_result(run, "Wikipedia refresh", transform: false)
   end
 end

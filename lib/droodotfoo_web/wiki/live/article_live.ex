@@ -6,7 +6,7 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
 
   use Phoenix.LiveView, layout: false
 
-  alias DroodotfooWeb.Wiki.Layouts
+  alias DroodotfooWeb.Wiki.{Helpers, Layouts}
   alias Droodotfoo.Wiki.Content
   alias Droodotfoo.Wiki.CrossLinks
 
@@ -174,7 +174,7 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
         <ul>
           <li :for={rel <- @related} class="mb-2">
             <.link
-              navigate={article_path(rel.source, rel.slug)}
+              navigate={Helpers.article_path(rel.source, rel.slug)}
               class="block p-1"
             >
               <div class="flex items-center gap-1 mb-1">
@@ -195,15 +195,7 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
   end
 
   defp mini_source_badge(assigns) do
-    labels = %{
-      osrs: "OS",
-      nlab: "NL",
-      wikipedia: "WP",
-      vintage_machinery: "VM",
-      wikiart: "AR"
-    }
-
-    assigns = assign(assigns, :label, Map.get(labels, assigns.source, "?"))
+    assigns = assign(assigns, :label, Helpers.source_label_mini(assigns.source))
 
     ~H"""
     <span class="badge text-xs">
@@ -213,26 +205,10 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
   end
 
   defp source_badge(assigns) do
-    labels = %{
-      osrs: "OSRS WIKI",
-      nlab: "NLAB",
-      wikipedia: "WIKIPEDIA",
-      vintage_machinery: "VINTAGE MACHINERY",
-      wikiart: "WIKIART"
-    }
-
-    class =
-      case assigns.source do
-        :osrs -> "source-badge source-badge-osrs"
-        :nlab -> "source-badge source-badge-nlab"
-        :wikipedia -> "source-badge source-badge-wikipedia"
-        _ -> "source-badge"
-      end
-
     assigns =
       assigns
-      |> assign(:label, Map.get(labels, assigns.source, to_string(assigns.source)))
-      |> assign(:class, class)
+      |> assign(:label, Helpers.source_label_full(assigns.source))
+      |> assign(:class, Helpers.source_badge_class(assigns.source))
 
     ~H"""
     <span class={@class}>
@@ -250,8 +226,7 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
   end
 
   defp not_found(assigns) do
-    upstream_url = upstream_url(assigns.source, assigns.slug)
-    assigns = assign(assigns, :upstream_url, upstream_url)
+    assigns = assign(assigns, :upstream_url, Helpers.upstream_url(assigns.source, assigns.slug))
 
     ~H"""
     <div class="text-muted py-4">
@@ -388,13 +363,6 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
     |> String.upcase()
   end
 
-  defp article_path(:osrs, slug), do: "/osrs/#{slug}"
-  defp article_path(:nlab, slug), do: "/nlab/#{slug}"
-  defp article_path(:wikipedia, slug), do: "/wikipedia/#{slug}"
-  defp article_path(:vintage_machinery, slug), do: "/machines/#{slug}"
-  defp article_path(:wikiart, slug), do: "/art/#{slug}"
-  defp article_path(_source, slug), do: "/#{slug}"
-
   defp format_relationship(:same_topic), do: "Same topic"
   defp format_relationship(:related), do: "Related"
   defp format_relationship(:see_also), do: "See also"
@@ -404,16 +372,4 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
   defp format_confidence(c) when c >= 0.8, do: "High"
   defp format_confidence(c) when c >= 0.5, do: "Medium"
   defp format_confidence(_), do: "Low"
-
-  defp upstream_url(:osrs, slug), do: "https://oldschool.runescape.wiki/w/#{URI.encode(slug)}"
-  defp upstream_url(:nlab, slug), do: "https://ncatlab.org/nlab/show/#{URI.encode(slug)}"
-  defp upstream_url(:wikipedia, slug), do: "https://en.wikipedia.org/wiki/#{URI.encode(slug)}"
-
-  defp upstream_url(:vintage_machinery, slug),
-    do: "https://vintagemachinery.org/#{String.replace(slug, "__", "/")}"
-
-  defp upstream_url(:wikiart, slug),
-    do: "https://www.wikiart.org/en/#{String.replace(slug, "__", "/")}"
-
-  defp upstream_url(_, _), do: nil
 end
