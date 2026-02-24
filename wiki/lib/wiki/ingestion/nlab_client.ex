@@ -37,10 +37,22 @@ defmodule Wiki.Ingestion.NLabClient do
     repo_url = config(:repo_url)
     branch = config(:branch) || "master"
 
-    if File.dir?(Path.join(local_path, ".git")) do
-      pull_repo(local_path, branch)
-    else
-      clone_repo(repo_url, local_path, branch)
+    result =
+      if File.dir?(Path.join(local_path, ".git")) do
+        pull_repo(local_path, branch)
+      else
+        clone_repo(repo_url, local_path, branch)
+      end
+
+    # Rebuild index after sync
+    case result do
+      {:ok, path} ->
+        {:ok, count} = build_index()
+        Logger.info("Built nLab index with #{count} pages")
+        {:ok, path}
+
+      error ->
+        error
     end
   end
 
@@ -55,11 +67,20 @@ defmodule Wiki.Ingestion.NLabClient do
     pages_dir = Path.join(local_path, "pages")
 
     if File.dir?(pages_dir) do
+      # nLab uses numeric directory structure: pages/X/X/X/X/ID/{name,content.md}
+      {output, 0} =
+        System.cmd("find", [pages_dir, "-type", "f", "-name", "name"],
+          stderr_to_stdout: true
+        )
+
       pages =
-        pages_dir
-        |> File.ls!()
-        |> Enum.filter(&String.ends_with?(&1, ".md"))
-        |> Enum.map(&String.replace_suffix(&1, ".md", ""))
+        output
+        |> String.split("\n", trim: true)
+        |> Enum.map(fn name_path ->
+          name_path
+          |> File.read!()
+          |> String.trim()
+        end)
         |> Enum.sort()
 
       {:ok, pages}
@@ -80,18 +101,27 @@ defmodule Wiki.Ingestion.NLabClient do
 
     case System.cmd(
            "git",
-           ["log", "--since=#{since_str}", "--name-only", "--pretty=format:", "pages/"],
+           ["log", "--since=#{since_str}", "--name-only", "--pretty=format:", "--", "pages/"],
            cd: local_path,
            stderr_to_stdout: true
          ) do
       {output, 0} ->
-        pages =
+        # Filter for content.md files and extract page directories
+        modified_dirs =
           output
-          |> String.split("\n")
-          |> Enum.filter(&String.starts_with?(&1, "pages/"))
-          |> Enum.map(&String.replace_prefix(&1, "pages/", ""))
-          |> Enum.map(&String.replace_suffix(&1, ".md", ""))
+          |> String.split("\n", trim: true)
+          |> Enum.filter(&String.ends_with?(&1, "/content.md"))
+          |> Enum.map(&Path.dirname/1)
           |> Enum.uniq()
+
+        # Read slugs from name files in those directories
+        pages =
+          modified_dirs
+          |> Enum.map(fn dir ->
+            name_path = Path.join([local_path, dir, "name"])
+            if File.exists?(name_path), do: File.read!(name_path) |> String.trim()
+          end)
+          |> Enum.reject(&is_nil/1)
           |> Enum.sort()
 
         {:ok, pages}
@@ -103,22 +133,67 @@ defmodule Wiki.Ingestion.NLabClient do
 
   @doc """
   Read and parse a single page by slug.
+
+  Uses a cached index mapping slugs to file paths for efficient lookups.
   """
   @spec get_page(String.t()) :: {:ok, page()} | {:error, term()}
   def get_page(slug) do
-    local_path = config(:local_path)
-    file_path = Path.join([local_path, "pages", "#{slug}.md"])
+    case find_page_dir(slug) do
+      {:ok, page_dir} ->
+        content_path = Path.join(page_dir, "content.md")
 
-    case File.read(file_path) do
-      {:ok, content} ->
-        page = parse_page(slug, content, file_path)
-        {:ok, page}
+        case File.read(content_path) do
+          {:ok, content} ->
+            page = parse_page(slug, content, content_path)
+            {:ok, page}
 
-      {:error, :enoent} ->
+          {:error, reason} ->
+            {:error, reason}
+        end
+
+      :not_found ->
         {:error, :not_found}
+    end
+  end
 
-      {:error, reason} ->
-        {:error, reason}
+  @doc """
+  Build and cache an index of page slugs to their directory paths.
+  """
+  def build_index do
+    local_path = config(:local_path)
+    pages_dir = Path.join(local_path, "pages")
+
+    {output, 0} =
+      System.cmd("find", [pages_dir, "-type", "f", "-name", "name"],
+        stderr_to_stdout: true
+      )
+
+    index =
+      output
+      |> String.split("\n", trim: true)
+      |> Enum.map(fn name_path ->
+        slug = name_path |> File.read!() |> String.trim()
+        page_dir = Path.dirname(name_path)
+        {slug, page_dir}
+      end)
+      |> Map.new()
+
+    :persistent_term.put({__MODULE__, :index}, index)
+    {:ok, map_size(index)}
+  end
+
+  defp find_page_dir(slug) do
+    case :persistent_term.get({__MODULE__, :index}, nil) do
+      nil ->
+        # Index not built yet, build it
+        {:ok, _count} = build_index()
+        find_page_dir(slug)
+
+      index ->
+        case Map.fetch(index, slug) do
+          {:ok, dir} -> {:ok, dir}
+          :error -> :not_found
+        end
     end
   end
 

@@ -37,7 +37,8 @@ config :wiki, Wiki.Ingestion.NLabClient,
 config :ex_aws,
   access_key_id: "minioadmin",
   secret_access_key: "minioadmin",
-  region: "us-east-1"
+  region: "us-east-1",
+  http_client: ExAws.Request.Req
 
 config :ex_aws, :s3,
   scheme: "http://",

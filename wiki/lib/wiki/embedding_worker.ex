@@ -35,7 +35,7 @@ defmodule Wiki.EmbeddingWorker do
   alias Wiki.Ollama
   alias Wiki.Repo
 
-  @batch_size 50
+  @batch_size 5
   @stream_chunk_size 500
 
   @valid_sources ~w(osrs nlab wikipedia vintage_machinery wikiart)a
@@ -173,15 +173,38 @@ defmodule Wiki.EmbeddingWorker do
 
       {:error, reason} ->
         Logger.warning(
-          "EmbeddingWorker: batch failed (#{length(articles)} articles): #{inspect(reason)}"
+          "EmbeddingWorker: batch failed (#{length(articles)} articles): #{inspect(reason)}, falling back to single"
         )
 
-        %{
-          stats
-          | processed: stats.processed + length(articles),
-            errors: stats.errors + length(articles)
-        }
+        # Fallback to single-article embedding
+        process_singles(articles, stats)
     end
+  end
+
+  defp process_singles(articles, stats) do
+    Enum.reduce(articles, stats, fn article, acc ->
+      text = Ollama.prepare_text(article.title, article.extracted_text)
+
+      case Ollama.embed(text) do
+        {:ok, embedding} ->
+          save_single_embedding(article, embedding)
+          %{acc | processed: acc.processed + 1, embedded: acc.embedded + 1}
+
+        {:error, reason} ->
+          Logger.warning("EmbeddingWorker: single embed failed for #{article.id}: #{inspect(reason)}")
+          %{acc | processed: acc.processed + 1, errors: acc.errors + 1}
+      end
+    end)
+  end
+
+  defp save_single_embedding(article, embedding) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+    vector = Pgvector.new(embedding)
+
+    Repo.query!(
+      "UPDATE articles SET embedding = $1, embedded_at = $2 WHERE id = $3",
+      [vector, now, article.id]
+    )
   end
 
   defp save_embeddings(articles, embeddings) do

@@ -32,9 +32,8 @@ defmodule Wiki.Ingestion.NLabPipeline do
   """
   @spec process_page(String.t()) :: result()
   def process_page(slug) do
-    with {:ok, page} <- NLabClient.get_page(slug),
-         {:ok, article} <- upsert_article(page) do
-      article
+    with {:ok, page} <- NLabClient.get_page(slug) do
+      upsert_article(page)
     else
       {:error, :not_found} ->
         Logger.debug("nLab page not found: #{slug}")

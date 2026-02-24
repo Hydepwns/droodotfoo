@@ -9,7 +9,7 @@ defmodule Wiki.Ollama do
   require Logger
 
   @default_model "nomic-embed-text"
-  @max_chars 8000
+  @max_chars 4000
 
   @doc """
   Generate embedding for a single text.
