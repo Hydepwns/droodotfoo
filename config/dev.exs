@@ -1,5 +1,55 @@
 import Config
 
+# Configure your database
+config :droodotfoo, Droodotfoo.Repo,
+  username: "postgres",
+  password: "postgres",
+  hostname: "localhost",
+  database: "droodotfoo_dev",
+  stacktrace: true,
+  show_sensitive_data_on_connection_error: true,
+  pool_size: 10,
+  types: Droodotfoo.PostgresTypes
+
+# Oban queues for development
+config :droodotfoo, Oban,
+  queues: [ingestion: 2, images: 4, backups: 1, embeddings: 1, notifications: 2]
+
+# Ollama for local development (run: ollama serve)
+config :droodotfoo, Droodotfoo.Wiki.Ollama,
+  base_url: System.get_env("OLLAMA_URL", "http://localhost:11434"),
+  model: "nomic-embed-text",
+  timeout: 60_000
+
+# MediaWiki client for development
+config :droodotfoo, Droodotfoo.Wiki.Ingestion.MediaWikiClient,
+  base_url: "https://oldschool.runescape.wiki/api.php",
+  user_agent: "DrooFoo-WikiMirror/1.0 (https://droo.foo; dev@droo.foo)",
+  rate_limit_ms: 1_000
+
+# nLab client for development
+config :droodotfoo, Droodotfoo.Wiki.Ingestion.NLabClient,
+  repo_url: "https://github.com/ncatlab/nlab-content.git",
+  local_path: Path.expand("../priv/nlab-content", __DIR__),
+  branch: "master"
+
+# MinIO/S3 for development (local MinIO or mock)
+config :ex_aws,
+  access_key_id: "minioadmin",
+  secret_access_key: "minioadmin",
+  region: "us-east-1",
+  http_client: ExAws.Request.Req
+
+config :ex_aws, :s3,
+  scheme: "http://",
+  host: "localhost",
+  port: 9000
+
+config :droodotfoo, Droodotfoo.Wiki.Storage,
+  bucket_wiki: "droo-wiki",
+  bucket_library: "droo-library",
+  bucket_backups: "xochimilco-backups"
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #

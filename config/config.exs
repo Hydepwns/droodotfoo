@@ -11,7 +11,24 @@ import Config
 config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
 config :droodotfoo,
+  ecto_repos: [Droodotfoo.Repo],
   generators: [timestamp_type: :utc_datetime]
+
+# Cachex - in-memory cache with TTL for wiki
+config :droodotfoo, :wiki_cache,
+  name: :wiki_cache,
+  limit: 10_000,
+  default_ttl: :timer.minutes(15)
+
+# Oban - background job queue (queues configured per environment)
+config :droodotfoo, Oban,
+  engine: Oban.Engines.Basic,
+  repo: Droodotfoo.Repo,
+  # Disabled by default, enabled in dev/prod
+  queues: false
+
+# Admin email for wiki notifications
+config :droodotfoo, :wiki_admin_email, "droo@droo.foo"
 
 # Terminal configuration
 config :droodotfoo, :terminal,

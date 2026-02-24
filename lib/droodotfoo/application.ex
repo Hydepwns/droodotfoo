@@ -18,6 +18,12 @@ defmodule Droodotfoo.Application do
     children =
       [
         DroodotfooWeb.Telemetry,
+        # Database
+        Droodotfoo.Repo,
+        # Background jobs
+        {Oban, Application.fetch_env!(:droodotfoo, Oban)},
+        # Wiki cache
+        {Cachex, Application.get_env(:droodotfoo, :wiki_cache)},
         {DNSCluster, query: Application.get_env(:droodotfoo, :dns_cluster_query) || :ignore},
         {Phoenix.PubSub, name: Droodotfoo.PubSub},
         # Circuit breaker for external API resilience

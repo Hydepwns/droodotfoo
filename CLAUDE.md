@@ -67,11 +67,16 @@ lib/droodotfoo/
   plugins/           # Games: wordle, tetris, snake, conway, etc.
   resume/            # Resume data, filtering, PDF generation
   features/          # Analytics, SSH content, resume export
+  wiki/              # Multi-source wiki aggregator (see Wiki Subsystem below)
 
 lib/droodotfoo_web/
-  live/              # LiveView modules
+  live/              # LiveView modules (main site)
   controllers/       # Traditional controllers (API, auth)
   components/        # Reusable UI components
+  wiki/              # Wiki subdomain (wiki.droo.foo, lib.droo.foo)
+    live/            # Wiki LiveViews
+    controllers/     # OSRS REST API (osrs/v1/)
+    components/      # Wiki-specific components
 ```
 
 ### Key Modules
@@ -80,6 +85,38 @@ lib/droodotfoo_web/
 - **Droodotfoo.Content.PatternCache** - SVG pattern generation with 568x speedup via ETS caching
 - **Droodotfoo.GitHub** - GitHub API integration with 1-hour TTL cache
 - **Droodotfoo.Spotify** - OAuth integration with playback controls
+- **Droodotfoo.Wiki.Search** - Full-text and semantic search with pgvector
+- **Droodotfoo.Wiki.OSRS** - OSRS game data context (items, monsters)
+
+### Wiki Subsystem
+
+Multi-source wiki aggregator at `wiki.droo.foo` with semantic search:
+
+```
+lib/droodotfoo/wiki/
+  content/           # Article, Revision, PendingEdit schemas
+  ingestion/         # Source-specific sync workers and pipelines
+    osrs_*           # OSRS Wiki (MediaWiki API)
+    nlab_*           # nLab (git-based math wiki)
+    wikipedia_*      # Wikipedia (REST API, curated pages)
+    vintage_machinery_* # VintageMachinery.org (wget mirror)
+  osrs/              # Item, Monster schemas for GEX API
+  parts/             # Auto parts catalog (Part, Vehicle, Fitment)
+  library/           # Document management (lib.droo.foo)
+  backup/            # PostgresWorker for daily DB backups
+  notifications/     # Email notifications for edit submissions
+```
+
+**Oban Workers** (background jobs):
+- `OSRSSyncWorker` - every 15 min
+- `NLabSyncWorker` - daily 4am
+- `WikipediaSyncWorker` - weekly Saturday 2am
+- `VintageMachinerySyncWorker` - weekly Sunday 2am
+- `CrossLinkWorker` - daily 5am (cross-source linking)
+- `PostgresWorker` - daily 3am (backup to MinIO)
+- `EmbeddingWorker` - daily 6am (pgvector embeddings via Ollama)
+
+**Storage**: MinIO (S3-compatible) for HTML/raw content, PostgreSQL with pgvector for semantic search.
 
 ### Caching Architecture
 
@@ -89,6 +126,7 @@ All caches use ETS for performance:
 - **GitHub Cache** - 1-hour TTL for repository data
 - **Spotify Cache** - Currently playing data
 - **Posts Cache** - Blog post metadata
+- **Wiki Cache** - Article content with invalidation on sync
 
 ### Two-Phase Loading Pattern
 
@@ -107,13 +145,44 @@ end
 
 ### Routing
 
+**Main site (droo.foo)**:
 - `/` - Home page
-- `/posts` - Blog posts listing
-- `/posts/:slug` - Individual blog post
+- `/posts`, `/posts/:slug` - Blog
 - `/projects` - GitHub projects showcase
 - `/resume` - Resume page
 - `/contact` - Contact form
 - `/dev/dashboard` - Phoenix LiveDashboard (dev only)
+
+**Wiki subdomain (wiki.droo.foo)**:
+- `/` - Landing page
+- `/search` - Full-text and semantic search
+- `/osrs/:slug`, `/nlab/:slug`, `/wikipedia/:slug` - Articles by source
+- `/parts` - Auto parts catalog
+- `/admin/sync`, `/admin/pending`, `/admin/art` - Admin (Tailnet-only)
+- `/osrs/api/v1/items`, `/osrs/api/v1/monsters` - REST API
+
+**Library subdomain (lib.droo.foo)** - Tailnet-only:
+- `/` - Document index
+- `/upload` - Upload new documents
+- `/doc/:slug` - Document reader
+
+## Database
+
+PostgreSQL with pgvector extension for semantic search:
+
+```bash
+# Create/migrate database
+mix ecto.setup        # Create, migrate, seed
+mix ecto.migrate      # Run pending migrations
+mix ecto.reset        # Drop, create, migrate
+
+# Generate migration
+mix ecto.gen.migration create_foo
+```
+
+Key tables: `articles`, `revisions`, `osrs_items`, `osrs_monsters`, `documents`, `parts`, `pending_edits`, `oban_jobs`.
+
+Repo is `Droodotfoo.Repo` with custom types in `Droodotfoo.PostgresTypes` (includes pgvector).
 
 ## Usage Rules
 

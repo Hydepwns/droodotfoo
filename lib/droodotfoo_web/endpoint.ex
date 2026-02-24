@@ -19,8 +19,11 @@ defmodule DroodotfooWeb.Endpoint do
   @websocket_origins [
     "//droo.foo",
     "//www.droo.foo",
+    "//wiki.droo.foo",
+    "//lib.droo.foo",
     "//droodotfoo-lingering-shadow-740.fly.dev",
-    "//localhost"
+    "//localhost",
+    "//wiki.localhost"
   ]
 
   socket "/live", Phoenix.LiveView.Socket,

@@ -80,6 +80,93 @@ if resume_url = System.get_env("RESUME_FILEVERSE_URL") do
 end
 
 if config_env() == :prod do
+  # --- Database ---
+  database_url =
+    System.get_env("DATABASE_URL") ||
+      raise """
+      environment variable DATABASE_URL is missing.
+      For example: ecto://USER:PASS@HOST/DATABASE
+      """
+
+  maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
+
+  config :droodotfoo, Droodotfoo.Repo,
+    url: database_url,
+    pool_size: String.to_integer(System.get_env("POOL_SIZE", "10")),
+    socket_options: maybe_ipv6,
+    types: Droodotfoo.PostgresTypes
+
+  # --- MinIO ---
+  if System.get_env("MINIO_ACCESS_KEY") do
+    config :ex_aws,
+      access_key_id: System.fetch_env!("MINIO_ACCESS_KEY"),
+      secret_access_key: System.fetch_env!("MINIO_SECRET_KEY"),
+      region: "us-east-1"
+
+    config :ex_aws, :s3,
+      scheme: "http://",
+      host: System.get_env("MINIO_HOST", "localhost"),
+      port: String.to_integer(System.get_env("MINIO_PORT", "9000"))
+
+    config :droodotfoo, Droodotfoo.Wiki.Storage,
+      bucket_wiki: System.get_env("MINIO_BUCKET_WIKI", "droo-wiki"),
+      bucket_library: System.get_env("MINIO_BUCKET_LIBRARY", "droo-library"),
+      bucket_backups: System.get_env("MINIO_BUCKET_BACKUPS", "xochimilco-backups")
+  end
+
+  # --- MediaWiki Client ---
+  config :droodotfoo, Droodotfoo.Wiki.Ingestion.MediaWikiClient,
+    base_url: "https://oldschool.runescape.wiki/api.php",
+    user_agent: "DrooFoo-WikiMirror/1.0 (https://droo.foo; contact@droo.foo)",
+    rate_limit_ms: 1_000
+
+  # --- VintageMachinery Client ---
+  config :droodotfoo, Droodotfoo.Wiki.Ingestion.VintageMachineryClient,
+    base_url: "https://vintagemachinery.org",
+    local_path: System.get_env("VM_MIRROR_PATH", "/var/lib/wiki/vintage-machinery"),
+    rate_limit_ms: 2_000,
+    include_paths: ["pubs/", "mfgindex/"]
+
+  # --- Wikipedia Client ---
+  config :droodotfoo, Droodotfoo.Wiki.Ingestion.WikipediaClient,
+    base_url: "https://en.wikipedia.org/api/rest_v1",
+    user_agent: "DrooFoo-WikiMirror/1.0 (https://droo.foo; contact@droo.foo)",
+    rate_limit_ms: 1_000
+
+  # --- Ollama (embeddings) ---
+  config :droodotfoo, Droodotfoo.Wiki.Ollama,
+    base_url: System.get_env("OLLAMA_URL", "http://mini-axol.tail9b2ce8.ts.net:11434"),
+    model: System.get_env("OLLAMA_MODEL", "nomic-embed-text"),
+    timeout: String.to_integer(System.get_env("OLLAMA_TIMEOUT", "60000"))
+
+  # --- Oban ---
+  config :droodotfoo, Oban,
+    engine: Oban.Engines.Basic,
+    repo: Droodotfoo.Repo,
+    queues: [ingestion: 2, images: 4, backups: 1, embeddings: 1, notifications: 2],
+    plugins: [
+      Oban.Plugins.Pruner,
+      {Oban.Plugins.Cron,
+       crontab: [
+         # OSRS Wiki sync every 15 minutes
+         {"*/15 * * * *", Droodotfoo.Wiki.Ingestion.OSRSSyncWorker},
+         # nLab sync daily at 4am
+         {"0 4 * * *", Droodotfoo.Wiki.Ingestion.NLabSyncWorker},
+         # VintageMachinery sync weekly on Sunday at 2am
+         {"0 2 * * 0", Droodotfoo.Wiki.Ingestion.VintageMachinerySyncWorker},
+         # Wikipedia refresh weekly on Saturday at 2am
+         {"0 2 * * 6", Droodotfoo.Wiki.Ingestion.WikipediaSyncWorker},
+         # Cross-source link detection daily at 5am (after syncs)
+         {"0 5 * * *", Droodotfoo.Wiki.CrossLinkWorker},
+         # PostgreSQL backup daily at 3am
+         {"0 3 * * *", Droodotfoo.Wiki.Backup.PostgresWorker},
+         # Embedding refresh nightly at 6am (after all syncs complete)
+         {"0 6 * * *", Droodotfoo.Wiki.EmbeddingWorker}
+       ]}
+    ]
+
+  config :droodotfoo, :wiki_admin_email, System.get_env("WIKI_ADMIN_EMAIL", "droo@droo.foo")
+
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you
   # want to use a different value for prod and you most likely don't want

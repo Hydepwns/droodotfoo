@@ -109,6 +109,9 @@ defmodule Droodotfoo.MixProject do
   defp deps do
     [
       {:phoenix, "~> 1.8.1"},
+      {:phoenix_ecto, "~> 4.5"},
+      {:ecto_sql, "~> 3.13"},
+      {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 4.1"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 1.1.12"},
@@ -136,6 +139,18 @@ defmodule Droodotfoo.MixProject do
       # Spotify integration dependencies
       {:req, "~> 0.5"},
       {:oauth2, "~> 2.1"},
+      # Background jobs
+      {:oban, "~> 2.18"},
+      # Caching
+      {:cachex, "~> 4.0"},
+      # HTML parsing (wiki infobox extraction)
+      {:floki, "~> 0.37"},
+      # S3/MinIO storage
+      {:ex_aws, "~> 2.5"},
+      {:ex_aws_s3, "~> 2.5"},
+      {:sweet_xml, "~> 0.7"},
+      # Vector embeddings for semantic search
+      {:pgvector, "~> 0.3"},
       # Property-based testing
       {:stream_data, "~> 1.0", only: [:test, :dev]},
       # Code quality tools
@@ -187,7 +202,9 @@ defmodule Droodotfoo.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "assets.setup", "assets.build"],
+      setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
+      "ecto.setup": ["ecto.create", "ecto.migrate"],
+      "ecto.reset": ["ecto.drop", "ecto.setup"],
       "assets.setup": [
         "esbuild.install --if-missing",
         "cmd npm --prefix ./assets ci"
@@ -208,6 +225,7 @@ defmodule Droodotfoo.MixProject do
         "cmd find priv/static -type f \\( -name '*.js' -o -name '*.css' -o -name '*.svg' -o -name '*.txt' -o -name '*.html' -o -name '*.json' \\) -exec brotli -f -k {} \\; 2>/dev/null || true"
       ],
       precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"],
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       check: ["ex_check"],
       "check.quick": ["compile --warning-as-errors", "format --check-formatted", "credo --strict"],
       "check.full": ["ex_check", "deps.unlock --unused"]

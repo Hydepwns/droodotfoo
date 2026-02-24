@@ -81,5 +81,4 @@ defmodule Droodotfoo.Contact.Validator do
         end
     end
   end
-
 end

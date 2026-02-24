@@ -139,10 +139,10 @@
   <body>
     <!-- Skip to main content link for screen readers -->
     <a href="#main-content" class="skip-to-content">Skip to main content</a>
-    
-<%= if Application.get_env(:droodotfoo, :environment) == :dev do %>
-    <!-- Debug Mode Indicator (dev only) -->
-    <div id="debug-indicator" aria-live="polite" aria-atomic="true"></div>
+
+    <%= if Application.get_env(:droodotfoo, :environment) == :dev do %>
+      <!-- Debug Mode Indicator (dev only) -->
+      <div id="debug-indicator" aria-live="polite" aria-atomic="true"></div>
     <% end %>
     
 <!-- Theme Change Indicator -->
@@ -233,6 +233,5 @@
         </iframe>
       </div>
     </div>
-
-    </body>
+  </body>
 </html>

@@ -18,7 +18,8 @@ defmodule DroodotfooWeb do
   """
 
   def static_paths,
-    do: ~w(assets fonts images models astro .well-known favicon.ico robots.txt llms.txt manifest.json)
+    do:
+      ~w(assets fonts images models astro .well-known favicon.ico robots.txt llms.txt manifest.json)
 
   def router do
     quote do
