@@ -8,7 +8,7 @@ defmodule Droodotfoo.Wiki.Library do
 
   import Ecto.Query
 
-  alias Droodotfoo.Wiki.Library.Document
+  alias Droodotfoo.Wiki.Library.{Document, DocumentRevision}
   alias Droodotfoo.Repo
 
   require Logger
@@ -125,6 +125,7 @@ defmodule Droodotfoo.Wiki.Library do
     slug = Keyword.get_lazy(opts, :slug, fn -> generate_unique_slug(title) end)
     tags = Keyword.get(opts, :tags, [])
     file_key = "documents/#{slug}/#{slug}#{extension_for(content_type)}"
+    content_hash = compute_hash(content)
 
     with :ok <- upload_file(file_key, content, content_type),
          extracted <- extract_text(content_type, content),
@@ -135,6 +136,7 @@ defmodule Droodotfoo.Wiki.Library do
            file_key: file_key,
            file_size: byte_size(content),
            extracted_text: extracted,
+           content_hash: content_hash,
            tags: tags,
            metadata: %{}
          },
@@ -146,6 +148,110 @@ defmodule Droodotfoo.Wiki.Library do
         delete_file(file_key)
         error
     end
+  end
+
+  @doc """
+  Update a document's file content, creating a revision of the old version.
+  """
+  @spec update_document_content(Document.t(), binary(), keyword()) ::
+          {:ok, Document.t()} | {:error, term()}
+  def update_document_content(%Document{} = document, content, opts \\ []) do
+    comment = Keyword.get(opts, :comment)
+    new_hash = compute_hash(content)
+
+    # Skip if content is identical
+    if new_hash == document.content_hash do
+      {:ok, document}
+    else
+      Repo.transaction(fn ->
+        # Create revision of current version (if it has content)
+        if document.content_hash do
+          revision_key = revision_file_key(document)
+
+          case get_file(document.file_key) do
+            {:ok, old_content} ->
+              :ok = upload_file(revision_key, old_content, document.content_type)
+
+              %DocumentRevision{}
+              |> DocumentRevision.changeset(%{
+                document_id: document.id,
+                content_hash: document.content_hash,
+                file_key: revision_key,
+                file_size: document.file_size,
+                comment: comment
+              })
+              |> Repo.insert!()
+
+            {:error, _} ->
+              :ok
+          end
+        end
+
+        # Upload new content
+        :ok = upload_file(document.file_key, content, document.content_type)
+
+        # Update document record
+        extracted = extract_text(document.content_type, content)
+
+        document
+        |> Document.changeset(%{
+          content_hash: new_hash,
+          file_size: byte_size(content),
+          extracted_text: extracted
+        })
+        |> Repo.update!()
+      end)
+    end
+  end
+
+  @doc """
+  List all revisions for a document.
+  """
+  @spec list_revisions(Document.t() | integer()) :: [DocumentRevision.t()]
+  def list_revisions(%Document{id: id}), do: list_revisions(id)
+
+  def list_revisions(document_id) when is_integer(document_id) do
+    from(r in DocumentRevision,
+      where: r.document_id == ^document_id,
+      order_by: [desc: r.inserted_at]
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Restore a document from a previous revision.
+  """
+  @spec restore_revision(Document.t(), integer()) :: {:ok, Document.t()} | {:error, term()}
+  def restore_revision(%Document{} = document, revision_id) do
+    case Repo.get_by(DocumentRevision, id: revision_id, document_id: document.id) do
+      nil ->
+        {:error, :not_found}
+
+      revision ->
+        case get_file(revision.file_key) do
+          {:ok, content} ->
+            update_document_content(document, content,
+              comment: "Restored from revision #{revision_id}"
+            )
+
+          {:error, reason} ->
+            {:error, reason}
+        end
+    end
+  end
+
+  @doc """
+  Compute SHA256 hash of content.
+  """
+  @spec compute_hash(binary()) :: String.t()
+  def compute_hash(content) do
+    :crypto.hash(:sha256, content) |> Base.encode16(case: :lower)
+  end
+
+  defp revision_file_key(%Document{slug: slug} = document) do
+    timestamp = DateTime.utc_now() |> DateTime.to_unix()
+    ext = extension_for(document.content_type)
+    "documents/#{slug}/revisions/#{timestamp}#{ext}"
   end
 
   @doc """
@@ -271,9 +377,95 @@ defmodule Droodotfoo.Wiki.Library do
   defp extension_for("text/html"), do: ".html"
   defp extension_for(_), do: ""
 
-  # Basic text extraction - can be enhanced with external tools
+  # Text extraction for various file types
   defp extract_text("text/plain", content), do: content
   defp extract_text("text/markdown", content), do: content
   defp extract_text("text/html", content), do: Floki.text(Floki.parse_document!(content))
+  defp extract_text("application/pdf", content), do: extract_pdf_text(content)
+
+  defp extract_text(
+         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+         content
+       ),
+       do: extract_docx_text(content)
+
   defp extract_text(_, _), do: nil
+
+  # Extract text from PDF using pdftotext (poppler-utils)
+  defp extract_pdf_text(content) do
+    # Write PDF to temp file
+    temp_path =
+      Path.join(System.tmp_dir!(), "pdf_extract_#{:erlang.unique_integer([:positive])}.pdf")
+
+    try do
+      File.write!(temp_path, content)
+
+      case System.cmd("pdftotext", ["-layout", "-nopgbrk", temp_path, "-"],
+             stderr_to_stdout: true
+           ) do
+        {text, 0} ->
+          text
+          |> String.trim()
+          |> case do
+            "" -> nil
+            text -> text
+          end
+
+        {error, _code} ->
+          Logger.warning("pdftotext failed: #{error}")
+          nil
+      end
+    rescue
+      e ->
+        Logger.warning("PDF extraction error: #{inspect(e)}")
+        nil
+    after
+      File.rm(temp_path)
+    end
+  end
+
+  # Extract text from DOCX by parsing word/document.xml
+  defp extract_docx_text(content) do
+    # DOCX is a ZIP file containing XML
+    case :zip.unzip(content, [:memory]) do
+      {:ok, files} ->
+        files
+        |> Enum.find(fn {name, _content} -> name == ~c"word/document.xml" end)
+        |> case do
+          {_, xml_content} ->
+            parse_docx_xml(xml_content)
+
+          nil ->
+            Logger.warning("DOCX missing word/document.xml")
+            nil
+        end
+
+      {:error, reason} ->
+        Logger.warning("DOCX unzip failed: #{inspect(reason)}")
+        nil
+    end
+  rescue
+    e ->
+      Logger.warning("DOCX extraction error: #{inspect(e)}")
+      nil
+  end
+
+  defp parse_docx_xml(xml_content) do
+    case Floki.parse_document(xml_content) do
+      {:ok, doc} ->
+        # Extract text from <w:t> elements (Word text runs)
+        doc
+        |> Floki.find("w\\:t, t")
+        |> Floki.text(sep: " ")
+        |> String.replace(~r/\s+/, " ")
+        |> String.trim()
+        |> case do
+          "" -> nil
+          text -> text
+        end
+
+      {:error, _} ->
+        nil
+    end
+  end
 end

@@ -30,6 +30,9 @@ defmodule Droodotfoo.Wiki.Library.Document do
     field(:extracted_text, :string)
     field(:metadata, :map, default: %{})
     field(:tags, {:array, :string}, default: [])
+    field(:content_hash, :string)
+
+    has_many(:revisions, Droodotfoo.Wiki.Library.DocumentRevision)
 
     timestamps(type: :utc_datetime)
   end
@@ -49,7 +52,8 @@ defmodule Droodotfoo.Wiki.Library.Document do
       :file_size,
       :extracted_text,
       :metadata,
-      :tags
+      :tags,
+      :content_hash
     ])
     |> validate_required([:title, :slug, :content_type, :file_key, :file_size])
     |> validate_inclusion(:content_type, @allowed_types, message: "unsupported file type")
