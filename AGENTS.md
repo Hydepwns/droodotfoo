@@ -125,4 +125,13 @@ _A code generation and project patching framework_
 [igniter usage rules](deps/igniter/usage-rules.md)
 
 <!-- igniter-end -->
+<!-- mdex-start -->
+
+## mdex usage
+
+_Fast and extensible Markdown for Elixir_
+
+[mdex usage rules](deps/mdex/usage-rules.md)
+
+<!-- mdex-end -->
 <!-- usage-rules-end -->

@@ -40,6 +40,12 @@ mix pattern_cache clear      # Clear all cached patterns
 mix pattern_cache benchmark  # Benchmark cache performance
 mix pattern_cache warmup     # Pre-generate patterns for all posts
 
+# Wiki Management (wiki.droo.foo)
+mix wiki.status              # Check article counts, MinIO, Ollama status
+mix wiki.sync --full         # Initial sync of all sources (OSRS, nLab, machines)
+mix wiki.sync osrs           # Sync specific source
+mix wiki.import "Category theory"  # Import Wikipedia article
+
 # Documentation
 mix docs               # Generate ExDoc documentation
 
@@ -61,6 +67,7 @@ mix usage_rules.sync AGENTS.md --all --link-to-folder deps --yes
 lib/droodotfoo/
   content/           # Blog system: posts, patterns, formatters
   github/            # GitHub API integration and caching
+  git/               # Multi-source git browser (GitHub, Forgejo)
   spotify/           # Spotify OAuth and playback
   web3/              # Ethereum: ENS, NFT, tokens, contracts
   fileverse/         # P2P file sharing with WebRTC
@@ -73,6 +80,9 @@ lib/droodotfoo_web/
   live/              # LiveView modules (main site)
   controllers/       # Traditional controllers (API, auth)
   components/        # Reusable UI components
+  git/               # Git subdomain (git.droo.foo)
+    live/            # Repo browser, file viewer, commits
+    components/      # Git-specific layouts and components
   wiki/              # Wiki subdomain (wiki.droo.foo, lib.droo.foo)
     live/            # Wiki LiveViews
     controllers/     # OSRS REST API (osrs/v1/)
@@ -84,6 +94,7 @@ lib/droodotfoo_web/
 - **Droodotfoo.Content.Posts** (`lib/droodotfoo/content/posts.ex`) - Blog post loading, parsing, and ETS caching
 - **Droodotfoo.Content.PatternCache** - SVG pattern generation with 568x speedup via ETS caching
 - **Droodotfoo.GitHub** - GitHub API integration with 1-hour TTL cache
+- **Droodotfoo.Git.Source** - Multi-provider git abstraction (GitHub, Forgejo)
 - **Droodotfoo.Spotify** - OAuth integration with playback controls
 - **Droodotfoo.Wiki.Search** - Full-text and semantic search with pgvector
 - **Droodotfoo.Wiki.OSRS** - OSRS game data context (items, monsters)
@@ -117,6 +128,19 @@ lib/droodotfoo/wiki/
 - `EmbeddingWorker` - daily 6am (pgvector embeddings via Ollama)
 
 **Storage**: MinIO (S3-compatible) for HTML/raw content, PostgreSQL with pgvector for semantic search.
+
+### Git Subsystem
+
+Multi-source git browser at `git.droo.foo`:
+
+```
+lib/droodotfoo/git/
+  source.ex          # Behaviour for git providers
+  github.ex          # GitHub API client
+  forgejo.ex         # Forgejo/Gitea API client
+```
+
+Sources are dynamically discovered via `Droodotfoo.Git.Source` behaviour. Add new providers by implementing `list_repos/1`, `get_repo/2`, `list_contents/3`, `get_file/3`, and `list_commits/3`.
 
 ### Caching Architecture
 
@@ -165,6 +189,13 @@ end
 - `/` - Document index
 - `/upload` - Upload new documents
 - `/doc/:slug` - Document reader
+
+**Git subdomain (git.droo.foo)**:
+- `/` - Repository list (all sources)
+- `/:source/:owner/:repo` - Repository detail
+- `/:source/:owner/:repo/tree/:branch/*path` - File browser
+- `/:source/:owner/:repo/blob/:branch/*path` - File viewer
+- `/:source/:owner/:repo/commits/:branch` - Commit history
 
 ## Database
 
