@@ -4,6 +4,7 @@ defmodule DroodotfooWeb.Plugs.Subdomain do
 
   - `wiki.droo.foo` or `wiki.localhost` -> :wiki
   - `lib.droo.foo` or `lib.localhost` -> :library
+  - `git.droo.foo` or `git.localhost` -> :git
   """
 
   import Plug.Conn
@@ -17,6 +18,8 @@ defmodule DroodotfooWeb.Plugs.Subdomain do
         "lib.localhost" -> :library
         "wiki." <> _ -> :wiki
         "wiki.localhost" -> :wiki
+        "git." <> _ -> :git
+        "git.localhost" -> :git
         _ -> nil
       end
 
