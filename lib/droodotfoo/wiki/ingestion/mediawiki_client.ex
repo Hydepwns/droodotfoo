@@ -257,6 +257,136 @@ defmodule Droodotfoo.Wiki.Ingestion.MediaWikiClient do
   end
 
   @doc """
+  Get all pages in the wiki (paginated).
+
+  Returns a stream of page titles. Use with `Stream.take/2` to limit.
+
+  ## Options
+
+    * `:from` - Start from this title (for resuming)
+    * `:namespace` - Namespace to query (default: 0 for main)
+    * `:batch_size` - Pages per API call (default: 500, max: 500)
+
+  ## Examples
+
+      # Get all titles as a list (careful - may be large!)
+      {:ok, stream} = MediaWikiClient.all_pages()
+      titles = Enum.to_list(stream)
+
+      # Process in batches
+      {:ok, stream} = MediaWikiClient.all_pages()
+      stream |> Stream.chunk_every(100) |> Enum.each(&process_batch/1)
+
+      # Resume from a specific title
+      {:ok, stream} = MediaWikiClient.all_pages(from: "Dragon")
+
+  """
+  @spec all_pages(keyword()) :: {:ok, Enumerable.t()} | {:error, term()}
+  def all_pages(opts \\ []) do
+    from = Keyword.get(opts, :from)
+    namespace = Keyword.get(opts, :namespace, 0)
+    batch_size = Keyword.get(opts, :batch_size, 500) |> min(500)
+
+    stream =
+      Stream.resource(
+        fn -> {from, false} end,
+        fn
+          {_continue, true} ->
+            {:halt, nil}
+
+          {continue, false} ->
+            case fetch_all_pages_batch(continue, namespace, batch_size, opts) do
+              {:ok, titles, nil} ->
+                {titles, {nil, true}}
+
+              {:ok, titles, next_continue} ->
+                {titles, {next_continue, false}}
+
+              {:error, reason} ->
+                Logger.error("all_pages error: #{inspect(reason)}")
+                {:halt, nil}
+            end
+        end,
+        fn _ -> :ok end
+      )
+
+    {:ok, stream}
+  end
+
+  @doc """
+  Get all pages as a list (convenience wrapper).
+
+  ## Options
+
+    * `:limit` - Maximum pages to return (default: unlimited)
+    * `:from` - Start from this title
+    * `:progress` - Function to call with progress updates (receives count)
+
+  """
+  @spec all_pages_list(keyword()) :: {:ok, [String.t()]} | {:error, term()}
+  def all_pages_list(opts \\ []) do
+    limit = Keyword.get(opts, :limit)
+    progress_fn = Keyword.get(opts, :progress)
+
+    case all_pages(opts) do
+      {:ok, stream} ->
+        stream =
+          if limit do
+            Stream.take(stream, limit)
+          else
+            stream
+          end
+
+        stream =
+          if progress_fn do
+            stream
+            |> Stream.with_index(1)
+            |> Stream.each(fn {_title, idx} ->
+              if rem(idx, 500) == 0, do: progress_fn.(idx)
+            end)
+            |> Stream.map(fn {title, _idx} -> title end)
+          else
+            stream
+          end
+
+        {:ok, Enum.to_list(stream)}
+
+      error ->
+        error
+    end
+  end
+
+  defp fetch_all_pages_batch(continue, namespace, batch_size, opts) do
+    rate_limit()
+
+    params =
+      %{
+        action: "query",
+        list: "allpages",
+        format: "json",
+        aplimit: batch_size,
+        apnamespace: namespace
+      }
+      |> maybe_add_continue(continue)
+
+    case request(params, opts) do
+      {:ok, %{"query" => %{"allpages" => pages}} = response} ->
+        titles = Enum.map(pages, & &1["title"])
+        next_continue = get_in(response, ["continue", "apcontinue"])
+        {:ok, titles, next_continue}
+
+      {:ok, %{"error" => error}} ->
+        {:error, {:api_error, error["code"], error["info"]}}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  defp maybe_add_continue(params, nil), do: params
+  defp maybe_add_continue(params, continue), do: Map.put(params, :apcontinue, continue)
+
+  @doc """
   Search pages by text.
   """
   @spec search(String.t(), keyword()) :: {:ok, [String.t()]} | {:error, term()}

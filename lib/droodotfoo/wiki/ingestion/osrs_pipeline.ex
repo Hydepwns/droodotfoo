@@ -27,8 +27,8 @@ defmodule Droodotfoo.Wiki.Ingestion.OSRSPipeline do
   @spec process_page(String.t()) :: result()
   def process_page(title) do
     with {:ok, page} <- MediaWikiClient.get_page(title),
-         {:ok, article} <- upsert_article(page) do
-      article
+         {status, article} when status in [:created, :updated, :unchanged] <- upsert_article(page) do
+      {status, article}
     else
       {:error, :not_found} ->
         Logger.debug("Page not found: #{title}")
@@ -269,10 +269,21 @@ defmodule Droodotfoo.Wiki.Ingestion.OSRSPipeline do
   # Helpers
 
   defp slugify(title) do
-    title
-    |> String.downcase()
-    |> String.replace(~r/[^a-z0-9]+/, "-")
-    |> String.trim("-")
+    slug =
+      title
+      |> String.downcase()
+      |> String.replace(~r/[^a-z0-9]+/, "-")
+      |> String.trim("-")
+
+    # Handle titles that are only special characters (e.g., "!", "%", "(+)")
+    if slug == "" do
+      title
+      |> URI.encode()
+      |> String.downcase()
+      |> String.replace("%", "pct")
+    else
+      slug
+    end
   end
 
   defp extract_metadata(page) do

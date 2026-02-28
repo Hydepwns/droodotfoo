@@ -60,6 +60,13 @@ defmodule Droodotfoo.Wiki.Ingestion.SyncRun do
     |> Droodotfoo.Repo.update!()
   end
 
+  @doc "Update progress on a running sync."
+  def update_progress!(run, attrs) do
+    run
+    |> changeset(attrs)
+    |> Droodotfoo.Repo.update!()
+  end
+
   @doc "Timestamp of last successful sync for a source."
   @spec last_completed_at(atom()) :: DateTime.t() | nil
   def last_completed_at(source) do

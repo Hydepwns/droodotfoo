@@ -34,8 +34,8 @@ defmodule Droodotfoo.Wiki.Ingestion.WikipediaPipeline do
   @spec process_page(String.t()) :: result()
   def process_page(slug) do
     with {:ok, page} <- WikipediaClient.get_page(slug),
-         {:ok, article} <- upsert_article(page) do
-      article
+         {status, article} when status in [:created, :updated, :unchanged] <- upsert_article(page) do
+      {status, article}
     else
       {:error, :not_found} ->
         Logger.debug("Wikipedia page not found: #{slug}")

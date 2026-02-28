@@ -35,7 +35,12 @@ defmodule Droodotfoo.Wiki.Ingestion.SyncWorkerHelper do
       SyncWorkerHelper.sync_recent_changes(:wikipedia, &WikipediaPipeline.sync_recent_changes/1, "Wikipedia sync", transform: false)
 
   """
-  @spec sync_recent_changes(atom(), (DateTime.t() | nil -> {:ok, map()} | {:error, term()}), String.t(), keyword()) ::
+  @spec sync_recent_changes(
+          atom(),
+          (DateTime.t() | nil -> {:ok, map()} | {:error, term()}),
+          String.t(),
+          keyword()
+        ) ::
           :ok | {:error, term()}
   def sync_recent_changes(source, sync_fn, label, opts \\ []) do
     run = SyncRun.start!(source, "recent_changes")
