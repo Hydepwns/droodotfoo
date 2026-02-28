@@ -8,22 +8,30 @@ defmodule DroodotfooWeb.Wiki.SearchLive do
 
   alias DroodotfooWeb.Wiki.{Helpers, Layouts}
   alias Droodotfoo.Wiki.Search
+  alias Droodotfoo.Wiki.Search.RateLimiter
 
   @impl true
   def mount(_params, _session, socket) do
-    source_counts = Search.source_counts()
+    # Defer source_counts loading to avoid blocking mount
+    if connected?(socket), do: send(self(), :load_source_counts)
 
     {:ok,
      assign(socket,
        query: "",
        results: [],
        source_filter: nil,
-       source_counts: source_counts,
+       source_counts: %{},
        total_count: 0,
        search_mode: :hybrid,
+       rate_limited: false,
        page_title: "SEARCH",
        current_path: "/search"
      )}
+  end
+
+  @impl true
+  def handle_info(:load_source_counts, socket) do
+    {:noreply, assign(socket, source_counts: Search.source_counts())}
   end
 
   @impl true
@@ -80,13 +88,19 @@ defmodule DroodotfooWeb.Wiki.SearchLive do
         </form>
       </section>
 
-      <section :if={@query == ""} class="section-spaced">
+      <section :if={@rate_limited} class="section-spaced">
+        <p class="text-error">
+          Rate limit exceeded. Please wait a moment before searching again.
+        </p>
+      </section>
+
+      <section :if={@query == "" && !@rate_limited} class="section-spaced">
         <p class="text-muted-alt">
           Enter a search term to find articles across all sources.
         </p>
       </section>
 
-      <section :if={@query != "" && @results == []} class="section-spaced">
+      <section :if={@query != "" && @results == [] && !@rate_limited} class="section-spaced">
         <p class="text-muted-alt">
           No results found for "{@query}".
         </p>
@@ -172,16 +186,39 @@ defmodule DroodotfooWeb.Wiki.SearchLive do
   end
 
   defp do_search(%{assigns: %{query: ""}} = socket) do
-    assign(socket, results: [], total_count: 0)
+    assign(socket, results: [], total_count: 0, rate_limited: false)
   end
 
   defp do_search(%{assigns: %{query: query, source_filter: source, search_mode: mode}} = socket) do
-    opts = [mode: mode]
-    opts = if source, do: Keyword.put(opts, :source, source), else: opts
-    results = Search.search(query, opts)
-    total = Search.count(query, opts)
+    ip = get_client_ip(socket)
 
-    assign(socket, results: results, total_count: total)
+    case RateLimiter.check_rate_limit(ip) do
+      {:ok, :allowed} ->
+        RateLimiter.record_request(ip)
+        opts = [mode: mode]
+        opts = if source, do: Keyword.put(opts, :source, source), else: opts
+        results = Search.search(query, opts)
+        total = Search.count(query, opts)
+
+        assign(socket, results: results, total_count: total, rate_limited: false)
+
+      {:error, _message} ->
+        assign(socket, results: [], total_count: 0, rate_limited: true)
+    end
+  end
+
+  defp get_client_ip(socket) do
+    case socket.assigns[:peer_data] do
+      %{address: ip} when is_tuple(ip) -> ip |> Tuple.to_list() |> Enum.join(".")
+      _ -> get_connect_info_ip(socket)
+    end
+  end
+
+  defp get_connect_info_ip(socket) do
+    case Phoenix.LiveView.get_connect_info(socket, :peer_data) do
+      %{address: ip} when is_tuple(ip) -> ip |> Tuple.to_list() |> Enum.join(".")
+      _ -> "unknown"
+    end
   end
 
   defp push_patch_if_changed(socket, query, source, mode) do

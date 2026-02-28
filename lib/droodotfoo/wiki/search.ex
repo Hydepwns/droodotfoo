@@ -139,28 +139,44 @@ defmodule Droodotfoo.Wiki.Search do
 
   Falls back to keyword search if embedding fails.
   """
+  # Shorter timeout for search queries to avoid blocking UI
+  @search_embed_timeout 5_000
+
   @spec hybrid_search(String.t(), source() | nil, integer(), integer()) :: [result()]
   def hybrid_search(query, source, limit, offset) do
-    case Ollama.embed(query) do
+    case Ollama.embed(query, timeout: @search_embed_timeout) do
       {:ok, query_embedding} ->
         do_hybrid_search(query, query_embedding, source, limit, offset)
 
       {:error, _reason} ->
+        # Fall back to keyword search if embedding fails
         keyword_search(query, source, limit, offset)
     end
   end
 
   defp do_hybrid_search(query, query_embedding, source, limit, offset) do
     # Fetch enough results from each method to cover offset + limit after merging
-    # We need at least (offset + limit) from each source since RRF can interleave
-    fetch_limit = max(limit * 2, offset + limit)
+    fetch_limit = offset + limit
 
-    keyword_results = keyword_search(query, source, fetch_limit, 0)
-    semantic_results = do_semantic_search(query, query_embedding, source, fetch_limit, 0)
+    # Run keyword and semantic searches in parallel for better performance
+    keyword_task = Task.async(fn -> keyword_search(query, source, fetch_limit, 0) end)
+
+    semantic_task =
+      Task.async(fn -> do_semantic_search(query, query_embedding, source, fetch_limit, 0) end)
+
+    # Await with timeout, fall back gracefully on failure
+    keyword_results = safe_await(keyword_task, [])
+    semantic_results = safe_await(semantic_task, [])
 
     merge_rrf(keyword_results, semantic_results)
     |> Enum.drop(offset)
     |> Enum.take(limit)
+  end
+
+  defp safe_await(task, default) do
+    Task.await(task, 5_000)
+  catch
+    :exit, _ -> default
   end
 
   defp merge_rrf(keyword_results, semantic_results) do
