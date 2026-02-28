@@ -126,3 +126,7 @@ docs/art/
 
 # Test posts
 /priv/posts/test-post.md
+
+# Wiki data (downloaded/synced from external sources)
+/priv/nlab-content/
+/priv/wikipedia-dump/
