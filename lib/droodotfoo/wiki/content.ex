@@ -49,18 +49,36 @@ defmodule Droodotfoo.Wiki.Content do
   - :limit - max results (default 50)
   - :offset - pagination offset
   - :order_by - :title | :updated_at (default :title)
+  - :letter - filter by first letter of title (e.g., "A")
   """
   @spec list_articles(source(), keyword()) :: [Article.t()]
   def list_articles(source, opts \\ []) do
     limit = Keyword.get(opts, :limit, 50)
     offset = Keyword.get(opts, :offset, 0)
     order_by = Keyword.get(opts, :order_by, :title)
+    letter = Keyword.get(opts, :letter)
 
     from(a in Article, where: a.source == ^source)
+    |> maybe_filter_letter(letter)
     |> order_by_field(order_by)
     |> limit(^limit)
     |> offset(^offset)
     |> Repo.all()
+  end
+
+  @doc """
+  Count articles for a source with optional filters.
+
+  Options:
+  - :letter - filter by first letter of title
+  """
+  @spec count_articles(source(), keyword()) :: non_neg_integer()
+  def count_articles(source, opts \\ []) do
+    letter = Keyword.get(opts, :letter)
+
+    from(a in Article, where: a.source == ^source)
+    |> maybe_filter_letter(letter)
+    |> Repo.aggregate(:count)
   end
 
   @doc """
@@ -138,6 +156,58 @@ defmodule Droodotfoo.Wiki.Content do
     |> Repo.insert(on_conflict: :replace_all, conflict_target: [:source, :from_slug])
   end
 
+  @doc """
+  List all redirects, optionally filtered by source.
+
+  Options:
+  - :source - filter by source
+  - :limit - max results (default 100)
+  - :offset - pagination offset
+  """
+  @spec list_redirects(keyword()) :: [Redirect.t()]
+  def list_redirects(opts \\ []) do
+    source = Keyword.get(opts, :source)
+    limit = Keyword.get(opts, :limit, 100)
+    offset = Keyword.get(opts, :offset, 0)
+
+    from(r in Redirect)
+    |> maybe_filter_redirect_source(source)
+    |> order_by([r], asc: r.source, asc: r.from_slug)
+    |> limit(^limit)
+    |> offset(^offset)
+    |> Repo.all()
+  end
+
+  defp maybe_filter_redirect_source(query, nil), do: query
+  defp maybe_filter_redirect_source(query, source), do: where(query, [r], r.source == ^source)
+
+  @doc """
+  Delete a redirect by ID.
+  """
+  @spec delete_redirect(integer()) :: {:ok, Redirect.t()} | {:error, :not_found}
+  def delete_redirect(id) do
+    case Repo.get(Redirect, id) do
+      nil -> {:error, :not_found}
+      redirect -> Repo.delete(redirect)
+    end
+  end
+
+  @doc """
+  Get total count of redirects.
+  """
+  @spec count_redirects() :: integer()
+  def count_redirects do
+    Repo.aggregate(Redirect, :count)
+  end
+
+  @doc """
+  Get redirect by ID.
+  """
+  @spec get_redirect(integer()) :: Redirect.t() | nil
+  def get_redirect(id) do
+    Repo.get(Redirect, id)
+  end
+
   # Private helpers
 
   defp load_html(%Article{} = article) do
@@ -150,6 +220,13 @@ defmodule Droodotfoo.Wiki.Content do
 
   defp maybe_filter_source(query, nil), do: query
   defp maybe_filter_source(query, source), do: where(query, [a], a.source == ^source)
+
+  defp maybe_filter_letter(query, nil), do: query
+
+  defp maybe_filter_letter(query, letter) when is_binary(letter) do
+    upper_letter = String.upcase(letter)
+    where(query, [a], fragment("upper(left(?, 1)) = ?", a.title, ^upper_letter))
+  end
 
   defp to_tsquery(query) do
     query

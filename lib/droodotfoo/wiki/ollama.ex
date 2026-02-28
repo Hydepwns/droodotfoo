@@ -14,11 +14,14 @@ defmodule Droodotfoo.Wiki.Ollama do
   @doc """
   Generate embedding for a single text.
 
+  Options:
+    - `:timeout` - request timeout in ms (default: config timeout)
+
   Returns `{:ok, [float()]}` or `{:error, reason}`.
   """
-  @spec embed(String.t()) :: {:ok, [float()]} | {:error, term()}
-  def embed(text) when is_binary(text) do
-    case embed_batch([text]) do
+  @spec embed(String.t(), keyword()) :: {:ok, [float()]} | {:error, term()}
+  def embed(text, opts \\ []) when is_binary(text) do
+    case embed_batch([text], opts) do
       {:ok, [embedding]} -> {:ok, embedding}
       {:error, reason} -> {:error, reason}
     end
@@ -28,19 +31,24 @@ defmodule Droodotfoo.Wiki.Ollama do
   Generate embeddings for multiple texts in a single request.
 
   More efficient than calling embed/1 multiple times.
+
+  Options:
+    - `:timeout` - request timeout in ms (default: config timeout)
+
   Returns `{:ok, [[float()]]}` or `{:error, reason}`.
   """
-  @spec embed_batch([String.t()]) :: {:ok, [[float()]]} | {:error, term()}
-  def embed_batch(texts) when is_list(texts) do
+  @spec embed_batch([String.t()], keyword()) :: {:ok, [[float()]]} | {:error, term()}
+  def embed_batch(texts, opts \\ []) when is_list(texts) do
     config = config()
     url = "#{config.base_url}/api/embed"
+    timeout = Keyword.get(opts, :timeout, config.timeout)
 
     body = %{
       model: config.model,
       input: texts
     }
 
-    case Req.post(url, json: body, receive_timeout: config.timeout) do
+    case Req.post(url, json: body, receive_timeout: timeout) do
       {:ok, %{status: 200, body: %{"embeddings" => embeddings}}} ->
         {:ok, embeddings}
 
