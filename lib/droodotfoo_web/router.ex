@@ -27,6 +27,18 @@ defmodule DroodotfooWeb.Router do
     plug DroodotfooWeb.Plugs.WikiCacheHeaders
   end
 
+  # Git browser pipeline
+  pipeline :git_browser do
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_live_flash
+    plug :put_root_layout, html: {DroodotfooWeb.Git.Layouts, :root}
+    plug :protect_from_forgery
+    plug :put_secure_browser_headers
+    plug DroodotfooWeb.Plugs.ContentSecurityPolicy
+    plug DroodotfooWeb.Plugs.Subdomain
+  end
+
   # Wiki admin pipeline (Tailnet-only)
   pipeline :wiki_admin do
     plug DroodotfooWeb.Plugs.TailnetOnly
@@ -41,9 +53,24 @@ defmodule DroodotfooWeb.Router do
   end
 
   # ===========================================================================
-  # Library Subdomain (lib.droo.foo) - Tailnet-only
+  # Git Subdomain (git.droo.foo) - Public repository browser
   # ===========================================================================
   # Host-scoped routes MUST come BEFORE catch-all routes
+
+  scope "/", DroodotfooWeb.Git, host: "git." do
+    pipe_through :git_browser
+
+    live "/", RepoListLive, :index
+    live "/:source/:owner/:repo", RepoDetailLive, :show
+    live "/:source/:owner/:repo/tree/:branch", FileBrowserLive, :index
+    live "/:source/:owner/:repo/tree/:branch/*path", FileBrowserLive, :show
+    live "/:source/:owner/:repo/blob/:branch/*path", FileViewerLive, :show
+    live "/:source/:owner/:repo/commits/:branch", CommitsLive, :index
+  end
+
+  # ===========================================================================
+  # Library Subdomain (lib.droo.foo) - Tailnet-only
+  # ===========================================================================
 
   scope "/", DroodotfooWeb.Wiki.Library, host: "lib." do
     pipe_through [:wiki_browser, :wiki_admin]
@@ -72,6 +99,7 @@ defmodule DroodotfooWeb.Router do
     live "/sync", SyncLive, :index
     live "/pending", PendingLive, :index
     live "/pending/:id", PendingLive, :show
+    live "/redirects", RedirectsLive, :index
 
     # WikiArt curation
     live "/art", ArtLive.Index, :index
@@ -90,6 +118,13 @@ defmodule DroodotfooWeb.Router do
     live "/parts", Parts.IndexLive, :index
     live "/parts/add", Parts.FormLive, :new
     live "/parts/:number", Parts.ShowLive, :show
+
+    # Source index routes (browse articles by source)
+    live "/osrs", SourceIndexLive, :index, as: :osrs_index
+    live "/nlab", SourceIndexLive, :index, as: :nlab_index
+    live "/wikipedia", SourceIndexLive, :index, as: :wikipedia_index
+    live "/art", SourceIndexLive, :index, as: :wikiart_index
+    live "/machines", SourceIndexLive, :index, as: :machines_index
 
     # Source-specific article routes
     live "/osrs/:slug", ArticleLive, :show

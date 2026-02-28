@@ -13,7 +13,7 @@ defmodule DroodotfooWeb.Wiki.Admin.SyncLive do
 
   alias DroodotfooWeb.Wiki.Layouts
   alias Droodotfoo.Wiki.Ingestion.SyncRun
-  alias Droodotfoo.Wiki.Content
+  alias Droodotfoo.Wiki.{Content, CrossLinks, Search}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -27,6 +27,9 @@ defmodule DroodotfooWeb.Wiki.Admin.SyncLive do
        source_statuses: [],
        recent_runs: [],
        article_counts: %{},
+       cross_link_stats: %{},
+       embedding_stats: %{},
+       redirect_count: 0,
        page_title: "Sync Dashboard",
        current_path: "/admin/sync"
      )}
@@ -34,11 +37,25 @@ defmodule DroodotfooWeb.Wiki.Admin.SyncLive do
 
   @impl true
   def handle_info(:refresh, socket) do
+    article_counts = Content.count_by_source()
+    total_articles = article_counts |> Map.values() |> Enum.sum()
+    embedded_count = Search.embedded_count()
+
+    embedding_stats = %{
+      total: total_articles,
+      embedded: embedded_count,
+      percentage:
+        if(total_articles > 0, do: Float.round(embedded_count * 100 / total_articles, 1), else: 0)
+    }
+
     socket =
       socket
       |> assign(source_statuses: SyncRun.source_statuses())
       |> assign(recent_runs: SyncRun.list_recent(20))
-      |> assign(article_counts: Content.count_by_source())
+      |> assign(article_counts: article_counts)
+      |> assign(cross_link_stats: CrossLinks.stats())
+      |> assign(embedding_stats: embedding_stats)
+      |> assign(redirect_count: Content.count_redirects())
 
     {:noreply, socket}
   end
@@ -94,6 +111,16 @@ defmodule DroodotfooWeb.Wiki.Admin.SyncLive do
     end
   end
 
+  def handle_event("trigger_embeddings", _params, socket) do
+    %{} |> Droodotfoo.Wiki.EmbeddingWorker.new() |> Oban.insert()
+    {:noreply, put_flash(socket, :info, "Embedding job queued")}
+  end
+
+  def handle_event("trigger_crosslinks", _params, socket) do
+    %{full_scan: true} |> Droodotfoo.Wiki.CrossLinkWorker.new() |> Oban.insert()
+    {:noreply, put_flash(socket, :info, "Cross-link scan queued")}
+  end
+
   def handle_event("refresh", _params, socket) do
     send(self(), :refresh)
     {:noreply, socket}
@@ -115,6 +142,40 @@ defmodule DroodotfooWeb.Wiki.Admin.SyncLive do
         </div>
 
         <section class="mb-10">
+          <h2 class="text-lg font-mono font-bold mb-4 text-zinc-400">Overview</h2>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <.stat_card
+              title="Embeddings"
+              value={"#{@embedding_stats[:percentage] || 0}%"}
+              subtitle={"#{@embedding_stats[:embedded] || 0}/#{@embedding_stats[:total] || 0} articles"}
+            >
+              <button phx-click="trigger_embeddings" class="text-xs text-blue-400 hover:text-blue-300">
+                [run]
+              </button>
+            </.stat_card>
+            <.stat_card
+              title="Cross-Links"
+              value={@cross_link_stats[:total] || 0}
+              subtitle={"#{@cross_link_stats[:auto_detected] || 0} auto-detected"}
+            >
+              <button phx-click="trigger_crosslinks" class="text-xs text-blue-400 hover:text-blue-300">
+                [run]
+              </button>
+            </.stat_card>
+            <.stat_card title="Redirects" value={@redirect_count} subtitle="slug mappings">
+              <.link navigate="/admin/redirects" class="text-xs text-blue-400 hover:text-blue-300">
+                [manage]
+              </.link>
+            </.stat_card>
+            <.stat_card title="Pending Edits" value={pending_edit_count()} subtitle="awaiting review">
+              <.link navigate="/admin/pending" class="text-xs text-blue-400 hover:text-blue-300">
+                [review]
+              </.link>
+            </.stat_card>
+          </div>
+        </section>
+
+        <section class="mb-10">
           <h2 class="text-lg font-mono font-bold mb-4 text-zinc-400">Sources</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <.source_card
@@ -131,6 +192,19 @@ defmodule DroodotfooWeb.Wiki.Admin.SyncLive do
         </section>
       </div>
     </Layouts.app>
+    """
+  end
+
+  defp stat_card(assigns) do
+    ~H"""
+    <div class="border border-zinc-700 rounded-lg p-4">
+      <div class="flex items-center justify-between mb-1">
+        <dt class="text-sm text-zinc-500">{@title}</dt>
+        {render_slot(@inner_block)}
+      </div>
+      <dd class="text-2xl font-mono font-bold">{@value}</dd>
+      <dd class="text-xs text-zinc-500">{@subtitle}</dd>
+    </div>
     """
   end
 
@@ -298,5 +372,10 @@ defmodule DroodotfooWeb.Wiki.Admin.SyncLive do
       seconds < 3600 -> "#{div(seconds, 60)}m #{rem(seconds, 60)}s"
       true -> "#{div(seconds, 3600)}h #{div(rem(seconds, 3600), 60)}m"
     end
+  end
+
+  defp pending_edit_count do
+    Content.count_pending_edits_by_status()
+    |> Map.get(:pending, 0)
   end
 end

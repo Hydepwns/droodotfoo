@@ -29,6 +29,17 @@ defmodule DroodotfooWeb.Wiki.Helpers do
   def article_path(_source, slug), do: "/#{slug}"
 
   @doc """
+  Generate index path for a source (browse all articles).
+  """
+  @spec source_index_path(atom()) :: String.t()
+  def source_index_path(:osrs), do: "/osrs"
+  def source_index_path(:nlab), do: "/nlab"
+  def source_index_path(:wikipedia), do: "/wikipedia"
+  def source_index_path(:vintage_machinery), do: "/machines"
+  def source_index_path(:wikiart), do: "/art"
+  def source_index_path(_), do: "/"
+
+  @doc """
   Generate internal path from an article struct or map with :source and :slug keys.
   """
   @spec article_path(%{source: atom(), slug: String.t()}) :: String.t()
@@ -58,6 +69,23 @@ defmodule DroodotfooWeb.Wiki.Helpers do
     do: "https://www.wikiart.org/en/#{String.replace(slug, "__", "/")}"
 
   def upstream_url(_, _), do: nil
+
+  @doc """
+  Base URL for a wiki source (home page).
+
+  ## Examples
+
+      iex> Helpers.upstream_base_url(:osrs)
+      "https://oldschool.runescape.wiki"
+
+  """
+  @spec upstream_base_url(atom()) :: String.t() | nil
+  def upstream_base_url(:osrs), do: "https://oldschool.runescape.wiki"
+  def upstream_base_url(:nlab), do: "https://ncatlab.org/nlab"
+  def upstream_base_url(:wikipedia), do: "https://en.wikipedia.org"
+  def upstream_base_url(:vintage_machinery), do: "https://vintagemachinery.org"
+  def upstream_base_url(:wikiart), do: "https://www.wikiart.org"
+  def upstream_base_url(_), do: nil
 
   @doc """
   Short label for a source (used in badges and dropdowns).
