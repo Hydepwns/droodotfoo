@@ -22,6 +22,7 @@ echo "Loading secrets from 1Password..."
 export SPOTIFY_CLIENT_ID=$(op read "op://Private/droodotfoo-dev/SPOTIFY_CLIENT_ID" 2>/dev/null || echo "")
 export SPOTIFY_CLIENT_SECRET=$(op read "op://Private/droodotfoo-dev/SPOTIFY_CLIENT_SECRET" 2>/dev/null || echo "")
 export GITHUB_TOKEN=$(op read "op://Private/droodotfoo-dev/GITHUB_TOKEN" 2>/dev/null || echo "")
+export FORGEJO_TOKEN=$(op read "op://Private/droodotfoo-dev/FORGEJO_TOKEN" 2>/dev/null || echo "")
 export PHX_HOST="localhost"
 
 # Verify critical secrets are loaded

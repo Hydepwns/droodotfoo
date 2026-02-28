@@ -65,6 +65,16 @@ end
 # GitHub API token for higher rate limits (all environments, optional)
 config :droodotfoo, :github_token, System.get_env("GITHUB_TOKEN")
 
+# Forgejo Git server configuration (for git.droo.foo subdomain)
+# Default to mini-axol Tailnet host for local development
+config :droodotfoo, :forgejo,
+  base_url: System.get_env("FORGEJO_URL", "http://mini-axol:3000"),
+  token: System.get_env("FORGEJO_TOKEN"),
+  default_owner: System.get_env("FORGEJO_OWNER", "droo")
+
+# GitHub configuration for git browser (separate from :github_token)
+config :droodotfoo, :github, owner: System.get_env("GITHUB_OWNER", "hydepwns")
+
 # Resume source configuration (all environments)
 # Load resume from Fileverse/IPFS if configured, otherwise use hardcoded data
 if resume_cid = System.get_env("RESUME_IPFS_CID") do

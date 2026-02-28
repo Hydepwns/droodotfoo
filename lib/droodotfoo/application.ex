@@ -10,6 +10,9 @@ defmodule Droodotfoo.Application do
     # Set up OpenTelemetry instrumentation
     setup_opentelemetry()
 
+    # Initialize MediaWiki rate limiter ETS table
+    Droodotfoo.Wiki.Ingestion.MediaWikiClient.init()
+
     # Add Sentry logger handler for capturing crashed process exceptions
     :logger.add_handler(:sentry_handler, Sentry.LoggerHandler, %{
       config: %{metadata: [:file, :line]}
@@ -60,6 +63,8 @@ defmodule Droodotfoo.Application do
         Droodotfoo.Content.PostRateLimiter,
         # Start pattern endpoint rate limiter
         Droodotfoo.Content.PatternRateLimiter,
+        # Start wiki search rate limiter
+        Droodotfoo.Wiki.Search.RateLimiter,
         # Start a worker by calling: Droodotfoo.Worker.start_link(arg)
         # {Droodotfoo.Worker, arg},
         # Start to serve requests, typically the last entry

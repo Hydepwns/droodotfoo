@@ -92,6 +92,7 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     libstdc++6 openssl libncurses5 locales ca-certificates \
     chromium chromium-sandbox \
+    poppler-utils \
   && rm -rf /var/lib/apt/lists/*
 
 # Set the locale

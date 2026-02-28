@@ -11,9 +11,29 @@ config :droodotfoo, Droodotfoo.Repo,
   pool_size: 10,
   types: Droodotfoo.PostgresTypes
 
-# Oban queues for development
+# Oban queues for development (increased concurrency for better throughput)
 config :droodotfoo, Oban,
-  queues: [ingestion: 2, images: 4, backups: 1, embeddings: 1, notifications: 2]
+  queues: [ingestion: 5, images: 4, backups: 1, embeddings: 2, notifications: 2],
+  plugins: [
+    Oban.Plugins.Pruner,
+    {Oban.Plugins.Cron,
+     crontab: [
+       # OSRS Wiki sync every 15 minutes
+       {"*/15 * * * *", Droodotfoo.Wiki.Ingestion.OSRSSyncWorker},
+       # nLab sync daily at 4am
+       {"0 4 * * *", Droodotfoo.Wiki.Ingestion.NLabSyncWorker},
+       # VintageMachinery sync weekly on Sunday at 2am
+       {"0 2 * * 0", Droodotfoo.Wiki.Ingestion.VintageMachinerySyncWorker},
+       # Wikipedia refresh weekly on Saturday at 2am
+       {"0 2 * * 6", Droodotfoo.Wiki.Ingestion.WikipediaSyncWorker},
+       # Cross-source link detection daily at 5am (after syncs)
+       {"0 5 * * *", Droodotfoo.Wiki.CrossLinkWorker},
+       # PostgreSQL backup daily at 3am
+       {"0 3 * * *", Droodotfoo.Wiki.Backup.PostgresWorker},
+       # Embedding refresh nightly at 6am (after all syncs complete)
+       {"0 6 * * *", Droodotfoo.Wiki.EmbeddingWorker}
+     ]}
+  ]
 
 # Ollama for local development (run: ollama serve)
 config :droodotfoo, Droodotfoo.Wiki.Ollama,
@@ -32,6 +52,13 @@ config :droodotfoo, Droodotfoo.Wiki.Ingestion.NLabClient,
   repo_url: "https://github.com/ncatlab/nlab-content.git",
   local_path: Path.expand("../priv/nlab-content", __DIR__),
   branch: "master"
+
+# VintageMachinery client for development
+config :droodotfoo, Droodotfoo.Wiki.Ingestion.VintageMachineryClient,
+  base_url: "https://vintagemachinery.org",
+  local_path: Path.expand("../priv/vintage-machinery", __DIR__),
+  rate_limit_ms: 2_000,
+  include_paths: ["pubs/", "mfgindex/"]
 
 # MinIO/S3 for development (local MinIO or mock)
 config :ex_aws,
