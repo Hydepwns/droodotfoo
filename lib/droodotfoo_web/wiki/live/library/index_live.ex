@@ -11,6 +11,7 @@ defmodule DroodotfooWeb.Wiki.Library.IndexLive do
   alias Droodotfoo.Wiki.Library.Document
 
   import Phoenix.Component
+  import DroodotfooWeb.Wiki.Helpers, only: [format_date: 1]
 
   @impl true
   def mount(_params, _session, socket) do
@@ -140,7 +141,7 @@ defmodule DroodotfooWeb.Wiki.Library.IndexLive do
     ~H"""
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2 min-w-0">
-        <span class="source-badge">{type_abbr(@document.content_type)}</span>
+        <span class="source-badge">{Document.type_abbr(@document.content_type)}</span>
         <div class="min-w-0">
           <h3 class="mb-0-5">
             <.link navigate={"/doc/#{@document.slug}"} class="link-reset">
@@ -165,22 +166,6 @@ defmodule DroodotfooWeb.Wiki.Library.IndexLive do
       </button>
     </div>
     """
-  end
-
-  defp type_abbr("application/pdf"), do: "PDF"
-  defp type_abbr("application/msword"), do: "DOC"
-
-  defp type_abbr("application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
-    do: "DOCX"
-
-  defp type_abbr("application/vnd.oasis.opendocument.text"), do: "ODT"
-  defp type_abbr("text/plain"), do: "TXT"
-  defp type_abbr("text/markdown"), do: "MD"
-  defp type_abbr("text/html"), do: "HTML"
-  defp type_abbr(_), do: "FILE"
-
-  defp format_date(datetime) do
-    Calendar.strftime(datetime, "%Y-%m-%d")
   end
 
   defp maybe_add(opts, _key, nil), do: opts

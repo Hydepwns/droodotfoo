@@ -6,7 +6,7 @@ defmodule DroodotfooWeb.Wiki.Library.UploadLive do
 
   use Phoenix.LiveView, layout: false
 
-  alias DroodotfooWeb.Wiki.Layouts
+  alias DroodotfooWeb.Wiki.{Helpers, Layouts}
   alias Droodotfoo.Wiki.Library
   alias Droodotfoo.Wiki.Library.Document
 
@@ -70,7 +70,7 @@ defmodule DroodotfooWeb.Wiki.Library.UploadLive do
 
           {:error, %Ecto.Changeset{} = changeset} ->
             {:noreply,
-             put_flash(socket, :error, "Failed to save: #{changeset_errors(changeset)}")}
+             put_flash(socket, :error, "Failed to save: #{Helpers.format_changeset_errors(changeset)}")}
 
           {:error, reason} ->
             {:noreply, put_flash(socket, :error, "Upload failed: #{inspect(reason)}")}
@@ -196,15 +196,5 @@ defmodule DroodotfooWeb.Wiki.Library.UploadLive do
     ~H"""
     <p class="text-sm mt-1" style="color: #ff4444;">[!] {@msg}</p>
     """
-  end
-
-  defp changeset_errors(changeset) do
-    Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
-      Enum.reduce(opts, msg, fn {key, value}, acc ->
-        String.replace(acc, "%{#{key}}", to_string(value))
-      end)
-    end)
-    |> Enum.map(fn {k, v} -> "#{k}: #{Enum.join(v, ", ")}" end)
-    |> Enum.join("; ")
   end
 end

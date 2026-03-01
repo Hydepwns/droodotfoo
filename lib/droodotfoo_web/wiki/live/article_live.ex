@@ -150,19 +150,9 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
       {:error, changeset} ->
         {:noreply,
          socket
-         |> put_flash(:error, "Failed to submit: #{format_errors(changeset)}")
+         |> put_flash(:error, "Failed to submit: #{Helpers.format_changeset_errors(changeset)}")
          |> assign(edit_submitting: false)}
     end
-  end
-
-  defp format_errors(%Ecto.Changeset{} = changeset) do
-    Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
-      Enum.reduce(opts, msg, fn {key, value}, acc ->
-        String.replace(acc, "%{#{key}}", to_string(value))
-      end)
-    end)
-    |> Enum.map(fn {k, v} -> "#{k}: #{Enum.join(v, ", ")}" end)
-    |> Enum.join("; ")
   end
 
   defp get_client_ip(socket) do

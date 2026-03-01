@@ -91,6 +91,19 @@ defmodule Droodotfoo.Wiki.Library.Document do
   def type_label("text/html"), do: "HTML"
   def type_label(_), do: "File"
 
+  @doc "Get abbreviated file type for badges."
+  def type_abbr("application/pdf"), do: "PDF"
+  def type_abbr("application/msword"), do: "DOC"
+
+  def type_abbr("application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+    do: "DOCX"
+
+  def type_abbr("application/vnd.oasis.opendocument.text"), do: "ODT"
+  def type_abbr("text/plain"), do: "TXT"
+  def type_abbr("text/markdown"), do: "MD"
+  def type_abbr("text/html"), do: "HTML"
+  def type_abbr(_), do: "FILE"
+
   @doc "Format file size for display."
   def format_size(bytes) when bytes < 1024, do: "#{bytes} B"
   def format_size(bytes) when bytes < 1024 * 1024, do: "#{Float.round(bytes / 1024, 1)} KB"

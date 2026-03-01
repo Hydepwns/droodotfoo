@@ -171,4 +171,28 @@ defmodule DroodotfooWeb.Wiki.Helpers do
   """
   @spec sources() :: [atom()]
   def sources, do: @sources
+
+  # --- Date Formatting ---
+
+  @doc "Format datetime as YYYY-MM-DD."
+  @spec format_date(DateTime.t() | NaiveDateTime.t()) :: String.t()
+  def format_date(datetime), do: Calendar.strftime(datetime, "%Y-%m-%d")
+
+  @doc "Format datetime as YYYY-MM-DD HH:MM."
+  @spec format_datetime(DateTime.t() | NaiveDateTime.t()) :: String.t()
+  def format_datetime(datetime), do: Calendar.strftime(datetime, "%Y-%m-%d %H:%M")
+
+  # --- Changeset Errors ---
+
+  @doc "Format changeset errors as a single string for flash messages."
+  @spec format_changeset_errors(Ecto.Changeset.t()) :: String.t()
+  def format_changeset_errors(%Ecto.Changeset{} = changeset) do
+    Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
+      Enum.reduce(opts, msg, fn {key, value}, acc ->
+        String.replace(acc, "%{#{key}}", to_string(value))
+      end)
+    end)
+    |> Enum.map(fn {k, v} -> "#{k}: #{Enum.join(v, ", ")}" end)
+    |> Enum.join("; ")
+  end
 end

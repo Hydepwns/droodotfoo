@@ -11,6 +11,7 @@ defmodule DroodotfooWeb.Wiki.Library.ReaderLive do
   alias Droodotfoo.Wiki.Library.Document
 
   import Phoenix.Component
+  import DroodotfooWeb.Wiki.Helpers, only: [format_date: 1, format_datetime: 1]
 
   @impl true
   def mount(%{"slug" => slug}, _session, socket) do
@@ -55,9 +56,9 @@ defmodule DroodotfooWeb.Wiki.Library.ReaderLive do
         </div>
 
         <p class="text-muted-alt mt-2">
-          <span class="source-badge">{type_abbr(@document.content_type)}</span>
+          <span class="source-badge">{Document.type_abbr(@document.content_type)}</span>
           {Document.format_size(@document.file_size)} · Uploaded {format_date(@document.inserted_at)}
-          <span :for={tag <- @document.tags}> ·     {tag}</span>
+          <span :for={tag <- @document.tags}> ·       {tag}</span>
           <button
             :if={@revisions != []}
             phx-click="toggle_versions"
@@ -205,37 +206,5 @@ defmodule DroodotfooWeb.Wiki.Library.ReaderLive do
   defp load_text_content(_), do: nil
 
   defp render_markdown(nil), do: ""
-
-  defp render_markdown(content) do
-    content
-    |> String.replace(~r/^### (.+)$/m, "<h3>\\1</h3>")
-    |> String.replace(~r/^## (.+)$/m, "<h2>\\1</h2>")
-    |> String.replace(~r/^# (.+)$/m, "<h1>\\1</h1>")
-    |> String.replace(~r/\*\*(.+?)\*\*/, "<strong>\\1</strong>")
-    |> String.replace(~r/\*(.+?)\*/, "<em>\\1</em>")
-    |> String.replace(~r/`(.+?)`/, "<code>\\1</code>")
-    |> String.replace(~r/\[(.+?)\]\((.+?)\)/, "<a href=\"\\2\">\\1</a>")
-    |> String.replace(~r/\n\n/, "</p><p>")
-    |> then(&"<p>#{&1}</p>")
-  end
-
-  defp format_date(datetime) do
-    Calendar.strftime(datetime, "%Y-%m-%d")
-  end
-
-  defp format_datetime(datetime) do
-    Calendar.strftime(datetime, "%Y-%m-%d %H:%M")
-  end
-
-  defp type_abbr("application/pdf"), do: "PDF"
-  defp type_abbr("application/msword"), do: "DOC"
-
-  defp type_abbr("application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
-    do: "DOCX"
-
-  defp type_abbr("application/vnd.oasis.opendocument.text"), do: "ODT"
-  defp type_abbr("text/plain"), do: "TXT"
-  defp type_abbr("text/markdown"), do: "MD"
-  defp type_abbr("text/html"), do: "HTML"
-  defp type_abbr(_), do: "FILE"
+  defp render_markdown(content), do: MDEx.to_html!(content)
 end
