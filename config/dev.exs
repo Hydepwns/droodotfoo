@@ -60,16 +60,16 @@ config :droodotfoo, Droodotfoo.Wiki.Ingestion.VintageMachineryClient,
   rate_limit_ms: 2_000,
   include_paths: ["pubs/", "mfgindex/"]
 
-# MinIO/S3 for development (local MinIO or mock)
+# MinIO/S3 for development (uses mini-axol via Tailscale)
 config :ex_aws,
-  access_key_id: "minioadmin",
-  secret_access_key: "minioadmin",
+  access_key_id: System.get_env("MINIO_ACCESS_KEY", "admin"),
+  secret_access_key: System.get_env("MINIO_SECRET_KEY"),
   region: "us-east-1",
   http_client: ExAws.Request.Req
 
 config :ex_aws, :s3,
   scheme: "http://",
-  host: "localhost",
+  host: System.get_env("MINIO_HOST", "100.117.205.87"),
   port: 9000
 
 config :droodotfoo, Droodotfoo.Wiki.Storage,
