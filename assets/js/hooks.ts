@@ -12,6 +12,16 @@ import { MediaGridAlignHook } from './hooks/media_grid_align';
 import { ContributionGraphHook } from './hooks/contribution_graph';
 import { FocusHook } from './hooks/focus';
 
+// Modal scroll lock - prevents body scroll when modal is open
+const ModalScrollLock = {
+  mounted() {
+    document.body.style.overflow = 'hidden';
+  },
+  destroyed() {
+    document.body.style.overflow = '';
+  }
+};
+
 // Lazy-loaded hooks (loaded on-demand when phx-hook detected)
 // These are ~35KB total and only used on specific pages:
 // - STLViewerHook: ~10KB (only STL viewer page)
@@ -59,6 +69,7 @@ export default {
   MediaGridAlignHook,
   ContributionGraphHook,
   FocusHook,
+  ModalScrollLock,
 
   // Lazy loaded (heavy, rarely used)
   STLViewerHook: createLazyHook('STLViewerHook'),

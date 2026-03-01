@@ -17,6 +17,7 @@ defmodule DroodotfooWeb.Wiki.Parts.IndexLive do
      socket
      |> assign(page_title: "Parts Catalog")
      |> assign(current_path: "/parts")
+     |> assign(breadcrumbs: [{"Home", "/"}, {"Parts", "/parts"}])
      |> assign(search: "")
      |> assign(category: nil)
      |> assign(parts: [])}
@@ -52,6 +53,8 @@ defmodule DroodotfooWeb.Wiki.Parts.IndexLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_path={@current_path}>
+      <Layouts.breadcrumbs items={@breadcrumbs} />
+
       <div class="max-w-6xl mx-auto px-4 py-8">
         <header class="flex items-center justify-between mb-8">
           <h1 class="text-2xl font-mono font-bold">Parts Catalog</h1>

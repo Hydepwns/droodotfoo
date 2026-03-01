@@ -1,0 +1,467 @@
+/* Wiki-specific styles for wiki.droo.foo */
+
+/* ============================================
+   0. Accessibility
+   ============================================ */
+
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  background: var(--background-color, #000);
+  color: var(--text-color);
+  padding: 0.5rem 1rem;
+  z-index: 100000;
+  text-decoration: none;
+  border: 1px solid var(--border-color);
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+
+/* ============================================
+   1. Loading States with Spinner/Skeleton
+   ============================================ */
+
+.wiki-loading {
+  padding: 1rem 0;
+}
+
+.wiki-loading .loading-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.skeleton-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.skeleton-line {
+  height: 1rem;
+  background: var(--background-color-alt, rgba(0, 0, 0, 0.1));
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-line.width-100 {
+  width: 100%;
+}
+
+.skeleton-line.width-90 {
+  width: 90%;
+}
+
+.skeleton-line.width-80 {
+  width: 80%;
+}
+
+.skeleton-line.width-70 {
+  width: 70%;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+
+/* ============================================
+   1b. Breadcrumb Navigation
+   ============================================ */
+
+.breadcrumbs {
+  margin-bottom: 1rem;
+}
+
+.breadcrumb-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumb-link {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+.breadcrumb-link:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb-sep {
+  margin: 0 0.5ch;
+  color: var(--text-color-alt);
+}
+
+.breadcrumb-current {
+  color: var(--text-color);
+}
+
+
+/* ============================================
+   2. Article Body Typography
+   ============================================ */
+
+.article-body {
+  line-height: var(--line-height, 1.6);
+}
+
+.article-body h1 {
+  font-size: 1.5rem;
+  margin: 2rem 0 1rem;
+  border-bottom: var(--border-thickness, 1px) solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.article-body h2 {
+  font-size: 1.25rem;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.article-body h3 {
+  font-size: 1rem;
+  margin: 1rem 0 0.5rem;
+}
+
+.article-body h4,
+.article-body h5,
+.article-body h6 {
+  font-size: 1rem;
+  margin: 0.75rem 0 0.5rem;
+}
+
+.article-body p {
+  margin-bottom: 1rem;
+}
+
+.article-body ul,
+.article-body ol {
+  list-style: none;
+  margin: 1rem 0;
+  padding-left: 2ch;
+}
+
+.article-body li {
+  margin-bottom: 0.5rem;
+}
+
+.article-body ul li::before {
+  content: "- ";
+  color: var(--text-color-alt);
+}
+
+.article-body ol {
+  counter-reset: list-counter;
+}
+
+.article-body ol li {
+  counter-increment: list-counter;
+}
+
+.article-body ol li::before {
+  content: counter(list-counter) ". ";
+  color: var(--text-color-alt);
+}
+
+.article-body blockquote {
+  border-left: var(--border-thickness, 1px) solid var(--accent-color);
+  padding-left: 2ch;
+  margin: 1rem 0;
+  color: var(--text-color-alt);
+}
+
+.article-body code {
+  background: var(--background-color-alt, rgba(0, 0, 0, 0.1));
+  padding: 0.1rem 0.5ch;
+  font-family: var(--font-family);
+}
+
+.article-body pre {
+  background: var(--background-color-alt, rgba(0, 0, 0, 0.1));
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.article-body pre code {
+  background: none;
+  padding: 0;
+}
+
+.article-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.article-body th,
+.article-body td {
+  border: 1px solid var(--border-color);
+  padding: 0.5rem 1ch;
+  text-align: left;
+}
+
+.article-body th {
+  background: var(--background-color-alt, rgba(0, 0, 0, 0.1));
+}
+
+.article-body a {
+  color: var(--accent-color);
+  text-decoration: underline;
+}
+
+.article-body a:hover {
+  text-decoration: none;
+}
+
+.article-body img {
+  max-width: 100%;
+  height: auto;
+}
+
+.article-body hr {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 2rem 0;
+}
+
+
+/* ============================================
+   2b. Table of Contents
+   ============================================ */
+
+.toc {
+  background: var(--background-color-alt, rgba(0, 0, 0, 0.1));
+  border: 1px solid var(--border-color);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.toc-title {
+  font-size: 0.875rem;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toc-title::-webkit-details-marker {
+  display: none;
+}
+
+.toc-title::before {
+  content: "[+] ";
+  font-family: var(--font-family);
+}
+
+details[open] > .toc-title::before {
+  content: "[-] ";
+}
+
+.toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+}
+
+.toc-item {
+  margin: 0.25rem 0;
+}
+
+.toc-level-3 {
+  padding-left: 2ch;
+}
+
+.toc-link {
+  color: var(--accent-color);
+  text-decoration: none;
+  font-size: 0.875rem;
+}
+
+.toc-link:hover {
+  text-decoration: underline;
+}
+
+/* Smooth scroll for anchor links */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Offset for fixed headers if any */
+.article-body h2[id],
+.article-body h3[id] {
+  scroll-margin-top: 1rem;
+}
+
+
+/* ============================================
+   3. Modal Dialogs with Backdrop & Animation
+   ============================================ */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: modal-fade-in 0.2s ease-out;
+}
+
+.modal {
+  background: var(--background-color, #000);
+  border: var(--border-thickness, 1px) solid var(--border-color);
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: modal-slide 0.2s ease-out;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  font-family: var(--font-family);
+  padding: 0.25rem 0.5ch;
+}
+
+.modal-close:hover {
+  background: var(--background-color-alt, rgba(255, 255, 255, 0.1));
+}
+
+.modal-body {
+  padding: 1rem;
+}
+
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-slide {
+  from {
+    opacity: 0;
+    transform: translateY(-1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ============================================
+   4. Article Layout & Responsive Sidebar
+   ============================================ */
+
+.article-layout {
+  display: flex;
+  gap: 2rem;
+}
+
+.article-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.article-sidebar {
+  width: 20ch;
+  flex-shrink: 0;
+}
+
+/* Sidebar section styling */
+.sidebar {
+  position: sticky;
+  top: 1rem;
+}
+
+.sidebar-title {
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-color-alt);
+}
+
+/* Tablet: stack sidebar below */
+@media (max-width: 1024px) {
+  .article-layout {
+    flex-direction: column;
+  }
+
+  .article-sidebar {
+    width: 100%;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+    margin-top: 1rem;
+  }
+
+  .sidebar {
+    position: static;
+  }
+}
+
+/* Mobile: hide sidebar */
+@media (max-width: 768px) {
+  .article-sidebar {
+    display: none;
+  }
+}
+
+
+/* ============================================
+   5. Rate Limit Indicator
+   ============================================ */
+
+.rate-limit-notice {
+  padding: 1rem;
+  background: var(--background-color-alt, rgba(0, 0, 0, 0.1));
+  border: 1px solid var(--border-color);
+  margin-bottom: 1rem;
+}
+
+.rate-limit-bar {
+  height: 4px;
+  background: var(--background-color-alt, rgba(0, 0, 0, 0.1));
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+.rate-limit-progress {
+  height: 100%;
+  background: var(--accent-color);
+  transition: width 1s linear;
+}

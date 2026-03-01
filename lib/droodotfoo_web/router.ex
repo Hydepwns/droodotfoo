@@ -111,6 +111,13 @@ defmodule DroodotfooWeb.Router do
   scope "/", DroodotfooWeb.Wiki, host: "wiki." do
     pipe_through :wiki_browser
 
+    # RSS feeds
+    get "/feed.xml", FeedController, :index
+    get "/:source/feed.xml", FeedController, :source
+
+    # Sitemap
+    get "/sitemap.xml", SitemapController, :index
+
     live "/", LandingLive, :index
     live "/search", SearchLive, :index
 

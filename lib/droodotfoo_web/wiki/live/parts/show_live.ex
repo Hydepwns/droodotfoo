@@ -23,11 +23,13 @@ defmodule DroodotfooWeb.Wiki.Parts.ShowLive do
       part ->
         part = Parts.get_part_with_vehicles(part.id)
         fitments = Parts.list_fitments(part)
+        breadcrumbs = [{"Home", "/"}, {"Parts", "/parts"}, {part.name, "/parts/#{number}"}]
 
         {:ok,
          socket
          |> assign(page_title: part.name)
          |> assign(current_path: "/parts/#{number}")
+         |> assign(breadcrumbs: breadcrumbs)
          |> assign(part: part)
          |> assign(fitments: fitments)}
     end
@@ -51,13 +53,12 @@ defmodule DroodotfooWeb.Wiki.Parts.ShowLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_path={@current_path}>
+      <Layouts.breadcrumbs items={@breadcrumbs} />
+
       <div class="max-w-4xl mx-auto px-4 py-8">
         <header class="flex items-start justify-between mb-6">
           <div>
-            <.link navigate="/parts" class="text-sm text-zinc-500 hover:text-zinc-300 font-mono">
-              &larr; Back to catalog
-            </.link>
-            <h1 class="text-2xl font-mono font-bold mt-2">{@part.name}</h1>
+            <h1 class="text-2xl font-mono font-bold">{@part.name}</h1>
             <p class="text-lg text-zinc-400 font-mono">{@part.part_number}</p>
           </div>
 

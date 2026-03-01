@@ -34,6 +34,7 @@
 @import "./resume.css";            /* Resume page */
 @import "./contact_form.css";      /* Contact form */
 @import "./contributions.css";     /* Contribution graph */
+@import "./wiki.css";              /* Wiki subdomain styles */
 
 /* === GLOBAL UTILITIES === */
 .spinner {

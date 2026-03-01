@@ -13,6 +13,7 @@ defmodule DroodotfooWeb.Wiki.Layouts do
     statics: DroodotfooWeb.static_paths()
 
   import Phoenix.Controller, only: [get_csrf_token: 0]
+  import Phoenix.HTML, only: [raw: 1]
 
   alias DroodotfooWeb.Wiki.CoreComponents
   alias Phoenix.LiveView.JS
@@ -44,7 +45,7 @@ defmodule DroodotfooWeb.Wiki.Layouts do
 
       <.site_nav current_path={@current_path} />
 
-      <main>
+      <main id="main-content" role="main">
         {render_slot(@inner_block)}
       </main>
     </div>
@@ -90,6 +91,62 @@ defmodule DroodotfooWeb.Wiki.Layouts do
         </tr>
       </table>
     </header>
+    """
+  end
+
+  @doc """
+  Breadcrumb navigation for wiki pages.
+  """
+  attr :items, :list,
+    required: true,
+    doc: "List of {label, path} tuples, last item is current page"
+
+  def breadcrumbs(assigns) do
+    ~H"""
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <ol class="breadcrumb-list">
+        <li :for={{label, path, is_last} <- annotate_items(@items)} class="breadcrumb-item">
+          <.link :if={!is_last} navigate={path} class="breadcrumb-link">
+            {label}
+          </.link>
+          <span :if={is_last} class="breadcrumb-current" aria-current="page">
+            {label}
+          </span>
+          <span :if={!is_last} class="breadcrumb-sep" aria-hidden="true">/</span>
+        </li>
+      </ol>
+    </nav>
+    """
+  end
+
+  defp annotate_items(items) do
+    len = length(items)
+
+    items
+    |> Enum.with_index(1)
+    |> Enum.map(fn {{label, path}, idx} -> {label, path, idx == len} end)
+  end
+
+  @doc """
+  Table of contents component for article pages.
+  Only renders if there are 2+ headings.
+  """
+  attr :headings, :list, required: true, doc: "List of heading maps with :level, :text, :id"
+
+  def table_of_contents(assigns) do
+    ~H"""
+    <nav :if={length(@headings) >= 2} class="toc" aria-label="Table of contents">
+      <details open>
+        <summary class="toc-title">CONTENTS</summary>
+        <ol class="toc-list">
+          <li :for={heading <- @headings} class={"toc-item toc-level-#{heading.level}"}>
+            <a href={"##{heading.id}"} class="toc-link">
+              {heading.text}
+            </a>
+          </li>
+        </ol>
+      </details>
+    </nav>
     """
   end
 

@@ -7,6 +7,7 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
   use Phoenix.LiveView, layout: false
 
   alias DroodotfooWeb.Wiki.{Helpers, Layouts}
+  alias DroodotfooWeb.Wiki.Helpers.{HTML, TOC}
   alias Droodotfoo.Wiki.Content
   alias Droodotfoo.Wiki.CrossLinks
 
@@ -16,6 +17,9 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
      assign(socket,
        article: nil,
        html: "",
+       headings: [],
+       word_count: 0,
+       reading_time: 0,
        loading: true,
        error: nil,
        related: [],
@@ -31,10 +35,17 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
 
     current_path = URI.parse(uri).path
 
+    breadcrumbs = [
+      {"Home", "/"},
+      {Helpers.source_label_full(source), Helpers.source_index_path(source)},
+      {format_title(slug), current_path}
+    ]
+
     socket =
       socket
       |> assign(source: source, slug: slug, loading: true, error: nil, related: [])
       |> assign(page_title: format_title(slug), current_path: current_path)
+      |> assign(breadcrumbs: breadcrumbs)
 
     if connected?(socket) do
       send(self(), {:load_article, source, slug})
@@ -48,11 +59,43 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
     case Content.get_article(source, slug) do
       {:ok, article, html} ->
         related = CrossLinks.get_related(article, limit: 5)
+        description = extract_description(article)
+        current_path = socket.assigns.current_path
+
+        # Extract headings for TOC and enhance HTML
+        headings = TOC.extract_headings(html)
+
+        enhanced_html =
+          html
+          |> TOC.add_heading_anchors()
+          |> HTML.enhance_images()
+
+        # Calculate reading stats
+        word_count = HTML.word_count(html)
+        reading_time = HTML.reading_time(word_count)
+
+        breadcrumbs = [
+          {"Home", "/"},
+          {Helpers.source_label_full(article.source), Helpers.source_index_path(article.source)},
+          {article.title, current_path}
+        ]
+
+        json_ld = build_json_ld(article, description, breadcrumbs, current_path)
 
         {:noreply,
          socket
-         |> assign(article: article, html: html, loading: false, related: related)
-         |> assign(page_title: String.upcase(article.title))}
+         |> assign(article: article, html: enhanced_html, loading: false, related: related)
+         |> assign(headings: headings, word_count: word_count, reading_time: reading_time)
+         |> assign(page_title: String.upcase(article.title), breadcrumbs: breadcrumbs)
+         |> assign(
+           og_type: "article",
+           og_title: article.title,
+           og_description: description,
+           meta_description: description,
+           article_section: Helpers.source_label_full(article.source),
+           modified_time: format_iso8601(article.synced_at),
+           json_ld: json_ld
+         )}
 
       {:error, :not_found} ->
         {:noreply, assign(socket, loading: false, error: :not_found)}
@@ -133,8 +176,10 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_path={@current_path}>
-      <div class="flex gap-4">
-        <article role="article" aria-label={@slug} class="flex-1 min-w-0">
+      <Layouts.breadcrumbs items={@breadcrumbs} />
+
+      <div class="article-layout">
+        <article role="article" aria-label={@slug} class="article-main">
           <section class="section-spaced">
             <p><.source_badge source={@source} /></p>
 
@@ -146,6 +191,8 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
 
             <.not_found :if={@error == :not_found} source={@source} slug={@slug} />
 
+            <Layouts.table_of_contents :if={@article && !@loading} headings={@headings} />
+
             <div
               :if={@article && !@loading}
               id="article-content"
@@ -154,7 +201,12 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
               {Phoenix.HTML.raw(@html)}
             </div>
 
-            <.article_meta :if={@article} article={@article} />
+            <.article_meta
+              :if={@article}
+              article={@article}
+              word_count={@word_count}
+              reading_time={@reading_time}
+            />
           </section>
         </article>
 
@@ -168,7 +220,7 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
 
   defp related_sidebar(assigns) do
     ~H"""
-    <aside class="w-64 flex-shrink-0 hidden-mobile">
+    <aside class="article-sidebar">
       <div class="sidebar">
         <h2 class="sidebar-title">RELATED ARTICLES</h2>
         <ul>
@@ -219,8 +271,17 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
 
   defp loading(assigns) do
     ~H"""
-    <div class="text-muted loading">
-      Loading article
+    <div class="wiki-loading">
+      <div class="loading-indicator">
+        <span class="spinner"></span>
+        <span>Loading article...</span>
+      </div>
+      <div class="skeleton-lines">
+        <div class="skeleton-line width-100"></div>
+        <div class="skeleton-line width-80"></div>
+        <div class="skeleton-line width-90"></div>
+        <div class="skeleton-line width-70"></div>
+      </div>
     </div>
     """
   end
@@ -242,7 +303,12 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
 
   defp article_meta(assigns) do
     ~H"""
-    <footer class="mt-4 pt-2 border-t text-sm text-muted">
+    <footer class="article-footer mt-4 pt-2 border-t text-sm text-muted">
+      <div class="flex flex-wrap items-center gap-2 mb-2">
+        <span :if={@word_count > 0}>{@word_count} words</span>
+        <span :if={@word_count > 0}>|</span>
+        <span :if={@reading_time > 0}>{@reading_time} min read</span>
+      </div>
       <div class="flex flex-wrap items-center gap-2">
         <span :if={@article.license}>License: {@article.license}</span>
         <span :if={@article.synced_at}>
@@ -271,52 +337,80 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
       id="edit-modal"
       class="modal-backdrop"
       phx-click="hide_edit_form"
+      phx-window-keydown="hide_edit_form"
+      phx-key="Escape"
+      phx-hook="ModalScrollLock"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="edit-modal-title"
     >
-      <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal" phx-click-away="hide_edit_form">
         <div class="modal-header">
-          <h2 class="modal-title">SUGGEST EDIT</h2>
-          <button phx-click="hide_edit_form" class="modal-close">
+          <h2 id="edit-modal-title" class="modal-title">SUGGEST EDIT</h2>
+          <button
+            type="button"
+            phx-click="hide_edit_form"
+            class="modal-close"
+            aria-label="Close dialog"
+          >
             [X]
           </button>
         </div>
 
-        <form phx-submit="submit_edit" phx-change="validate_edit" class="modal-body">
+        <form
+          phx-submit="submit_edit"
+          phx-change="validate_edit"
+          class="modal-body"
+          aria-label="Edit suggestion form"
+        >
           <div class="mb-2">
-            <label class="block text-xs text-muted mb-1">
+            <label for="suggested-content" class="block text-xs text-muted mb-1">
               Edited content:
             </label>
             <textarea
+              id="suggested-content"
               name="suggested_content"
               rows="12"
               required
+              aria-required="true"
               class="w-full text-sm"
             >{@form[:suggested_content].value}</textarea>
           </div>
 
           <div class="mb-2">
-            <label class="block text-xs text-muted mb-1">
+            <label for="edit-reason" class="block text-xs text-muted mb-1">
               Reason for edit (optional):
             </label>
             <textarea
+              id="edit-reason"
               name="reason"
               rows="2"
               maxlength="2000"
               class="w-full text-sm"
               placeholder="Why are you suggesting this change?"
+              aria-describedby="reason-hint"
             >{@form[:reason].value}</textarea>
+            <span id="reason-hint" class="visually-hidden">
+              Briefly explain why this edit improves the article
+            </span>
           </div>
 
           <div class="mb-2">
-            <label class="block text-xs text-muted mb-1">
+            <label for="submitter-email" class="block text-xs text-muted mb-1">
               Email (optional, for attribution):
             </label>
             <input
+              id="submitter-email"
               type="email"
               name="submitter_email"
               value={@form[:submitter_email].value}
               class="w-full text-sm"
               placeholder="your@email.com"
+              aria-describedby="email-hint"
             />
+            <span id="email-hint" class="visually-hidden">
+              Your email for attribution if the edit is accepted
+            </span>
           </div>
 
           <div class="flex justify-end gap-2 mt-4">
@@ -372,4 +466,87 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
   defp format_confidence(c) when c >= 0.8, do: "High"
   defp format_confidence(c) when c >= 0.5, do: "Medium"
   defp format_confidence(_), do: "Low"
+
+  defp extract_description(article) do
+    text = article.extracted_text || article.title || ""
+
+    text
+    |> String.slice(0, 160)
+    |> String.trim()
+    |> then(fn s -> if String.length(s) == 160, do: s <> "...", else: s end)
+  end
+
+  defp format_iso8601(nil), do: nil
+
+  defp format_iso8601(%DateTime{} = dt) do
+    DateTime.to_iso8601(dt)
+  end
+
+  # JSON-LD structured data generation
+
+  defp build_json_ld(article, description, breadcrumbs, current_path) do
+    url = "https://wiki.droo.foo#{current_path}"
+
+    [
+      build_article_schema(article, description, url),
+      build_breadcrumb_schema(breadcrumbs)
+    ]
+  end
+
+  defp build_article_schema(article, description, url) do
+    %{
+      "@context" => "https://schema.org",
+      "@type" => "Article",
+      "headline" => article.title,
+      "description" => description,
+      "url" => url,
+      "dateModified" => format_iso8601(article.synced_at),
+      "author" => %{
+        "@type" => "Organization",
+        "name" => Helpers.source_label_full(article.source),
+        "url" => article.upstream_url
+      },
+      "publisher" => %{
+        "@type" => "Organization",
+        "name" => "WIKI.DROO.FOO",
+        "url" => "https://wiki.droo.foo"
+      },
+      "mainEntityOfPage" => %{
+        "@type" => "WebPage",
+        "@id" => url
+      },
+      "isPartOf" => %{
+        "@type" => "WebSite",
+        "name" => "WIKI.DROO.FOO",
+        "url" => "https://wiki.droo.foo"
+      }
+    }
+    |> maybe_add_license(article.license)
+    |> Jason.encode!()
+  end
+
+  defp maybe_add_license(schema, nil), do: schema
+  defp maybe_add_license(schema, ""), do: schema
+  defp maybe_add_license(schema, license), do: Map.put(schema, "license", license)
+
+  defp build_breadcrumb_schema(breadcrumbs) do
+    items =
+      breadcrumbs
+      |> Enum.with_index(1)
+      |> Enum.map(fn {{name, path}, position} ->
+        %{
+          "@type" => "ListItem",
+          "position" => position,
+          "name" => name,
+          "item" => "https://wiki.droo.foo#{path}"
+        }
+      end)
+
+    %{
+      "@context" => "https://schema.org",
+      "@type" => "BreadcrumbList",
+      "itemListElement" => items
+    }
+    |> Jason.encode!()
+  end
 end

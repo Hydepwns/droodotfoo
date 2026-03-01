@@ -2,8 +2,93 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="csrf-token" content={get_csrf_token()} />
+
+    <%!-- Favicons --%>
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png" />
+    <link rel="apple-touch-icon" href="/images/apple-touch-icon.png" />
+
+    <%!-- RSS Feeds --%>
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title="Wiki RSS Feed"
+      href="https://wiki.droo.foo/feed.xml"
+    />
+
+    <%!-- Canonical URL --%>
+    <link rel="canonical" href={"https://wiki.droo.foo#{assigns[:current_path] || "/"}"} />
+
+    <%!-- SEO Meta Tags --%>
+    <meta
+      name="description"
+      content={
+        assigns[:meta_description] ||
+          "Federated wiki mirror aggregating OSRS Wiki, nLab mathematics, Wikipedia, and more"
+      }
+    />
+    <meta name="author" content="DROO" />
+
+    <%!-- Open Graph Meta Tags --%>
+    <meta property="og:site_name" content="WIKI.DROO.FOO" />
+    <meta property="og:locale" content="en_US" />
+    <meta
+      property="og:title"
+      content={assigns[:og_title] || assigns[:page_title] || "WIKI.DROO.FOO"}
+    />
+    <meta
+      property="og:description"
+      content={
+        assigns[:og_description] || assigns[:meta_description] ||
+          "Federated wiki mirror aggregating OSRS Wiki, nLab mathematics, Wikipedia, and more"
+      }
+    />
+    <meta property="og:type" content={assigns[:og_type] || "website"} />
+    <meta property="og:url" content={"https://wiki.droo.foo#{assigns[:current_path] || "/"}"} />
+    <meta
+      property="og:image"
+      content={assigns[:og_image] || "https://droo.foo/images/og-image.png"}
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <%!-- Twitter Card Meta Tags --%>
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@MF_DROO" />
+    <meta name="twitter:creator" content="@MF_DROO" />
+    <meta
+      name="twitter:title"
+      content={assigns[:og_title] || assigns[:page_title] || "WIKI.DROO.FOO"}
+    />
+    <meta
+      name="twitter:description"
+      content={
+        assigns[:og_description] || assigns[:meta_description] ||
+          "Federated wiki mirror aggregating OSRS Wiki, nLab mathematics, Wikipedia, and more"
+      }
+    />
+    <meta
+      name="twitter:image"
+      content={assigns[:og_image] || "https://droo.foo/images/og-image.png"}
+    />
+
+    <%!-- Article-specific Meta Tags --%>
+    <%= if assigns[:og_type] == "article" do %>
+      <meta property="article:author" content="https://wiki.droo.foo" />
+      <%= if assigns[:published_time] do %>
+        <meta property="article:published_time" content={assigns[:published_time]} />
+      <% end %>
+      <%= if assigns[:modified_time] do %>
+        <meta property="article:modified_time" content={assigns[:modified_time]} />
+      <% end %>
+      <%= if assigns[:article_section] do %>
+        <meta property="article:section" content={assigns[:article_section]} />
+      <% end %>
+    <% end %>
+
     <.live_title default="wiki.droo.foo" suffix=" | droo.foo">
       {assigns[:page_title]}
     </.live_title>
@@ -74,8 +159,47 @@
         window.getCurrentTheme = () => localStorage.getItem("phx:theme") || "system";
       })();
     </script>
+    <script>
+      // Keyboard shortcuts for wiki
+      document.addEventListener('keydown', (e) => {
+        // Don't trigger if user is typing in an input/textarea
+        const tag = e.target.tagName.toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || e.target.isContentEditable) {
+          return;
+        }
+
+        // "/" to focus search
+        if (e.key === '/') {
+          e.preventDefault();
+          const searchInput = document.querySelector('input[name="q"]');
+          if (searchInput) {
+            searchInput.focus();
+            searchInput.select();
+          } else {
+            // Navigate to search page if not on it
+            window.location.href = '/search';
+          }
+        }
+
+        // "?" to show help (future feature placeholder)
+        if (e.key === '?' && e.shiftKey) {
+          e.preventDefault();
+          console.log('Wiki shortcuts: / = search, T = theme, ? = help');
+        }
+      });
+    </script>
+
+    <%!-- JSON-LD Structured Data --%>
+    <%= if assigns[:json_ld] do %>
+      <%= for schema <- List.wrap(assigns[:json_ld]) do %>
+        <script type="application/ld+json">
+          <%= raw(schema) %>
+        </script>
+      <% end %>
+    <% end %>
   </head>
   <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     {@inner_content}
   </body>
 </html>

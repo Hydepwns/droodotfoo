@@ -10,6 +10,8 @@ defmodule DroodotfooWeb.Wiki.SearchLive do
   alias Droodotfoo.Wiki.Search
   alias Droodotfoo.Wiki.Search.RateLimiter
 
+  @rate_limit_seconds 30
+
   @impl true
   def mount(_params, _session, socket) do
     # Defer source_counts loading to avoid blocking mount
@@ -19,19 +21,45 @@ defmodule DroodotfooWeb.Wiki.SearchLive do
      assign(socket,
        query: "",
        results: [],
+       suggestions: [],
        source_filter: nil,
        source_counts: %{},
        total_count: 0,
        search_mode: :hybrid,
        rate_limited: false,
+       rate_limit_seconds: 0,
+       rate_limit_timer: nil,
        page_title: "SEARCH",
-       current_path: "/search"
+       current_path: "/search",
+       breadcrumbs: [{"Home", "/"}, {"Search", "/search"}]
      )}
   end
 
   @impl true
   def handle_info(:load_source_counts, socket) do
     {:noreply, assign(socket, source_counts: Search.source_counts())}
+  end
+
+  @impl true
+  def handle_info(:countdown_tick, socket) do
+    remaining = socket.assigns.rate_limit_seconds - 1
+
+    if remaining <= 0 do
+      {:noreply,
+       assign(socket,
+         rate_limited: false,
+         rate_limit_seconds: 0,
+         rate_limit_timer: nil
+       )}
+    else
+      timer = Process.send_after(self(), :countdown_tick, 1000)
+
+      {:noreply,
+       assign(socket,
+         rate_limit_seconds: remaining,
+         rate_limit_timer: timer
+       )}
+    end
   end
 
   @impl true
@@ -52,6 +80,8 @@ defmodule DroodotfooWeb.Wiki.SearchLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_path={@current_path}>
+      <Layouts.breadcrumbs items={@breadcrumbs} />
+
       <section class="section-spaced">
         <h2 class="section-header-bordered">
           SEARCH
@@ -63,11 +93,18 @@ defmodule DroodotfooWeb.Wiki.SearchLive do
               type="text"
               name="q"
               value={@query}
-              placeholder="Search articles..."
+              placeholder="Search articles... (press / to focus)"
               class="flex-1"
               autofocus
               phx-debounce="300"
+              list="search-suggestions"
+              autocomplete="off"
             />
+            <datalist id="search-suggestions">
+              <option :for={suggestion <- @suggestions} value={suggestion.title}>
+                {Helpers.source_label(suggestion.source)}
+              </option>
+            </datalist>
             <select name="source">
               <option value="">All sources</option>
               <option
@@ -88,10 +125,17 @@ defmodule DroodotfooWeb.Wiki.SearchLive do
         </form>
       </section>
 
-      <section :if={@rate_limited} class="section-spaced">
-        <p class="text-error">
-          Rate limit exceeded. Please wait a moment before searching again.
-        </p>
+      <section :if={@rate_limited} class="rate-limit-notice">
+        <span class="text-muted">
+          [!] Rate limit - retry in {@rate_limit_seconds}s
+        </span>
+        <div class="rate-limit-bar">
+          <div
+            class="rate-limit-progress"
+            style={"width: #{(1.0 - @rate_limit_seconds / 30.0) * 100.0}%"}
+          >
+          </div>
+        </div>
       </section>
 
       <section :if={@query == "" && !@rate_limited} class="section-spaced">
@@ -163,9 +207,12 @@ defmodule DroodotfooWeb.Wiki.SearchLive do
   def handle_event("search", %{"q" => query} = params, socket) do
     source = Helpers.parse_source(params["source"])
 
+    # Fetch suggestions for autocomplete (only when typing, not on submit)
+    suggestions = fetch_suggestions(query, source)
+
     socket =
       socket
-      |> assign(query: query, source_filter: source)
+      |> assign(query: query, source_filter: source, suggestions: suggestions)
       |> do_search()
       |> push_patch_if_changed(query, source, socket.assigns.search_mode)
 
@@ -203,8 +250,25 @@ defmodule DroodotfooWeb.Wiki.SearchLive do
         assign(socket, results: results, total_count: total, rate_limited: false)
 
       {:error, _message} ->
-        assign(socket, results: [], total_count: 0, rate_limited: true)
+        start_rate_limit_countdown(socket)
     end
+  end
+
+  defp start_rate_limit_countdown(socket) do
+    # Cancel existing timer if any
+    if socket.assigns.rate_limit_timer do
+      Process.cancel_timer(socket.assigns.rate_limit_timer)
+    end
+
+    timer = Process.send_after(self(), :countdown_tick, 1000)
+
+    assign(socket,
+      results: [],
+      total_count: 0,
+      rate_limited: true,
+      rate_limit_seconds: @rate_limit_seconds,
+      rate_limit_timer: timer
+    )
   end
 
   defp get_client_ip(socket) do
@@ -235,4 +299,11 @@ defmodule DroodotfooWeb.Wiki.SearchLive do
   defp parse_mode("semantic"), do: :semantic
   defp parse_mode("hybrid"), do: :hybrid
   defp parse_mode(_), do: :hybrid
+
+  defp fetch_suggestions(query, source) when byte_size(query) >= 2 do
+    opts = if source, do: [source: source, limit: 8], else: [limit: 8]
+    Search.suggest(query, opts)
+  end
+
+  defp fetch_suggestions(_query, _source), do: []
 end

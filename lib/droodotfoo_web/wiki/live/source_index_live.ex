@@ -31,6 +31,11 @@ defmodule DroodotfooWeb.Wiki.SourceIndexLive do
     with {:ok, source} <- source_from_uri(uri),
          filters <- parse_filters(params),
          {articles, total} <- fetch_articles(source, filters) do
+      breadcrumbs = [
+        {"Home", "/"},
+        {Helpers.source_label_full(source), Helpers.source_index_path(source)}
+      ]
+
       {:noreply,
        assign(socket,
          source: source,
@@ -40,7 +45,8 @@ defmodule DroodotfooWeb.Wiki.SourceIndexLive do
          total_pages: ceil_div(total, @per_page),
          letters: @letters,
          page_title: Helpers.source_label_full(source),
-         current_path: Helpers.source_index_path(source)
+         current_path: Helpers.source_index_path(source),
+         breadcrumbs: breadcrumbs
        )}
     else
       :error -> {:noreply, push_navigate(socket, to: "/")}
@@ -51,6 +57,8 @@ defmodule DroodotfooWeb.Wiki.SourceIndexLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_path={@current_path}>
+      <Layouts.breadcrumbs items={@breadcrumbs} />
+
       <section class="section-spaced">
         <h2 class="section-header-bordered">
           {Helpers.source_label_full(@source)}
