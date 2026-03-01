@@ -58,7 +58,7 @@ defmodule DroodotfooWeb.Wiki.Library.ReaderLive do
         <p class="text-muted-alt mt-2">
           <span class="source-badge">{Document.type_abbr(@document.content_type)}</span>
           {Document.format_size(@document.file_size)} · Uploaded {format_date(@document.inserted_at)}
-          <span :for={tag <- @document.tags}> ·       {tag}</span>
+          <span :for={tag <- @document.tags}> ·         {tag}</span>
           <button
             :if={@revisions != []}
             phx-click="toggle_versions"

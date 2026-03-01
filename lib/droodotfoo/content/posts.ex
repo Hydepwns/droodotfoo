@@ -132,9 +132,14 @@ defmodule Droodotfoo.Content.Posts do
   @doc "Get all posts in a series, sorted by series_order"
   @spec get_series_posts(String.t()) :: list(Post.t())
   def get_series_posts(series_name) do
-    list_posts()
-    |> Enum.filter(fn post -> post.series == series_name end)
-    |> Enum.sort_by(fn post -> post.series_order || 999 end)
+    # Read ETS directly (avoids GenServer call and unnecessary date sort)
+    # Table has read_concurrency: true so this is safe
+    @table_name
+    |> :ets.tab2list()
+    |> Enum.reduce([], fn {_slug, post}, acc ->
+      if post.series == series_name, do: [post | acc], else: acc
+    end)
+    |> Enum.sort_by(&(&1.series_order || 999))
   end
 
   @doc """

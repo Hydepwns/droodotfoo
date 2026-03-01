@@ -70,7 +70,11 @@ defmodule DroodotfooWeb.Wiki.Library.UploadLive do
 
           {:error, %Ecto.Changeset{} = changeset} ->
             {:noreply,
-             put_flash(socket, :error, "Failed to save: #{Helpers.format_changeset_errors(changeset)}")}
+             put_flash(
+               socket,
+               :error,
+               "Failed to save: #{Helpers.format_changeset_errors(changeset)}"
+             )}
 
           {:error, reason} ->
             {:noreply, put_flash(socket, :error, "Upload failed: #{inspect(reason)}")}

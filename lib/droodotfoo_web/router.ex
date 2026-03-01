@@ -115,8 +115,11 @@ defmodule DroodotfooWeb.Router do
     get "/feed.xml", FeedController, :index
     get "/:source/feed.xml", FeedController, :source
 
-    # Sitemap
+    # Sitemaps (index + per-source with pagination)
     get "/sitemap.xml", SitemapController, :index
+    get "/sitemaps/static", SitemapController, :static
+    get "/sitemaps/:source", SitemapController, :source
+    get "/sitemaps/:source/:page", SitemapController, :source
 
     live "/", LandingLive, :index
     live "/search", SearchLive, :index
