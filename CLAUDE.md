@@ -242,15 +242,23 @@ Linked rule files are stored in `deps/*/usage-rules/`.
 - Use ASCII art only (no emojis)
 - Box-drawing characters for UI elements
 
-### Phoenix LiveView
+### RateLimiter Macro
 
-- Wrap templates with `<Layouts.app flash={@flash}>`
-- Use `<.input>` component from core_components.ex for forms
-- Use streams for collections to avoid memory issues
-- Always assign forms via `to_form/2`, never access changesets in templates
-- Add unique DOM IDs to key elements for testing
+Reusable rate limiting via `use Droodotfoo.RateLimiter`:
 
-See [AGENTS.md](AGENTS.md) for comprehensive Phoenix/Elixir/LiveView guidelines synced from dependencies via `usage_rules`.
+```elixir
+defmodule MyApp.ContactRateLimiter do
+  use Droodotfoo.RateLimiter,
+    table_name: :contact_rate_limit,
+    windows: [
+      {:hourly, 3_600, 3},
+      {:daily, 86_400, 10}
+    ],
+    log_prefix: "Contact form"
+end
+```
+
+Provides `check_rate_limit/1`, `record/1`, and `get_status/1` callbacks. Used by contact form, pattern generation, post API, and wiki search.
 
 ## Content System
 

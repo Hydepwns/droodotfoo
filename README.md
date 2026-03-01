@@ -3,7 +3,7 @@
 Personal website built with LiveView, generative art patterns and monospace web aesthetics.
 
 ![Test Coverage](https://img.shields.io/badge/coverage-41.2%25-orange)
-![Tests](https://img.shields.io/badge/tests-963%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-1084%20passing-brightgreen)
 ![Elixir](https://img.shields.io/badge/elixir-1.17-purple)
 ![Phoenix](https://img.shields.io/badge/phoenix-1.8.1-orange)
 
@@ -119,7 +119,7 @@ Built with modular Phoenix LiveView architecture:
 
 **Content System**: File-based blog posts with markdown + YAML frontmatter. Deterministic SVG pattern generation per post with 8 animation styles. No database required.
 
-**Test Coverage**: 963 tests passing (41.2% code coverage)
+**Test Coverage**: 1084 tests passing (41.2% code coverage)
 
 ## Tech Stack
 
@@ -133,7 +133,7 @@ Built with modular Phoenix LiveView architecture:
 - **SEO**: JSON-LD structured data for enhanced search visibility
 - **Rust NIFs**: ex_keccak, ex_secp256k1 (Web3 crypto), autumn, mdex (compiled from source)
 - **Optional**: ethers.js (Web3), Three.js (STL viewer)
-- **Testing**: ExUnit with 963 tests passing
+- **Testing**: ExUnit with 1084 tests passing
 
 ## Development
 
