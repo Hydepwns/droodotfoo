@@ -28,7 +28,9 @@ defmodule Droodotfoo.Resume.DataAggregator do
   def aggregate_technologies_by_category(experience) when is_list(experience) do
     experience
     |> Enum.flat_map(fn exp ->
-      (exp[:technologies] || %{})
+      exp
+      |> get_technologies()
+      |> normalize_keys()
       |> Enum.reject(fn {_k, v} -> is_nil(v) || v == [] end)
       |> Enum.to_list()
     end)
@@ -46,6 +48,30 @@ defmodule Droodotfoo.Resume.DataAggregator do
       {category, all_items}
     end)
     |> Enum.into(%{})
+  end
+
+  # Extracts technologies map from experience entry, handling both atom and string keys
+  defp get_technologies(%{technologies: techs}) when is_map(techs), do: techs
+  defp get_technologies(%{"technologies" => techs}) when is_map(techs), do: techs
+  defp get_technologies(_), do: %{}
+
+  # Normalizes string keys to atoms for consistent grouping
+  defp normalize_keys(techs) when is_map(techs) do
+    Enum.map(techs, fn
+      {key, value} when is_binary(key) -> {String.to_existing_atom(key), value}
+      {key, value} -> {key, value}
+    end)
+    |> Enum.into(%{})
+  rescue
+    # If atom doesn't exist, keep as string (shouldn't happen with known categories)
+    ArgumentError ->
+      Enum.map(techs, fn
+        {"languages", value} -> {:languages, value}
+        {"frameworks", value} -> {:frameworks, value}
+        {"tools", value} -> {:tools, value}
+        {key, value} -> {key, value}
+      end)
+      |> Enum.into(%{})
   end
 
   @doc """
@@ -69,7 +95,8 @@ defmodule Droodotfoo.Resume.DataAggregator do
     all_technologies =
       experience
       |> Enum.flat_map(fn exp ->
-        (exp[:technologies] || %{})
+        exp
+        |> get_technologies()
         |> Enum.reject(fn {_k, v} -> is_nil(v) || v == [] end)
         |> Enum.flat_map(fn {_category, items} -> items end)
       end)

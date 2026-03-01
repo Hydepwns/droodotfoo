@@ -59,8 +59,12 @@ mix precommit               # Format, compile, test
 
 | Priority | Area | Task |
 |----------|------|------|
-| Medium | Blog | Image optimization, code copy button, TOC |
-| Medium | DevOps | GitHub Actions CI/CD, error tracking |
+| Medium | Performance | Responsive images (srcset/sizes) for mobile |
+| Medium | Performance | LiveView streams for paginated wiki article lists |
+| Medium | Performance | Image CDN / WebP delivery |
+| Medium | Code Quality | Refactor pattern_generator.ex (cyclomatic complexity 18-19) |
+| Medium | Blog | Image optimization, TOC |
+| Medium | DevOps | Error tracking |
 | Low | Blog | Tag filtering, search, related posts |
 | Low | Performance | Service worker, PWA manifest |
 
@@ -70,6 +74,8 @@ mix precommit               # Format, compile, test
 
 | Date | Summary |
 |------|---------|
+| Mar 2026 | Code quality: consolidate `extract_languages/1` helper |
+| Mar 2026 | Performance: series posts cache, wiki sitemap index (146k articles), rate limiter refactor (-56% LOC) |
 | Feb 2026 | Git subdomain MVP (Forgejo browser) |
 | Feb 2026 | Wiki multi-source aggregation, semantic search, pending edits |
 | Feb 2026 | Library document management with MinIO storage |

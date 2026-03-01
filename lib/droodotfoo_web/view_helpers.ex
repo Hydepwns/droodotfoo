@@ -4,6 +4,8 @@ defmodule DroodotfooWeb.ViewHelpers do
   Provides formatting and display utilities used across multiple LiveViews.
   """
 
+  alias Droodotfoo.Resume.DataAggregator
+
   @doc """
   Format a date range for display.
 
@@ -51,6 +53,9 @@ defmodule DroodotfooWeb.ViewHelpers do
   Each experience entry may have a `technologies` map with a `languages` key.
   Languages appearing in more experience entries rank higher.
 
+  Delegates to `DataAggregator.aggregate_technologies_by_category/1` for the
+  heavy lifting, extracting just the language names.
+
   ## Examples
 
       iex> ViewHelpers.extract_languages([
@@ -62,21 +67,8 @@ defmodule DroodotfooWeb.ViewHelpers do
   @spec extract_languages([map()]) :: [String.t()]
   def extract_languages(experience) when is_list(experience) do
     experience
-    |> Enum.flat_map(fn
-      %{technologies: %{languages: langs}} when is_list(langs) ->
-        langs
-
-      %{technologies: techs} when is_map(techs) ->
-        case Map.get(techs, "languages") do
-          langs when is_list(langs) -> langs
-          _ -> []
-        end
-
-      _ ->
-        []
-    end)
-    |> Enum.frequencies()
-    |> Enum.sort_by(fn {_lang, count} -> -count end)
+    |> DataAggregator.aggregate_technologies_by_category()
+    |> Map.get(:languages, [])
     |> Enum.map(fn {lang, _count} -> lang end)
   end
 
