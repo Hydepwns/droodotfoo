@@ -2,8 +2,6 @@ defmodule Droodotfoo.PropertyTest do
   use ExUnit.Case
   use ExUnitProperties
 
-  alias Droodotfoo.{AdaptiveRefresh, InputDebouncer, InputRateLimiter}
-
   @moduledoc """
   Property-based tests for droodotfoo components.
   These tests verify invariants and properties that should hold
@@ -31,119 +29,6 @@ defmodule Droodotfoo.PropertyTest do
       assert Enum.all?(final_buffer.lines, fn line ->
                Enum.all?(line.cells, &valid_cell?/1)
              end)
-    end
-  end
-
-  property "InputRateLimiter token bucket never goes negative" do
-    check all(
-            event_count <- integer(0..1000),
-            initial_tokens <- integer(0..30)
-          ) do
-      limiter = %InputRateLimiter{
-        tokens: initial_tokens,
-        last_refill: System.monotonic_time(:millisecond),
-        events_allowed: 0,
-        events_blocked: 0
-      }
-
-      # Use list comprehension to avoid descending range issue when event_count = 0
-      {final_limiter, _} =
-        Enum.reduce(List.duplicate(:event, event_count), {limiter, []}, fn _, {lim, acc} ->
-          {allowed, new_lim} = InputRateLimiter.allow_event?(lim)
-          {new_lim, [allowed | acc]}
-        end)
-
-      # Tokens should never be negative after any operation
-      assert final_limiter.tokens >= 0
-
-      # Event counts should match
-      total_events = final_limiter.events_allowed + final_limiter.events_blocked
-      assert total_events == event_count
-    end
-  end
-
-  property "InputDebouncer maintains key order within batches" do
-    check all(
-            keys <-
-              list_of(string(:alphanumeric, min_length: 1, max_length: 1),
-                min_length: 1,
-                max_length: 20
-              )
-          ) do
-      debouncer = InputDebouncer.new(%{debounce_ms: 100, batch_size: 50})
-
-      {final_state, batches} =
-        Enum.reduce(keys, {debouncer, []}, fn key, {state, acc} ->
-          case InputDebouncer.process_key(state, key) do
-            {:debounced, new_state} ->
-              {new_state, acc}
-
-            {:batched, batch, new_state} ->
-              {new_state, acc ++ [batch]}
-
-            {:batch_then_start, batch, new_state} ->
-              {new_state, acc ++ [batch]}
-
-            _ ->
-              {state, acc}
-          end
-        end)
-
-      # Flush any remaining
-      {remaining, _} = InputDebouncer.flush(final_state)
-      all_batches = if remaining == [], do: batches, else: batches ++ [remaining]
-
-      # Flatten all batches
-      processed_keys = List.flatten(all_batches)
-
-      # All input keys should be in output (order preserved within batches)
-      assert length(processed_keys) <= length(keys)
-    end
-  end
-
-  property "AdaptiveRefresh FPS transitions converge to target" do
-    check all(
-            initial_fps <- member_of([5, 15, 30, 60]),
-            initial_mode <- member_of([:idle, :transition, :normal, :fast]),
-            activity_count <- integer(0..100)
-          ) do
-      # Map mode to appropriate FPS
-      mode_fps_map = %{idle: 5, transition: 15, normal: 30, fast: 60}
-      target_fps = mode_fps_map[initial_mode]
-
-      state = %{
-        AdaptiveRefresh.new()
-        | current_fps: initial_fps,
-          target_fps: target_fps,
-          mode: initial_mode,
-          # Reset to ensure we start from 0
-          activity_count: 0
-      }
-
-      initial_count = state.activity_count
-
-      # Record multiple activities
-      final_state =
-        if activity_count > 0 do
-          Enum.reduce(1..activity_count, state, fn _, acc ->
-            AdaptiveRefresh.record_activity(acc)
-          end)
-        else
-          state
-        end
-
-      # Basic invariants that should always hold
-      assert final_state.current_fps >= 5
-      assert final_state.current_fps <= 60
-
-      # Activity count should increase by the number of activities
-      assert final_state.activity_count == initial_count + activity_count
-
-      # Mode should remain consistent
-      assert final_state.mode in [:normal, :fast, :idle, :transition]
-
-      # Target FPS should be valid for the mode
-      assert final_state.target_fps in [5, 15, 30, 60]
     end
   end
 

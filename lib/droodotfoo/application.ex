@@ -42,10 +42,8 @@ defmodule Droodotfoo.Application do
         # Droodotfoo.TerminalBridge,
         # Droodotfoo.RaxolApp,
         # Start Spotify services
-        Droodotfoo.Spotify.Cache,
         Droodotfoo.Spotify,
         # Start GitHub services
-        Droodotfoo.GitHub.Cache,
         Droodotfoo.GitHub.Fetcher,
         # Start Web3 server
         Droodotfoo.Web3,
@@ -53,8 +51,6 @@ defmodule Droodotfoo.Application do
         Droodotfoo.PluginSystem,
         # Start blog post system
         Droodotfoo.Content.Posts,
-        # Start pattern cache for SVG pattern generation
-        Droodotfoo.Content.PatternCache,
         # Start Portal presence server
         Droodotfoo.Fileverse.Portal.PresenceServer,
         # Start contact form rate limiter

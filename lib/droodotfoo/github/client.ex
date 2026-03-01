@@ -8,6 +8,7 @@ defmodule Droodotfoo.GitHub.Client do
 
   alias Droodotfoo.ErrorSanitizer
   alias Droodotfoo.GitHub.{HttpClient, ResponseParser}
+  alias Droodotfoo.Performance.Cache
 
   @cache_ttl :timer.minutes(15)
 
@@ -229,44 +230,17 @@ defmodule Droodotfoo.GitHub.Client do
     """
   end
 
-  # Cache implementation
+  # Cache implementation using unified Performance.Cache
 
   defp get_cached_repos(username) do
-    case :ets.whereis(:github_cache) do
-      :undefined ->
-        :ets.new(:github_cache, [:named_table, :public, read_concurrency: true])
-        :miss
-
-      _table ->
-        lookup_cached_repos(username)
-    end
-  end
-
-  defp lookup_cached_repos(username) do
-    case :ets.lookup(:github_cache, username) do
-      [{^username, repos, cached_at}] ->
-        if System.system_time(:millisecond) - cached_at < @cache_ttl do
-          {:ok, repos}
-        else
-          :ets.delete(:github_cache, username)
-          :miss
-        end
-
-      [] ->
-        :miss
+    case Cache.get(:github_pinned, username) do
+      {:ok, repos} -> {:ok, repos}
+      :error -> :miss
     end
   end
 
   defp cache_repos(username, repos) do
-    ensure_cache_table()
-    :ets.insert(:github_cache, {username, repos, System.system_time(:millisecond)})
-  end
-
-  defp ensure_cache_table do
-    case :ets.whereis(:github_cache) do
-      :undefined -> :ets.new(:github_cache, [:named_table, :public, read_concurrency: true])
-      _table -> :ok
-    end
+    Cache.put(:github_pinned, username, repos, ttl: @cache_ttl)
   end
 
   defp format_repo_entry({repo, idx}) do

@@ -6,6 +6,7 @@ defmodule DroodotfooWeb.PostLive do
   use DroodotfooWeb, :live_view
   alias Droodotfoo.Content.{PostFormatter, Posts}
   alias DroodotfooWeb.SEO.JsonLD
+  alias DroodotfooWeb.Wiki.Helpers.HTML, as: HTMLHelper
 
   @impl true
   def mount(%{"slug" => slug}, _session, socket) do
@@ -38,9 +39,12 @@ defmodule DroodotfooWeb.PostLive do
             []
           end
 
+        # Calculate word count for SEO
+        word_count = HTMLHelper.word_count(post.html)
+
         # Generate JSON-LD schemas
         json_ld = [
-          JsonLD.article_schema(post),
+          JsonLD.article_schema(post, word_count: word_count),
           JsonLD.breadcrumb_schema([
             {"Home", "/"},
             {"Posts", "/posts"},

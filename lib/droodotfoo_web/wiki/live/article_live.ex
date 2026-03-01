@@ -26,7 +26,7 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
        show_edit_form: false,
        edit_form: nil,
        edit_submitting: false
-     )}
+     ), temporary_assigns: [html: ""]}
   end
 
   @impl true
@@ -80,7 +80,7 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
           {article.title, current_path}
         ]
 
-        json_ld = build_json_ld(article, description, breadcrumbs, current_path)
+        json_ld = build_json_ld(article, description, breadcrumbs, current_path, word_count)
 
         {:noreply,
          socket
@@ -173,9 +173,9 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
           <section class="section-spaced">
             <p><.source_badge source={@source} /></p>
 
-            <h2 class="section-header-bordered">
+            <h1 class="section-header-bordered">
               {if @article, do: String.upcase(@article.title), else: format_title(@slug)}
-            </h2>
+            </h1>
 
             <.loading :if={@loading} />
 
@@ -474,16 +474,16 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
 
   # JSON-LD structured data generation
 
-  defp build_json_ld(article, description, breadcrumbs, current_path) do
+  defp build_json_ld(article, description, breadcrumbs, current_path, word_count) do
     url = "https://wiki.droo.foo#{current_path}"
 
     [
-      build_article_schema(article, description, url),
+      build_article_schema(article, description, url, word_count),
       build_breadcrumb_schema(breadcrumbs)
     ]
   end
 
-  defp build_article_schema(article, description, url) do
+  defp build_article_schema(article, description, url, word_count) do
     %{
       "@context" => "https://schema.org",
       "@type" => "Article",
@@ -511,9 +511,13 @@ defmodule DroodotfooWeb.Wiki.ArticleLive do
         "url" => "https://wiki.droo.foo"
       }
     }
+    |> maybe_add_word_count(word_count)
     |> maybe_add_license(article.license)
     |> Jason.encode!()
   end
+
+  defp maybe_add_word_count(schema, 0), do: schema
+  defp maybe_add_word_count(schema, count), do: Map.put(schema, "wordCount", count)
 
   defp maybe_add_license(schema, nil), do: schema
   defp maybe_add_license(schema, ""), do: schema

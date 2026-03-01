@@ -11,5 +11,6 @@ Disallow: /api/
 # RSS Feed
 Allow: /feed.xml
 
-# Sitemap location
+# Sitemap locations
 Sitemap: https://droo.foo/sitemap.xml
+Sitemap: https://wiki.droo.foo/sitemap.xml

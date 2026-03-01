@@ -106,10 +106,11 @@ defmodule Droodotfoo.Performance.Cache do
   @spec put(namespace(), key(), value(), keyword()) :: :ok
   def put(namespace, key, value, opts \\ []) do
     ttl = Keyword.get(opts, :ttl, @default_ttl)
-    expires_at = calculate_expiration(ttl)
+    now = System.monotonic_time(:millisecond)
+    expires_at = calculate_expiration(ttl, now)
 
     cache_key = {namespace, key}
-    entry = {value, expires_at}
+    entry = {value, expires_at, now}
 
     :ets.insert(@table_name, {cache_key, entry})
     :ok
@@ -132,7 +133,7 @@ defmodule Droodotfoo.Performance.Cache do
     cache_key = {namespace, key}
 
     case :ets.lookup(@table_name, cache_key) do
-      [{^cache_key, {value, expires_at}}] ->
+      [{^cache_key, {value, expires_at, _cached_at}}] ->
         if expired?(expires_at) do
           :ets.delete(@table_name, cache_key)
           record_miss(namespace)
@@ -140,6 +141,40 @@ defmodule Droodotfoo.Performance.Cache do
         else
           record_hit(namespace)
           {:ok, value}
+        end
+
+      [] ->
+        record_miss(namespace)
+        :error
+    end
+  end
+
+  @doc """
+  Retrieves a value from the cache with metadata.
+
+  Returns `{:ok, value, cached_at}` if found and not expired, `:error` otherwise.
+  The `cached_at` timestamp is in milliseconds (monotonic time).
+
+  ## Examples
+
+      case Cache.get_with_metadata(:github, {"owner", "repo"}) do
+        {:ok, repo, cached_at} -> {repo, cached_at}
+        :error -> fetch_from_github()
+      end
+  """
+  @spec get_with_metadata(namespace(), key()) :: {:ok, value(), integer()} | :error
+  def get_with_metadata(namespace, key) do
+    cache_key = {namespace, key}
+
+    case :ets.lookup(@table_name, cache_key) do
+      [{^cache_key, {value, expires_at, cached_at}}] ->
+        if expired?(expires_at) do
+          :ets.delete(@table_name, cache_key)
+          record_miss(namespace)
+          :error
+        else
+          record_hit(namespace)
+          {:ok, value, cached_at}
         end
 
       [] ->
@@ -220,8 +255,9 @@ defmodule Droodotfoo.Performance.Cache do
   def prune_expired do
     now = System.monotonic_time(:millisecond)
 
+    # Match entries where expires_at (2nd element of inner tuple) is less than now
     match_spec = [
-      {{:_, {:"$1", :"$2"}}, [{:andalso, {:is_integer, :"$2"}, {:<, :"$2", now}}], [true]}
+      {{:_, {:"$1", :"$2", :"$3"}}, [{:andalso, {:is_integer, :"$2"}, {:<, :"$2", now}}], [true]}
     ]
 
     :ets.select_delete(@table_name, match_spec)
@@ -303,10 +339,10 @@ defmodule Droodotfoo.Performance.Cache do
 
   ## Private Functions
 
-  defp calculate_expiration(:infinity), do: :infinity
+  defp calculate_expiration(:infinity, _now), do: :infinity
 
-  defp calculate_expiration(ttl) when is_integer(ttl) and ttl > 0 do
-    System.monotonic_time(:millisecond) + ttl
+  defp calculate_expiration(ttl, now) when is_integer(ttl) and ttl > 0 do
+    now + ttl
   end
 
   defp expired?(:infinity), do: false

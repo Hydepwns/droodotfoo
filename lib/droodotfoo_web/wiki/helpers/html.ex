@@ -15,6 +15,7 @@ defmodule DroodotfooWeb.Wiki.Helpers.HTML do
     html
     |> add_lazy_loading()
     |> add_async_decoding()
+    |> ensure_alt_text()
   end
 
   def enhance_images(html), do: html
@@ -34,6 +35,15 @@ defmodule DroodotfooWeb.Wiki.Helpers.HTML do
       ~r/<img(?![^>]*\bdecoding\s*=)([^>]*)>/i,
       html,
       ~s(<img decoding="async"\\1>)
+    )
+  end
+
+  # Add alt="" to img tags that don't have it (for accessibility)
+  defp ensure_alt_text(html) do
+    Regex.replace(
+      ~r/<img(?![^>]*\balt\s*=)([^>]*)>/i,
+      html,
+      ~s(<img alt="Article image"\\1>)
     )
   end
 

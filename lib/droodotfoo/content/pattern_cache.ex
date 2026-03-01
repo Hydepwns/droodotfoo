@@ -1,10 +1,10 @@
 defmodule Droodotfoo.Content.PatternCache do
   @moduledoc """
-  ETS-based cache for generated SVG patterns with TTL support.
+  Cache for generated SVG patterns.
 
+  Thin wrapper around `Performance.Cache` with pattern-specific logic.
   Since patterns are deterministic (same slug + options = same SVG),
-  they can be cached indefinitely. We use a 24-hour TTL to allow for
-  occasional pattern regeneration in case of updates to the generator.
+  they can be cached with a long TTL.
 
   ## Performance Impact
 
@@ -12,33 +12,17 @@ defmodule Droodotfoo.Content.PatternCache do
   - CPU usage on homepage (shows 5 patterns)
   - Response time for repeated pattern requests
   - Server load during traffic spikes
-
-  ## Cache Strategy
-
-  - Cache key: {slug, opts} tuple
-  - TTL: 24 hours (patterns are deterministic)
-  - Cleanup: Every 10 minutes (removes expired entries)
-  - Read concurrency: Enabled for high performance
   """
 
-  use GenServer
   require Logger
 
-  @table_name :pattern_cache
+  alias Droodotfoo.Performance.Cache
+
+  @namespace :pattern
   @default_ttl :timer.hours(24)
-  @cleanup_interval :timer.minutes(10)
 
   @type cache_key :: {String.t(), keyword()}
   @type cache_value :: String.t()
-
-  ## Client API
-
-  @doc """
-  Starts the pattern cache GenServer.
-  """
-  def start_link(opts \\ []) do
-    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
-  end
 
   @doc """
   Gets a cached pattern or generates and caches it.
@@ -52,15 +36,15 @@ defmodule Droodotfoo.Content.PatternCache do
   def get_or_generate(slug, opts \\ []) do
     cache_key = normalize_cache_key(slug, opts)
 
-    case get(cache_key) do
+    case Cache.get(@namespace, cache_key) do
       {:ok, svg} ->
         Logger.debug("Pattern cache hit for #{slug}")
         svg
 
-      :miss ->
+      :error ->
         Logger.debug("Pattern cache miss for #{slug}, generating...")
         svg = Droodotfoo.Content.PatternGenerator.generate_svg(slug, opts)
-        put(cache_key, svg)
+        Cache.put(@namespace, cache_key, svg, ttl: @default_ttl)
         svg
     end
   end
@@ -72,22 +56,10 @@ defmodule Droodotfoo.Content.PatternCache do
   """
   @spec get(cache_key()) :: {:ok, cache_value()} | :miss
   def get(key) do
-    case :ets.lookup(@table_name, key) do
-      [{^key, svg, expires_at}] ->
-        if System.system_time(:millisecond) < expires_at do
-          {:ok, svg}
-        else
-          :ets.delete(@table_name, key)
-          :miss
-        end
-
-      [] ->
-        :miss
+    case Cache.get(@namespace, key) do
+      {:ok, value} -> {:ok, value}
+      :error -> :miss
     end
-  rescue
-    ArgumentError ->
-      Logger.warning("Pattern cache table not initialized")
-      :miss
   end
 
   @doc """
@@ -100,30 +72,17 @@ defmodule Droodotfoo.Content.PatternCache do
   @spec put(cache_key(), cache_value(), keyword()) :: :ok
   def put(key, svg, opts \\ []) do
     ttl = Keyword.get(opts, :ttl, @default_ttl)
-    expires_at = System.system_time(:millisecond) + ttl
-
-    try do
-      :ets.insert(@table_name, {key, svg, expires_at})
-      :ok
-    rescue
-      ArgumentError ->
-        Logger.error("Failed to insert into pattern cache table")
-        :ok
-    end
+    Cache.put(@namespace, key, svg, ttl: ttl)
   end
 
   @doc """
-  Clears the entire cache.
+  Clears the entire pattern cache.
   """
   @spec clear() :: :ok
   def clear do
-    :ets.delete_all_objects(@table_name)
+    Cache.clear(@namespace)
     Logger.info("Pattern cache cleared")
     :ok
-  rescue
-    ArgumentError ->
-      Logger.warning("Pattern cache table not initialized")
-      :ok
   end
 
   @doc """
@@ -132,15 +91,7 @@ defmodule Droodotfoo.Content.PatternCache do
   @spec delete(String.t(), keyword()) :: :ok
   def delete(slug, opts \\ []) do
     cache_key = normalize_cache_key(slug, opts)
-
-    try do
-      :ets.delete(@table_name, cache_key)
-      :ok
-    rescue
-      ArgumentError ->
-        Logger.warning("Pattern cache: cannot invalidate key, table not initialized")
-        :ok
-    end
+    Cache.delete(@namespace, cache_key)
   end
 
   @doc """
@@ -150,47 +101,16 @@ defmodule Droodotfoo.Content.PatternCache do
 
     * `size` - Number of cached patterns
     * `memory_bytes` - Memory used by cache
-    * `hit_rate` - Cache hit rate (if tracking enabled)
+    * `hits` - Cache hits
+    * `misses` - Cache misses
   """
   @spec stats() :: map()
   def stats do
-    size = :ets.info(@table_name, :size)
-    memory = :ets.info(@table_name, :memory)
+    stats = Cache.stats(@namespace)
 
-    %{
-      size: size,
-      memory_words: memory,
-      memory_bytes: memory * :erlang.system_info(:wordsize),
+    Map.merge(stats, %{
       ttl_hours: @default_ttl / :timer.hours(1)
-    }
-  rescue
-    ArgumentError ->
-      %{size: 0, memory_words: 0, memory_bytes: 0, ttl_hours: 24}
-  end
-
-  ## GenServer Callbacks
-
-  @impl true
-  def init(_opts) do
-    :ets.new(@table_name, [
-      :named_table,
-      :public,
-      :set,
-      read_concurrency: true,
-      write_concurrency: true
-    ])
-
-    schedule_cleanup()
-    Logger.info("Pattern cache initialized (TTL: #{@default_ttl / 1000 / 60 / 60}h)")
-
-    {:ok, %{}}
-  end
-
-  @impl true
-  def handle_info(:cleanup, state) do
-    cleanup_expired()
-    schedule_cleanup()
-    {:noreply, state}
+    })
   end
 
   ## Private Functions
@@ -203,24 +123,5 @@ defmodule Droodotfoo.Content.PatternCache do
       |> Enum.sort()
 
     {slug, normalized_opts}
-  end
-
-  defp cleanup_expired do
-    now = System.system_time(:millisecond)
-
-    expired_keys =
-      @table_name
-      |> :ets.select([{{:"$1", :"$2", :"$3"}, [{:<, :"$3", now}], [:"$1"]}])
-
-    expired_count = length(expired_keys)
-
-    if expired_count > 0 do
-      Enum.each(expired_keys, &:ets.delete(@table_name, &1))
-      Logger.debug("Cleaned up #{expired_count} expired pattern cache entries")
-    end
-  end
-
-  defp schedule_cleanup do
-    Process.send_after(self(), :cleanup, @cleanup_interval)
   end
 end

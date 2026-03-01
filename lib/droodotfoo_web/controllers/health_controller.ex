@@ -27,9 +27,8 @@ defmodule DroodotfooWeb.HealthController do
   def ready(conn, _params) do
     services = %{
       posts_cache: check_genserver(Droodotfoo.Content.Posts),
-      pattern_cache: check_genserver(Droodotfoo.Content.PatternCache),
+      performance_cache: check_genserver(Droodotfoo.Performance.Cache),
       spotify: check_genserver(Droodotfoo.Spotify),
-      github_cache: check_genserver(Droodotfoo.GitHub.Cache),
       pubsub: check_pubsub()
     }
 
@@ -92,8 +91,7 @@ defmodule DroodotfooWeb.HealthController do
   defp get_cache_stats do
     %{
       posts: get_ets_stats(:blog_posts_cache),
-      patterns: get_ets_stats(:pattern_cache),
-      github: get_ets_stats(:github_cache),
+      unified_cache: get_ets_stats(:droodotfoo_cache),
       rate_limits: get_ets_stats(:global_rate_limiter)
     }
     |> Enum.reject(fn {_k, v} -> v == nil end)

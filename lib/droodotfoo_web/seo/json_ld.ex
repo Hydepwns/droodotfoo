@@ -61,8 +61,11 @@ defmodule DroodotfooWeb.SEO.JsonLD do
 
   @doc """
   Generates Article schema for blog posts.
+  Optionally accepts word_count for enhanced SEO (featured snippets).
   """
-  def article_schema(post) do
+  def article_schema(post, opts \\ []) do
+    word_count = Keyword.get(opts, :word_count)
+
     %{
       "@context" => "https://schema.org",
       "@type" => "Article",
@@ -89,6 +92,7 @@ defmodule DroodotfooWeb.SEO.JsonLD do
       "articleSection" => List.first(post.tags),
       "inLanguage" => "en-US"
     }
+    |> maybe_add_word_count(word_count)
     |> maybe_add_series(post)
     |> Jason.encode!()
   end
@@ -165,6 +169,10 @@ defmodule DroodotfooWeb.SEO.JsonLD do
   end
 
   defp format_date(nil), do: nil
+
+  defp maybe_add_word_count(schema, nil), do: schema
+  defp maybe_add_word_count(schema, 0), do: schema
+  defp maybe_add_word_count(schema, count), do: Map.put(schema, "wordCount", count)
 
   defp maybe_add_series(schema, %{series: series} = post) when not is_nil(series) do
     Map.put(schema, "isPartOf", %{
