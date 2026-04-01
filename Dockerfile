@@ -31,6 +31,10 @@ RUN apt-get update \
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 
+# Install Gleam for flow field asset compilation
+RUN curl -fsSL https://github.com/gleam-lang/gleam/releases/download/v1.15.2/gleam-v1.15.2-x86_64-unknown-linux-musl.tar.gz \
+  | tar -xz -C /usr/local/bin
+
 # Force building Rust NIFs from source (GitHub release assets often blocked from CI)
 ENV EX_KECCAK_BUILD="1"
 ENV RUSTLER_BUILD="1"
