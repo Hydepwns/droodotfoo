@@ -360,14 +360,13 @@ defmodule Droodotfoo.Performance.Monitor do
 
       Monitor.check_critical_servers()
       # => %{
-      #   Droodotfoo.RaxolApp => %{alive: true, ...},
-      #   Droodotfoo.Spotify.Manager => %{alive: true, ...}
+      #   Droodotfoo.Spotify.Manager => %{alive: true, ...},
+      #   Droodotfoo.GitHub.Manager => %{alive: true, ...}
       # }
   """
   @spec check_critical_servers() :: %{atom() => genserver_health()}
   def check_critical_servers do
     servers = [
-      Droodotfoo.RaxolApp,
       Droodotfoo.Spotify.Manager,
       Droodotfoo.GitHub.Manager,
       Droodotfoo.Web3.Manager,

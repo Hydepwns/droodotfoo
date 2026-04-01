@@ -47,12 +47,8 @@ defmodule Droodotfoo.Application do
         Droodotfoo.GitHub.Fetcher,
         # Start Web3 server
         Droodotfoo.Web3,
-        # Start plugin system
-        Droodotfoo.PluginSystem,
         # Start blog post system
         Droodotfoo.Content.Posts,
-        # Start Portal presence server
-        Droodotfoo.Fileverse.Portal.PresenceServer,
         # Start contact form rate limiter
         Droodotfoo.Contact.RateLimiter,
         # Start post API rate limiter

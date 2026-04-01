@@ -23,9 +23,8 @@ const ModalScrollLock = {
 };
 
 // Lazy-loaded hooks (loaded on-demand when phx-hook detected)
-// These are ~35KB total and only used on specific pages:
+// These are ~20KB total and only used on specific pages:
 // - STLViewerHook: ~10KB (only STL viewer page)
-// - PortalWebRTCHook: ~13KB (only Portal page)
 // - Web3WalletHook: ~6KB (only Web3 page)
 // - AstroSpotifyWidgetHook: ~3KB (only Spotify page)
 // - AstroSTLViewerHook: ~2KB (only STL viewer page)
@@ -35,8 +34,6 @@ const LazyHooks: Record<string, () => Promise<any>> = {
   AstroSTLViewerHook: () => import('./hooks/astro_stl_viewer.js').then(m => m.AstroSTLViewerHook),
   AstroSpotifyWidgetHook: () => import('./hooks/astro_spotify_widget.js').then(m => m.AstroSpotifyWidgetHook),
   Web3WalletHook: () => import('./hooks/web3_wallet.js').then(m => m.Web3WalletHook),
-  PortalWebRTCHook: () => import('./hooks/portal_webrtc.js').then(m => m.PortalWebRTCHook),
-  FlowFieldHook: () => import('./hooks/flow_field').then(m => m.FlowFieldHook),
 };
 
 // Create proxy hooks that load real implementation on mount
@@ -76,6 +73,4 @@ export default {
   AstroSTLViewerHook: createLazyHook('AstroSTLViewerHook'),
   AstroSpotifyWidgetHook: createLazyHook('AstroSpotifyWidgetHook'),
   Web3WalletHook: createLazyHook('Web3WalletHook'),
-  PortalWebRTCHook: createLazyHook('PortalWebRTCHook'),
-  FlowFieldHook: createLazyHook('FlowFieldHook'),
 };

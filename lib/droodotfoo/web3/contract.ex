@@ -116,7 +116,7 @@ defmodule Droodotfoo.Web3.Contract do
   @spec call_function(String.t(), String.t(), [any()]) :: {:ok, any()} | {:error, atom()}
   def call_function(address, function_name, args \\ []) do
     if valid_address?(address) do
-      # Mock implementation - production would use Ethereumex/Ethers
+      # Mock implementation - production would use Ethers
       {:ok, mock_function_result(function_name, args)}
     else
       {:error, :invalid_address}

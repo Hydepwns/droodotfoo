@@ -226,7 +226,7 @@ defmodule Droodotfoo.Web3.ENS do
 
   defp call_ens_resolver(name) do
     # For now, use a public API endpoint as fallback
-    # In production, would use ethereumex to call contract directly
+    # In production, would use Ethers to call contract directly
     case fetch_from_api(name) do
       {:ok, result} -> {:ok, result}
       {:error, _} -> {:error, :api_error}
@@ -250,7 +250,7 @@ defmodule Droodotfoo.Web3.ENS do
 
   defp fetch_from_api(name) do
     # Use ENS public resolver API (e.g., ens.domains API)
-    # For production, would use proper RPC calls via ethereumex
+    # For production, would use proper RPC calls via Ethers
     url = "https://api.ensideas.com/ens/resolve/#{URI.encode(name)}"
 
     case Req.get(url, connect_options: [timeout: 5_000]) do

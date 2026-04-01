@@ -211,10 +211,6 @@ if config_env() == :prod do
       System.get_env("SPOTIFY_REDIRECT_URI") || "https://#{host}/auth/spotify/callback"
 
   # Web3/Ethereum configuration
-  config :ethereumex,
-    url: System.get_env("ETHEREUM_RPC_URL") || "https://eth.llamarpc.com",
-    http_options: [timeout: 30_000, recv_timeout: 30_000]
-
   chain_id =
     case Integer.parse(System.get_env("CHAIN_ID") || "1") do
       {id, ""} -> id

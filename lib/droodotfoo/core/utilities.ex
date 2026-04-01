@@ -220,7 +220,7 @@ defmodule Droodotfoo.Core.Utilities do
       "550e8400-e29b-41d4-a716-446655440000"
   """
   def generate_uuid do
-    UUID.uuid4()
+    Ecto.UUID.generate()
   end
 
   @doc """

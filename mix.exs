@@ -35,14 +35,7 @@ defmodule Droodotfoo.MixProject do
         ],
         groups_for_modules: [
           Core: [
-            Droodotfoo.RaxolApp,
-            ~r/^Droodotfoo\.Raxol\./,
-            Droodotfoo.TerminalBridge,
             Droodotfoo.Application
-          ],
-          "Plugin System": [
-            Droodotfoo.PluginSystem,
-            ~r/^Droodotfoo\.Plugins\./
           ],
           Integrations: [
             Droodotfoo.Spotify,
@@ -53,12 +46,6 @@ defmodule Droodotfoo.MixProject do
           Web3: [
             Droodotfoo.Web3,
             ~r/^Droodotfoo\.Web3\./
-          ],
-          Fileverse: [
-            ~r/^Droodotfoo\.Fileverse\./
-          ],
-          Terminal: [
-            ~r/^Droodotfoo\.Terminal\./
           ],
           "Content & Blog": [
             ~r/^Droodotfoo\.Content\./
@@ -133,9 +120,7 @@ defmodule Droodotfoo.MixProject do
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
       {:tzdata, "~> 1.1"},
-      # Portal P2P dependencies
       {:phoenix_pubsub, "~> 2.0"},
-      {:raxol, "~> 1.4.1", runtime: false},
       # Spotify integration dependencies
       {:req, "~> 0.5"},
       {:oauth2, "~> 2.1"},
@@ -151,8 +136,6 @@ defmodule Droodotfoo.MixProject do
       {:sweet_xml, "~> 0.7"},
       # Vector embeddings for semantic search
       {:pgvector, "~> 0.3"},
-      # Property-based testing
-      {:stream_data, "~> 1.0", only: [:test, :dev]},
       # Code quality tools
       {:excoveralls, "~> 0.18", only: :test},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
@@ -161,6 +144,7 @@ defmodule Droodotfoo.MixProject do
       {:tidewave, "~> 0.5", only: :dev},
       {:ex_check, "~> 0.16.0", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       # Blog system dependencies
       {:mdex, "~> 0.2"},
       {:html_sanitize_ex, "~> 1.4"},
@@ -169,13 +153,10 @@ defmodule Droodotfoo.MixProject do
       {:plug_crypto, "~> 2.0"},
       # Web3 integration dependencies
       {:ethers, "~> 0.6.7"},
-      {:ethereumex, "~> 0.10"},
       {:ex_keccak, "~> 0.7"},
       {:ex_secp256k1, "~> 0.7"},
       # Rustler for building NIFs from source when precompiled unavailable
       {:rustler, "~> 0.36", optional: true},
-      # E2E Encryption (Signal Protocol)
-      {:libsignal_protocol, "~> 0.1.1"},
       # Email functionality
       {:swoosh, "~> 1.15"},
       # PDF generation (using system wkhtmltopdf)
@@ -212,13 +193,11 @@ defmodule Droodotfoo.MixProject do
       "assets.build": [
         "compile",
         "cmd npm --prefix ./assets run tailwind:build",
-        "cmd cd assets/gleam && gleam build && cp ffi.mjs canvas_ffi.mjs build/dev/javascript/ 2>/dev/null || echo 'Gleam not installed, skipping'",
         "esbuild droodotfoo",
         "cmd mkdir -p priv/static/astro && cp -r assets/astro/* priv/static/astro/"
       ],
       "assets.deploy": [
         "cmd npm --prefix ./assets run tailwind:deploy",
-        "cmd cd assets/gleam && gleam build && cp ffi.mjs canvas_ffi.mjs build/dev/javascript/ 2>/dev/null || echo 'Gleam not installed, skipping'",
         "esbuild droodotfoo --minify",
         "cmd mkdir -p priv/static/astro && cp -r assets/astro/* priv/static/astro/",
         "phx.digest",

@@ -10,8 +10,7 @@ defmodule Droodotfoo.GenServerCase do
     # List of GenServers that need to be managed
     # Note: RaxolApp and TerminalBridge are archived
     genservers = [
-      {Droodotfoo.PerformanceMonitor, []},
-      {Droodotfoo.PluginSystem, []}
+      {Droodotfoo.PerformanceMonitor, []}
     ]
 
     # Stop any existing instances
