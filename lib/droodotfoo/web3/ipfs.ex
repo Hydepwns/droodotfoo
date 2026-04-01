@@ -272,21 +272,6 @@ defmodule Droodotfoo.Web3.IPFS do
     end
   end
 
-  defp get_content_type(headers) when is_list(headers) do
-    # Legacy format: list of tuples
-    case List.keyfind(headers, ~c"content-type", 0) do
-      {~c"content-type", content_type} ->
-        content_type
-        |> to_string()
-        |> String.split(";")
-        |> List.first()
-        |> String.trim()
-
-      nil ->
-        "application/octet-stream"
-    end
-  end
-
   defp format_json(data, max_lines) when is_binary(data) do
     case Jason.decode(data) do
       {:ok, json} ->

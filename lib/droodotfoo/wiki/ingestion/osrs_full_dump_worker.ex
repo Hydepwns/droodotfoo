@@ -63,22 +63,18 @@ defmodule Droodotfoo.Wiki.Ingestion.OSRSFullDumpWorker do
   defp run_full_dump(resume_from, limit, run) do
     opts = if resume_from, do: [from: resume_from], else: []
 
-    case MediaWikiClient.all_pages(opts) do
-      {:ok, stream} ->
-        stream
-        |> maybe_limit(limit)
-        |> Stream.chunk_every(@batch_size)
-        |> Stream.with_index(1)
-        |> Enum.reduce_while({:ok, initial_stats()}, fn {batch, batch_num}, {:ok, acc} ->
-          case process_batch(batch, batch_num, acc, run) do
-            {:ok, new_acc} -> {:cont, {:ok, new_acc}}
-            {:error, _} = error -> {:halt, error}
-          end
-        end)
+    {:ok, stream} = MediaWikiClient.all_pages(opts)
 
-      {:error, reason} ->
-        {:error, reason}
-    end
+    stream
+    |> maybe_limit(limit)
+    |> Stream.chunk_every(@batch_size)
+    |> Stream.with_index(1)
+    |> Enum.reduce_while({:ok, initial_stats()}, fn {batch, batch_num}, {:ok, acc} ->
+      case process_batch(batch, batch_num, acc, run) do
+        {:ok, new_acc} -> {:cont, {:ok, new_acc}}
+        {:error, _} = error -> {:halt, error}
+      end
+    end)
   end
 
   defp maybe_limit(stream, nil), do: stream

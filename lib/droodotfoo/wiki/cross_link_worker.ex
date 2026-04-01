@@ -55,32 +55,23 @@ defmodule Droodotfoo.Wiki.CrossLinkWorker do
         {:error, :not_found}
 
       article ->
-        case CrossLinks.detect_links(article) do
-          {:ok, count} ->
-            Logger.info("Detected #{count} cross-links for article #{article_id}")
-            :ok
-
-          {:error, reason} ->
-            {:error, reason}
-        end
+        {:ok, count} = CrossLinks.detect_links(article)
+        Logger.info("Detected #{count} cross-links for article #{article_id}")
+        :ok
     end
   end
 
   defp detect_for_source(source) do
     Logger.info("Starting cross-link detection for source: #{source}")
 
-    case CrossLinks.detect_all(source) do
-      {:ok, stats} ->
-        Logger.info(
-          "Cross-link detection complete for #{source}: " <>
-            "#{stats.total_links} links, #{stats.articles_with_links}/#{stats.articles_processed} articles"
-        )
+    {:ok, stats} = CrossLinks.detect_all(source)
 
-        :ok
+    Logger.info(
+      "Cross-link detection complete for #{source}: " <>
+        "#{stats.total_links} links, #{stats.articles_with_links}/#{stats.articles_processed} articles"
+    )
 
-      {:error, reason} ->
-        {:error, reason}
-    end
+    :ok
   end
 
   defp full_scan do
@@ -88,10 +79,8 @@ defmodule Droodotfoo.Wiki.CrossLinkWorker do
 
     results =
       Enum.map(@sources, fn source ->
-        case CrossLinks.detect_all(source, limit: 50_000) do
-          {:ok, stats} -> {source, stats}
-          {:error, reason} -> {source, %{error: reason}}
-        end
+        {:ok, stats} = CrossLinks.detect_all(source, limit: 50_000)
+        {source, stats}
       end)
 
     total_links = results |> Enum.map(fn {_, s} -> Map.get(s, :total_links, 0) end) |> Enum.sum()

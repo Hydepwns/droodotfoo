@@ -5,8 +5,6 @@ defmodule DroodotfooWeb.STLViewerLive do
 
   use DroodotfooWeb, :live_view
 
-  alias Phoenix.LiveView.JS
-
   @impl true
   def mount(_params, _session, socket) do
     {:ok,
@@ -107,13 +105,17 @@ defmodule DroodotfooWeb.STLViewerLive do
     end
   end
 
+  def handle_event("load_model", %{"model_url" => url}, socket)
+      when is_binary(url) and url != "" do
+    push_event(socket, "stl_command", %{
+      command: %{type: "load", url: url}
+    })
+
+    {:noreply, assign(socket, :current_model, url)}
+  end
+
   def handle_event("load_model", _params, socket) do
-    # Get URL from input field
-    url =
-      case JS.exec("document.getElementById('model-url').value") do
-        "" -> "/models/cube.stl"
-        input_url -> input_url
-      end
+    url = "/models/cube.stl"
 
     push_event(socket, "stl_command", %{
       command: %{type: "load", url: url}

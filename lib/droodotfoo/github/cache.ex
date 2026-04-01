@@ -13,7 +13,7 @@ defmodule Droodotfoo.GitHub.Cache do
   @namespace :github
   @default_ttl :timer.hours(1)
 
-  @type cache_key :: {String.t(), String.t()}
+  @type cache_key :: {atom() | String.t(), String.t()}
   @type cache_value :: term()
 
   @doc """

@@ -5,8 +5,6 @@ defmodule DroodotfooWeb.SpotifyLive do
 
   use DroodotfooWeb, :live_view
 
-  alias Phoenix.LiveView.JS
-
   @impl true
   def mount(_params, _session, socket) do
     {:ok,
@@ -144,23 +142,17 @@ defmodule DroodotfooWeb.SpotifyLive do
     end
   end
 
+  def handle_event("load_playlist", %{"playlist_id" => playlist_id}, socket)
+      when is_binary(playlist_id) and playlist_id != "" do
+    push_event(socket, "spotify_command", %{
+      command: %{type: "load_playlist", playlistId: playlist_id}
+    })
+
+    {:noreply, assign(socket, :playlist, playlist_id)}
+  end
+
   def handle_event("load_playlist", _params, socket) do
-    # Get playlist ID from input field
-    playlist_id =
-      case JS.exec("document.getElementById('playlist-id').value") do
-        "" -> nil
-        id -> id
-      end
-
-    if playlist_id do
-      push_event(socket, "spotify_command", %{
-        command: %{type: "load_playlist", playlistId: playlist_id}
-      })
-
-      {:noreply, assign(socket, :playlist, playlist_id)}
-    else
-      {:noreply, socket}
-    end
+    {:noreply, socket}
   end
 
   def handle_event("reset_volume", _params, socket) do

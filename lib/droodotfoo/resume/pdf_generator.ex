@@ -44,11 +44,18 @@ defmodule Droodotfoo.Resume.PDFGenerator do
 
   defp convert_html_to_pdf(html_content) do
     ChromicPDF.print_to_pdf({:html, html_content},
-      format: :a4,
-      margin: %{top: "0.5in", bottom: "0.5in", left: "0.5in", right: "0.5in"}
+      print_to_pdf: %{
+        paperWidth: 8.27,
+        paperHeight: 11.69,
+        marginTop: 0.5,
+        marginBottom: 0.5,
+        marginLeft: 0.5,
+        marginRight: 0.5
+      },
+      output: fn path -> File.read!(path) end
     )
   end
 
-  defp unwrap_result({:ok, pdf_content}), do: pdf_content
-  defp unwrap_result({:error, reason}), do: raise("PDF generation failed: #{reason}")
+  defp unwrap_result({:ok, pdf_binary}), do: pdf_binary
+  defp unwrap_result(:ok), do: raise("PDF generation returned no output")
 end

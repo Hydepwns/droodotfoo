@@ -207,21 +207,9 @@ defmodule Droodotfoo.Web3.ENS do
     end
   end
 
-  defp do_reverse_resolve(address) do
-    # Construct reverse node: <address>.addr.reverse
-    reverse_name = construct_reverse_name(address)
-
-    case call_reverse_resolver(reverse_name) do
-      {:ok, name} when is_binary(name) and byte_size(name) > 0 ->
-        {:ok, name}
-
-      {:ok, _} ->
-        {:error, :not_found}
-
-      {:error, reason} ->
-        Logger.debug("ENS reverse resolution failed for #{address}: #{inspect(reason)}")
-        {:error, :resolution_failed}
-    end
+  defp do_reverse_resolve(_address) do
+    # Reverse resolution not yet implemented
+    {:error, :not_implemented}
   end
 
   defp call_ens_resolver(name) do
@@ -231,21 +219,6 @@ defmodule Droodotfoo.Web3.ENS do
       {:ok, result} -> {:ok, result}
       {:error, _} -> {:error, :api_error}
     end
-  end
-
-  defp call_reverse_resolver(_reverse_name) do
-    # Use public API for reverse resolution
-    {:error, :not_implemented}
-  end
-
-  defp construct_reverse_name(address) do
-    # Remove 0x prefix and convert to lowercase
-    clean_address =
-      address
-      |> String.downcase()
-      |> String.replace_prefix("0x", "")
-
-    "#{clean_address}.addr.reverse"
   end
 
   defp fetch_from_api(name) do

@@ -252,6 +252,6 @@ defmodule DroodotfooWeb.Wiki.SourceIndexLive do
   defp format_date(%NaiveDateTime{} = dt), do: Calendar.strftime(dt, "%Y-%m-%d")
   defp format_date(_), do: "unknown"
 
-  defp ceil_div(_, 0), do: 1
-  defp ceil_div(num, denom), do: max(1, ceil(num / denom))
+  defp ceil_div(num, denom) when denom > 0, do: max(1, ceil(num / denom))
+  defp ceil_div(_, _), do: 1
 end

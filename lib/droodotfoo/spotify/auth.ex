@@ -133,7 +133,7 @@ defmodule Droodotfoo.Spotify.Auth do
           access_token: client.token.access_token,
           refresh_token: client.token.refresh_token,
           expires_at: calculate_expiry(client.token.expires_at),
-          token_type: client.token.token_type || "Bearer"
+          token_type: client.token.token_type
         }
 
         # Store tokens (in a real app, encrypt and store securely)
@@ -181,7 +181,7 @@ defmodule Droodotfoo.Spotify.Auth do
       access_token: client.token.access_token,
       refresh_token: client.token.refresh_token || refresh_token,
       expires_at: calculate_expiry(client.token.expires_at),
-      token_type: client.token.token_type || "Bearer"
+      token_type: client.token.token_type
     }
 
     store_tokens(token_data)
@@ -242,8 +242,6 @@ defmodule Droodotfoo.Spotify.Auth do
     DateTime.from_unix!(expires_at)
   end
 
-  defp calculate_expiry(_), do: DateTime.add(DateTime.utc_now(), 3600, :second)
-
   defp token_expired?(%{expires_at: expires_at}) do
     DateTime.compare(DateTime.utc_now(), expires_at) == :gt
   end
@@ -290,7 +288,5 @@ defmodule Droodotfoo.Spotify.Auth do
   # Sanitize error messages before logging to prevent sensitive data leakage
   defp sanitize_error(%{message: msg}) when is_binary(msg), do: msg
   defp sanitize_error(%{reason: reason}) when is_binary(reason), do: reason
-  defp sanitize_error(error) when is_binary(error), do: error
   defp sanitize_error(%{__struct__: struct}), do: "#{inspect(struct)} error"
-  defp sanitize_error(_), do: "OAuth error occurred"
 end

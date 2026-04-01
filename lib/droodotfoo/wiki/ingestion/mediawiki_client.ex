@@ -281,7 +281,7 @@ defmodule Droodotfoo.Wiki.Ingestion.MediaWikiClient do
       {:ok, stream} = MediaWikiClient.all_pages(from: "Dragon")
 
   """
-  @spec all_pages(keyword()) :: {:ok, Enumerable.t()} | {:error, term()}
+  @spec all_pages(keyword()) :: {:ok, Enumerable.t()}
   def all_pages(opts \\ []) do
     from = Keyword.get(opts, :from)
     namespace = Keyword.get(opts, :namespace, 0)
@@ -328,32 +328,28 @@ defmodule Droodotfoo.Wiki.Ingestion.MediaWikiClient do
     limit = Keyword.get(opts, :limit)
     progress_fn = Keyword.get(opts, :progress)
 
-    case all_pages(opts) do
-      {:ok, stream} ->
-        stream =
-          if limit do
-            Stream.take(stream, limit)
-          else
-            stream
-          end
+    {:ok, stream} = all_pages(opts)
 
-        stream =
-          if progress_fn do
-            stream
-            |> Stream.with_index(1)
-            |> Stream.each(fn {_title, idx} ->
-              if rem(idx, 500) == 0, do: progress_fn.(idx)
-            end)
-            |> Stream.map(fn {title, _idx} -> title end)
-          else
-            stream
-          end
+    stream =
+      if limit do
+        Stream.take(stream, limit)
+      else
+        stream
+      end
 
-        {:ok, Enum.to_list(stream)}
+    stream =
+      if progress_fn do
+        stream
+        |> Stream.with_index(1)
+        |> Stream.each(fn {_title, idx} ->
+          if rem(idx, 500) == 0, do: progress_fn.(idx)
+        end)
+        |> Stream.map(fn {title, _idx} -> title end)
+      else
+        stream
+      end
 
-      error ->
-        error
-    end
+    {:ok, Enum.to_list(stream)}
   end
 
   defp fetch_all_pages_batch(continue, namespace, batch_size, opts) do

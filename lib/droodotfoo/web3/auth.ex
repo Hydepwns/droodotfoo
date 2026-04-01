@@ -156,10 +156,10 @@ defmodule Droodotfoo.Web3.Auth do
       end
     else
       false -> {:error, :invalid_signature_length}
-      {:error, reason} -> {:error, reason}
+      :error -> {:error, :invalid_hex}
     end
   rescue
-    error -> {:error, error}
+    error -> {:error, Exception.message(error)}
   end
 
   @doc """

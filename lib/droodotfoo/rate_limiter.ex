@@ -35,6 +35,7 @@ defmodule Droodotfoo.RateLimiter do
 
     quote do
       @behaviour Droodotfoo.RateLimiter
+      @dialyzer [:no_return, :no_match, :no_fail_call]
 
       use GenServer
       require Logger

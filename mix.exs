@@ -66,7 +66,10 @@ defmodule Droodotfoo.MixProject do
         ]
       ],
       compilers: Mix.compilers(),
-      listeners: [Phoenix.CodeReloader]
+      listeners: [Phoenix.CodeReloader],
+      dialyzer: [
+        plt_add_apps: [:mix, :ex_unit]
+      ]
     ]
   end
 

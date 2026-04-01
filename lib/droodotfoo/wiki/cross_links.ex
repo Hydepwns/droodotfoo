@@ -178,7 +178,6 @@ defmodule Droodotfoo.Wiki.CrossLinks do
         case detect_links(article) do
           {:ok, 0} -> acc
           {:ok, n} -> %{acc | total: acc.total + n, with_links: acc.with_links + 1}
-          {:error, _} -> acc
         end
       end)
 

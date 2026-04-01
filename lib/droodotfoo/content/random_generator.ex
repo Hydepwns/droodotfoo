@@ -99,7 +99,7 @@ defmodule Droodotfoo.Content.RandomGenerator do
       iex> value >= 5.0 and value <= 10.0
       true
   """
-  @spec uniform_float(t, float, float) :: {float, t}
+  @spec uniform_float(t(), number(), number()) :: {float(), t()}
   def uniform_float(rng, min, max) when is_number(min) and is_number(max) do
     {rand_val, new_rng} = uniform(rng)
     {min + rand_val * (max - min), new_rng}
