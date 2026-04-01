@@ -5,8 +5,15 @@ defmodule Droodotfoo.Repo.Migrations.CreateWikiCoreTables do
     # Enable pg_trgm for fuzzy text matching
     execute "CREATE EXTENSION IF NOT EXISTS pg_trgm", "DROP EXTENSION IF EXISTS pg_trgm"
 
-    # Enable pgvector for semantic search
-    execute "CREATE EXTENSION IF NOT EXISTS vector", "DROP EXTENSION IF EXISTS vector"
+    # Enable pgvector for semantic search (optional -- gracefully skip if not installed)
+    execute """
+    DO $$
+    BEGIN
+      CREATE EXTENSION IF NOT EXISTS vector;
+    EXCEPTION WHEN OTHERS THEN
+      RAISE NOTICE 'pgvector not available, semantic search will be disabled';
+    END $$;
+    """, "DROP EXTENSION IF EXISTS vector"
 
     # --- Articles ---
 
@@ -24,7 +31,8 @@ defmodule Droodotfoo.Repo.Migrations.CreateWikiCoreTables do
       add :metadata, :map, default: %{}
       add :synced_at, :utc_datetime
       add :embedded_at, :utc_datetime
-      add :embedding, :vector, size: 768
+      # pgvector column -- falls back to binary if extension not available
+      add :embedding, :binary
 
       timestamps(type: :utc_datetime)
     end
@@ -40,11 +48,16 @@ defmodule Droodotfoo.Repo.Migrations.CreateWikiCoreTables do
             """,
             "DROP INDEX articles_fts_idx"
 
-    # HNSW index for fast approximate nearest neighbor search
+    # HNSW index for fast approximate nearest neighbor search (requires pgvector)
     execute """
-            CREATE INDEX articles_embedding_idx ON articles
-            USING hnsw (embedding vector_cosine_ops)
-            WITH (m = 16, ef_construction = 64)
+            DO $$
+            BEGIN
+              CREATE INDEX articles_embedding_idx ON articles
+              USING hnsw (embedding vector_cosine_ops)
+              WITH (m = 16, ef_construction = 64);
+            EXCEPTION WHEN OTHERS THEN
+              RAISE NOTICE 'pgvector not available, skipping HNSW index';
+            END $$;
             """,
             "DROP INDEX IF EXISTS articles_embedding_idx"
 
