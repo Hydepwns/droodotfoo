@@ -15,7 +15,7 @@ defmodule DroodotfooWeb.NowLive do
   @impl true
   def mount(_params, _session, socket) do
     resume = ResumeData.get_resume_data()
-    last_updated = ~D[2025-01-23]
+    last_updated = ~D[2026-04-02]
 
     json_ld = [
       JsonLD.breadcrumb_schema([
@@ -60,9 +60,41 @@ defmodule DroodotfooWeb.NowLive do
 
         <h3 class="mt-2">Running</h3>
         <p>
-          Running <strong><a href="https://axol.io" target="_blank" rel="noopener">axol.io</a></strong>.
-          Sequencers and nodes across Ethereum L2s and mainnet:
+          Raising for
+          <strong><a href="https://xochi.fi" target="_blank" rel="noopener">xochi.fi</a></strong>
+          -- a private execution layer on Ethereum with ZK compliance.
+          Running
+          <strong><a href="https://axol.io" target="_blank" rel="noopener">axol.io</a></strong>
+          infrastructure underneath.
         </p>
+
+        <article class="experience-item">
+          <div class="experience-header">
+            <div class="experience-title">Riddler Solver</div>
+            <div class="experience-company">Live on 5 chains</div>
+          </div>
+
+          <p class="experience-description">
+            Intent solver filling orders in ~2s across Ethereum, Optimism, Base, Arbitrum, and Polygon.
+            P95 under 6 seconds.
+            <a
+              href="https://github.com/lifinance/riddler-solver-client"
+              target="_blank"
+              rel="noopener"
+            >
+              Integrated by LI.FI
+            </a>
+            as a solver client. Also live on Across intents.
+          </p>
+
+          <div class="tech-tags mt-1">
+            <span class="tech-tag">Ethereum</span>
+            <span class="tech-tag">Optimism</span>
+            <span class="tech-tag">Base</span>
+            <span class="tech-tag">Arbitrum</span>
+            <span class="tech-tag">Polygon</span>
+          </div>
+        </article>
 
         <article class="experience-item">
           <div class="experience-header">
@@ -71,23 +103,23 @@ defmodule DroodotfooWeb.NowLive do
           </div>
 
           <p class="experience-description">
-            Validators on Aztec, Base, Optimism, and Ethereum mainnet.
-            Transaction ordering and state transitions.
+            Aztec sequencer, validators on Ethereum mainnet.
+            Sphinx trading system for MEV searcher strategy deployment.
           </p>
 
           <div class="tech-tags mt-1">
             <span class="tech-tag">Aztec</span>
-            <span class="tech-tag">Base</span>
-            <span class="tech-tag">Optimism</span>
             <span class="tech-tag">Ethereum</span>
+            <span class="tech-tag">MEV</span>
+            <span class="tech-tag">Sphinx</span>
           </div>
         </article>
 
         <p class="mt-2 text-muted">
           Also building FOSS: <strong>mana</strong>
           (Ethereum client), <strong>raxol</strong>
-          (terminal UI framework), and <strong>riddler</strong>
-          (cross-chain solver).
+          (OTP-native terminal framework), and <strong>riddler</strong>
+          (Xochi's intent solver).
           See <.link navigate={~p"/projects"}>projects</.link>.
         </p>
 
@@ -95,7 +127,7 @@ defmodule DroodotfooWeb.NowLive do
 
         <h3 class="mt-2">Learning</h3>
         <p>
-          Reading source to understand how these systems actually work:
+          Deep in quant frameworks and MEV strategy deployment:
         </p>
 
         <details class="experience-details" open>
@@ -103,36 +135,36 @@ defmodule DroodotfooWeb.NowLive do
           <div class="mt-1">
             <ul>
               <li>
-                <strong>go-ethereum (geth)</strong>
-                - Core client implementation, EVM execution, and state management
+                <strong>Quant trading frameworks</strong>
+                - Solver rebalancing, cross-chain inventory management, execution optimization
               </li>
               <li>
-                <strong>ibc-go</strong>
-                - IBC protocol implementation in Cosmos SDK, packet routing and state proofs
+                <strong>MEV searcher strategies</strong>
+                - Arbitrage, liquidations, backrunning patterns via Sphinx
               </li>
               <li>
-                <strong>Hyperlane</strong>
-                - Bridge architecture, validator sets, and cross-chain message passing
+                <strong>ZK compliance systems</strong>
+                - ZKSAR proof generation, sanctions screening oracles, provider weight tuning
               </li>
               <li>
                 <strong>OTP source</strong>
-                - gen_server internals, supervisor restart strategies, and distributed Erlang
+                - gen_server internals, supervisor restart strategies, distributed Erlang
               </li>
               <li>
-                <strong>Solver rebalancer architectures</strong>
-                - cross-chain inventory management and quant trading systems
+                <strong>Jido 2.0</strong>
+                - BEAM-native agent framework, TEA for AI agents, signal-based coordination
               </li>
             </ul>
           </div>
         </details>
 
         <div class="tech-tags mt-1">
-          <span class="tech-tag">Ethereum</span>
-          <span class="tech-tag">Cosmos SDK</span>
+          <span class="tech-tag">MEV</span>
+          <span class="tech-tag">Quant</span>
           <span class="tech-tag">Elixir</span>
-          <span class="tech-tag">Rust</span>
-          <span class="tech-tag">IBC</span>
-          <span class="tech-tag">EVM</span>
+          <span class="tech-tag">ZK</span>
+          <span class="tech-tag">Sphinx</span>
+          <span class="tech-tag">OTP</span>
         </div>
 
         <hr />

@@ -123,8 +123,8 @@ docs/art/
 # Claude
 .claude/
 
-# Test posts
-/priv/posts/test-post.md
+# Draft posts
+/priv/posts/drafts
 
 # Wiki data (downloaded/synced from external sources)
 /priv/nlab-content/
