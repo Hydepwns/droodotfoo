@@ -26,6 +26,7 @@ defmodule DroodotfooWeb.HealthController do
   """
   def ready(conn, _params) do
     services = %{
+      database: check_database(),
       posts_cache: check_genserver(Droodotfoo.Content.Posts),
       performance_cache: check_genserver(Droodotfoo.Performance.Cache),
       spotify: check_genserver(Droodotfoo.Spotify),
@@ -59,6 +60,17 @@ defmodule DroodotfooWeb.HealthController do
     conn
     |> put_resp_content_type("application/json")
     |> send_resp(http_status, Jason.encode!(response))
+  end
+
+  @db_check_timeout 3_000
+
+  defp check_database do
+    case Droodotfoo.Repo.query("SELECT 1", [], timeout: @db_check_timeout) do
+      {:ok, _} -> :ok
+      {:error, _} -> :down
+    end
+  rescue
+    _ -> :down
   end
 
   defp check_genserver(name) do

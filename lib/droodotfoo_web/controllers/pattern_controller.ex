@@ -79,6 +79,7 @@ defmodule DroodotfooWeb.PatternController do
   defp parse_style("constellation"), do: :constellation
   defp parse_style("aurora"), do: :aurora
   defp parse_style("composite"), do: :composite
+  defp parse_style("glass_cube"), do: :glass_cube
   defp parse_style(_), do: nil
 
   # Parse integer with fallback

@@ -23,7 +23,8 @@ defmodule DroodotfooWeb.PatternGalleryLive do
     %{name: "isometric", description: "3D isometric grid"},
     %{name: "constellation", description: "Stars with connecting lines"},
     %{name: "aurora", description: "Northern lights bands"},
-    %{name: "composite", description: "Layered multi-pattern"}
+    %{name: "composite", description: "Layered multi-pattern"},
+    %{name: "glass_cube", description: "Xochi 6-layer glass cube with ETH diamond"}
   ]
 
   @impl true

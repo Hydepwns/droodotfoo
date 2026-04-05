@@ -210,6 +210,18 @@ defmodule Droodotfoo.Content.PatternConfig do
   end
 
   @doc """
+  Returns configuration for glass cube pattern (Xochi).
+  Central isometric cube with graduated opacity, axolotl gill curves, and particles.
+  """
+  @spec glass_cube_config :: pattern_config
+  def glass_cube_config do
+    %{
+      cube_size: %{min: 520, max: 600},
+      particle_count: %{min: 24, max: 40}
+    }
+  end
+
+  @doc """
   Returns configuration for constellation pattern.
   """
   @spec constellation_config :: pattern_config
@@ -268,7 +280,8 @@ defmodule Droodotfoo.Content.PatternConfig do
       :isometric,
       :constellation,
       :aurora,
-      :composite
+      :composite,
+      :glass_cube
     ]
   end
 
@@ -293,6 +306,7 @@ defmodule Droodotfoo.Content.PatternConfig do
   def get_config(:constellation), do: {:ok, constellation_config()}
   def get_config(:aurora), do: {:ok, aurora_config()}
   def get_config(:composite), do: {:ok, composite_config()}
+  def get_config(:glass_cube), do: {:ok, glass_cube_config()}
   def get_config(_), do: {:error, :unknown_style}
 
   @doc """

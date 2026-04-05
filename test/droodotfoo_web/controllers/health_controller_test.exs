@@ -25,6 +25,7 @@ defmodule DroodotfooWeb.HealthControllerTest do
       response = json_response(conn, 200)
       services = response["services"]
 
+      assert Map.has_key?(services, "database")
       assert Map.has_key?(services, "posts_cache")
       assert Map.has_key?(services, "pubsub")
     end

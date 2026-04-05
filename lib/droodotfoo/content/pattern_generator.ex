@@ -157,6 +157,7 @@ defmodule Droodotfoo.Content.PatternGenerator do
       :constellation -> Patterns.Constellation.generate_svg(slug, width, height, animate, tags)
       :aurora -> Patterns.Aurora.generate_svg(slug, width, height, animate, tags)
       :composite -> Patterns.Composite.generate_svg(slug, width, height, animate, tags)
+      :glass_cube -> Patterns.GlassCube.generate_svg(slug, width, height, animate, tags)
       _ -> Patterns.Waves.generate_svg(slug, width, height, animate, tags)
     end
   end
@@ -190,7 +191,8 @@ defmodule Droodotfoo.Content.PatternGenerator do
       :isometric,
       :constellation,
       :aurora,
-      :composite
+      :composite,
+      :glass_cube
     ]
 
     hash = :erlang.phash2(slug)
@@ -266,6 +268,7 @@ defmodule Droodotfoo.Content.PatternGenerator do
       :constellation -> Patterns.Constellation.generate(width, height, rng, palette, false)
       :aurora -> Patterns.Aurora.generate(width, height, rng, palette, false)
       :composite -> Patterns.Composite.generate(width, height, rng, palette, false)
+      :glass_cube -> Patterns.GlassCube.generate(width, height, rng, palette, false)
       _ -> Patterns.Waves.generate(width, height, rng, palette, false)
     end
   end
@@ -405,6 +408,11 @@ defmodule Droodotfoo.Content.PatternGenerator do
       dur: 6 + rem(index, 4),
       begin: delay
     )
+  end
+
+  defp get_smil_for_style(:glass_cube, index) do
+    delay = SMILAnimations.stagger_delay(index, 0.12)
+    SMILAnimations.opacity(values: [0.2, 0.5, 0.2], dur: 6, begin: delay)
   end
 
   defp get_smil_for_style(_, _), do: nil

@@ -15,7 +15,7 @@ defmodule DroodotfooWeb.PostLiveTest do
     test "renders post content", %{conn: conn, post: post} do
       {:ok, _view, html} = live(conn, ~p"/posts/#{post.slug}")
 
-      assert html =~ post.title
+      assert html =~ Phoenix.HTML.html_escape(post.title) |> Phoenix.HTML.safe_to_string()
     end
 
     test "displays post metadata", %{conn: conn, post: post} do
@@ -70,7 +70,7 @@ defmodule DroodotfooWeb.PostLiveTest do
 
       # Title element contains the post title
       assert html =~ ~r/<title[^>]*>/
-      assert html =~ post.title
+      assert html =~ Phoenix.HTML.html_escape(post.title) |> Phoenix.HTML.safe_to_string()
     end
   end
 end

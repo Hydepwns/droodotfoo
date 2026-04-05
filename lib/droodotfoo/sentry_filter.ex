@@ -16,11 +16,18 @@ defmodule Droodotfoo.SentryFilter do
   @spec filter_event(Sentry.Event.t()) :: Sentry.Event.t() | nil
   def filter_event(event) do
     cond do
-      # Filter out common browser/bot noise
-      ignored_exception?(event) -> nil
-      ignored_user_agent?(event) -> nil
-      # Allow all other events
-      true -> event
+      infrastructure_error?(event) ->
+        Logger.debug("Sentry filter: dropped infrastructure error")
+        nil
+
+      ignored_exception?(event) ->
+        nil
+
+      ignored_user_agent?(event) ->
+        nil
+
+      true ->
+        event
     end
   end
 
@@ -67,4 +74,38 @@ defmodule Droodotfoo.SentryFilter do
   end
 
   defp ignored_user_agent?(_), do: false
+
+  # Filter transient infrastructure errors that are not actionable.
+  # These generate massive volume during DB outages and should be
+  # monitored via health checks / uptime monitors instead.
+  defp infrastructure_error?(%{exception: exceptions}) when is_list(exceptions) do
+    Enum.any?(exceptions, fn ex ->
+      type = Map.get(ex, :type, "")
+      value = Map.get(ex, :value, "")
+
+      type in [
+        "DBConnection.ConnectionError",
+        "Postgrex.Error"
+      ] or
+        String.contains?(value, [
+          "tcp recv",
+          "tcp connect",
+          "ssl recv",
+          "connection refused",
+          "connection not available",
+          "failed to connect"
+        ])
+    end)
+  end
+
+  defp infrastructure_error?(%{message: message}) when is_binary(message) do
+    String.contains?(message, [
+      "failed to connect to Postgres",
+      "DBConnection.ConnectionError",
+      "tcp recv",
+      "connection not available"
+    ])
+  end
+
+  defp infrastructure_error?(_), do: false
 end
