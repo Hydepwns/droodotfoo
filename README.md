@@ -2,7 +2,7 @@
 
 Personal website built with LiveView, generative art patterns and monospace web aesthetics.
 
-![Test Coverage](https://img.shields.io/badge/coverage-41.2%25-orange)
+![Test Coverage](https://img.shields.io/badge/coverage-22.7%25-red)
 ![Tests](https://img.shields.io/badge/tests-667%20passing-brightgreen)
 ![Elixir](https://img.shields.io/badge/elixir-1.17-purple)
 ![Phoenix](https://img.shields.io/badge/phoenix-1.8.1-orange)
@@ -117,9 +117,9 @@ Built with modular Phoenix LiveView architecture:
 
 **Performance**: ETS caching for GitHub API data, blog post metadata, and SVG patterns. Pattern cache provides 568x speedup (26ms -> 47us). Brotli compression for static assets. Page loads under 200ms.
 
-**Content System**: File-based blog posts with markdown + YAML frontmatter. Deterministic SVG pattern generation per post with 8 animation styles. No database required.
+**Content System**: File-based blog posts with markdown + YAML frontmatter. Deterministic SVG pattern generation per post with 8 animation styles. PostgreSQL with pgvector for wiki subsystem.
 
-**Test Coverage**: 667 tests passing (41.2% code coverage)
+**Test Coverage**: 667 tests passing (22.7% code coverage)
 
 ## Tech Stack
 
@@ -251,6 +251,7 @@ See [docs/guides/security.md](docs/guides/security.md) for comprehensive securit
 - **[docs/guides/security.md](docs/guides/security.md)** - Authentication, rate limiting, input validation
 - **[docs/guides/seo.md](docs/guides/seo.md)** - SEO optimization with JSON-LD
 - **[docs/guides/assets.md](docs/guides/assets.md)** - Image and asset optimization
+- **[docs/guides/git-subdomain.md](docs/guides/git-subdomain.md)** - Multi-source git browser
 
 ### API Documentation (ExDoc)
 

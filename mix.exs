@@ -28,10 +28,12 @@ defmodule Droodotfoo.MixProject do
         homepage_url: "https://droo.foo",
         extras: [
           "README.md",
-          "docs/DEVELOPMENT.md",
           "docs/TODO.md",
-          "docs/architecture.md",
-          "docs/deployment.md"
+          "docs/guides/deployment.md",
+          "docs/guides/security.md",
+          "docs/guides/assets.md",
+          "docs/guides/seo.md",
+          "docs/guides/git-subdomain.md"
         ],
         groups_for_modules: [
           Core: [
@@ -58,9 +60,11 @@ defmodule Droodotfoo.MixProject do
         groups_for_extras: [
           Guides: [
             "README.md",
-            "docs/DEVELOPMENT.md",
-            "docs/architecture.md",
-            "docs/deployment.md"
+            "docs/guides/deployment.md",
+            "docs/guides/security.md",
+            "docs/guides/assets.md",
+            "docs/guides/seo.md",
+            "docs/guides/git-subdomain.md"
           ],
           Planning: ["docs/TODO.md"]
         ]

@@ -15,6 +15,7 @@ Documentation hub for the droo.foo personal portfolio and blog.
 - [Security Guide](guides/security.md) - Authentication, rate limiting, input validation
 - [Asset Optimization](guides/assets.md) - Images, fonts, performance optimization
 - [SEO Guide](guides/seo.md) - JSON-LD, meta tags, performance monitoring
+- [Git Subdomain](guides/git-subdomain.md) - Multi-source git browser at git.droo.foo
 
 **Planning:**
 - [TODO & Roadmap](TODO.md) - Active tasks, priorities, recently completed
@@ -29,7 +30,8 @@ docs/
     ├── deployment.md   # Production deployment
     ├── security.md     # Authentication and rate limiting
     ├── assets.md       # Asset optimization
-    └── seo.md          # SEO implementation
+    ├── seo.md          # SEO implementation
+    └── git-subdomain.md # Git browser subdomain
 ```
 
 ## Need Help?

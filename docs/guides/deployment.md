@@ -29,7 +29,7 @@ fly launch
 # Follow prompts:
 # - App name: droodotfoo (or your choice)
 # - Region: Choose closest to your users
-# - PostgreSQL: No (we don't use a database)
+# - PostgreSQL: Yes (required for wiki, pgvector)
 # - Redis: No
 ```
 
@@ -320,12 +320,16 @@ plug :put_secure_browser_headers, %{
 
 ## Backup Strategy
 
-**No database = simpler backups:**
-- Content in Git (`priv/posts/*.md`)
+**Git-tracked content:**
+- Blog posts in Git (`priv/posts/*.md`)
 - Resume data in Git (`priv/resume.json`)
 - Configuration in Git
 - Secrets in 1Password + Fly.io Secrets
-- No runtime state to backup
+
+**Database:**
+- PostgreSQL with pgvector (wiki articles, OSRS data, parts catalog)
+- Daily backups to MinIO via `Droodotfoo.Wiki.Backup.PostgresWorker` (3am)
+- Run `mix ecto.setup` to recreate schema, `mix wiki sync --full` to repopulate
 
 **Disaster Recovery:**
 ```bash
@@ -333,6 +337,8 @@ plug :put_secure_browser_headers, %{
 fly launch
 fly secrets set ...  # Restore secrets
 fly deploy           # Deploy from Git
+mix ecto.setup       # Create database schema
+mix wiki sync --full # Repopulate wiki data
 ```
 
 ## Resources

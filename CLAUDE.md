@@ -41,10 +41,10 @@ mix pattern_cache benchmark  # Benchmark cache performance
 mix pattern_cache warmup     # Pre-generate patterns for all posts
 
 # Wiki Management (wiki.droo.foo)
-mix wiki.status              # Check article counts, MinIO, Ollama status
-mix wiki.sync --full         # Initial sync of all sources (OSRS, nLab, machines)
-mix wiki.sync osrs           # Sync specific source
-mix wiki.import "Category theory"  # Import Wikipedia article
+mix wiki status              # Check article counts, MinIO, Ollama status
+mix wiki sync --full         # Initial sync of all sources (OSRS, nLab, machines)
+mix wiki sync osrs           # Sync specific source
+mix wiki import "Category theory"  # Import Wikipedia article
 
 # Documentation
 mix docs               # Generate ExDoc documentation
@@ -70,8 +70,6 @@ lib/droodotfoo/
   git/               # Multi-source git browser (GitHub, Forgejo)
   spotify/           # Spotify OAuth and playback
   web3/              # Ethereum: ENS, NFT, tokens, contracts
-  fileverse/         # P2P file sharing with WebRTC
-  plugins/           # Games: wordle, tetris, snake, conway, etc.
   resume/            # Resume data, filtering, PDF generation
   features/          # Analytics, SSH content, resume export
   wiki/              # Multi-source wiki aggregator (see Wiki Subsystem below)
@@ -321,15 +319,7 @@ See [docs/guides/deployment.md](docs/guides/deployment.md) for full setup.
 
 ## Phoenix v1.8 Notes
 
-Key conventions from [AGENTS.md](AGENTS.md):
-
-- **Always** begin LiveView templates with `<Layouts.app flash={@flash}>`
-- Use `<.input>` from core_components.ex for forms (not raw HTML inputs)
-- Use `<.icon name="hero-x-mark">` for icons (not Heroicons modules)
-- `<.flash_group>` only in layouts.ex, never in templates
-- Use `Req` for HTTP requests (already included), avoid HTTPoison/Tesla
-- Tailwind v4: no tailwind.config.js, uses `@import "tailwindcss"` syntax
-- Never use `@apply` in CSS, never inline `<script>` tags in templates
+See [AGENTS.md](AGENTS.md) for authoritative Phoenix, LiveView, Ecto, and HEEx conventions.
 
 ## Markdown in Posts
 
