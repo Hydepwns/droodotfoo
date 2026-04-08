@@ -11,6 +11,11 @@ defmodule Droodotfoo.Content.PostsTest do
       _pid -> :ok
     end
 
+    on_exit(fn ->
+      Path.wildcard("priv/posts/test-*.md")
+      |> Enum.each(&File.rm/1)
+    end)
+
     :ok
   end
 
@@ -59,10 +64,6 @@ defmodule Droodotfoo.Content.PostsTest do
       assert Enum.at(series_posts, 1).slug == "test-series-part-2"
       assert Enum.at(series_posts, 2).slug == "test-series-part-3"
 
-      # Cleanup files created by save_post
-      File.rm("priv/posts/test-series-part-1.md")
-      File.rm("priv/posts/test-series-part-2.md")
-      File.rm("priv/posts/test-series-part-3.md")
     end
 
     test "returns empty list for non-existent series" do
@@ -100,9 +101,6 @@ defmodule Droodotfoo.Content.PostsTest do
       assert Enum.at(series_posts, 0).slug == "test-mixed-ordered"
       assert Enum.at(series_posts, 1).slug == "test-mixed-unordered"
 
-      # Cleanup
-      File.rm("priv/posts/test-mixed-ordered.md")
-      File.rm("priv/posts/test-mixed-unordered.md")
     end
 
     test "filters out posts from different series" do
@@ -137,9 +135,6 @@ defmodule Droodotfoo.Content.PostsTest do
       assert length(series_b_posts) == 1
       assert Enum.at(series_b_posts, 0).slug == "test-filter-series-b"
 
-      # Cleanup
-      File.rm("priv/posts/test-filter-series-a.md")
-      File.rm("priv/posts/test-filter-series-b.md")
     end
   end
 

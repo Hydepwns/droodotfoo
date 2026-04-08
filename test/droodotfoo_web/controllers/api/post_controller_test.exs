@@ -18,6 +18,10 @@ defmodule DroodotfooWeb.PostControllerTest do
 
     on_exit(fn ->
       Application.delete_env(:droodotfoo, :blog_api_token)
+
+      # Clean up any post files created by tests
+      Path.wildcard("priv/posts/test-*.md")
+      |> Enum.each(&File.rm/1)
     end)
 
     :ok
