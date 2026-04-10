@@ -380,7 +380,7 @@ defmodule Droodotfoo.Resume.ResumeData do
           },
           %{
             name: "raxol",
-            url: "https://github.com/Hydepwns/raxol",
+            url: "https://github.com/DROOdotFOO/raxol",
             description: "Terminal UI framework for Elixir applications",
             language: "Elixir",
             status: "active",
@@ -439,9 +439,9 @@ defmodule Droodotfoo.Resume.ResumeData do
       contact: %{
         email: "drew@axol.io",
         website: "https://droo.foo",
-        github: "https://github.com/hydepwns",
+        github: "https://github.com/DROOdotFOO",
         linkedin: "https://linkedin.com/in/drew-hiro",
-        twitter: "https://twitter.com/MF_DROO"
+        twitter: "https://x.com/DROOdotFOO"
       }
     }
     |> struct_to_map()

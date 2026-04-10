@@ -24,7 +24,7 @@ defmodule Droodotfoo.MixProject do
       docs: [
         main: "readme",
         name: "droo.foo",
-        source_url: "https://github.com/hydepwns/droodotfoo",
+        source_url: "https://github.com/DROOdotFOO/droodotfoo",
         homepage_url: "https://droo.foo",
         extras: [
           "README.md",

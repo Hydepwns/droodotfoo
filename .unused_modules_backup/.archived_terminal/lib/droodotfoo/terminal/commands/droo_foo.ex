@@ -94,9 +94,9 @@ defmodule Droodotfoo.Terminal.Commands.DrooFoo do
      ===================
 
      Email:    drew@axol.io
-     GitHub:   https://github.com/hydepwns
+     GitHub:   https://github.com/DROOdotFOO
      LinkedIn: https://linkedin.com/in/drew-hiro
-     Twitter:  @MF_DROO
+     Twitter:  @DROOdotFOO
 
      Feel free to reach out for:
      - Job opportunities
@@ -136,7 +136,7 @@ defmodule Droodotfoo.Terminal.Commands.DrooFoo do
   """
   def projects([], _state) do
     result =
-      case GithubClient.fetch_pinned_repos("hydepwns") do
+      case GithubClient.fetch_pinned_repos("DROOdotFOO") do
         {:ok, repos} -> GithubClient.format_repos(repos)
         {:error, _reason} = error -> GithubClient.format_repos(error)
       end

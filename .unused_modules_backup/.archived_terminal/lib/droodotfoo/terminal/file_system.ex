@@ -99,7 +99,7 @@ defmodule Droodotfoo.Terminal.FileSystem do
         - `projects` - Browse my projects
         - `help` - Show available commands
 
-        Source: https://github.com/hydepwns/droodotfoo
+        Source: https://github.com/DROOdotFOO/droodotfoo
         """
       },
       "/home/drew/skills" => %{
@@ -150,9 +150,9 @@ defmodule Droodotfoo.Terminal.FileSystem do
         ========================
 
         Email: drew@axol.io
-        GitHub: https://github.com/hydepwns
+        GitHub: https://github.com/DROOdotFOO
         LinkedIn: https://linkedin.com/in/drew-hiro
-        Twitter: @MF_DROO
+        Twitter: @DROOdotFOO
 
         SUMMARY
         -------

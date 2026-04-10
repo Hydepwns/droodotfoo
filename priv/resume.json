@@ -221,7 +221,7 @@
     "projects": [
       {
         "name": "raxol",
-        "url": "https://github.com/Hydepwns/raxol",
+        "url": "https://github.com/DROOdotFOO/raxol",
         "description": "Component-based terminal UIs for Elixir",
         "language": "Elixir",
         "status": "active",
@@ -233,7 +233,7 @@
       },
       {
         "name": "libsignal-protocol-nif",
-        "url": "https://github.com/Hydepwns/libsignal-protocol-nif",
+        "url": "https://github.com/DROOdotFOO/libsignal-protocol-nif",
         "description": "Signal Protocol for BEAM (Erlang/Elixir/Gleam)",
         "language": "C",
         "status": "active",
@@ -244,7 +244,7 @@
       },
       {
         "name": "mona.nvim",
-        "url": "https://github.com/Hydepwns/mona.nvim",
+        "url": "https://github.com/DROOdotFOO/mona.nvim",
         "description": "Monaspace font toolkit for Neovim",
         "language": "Lua",
         "status": "active",
@@ -255,7 +255,7 @@
       },
       {
         "name": "LSPbridge",
-        "url": "https://github.com/Hydepwns/LSPbridge",
+        "url": "https://github.com/DROOdotFOO/LSPbridge",
         "description": "IDE diagnostics bridge for AI assistants",
         "language": "Rust",
         "status": "active",
@@ -266,7 +266,7 @@
       },
       {
         "name": "phos",
-        "url": "https://github.com/Hydepwns/phos",
+        "url": "https://github.com/DROOdotFOO/phos",
         "description": "GRC replacement log colorizer",
         "language": "Rust",
         "status": "active",
@@ -299,7 +299,7 @@
       },
       {
         "name": "zmin",
-        "url": "https://github.com/Hydepwns/zmin",
+        "url": "https://github.com/DROOdotFOO/zmin",
         "description": "Ultra-fast JSON minifier with SIMD acceleration",
         "language": "Zig",
         "status": "active",
@@ -310,7 +310,7 @@
       },
       {
         "name": "nix-mox",
-        "url": "https://github.com/Hydepwns/nix-mox",
+        "url": "https://github.com/DROOdotFOO/nix-mox",
         "description": "NixOS configuration framework with Proxmox templates",
         "language": "Nix",
         "status": "active",
@@ -321,7 +321,7 @@
       },
       {
         "name": "synthwave84-zed",
-        "url": "https://github.com/Hydepwns/synthwave84-zed",
+        "url": "https://github.com/DROOdotFOO/synthwave84-zed",
         "description": "Synthwave84 theme for Zed editor",
         "language": "Shell",
         "status": "active",
@@ -332,7 +332,7 @@
       },
       {
         "name": "zoir",
-        "url": "https://github.com/Hydepwns/zoir",
+        "url": "https://github.com/DROOdotFOO/zoir",
         "description": "Noir language support for Zed",
         "language": "Rust",
         "status": "active",
@@ -343,7 +343,7 @@
       },
       {
         "name": "tree-sitter-noir",
-        "url": "https://github.com/Hydepwns/tree-sitter-noir",
+        "url": "https://github.com/DROOdotFOO/tree-sitter-noir",
         "description": "Tree-sitter grammar for Noir language",
         "language": "C",
         "status": "active",
@@ -354,7 +354,7 @@
       },
       {
         "name": "dotfiles",
-        "url": "https://github.com/Hydepwns/dotfiles",
+        "url": "https://github.com/DROOdotFOO/dotfiles",
         "description": "Cross-platform dotfiles with chezmoi and lazy loading",
         "language": "Shell",
         "status": "active",
@@ -365,7 +365,7 @@
       },
       {
         "name": "orbit-jump",
-        "url": "https://github.com/Hydepwns/orbit-jump",
+        "url": "https://github.com/DROOdotFOO/orbit-jump",
         "description": "Gravity-based jumping game",
         "language": "Lua",
         "status": "active",
@@ -376,7 +376,7 @@
       },
       {
         "name": "droodotfoo",
-        "url": "https://github.com/Hydepwns/droodotfoo",
+        "url": "https://github.com/DROOdotFOO/droodotfoo",
         "description": "This site -- Phoenix LiveView with monospace web design",
         "language": "Elixir",
         "status": "active",
@@ -410,8 +410,8 @@
   "contact": {
     "email": "drew@axol.io",
     "website": "https://droo.foo",
-    "github": "https://github.com/hydepwns",
+    "github": "https://github.com/DROOdotFOO",
     "linkedin": "https://linkedin.com/in/drew-hiro",
-    "twitter": "https://twitter.com/MF_DROO"
+    "twitter": "https://x.com/DROOdotFOO"
   }
 }

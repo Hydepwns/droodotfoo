@@ -39,7 +39,7 @@ defmodule DroodotfooWeb.ContentComponents do
           <td class="header-meta-label header-author-label">Author</td>
           <td class="header-meta-value" colspan="3">
             <a
-              href="https://github.com/Hydepwns/droodotfoo"
+              href="https://github.com/DROOdotFOO/droodotfoo"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="DROO on GitHub - droodotfoo repository (opens in new tab)"

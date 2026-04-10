@@ -28,8 +28,8 @@ DROO.FOO is both a portfolio and an experimental platform showcasing:
 
 ## Technical Documentation
 
-- [CLAUDE.md](https://github.com/hydepwns/droodotfoo/blob/main/CLAUDE.md): Development guide and architecture overview
-- [README.md](https://github.com/hydepwns/droodotfoo/blob/main/README.md): Project setup and deployment instructions
+- [CLAUDE.md](https://github.com/DROOdotFOO/droodotfoo/blob/main/CLAUDE.md): Development guide and architecture overview
+- [README.md](https://github.com/DROOdotFOO/droodotfoo/blob/main/README.md): Project setup and deployment instructions
 
 ## Key Technologies
 
@@ -41,8 +41,8 @@ DROO.FOO is both a portfolio and an experimental platform showcasing:
 
 ## Contact & Social
 
-- **GitHub**: [@Hydepwns](https://github.com/Hydepwns)
-- **X/Twitter**: [@MF_DROO](https://x.com/MF_DROO)
+- **GitHub**: [@DROOdotFOO](https://github.com/DROOdotFOO)
+- **X/Twitter**: [@DROOdotFOO](https://x.com/DROOdotFOO)
 - **Email**: drew@axol.io
 - **Location**: Remote / Traveling
 

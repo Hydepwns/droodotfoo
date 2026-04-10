@@ -11,7 +11,7 @@ defmodule Droodotfoo.GitHub.Contributions do
 
   @topic "contributions"
 
-  @username "Hydepwns"
+  @username "DROOdotFOO"
   @cache_key {:contributions, @username}
   @cache_ttl :timer.hours(4)
   @rest_max_pages 10

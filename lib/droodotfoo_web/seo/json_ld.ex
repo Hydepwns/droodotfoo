@@ -15,8 +15,8 @@ defmodule DroodotfooWeb.SEO.JsonLD do
       "url" => "https://droo.foo",
       "image" => "https://droo.foo/images/og-image.png",
       "sameAs" => [
-        "https://github.com/Hydepwns",
-        "https://twitter.com/MF_DROO",
+        "https://github.com/DROOdotFOO",
+        "https://x.com/DROOdotFOO",
         "https://www.linkedin.com/in/drewahyde"
       ],
       "jobTitle" => "Blockchain Infrastructure Engineer",

@@ -73,7 +73,7 @@ config :droodotfoo, :forgejo,
   default_owner: System.get_env("FORGEJO_OWNER", "droo")
 
 # GitHub configuration for git browser (separate from :github_token)
-config :droodotfoo, :github, owner: System.get_env("GITHUB_OWNER", "hydepwns")
+config :droodotfoo, :github, owner: System.get_env("GITHUB_OWNER", "DROOdotFOO")
 
 # Resume source configuration (all environments)
 # Load resume from Fileverse/IPFS if configured, otherwise use hardcoded data

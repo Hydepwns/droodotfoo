@@ -2,7 +2,7 @@
 # https://securitytxt.org/
 
 Contact: mailto:drew@axol.io
-Contact: https://github.com/Hydepwns/droodotfoo/security/advisories/new
+Contact: https://github.com/DROOdotFOO/droodotfoo/security/advisories/new
 Expires: 2027-01-01T00:00:00.000Z
 Preferred-Languages: en
 Canonical: https://droo.foo/.well-known/security.txt

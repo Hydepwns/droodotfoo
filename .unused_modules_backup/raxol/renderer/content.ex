@@ -303,7 +303,7 @@ defmodule Droodotfoo.Raxol.Renderer.Content do
       "# Droo - Multidisciplinary Engineer",
       "",
       "**Email:** drew@axol.io",
-      "**GitHub:** github.com/hydepwns",
+      "**GitHub:** github.com/DROOdotFOO",
       "",
       "## Summary",
       "Senior Software Engineer with expertise...",

@@ -14,7 +14,7 @@ Environment variables (via 1Password or `.env`):
 
 ```bash
 # GitHub (optional - works without token, but rate-limited)
-GITHUB_OWNER=hydepwns
+GITHUB_OWNER=DROOdotFOO
 GITHUB_TOKEN=ghp_xxx
 
 # Forgejo (requires token for API access)
@@ -47,7 +47,7 @@ FORGEJO_TOKEN=xxx
 
 # Test endpoints
 curl http://git.localhost:4000/
-curl http://git.localhost:4000/github/hydepwns/raxol
+curl http://git.localhost:4000/github/DROOdotFOO/raxol
 ```
 
 ## Disabling Forgejo

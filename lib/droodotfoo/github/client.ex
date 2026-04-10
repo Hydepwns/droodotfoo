@@ -99,7 +99,7 @@ defmodule Droodotfoo.GitHub.Client do
       """
       No pinned repositories found.
 
-      Visit https://github.com/hydepwns to see all projects.
+      Visit https://github.com/DROOdotFOO to see all projects.
       """
     else
       header = """
@@ -115,7 +115,7 @@ defmodule Droodotfoo.GitHub.Client do
 
       footer = """
 
-      Updated from: https://github.com/hydepwns
+      Updated from: https://github.com/DROOdotFOO
       Pinned repositories sync every 15 minutes.
       """
 
@@ -134,7 +134,7 @@ defmodule Droodotfoo.GitHub.Client do
     axol-framework      - High-performance web framework (Rust)
     terminal-ui         - Raxol terminal UI library (Elixir)
 
-    Visit https://github.com/hydepwns for all projects.
+    Visit https://github.com/DROOdotFOO for all projects.
     """
   end
 

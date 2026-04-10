@@ -38,7 +38,7 @@ defmodule Droodotfoo.Git do
   end
 
   defp github_owner do
-    Application.get_env(:droodotfoo, :github)[:owner] || "hydepwns"
+    Application.get_env(:droodotfoo, :github)[:owner] || "DROOdotFOO"
   end
 
   defp forgejo_owner do

@@ -138,7 +138,7 @@ All pages include:
 
 ### Twitter Cards
 - `twitter:card`: summary_large_image
-- `twitter:site`: @MF_DROO
+- `twitter:site`: @DROOdotFOO
 - Author attribution
 
 ### Article-Specific
