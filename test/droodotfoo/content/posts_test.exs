@@ -63,7 +63,6 @@ defmodule Droodotfoo.Content.PostsTest do
       assert Enum.at(series_posts, 0).slug == "test-series-part-1"
       assert Enum.at(series_posts, 1).slug == "test-series-part-2"
       assert Enum.at(series_posts, 2).slug == "test-series-part-3"
-
     end
 
     test "returns empty list for non-existent series" do
@@ -100,7 +99,6 @@ defmodule Droodotfoo.Content.PostsTest do
       assert length(series_posts) == 2
       assert Enum.at(series_posts, 0).slug == "test-mixed-ordered"
       assert Enum.at(series_posts, 1).slug == "test-mixed-unordered"
-
     end
 
     test "filters out posts from different series" do
@@ -134,7 +132,6 @@ defmodule Droodotfoo.Content.PostsTest do
 
       assert length(series_b_posts) == 1
       assert Enum.at(series_b_posts, 0).slug == "test-filter-series-b"
-
     end
   end
 
