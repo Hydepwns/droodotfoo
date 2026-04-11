@@ -107,7 +107,7 @@ defmodule DroodotfooWeb.DroodotfooLive do
             </svg>
           </a>
           <a
-            href="https://www.linkedin.com/in/drew-hiro/"
+            href="https://www.linkedin.com/in/droodotfoo"
             target="_blank"
             rel="noopener"
             aria-label="LinkedIn"

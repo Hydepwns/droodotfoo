@@ -12,7 +12,7 @@ defmodule DroodotfooWeb.ResumeLive do
   use DroodotfooWeb, :live_view
   import DroodotfooWeb.ContentComponents
 
-  alias Droodotfoo.Resume.{FilterEngine, PDFGenerator, PresetManager, ResumeData, SearchIndex}
+  alias Droodotfoo.Resume.{FilterEngine, PDFGenerator, ResumeData, SearchIndex}
   alias DroodotfooWeb.SEO.JsonLD
 
   @impl true
@@ -21,16 +21,6 @@ defmodule DroodotfooWeb.ResumeLive do
     selected_format = "technical"
     resume_data = ResumeData.get_resume_data()
     technologies = SearchIndex.extract_technologies(resume_data)
-    presets = PresetManager.list_presets()
-
-    # Generate JSON-LD schemas for resume page
-    json_ld = [
-      JsonLD.person_schema(),
-      JsonLD.breadcrumb_schema([
-        {"Home", "/"},
-        {"Resume", "/resume"}
-      ])
-    ]
 
     {:ok,
      socket
@@ -43,15 +33,15 @@ defmodule DroodotfooWeb.ResumeLive do
      |> assign(:resume_data, resume_data)
      |> assign(:filtered_data, nil)
      |> assign(:technologies, technologies)
-     |> assign(:presets, presets)
-     |> assign(:active_filters, %{})
      |> assign(:selected_technologies, [])
      |> assign(:search_query, "")
      |> assign(:match_count, nil)
-     |> assign(:show_filters, true)
-     |> assign(:page_title, "Resume")
-     |> assign(:current_path, "/resume")
-     |> assign(:json_ld, json_ld)
+     |> assign(:active_filters, %{})
+     |> assign_page_meta(
+       "Resume",
+       "/resume",
+       breadcrumb_json_ld("Resume", "/resume", [JsonLD.person_schema()])
+     )
      |> load_preview(selected_format)}
   end
 
@@ -88,11 +78,6 @@ defmodule DroodotfooWeb.ResumeLive do
     else
       {:noreply, socket}
     end
-  end
-
-  @impl true
-  def handle_event("toggle_filters", _params, socket) do
-    {:noreply, assign(socket, :show_filters, !socket.assigns.show_filters)}
   end
 
   @impl true
@@ -135,58 +120,6 @@ defmodule DroodotfooWeb.ResumeLive do
       |> assign(:match_count, nil)
 
     {:noreply, socket}
-  end
-
-  @impl true
-  def handle_event("load_preset", %{"preset" => preset_name}, socket) do
-    case PresetManager.load_preset(preset_name) do
-      {:ok, filters} ->
-        # Extract technologies from filters
-        technologies = Map.get(filters, :technologies, [])
-        search = Map.get(filters, :text_search, "")
-
-        socket =
-          socket
-          |> assign(:selected_technologies, technologies)
-          |> assign(:search_query, search)
-          |> assign(:active_filters, filters)
-          |> apply_filters()
-
-        {:noreply, socket}
-
-      {:error, _reason} ->
-        {:noreply, socket}
-    end
-  end
-
-  @impl true
-  def handle_event("quick_filter", %{"type" => filter_type}, socket) do
-    case filter_type do
-      "recent" ->
-        today = Date.utc_today() |> Date.to_iso8601()
-
-        filters = %{
-          date_range: %{from: "2022-01", to: today}
-        }
-
-        socket =
-          socket
-          |> assign(:active_filters, filters)
-          |> apply_filters()
-
-        {:noreply, socket}
-
-      "web3" ->
-        socket =
-          socket
-          |> assign(:selected_technologies, ["Elixir", "Rust", "Go", "Solidity"])
-          |> apply_filters()
-
-        {:noreply, socket}
-
-      _ ->
-        {:noreply, socket}
-    end
   end
 
   @impl true
@@ -253,109 +186,33 @@ defmodule DroodotfooWeb.ResumeLive do
   def render(assigns) do
     ~H"""
     <.page_layout
-      page_title="Resume Export & Filtering"
-      page_description="Filter your resume content and export in multiple formats"
+      page_title="Resume"
+      page_description="Experience, education, and technical background"
     >
-      <!-- Filter Panel -->
-      <div class="filter-panel">
-        <div class="filter-header">
-          <h3>Filter Resume Content</h3>
-          <button class="toggle-filters-btn" phx-click="toggle_filters">
-            {if @show_filters, do: "Hide Filters", else: "Show Filters"}
-          </button>
-        </div>
-
-        <%= if @show_filters do %>
-          <div class="filter-content">
-            <!-- Search Bar -->
-            <div class="search-section">
-              <form phx-change="search_resume" phx-submit="search_resume">
-                <input
-                  type="text"
-                  name="search[query]"
-                  value={@search_query}
-                  placeholder="Search resume (e.g., blockchain, submarine, engineering...)"
-                  class="search-input"
-                  autocomplete="off"
-                />
-              </form>
-            </div>
-            
-    <!-- Quick Filter Presets -->
-            <div class="presets-section">
-              <h4>Quick Filters</h4>
-              <div class="preset-buttons">
-                <%= for preset <- Enum.take(@presets, 5) do %>
-                  <button
-                    class="preset-btn"
-                    phx-click="load_preset"
-                    phx-value-preset={preset.name}
-                    title={preset.description}
-                  >
-                    {preset.name}
-                  </button>
-                <% end %>
-              </div>
-            </div>
-            
-    <!-- Technology Filters -->
-            <div class="tech-filters-section">
-              <h4>Filter by Technology ({length(@technologies.all)} total)</h4>
-              <.tech_chips
-                technologies={Enum.take(@technologies.all, 20)}
-                selected={@selected_technologies}
-                click_event="toggle_technology"
-              />
-            </div>
-            
-    <!-- Active Filters Display -->
-            <%= if @match_count do %>
-              <div class="active-filters">
-                <div class="match-count">
-                  Found {@match_count} matches
-                </div>
-                <button class="clear-filters-btn" phx-click="clear_filters">
-                  Clear All Filters
-                </button>
-              </div>
-            <% end %>
-          </div>
-        <% end %>
-      </div>
-
       <div class="resume-controls">
-        <div class="format-selector">
-          <h3>Select Format</h3>
-          <div class="format-options">
+        <div class="action-buttons">
+          <div class="format-selector">
             <%= for format <- @formats do %>
-              <label class={["format-option", @selected_format == format.id && "selected"]}>
-                <input
-                  type="radio"
-                  name="format"
-                  value={format.id}
-                  checked={@selected_format == format.id}
-                  phx-click="select_format"
-                  phx-value-format={format.id}
-                />
-                <div class="format-info">
-                  <div class="format-name">{format.name}</div>
-                  <div class="format-description">{format.description}</div>
-                </div>
-              </label>
+              <button
+                class={["preset-btn", @selected_format == format.id && "selected"]}
+                phx-click="select_format"
+                phx-value-format={format.id}
+                title={format.description}
+              >
+                {format.name}
+              </button>
             <% end %>
           </div>
-        </div>
 
-        <div class="action-buttons">
           <button
             class={["generate-btn", @is_generating && "generating"]}
             phx-click="generate_pdf"
             disabled={@is_generating}
           >
             <%= if @is_generating do %>
-              <span class="spinner"></span> Generating PDF...
+              <span class="spinner"></span> Generating...
             <% else %>
-              Generate PDF {if @filtered_data, do: "(Filtered)", else: ""}
+              Download PDF
             <% end %>
           </button>
 
@@ -365,60 +222,65 @@ defmodule DroodotfooWeb.ResumeLive do
               class="download-btn"
               download={"resume_#{@selected_format}.pdf"}
             >
-              Download PDF
+              Save PDF
             </a>
           <% end %>
         </div>
       </div>
-      
-    <!-- Filter Results Display -->
-      <%= if @filtered_data do %>
-        <div class="filter-results">
-          <h3>Filtered Results ({@match_count} matches)</h3>
 
-          <%= if length(@filtered_data.experience) > 0 do %>
-            <div class="results-section">
-              <h4>Experience ({length(@filtered_data.experience)} matches)</h4>
-              <div class="results-list">
+      <%= if @preview_html do %>
+        <div class="resume-preview">
+          {raw(@preview_html)}
+        </div>
+      <% end %>
+
+      <details class="experience-details mt-2">
+        <summary class="experience-summary">Filter by technology or keyword</summary>
+        <div class="filter-content mt-1">
+          <form phx-change="search_resume" phx-submit="search_resume">
+            <input
+              type="text"
+              name="search[query]"
+              value={@search_query}
+              placeholder="Search (blockchain, defense, engineering...)"
+              class="search-input"
+              autocomplete="off"
+            />
+          </form>
+
+          <div class="mt-1">
+            <.tech_chips
+              technologies={Enum.take(@technologies.all, 20)}
+              selected={@selected_technologies}
+              click_event="toggle_technology"
+            />
+          </div>
+
+          <%= if @match_count do %>
+            <div class="active-filters mt-1">
+              <span class="text-muted">Found {@match_count} matches</span>
+              <button class="clear-filters-btn" phx-click="clear_filters">Clear</button>
+            </div>
+
+            <%= if @filtered_data do %>
+              <div class="filter-results mt-1">
                 <%= for exp <- @filtered_data.experience do %>
                   <div class="result-item">
                     <strong>{exp.position}</strong> at {exp.company}
-                    <span class="date-range">({exp.start_date} - {exp.end_date})</span>
+                    <span class="text-muted">({exp.start_date} - {exp.end_date})</span>
                   </div>
                 <% end %>
-              </div>
-            </div>
-          <% end %>
-
-          <%= if length(@filtered_data.education) > 0 do %>
-            <div class="results-section">
-              <h4>Education ({length(@filtered_data.education)} matches)</h4>
-              <div class="results-list">
                 <%= for edu <- @filtered_data.education do %>
                   <div class="result-item">
-                    <strong>{edu.degree}</strong> in {edu.field}
-                    <span>from {edu.institution}</span>
+                    <strong>{edu.degree}</strong>, {edu.field}
+                    <span class="text-muted">-- {edu.institution}</span>
                   </div>
                 <% end %>
               </div>
-            </div>
-          <% end %>
-
-          <%= if map_size(@filtered_data.portfolio) > 0 do %>
-            <div class="results-section">
-              <h4>Portfolio Projects</h4>
-              <div class="results-list">
-                <%= for project <- Map.get(@filtered_data.portfolio, :projects, []) do %>
-                  <div class="result-item">
-                    <strong>{project.name}</strong>
-                    ({project.language}) <span>{project.description}</span>
-                  </div>
-                <% end %>
-              </div>
-            </div>
+            <% end %>
           <% end %>
         </div>
-      <% end %>
+      </details>
     </.page_layout>
     """
   end

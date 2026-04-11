@@ -440,7 +440,7 @@ defmodule Droodotfoo.Resume.ResumeData do
         email: "drew@axol.io",
         website: "https://droo.foo",
         github: "https://github.com/DROOdotFOO",
-        linkedin: "https://linkedin.com/in/drew-hiro",
+        linkedin: "https://linkedin.com/in/droodotfoo",
         twitter: "https://x.com/DROOdotFOO"
       }
     }

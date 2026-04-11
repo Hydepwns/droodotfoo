@@ -99,6 +99,7 @@
     </.live_title>
     <link phx-track-static rel="preload" href={~p"/assets/css/app.css"} as="style" />
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
+    <!-- Monaspace font family preloads -->
     <link
       rel="preload"
       href="/fonts/MonaspaceArgon-Regular.woff2"
@@ -109,6 +110,62 @@
     <link
       rel="preload"
       href="/fonts/MonaspaceArgon-Bold.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/MonaspaceNeon-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/MonaspaceNeon-Bold.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/MonaspaceXenon-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/MonaspaceXenon-Bold.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/MonaspaceRadon-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/MonaspaceRadon-Bold.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/MonaspaceKrypton-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/MonaspaceKrypton-Bold.woff2"
       as="font"
       type="font/woff2"
       crossorigin
@@ -150,7 +207,7 @@
     
 <!-- Theme Toggle Button (desktop only) -->
     <button
-      class="theme-toggle"
+      class="fixed-toggle theme-toggle"
       id="theme-toggle"
       data-tooltip="Theme (Shift+T)"
       aria-label="Cycle Theme (Shift+T key)"
@@ -158,19 +215,21 @@
       T
     </button>
     
-<!-- Debug Toggle Button (desktop only) -->
-    <button
-      class="debug-toggle"
-      id="debug-toggle"
-      data-tooltip="Debug Mode (Shift+D)"
-      aria-label="Toggle Debug Mode"
-    >
-      D
-    </button>
+<!-- Debug Toggle Button (desktop only, dev only) -->
+    <%= if Application.get_env(:droodotfoo, :environment) == :dev do %>
+      <button
+        class="fixed-toggle debug-toggle"
+        id="debug-toggle"
+        data-tooltip="Debug Mode (Shift+D)"
+        aria-label="Toggle Debug Mode"
+      >
+        D
+      </button>
+    <% end %>
     
 <!-- Music Toggle Button (desktop only) -->
     <button
-      class="music-toggle"
+      class="fixed-toggle music-toggle"
       id="music-toggle-desktop"
       data-tooltip="Music Player"
       aria-label="Toggle Music Player"
@@ -186,18 +245,41 @@
     <div class="hamburger-menu" id="hamburger-menu">
       <button class="menu-close" id="menu-close" aria-label="Close menu">×</button>
 
-      <div class="menu-items">
-        <!-- Terminal toggle removed - terminal archived -->
+      <nav class="menu-nav" aria-label="Mobile navigation">
+        <a href="/" class="menu-item menu-nav-link">
+          <span class="menu-icon">/</span>
+          <span class="menu-label">Home</span>
+        </a>
+        <a href="/about" class="menu-item menu-nav-link">
+          <span class="menu-icon">~</span>
+          <span class="menu-label">About</span>
+        </a>
+        <a href="/now" class="menu-item menu-nav-link">
+          <span class="menu-icon">*</span>
+          <span class="menu-label">Now</span>
+        </a>
+        <a href="/projects" class="menu-item menu-nav-link">
+          <span class="menu-icon">#</span>
+          <span class="menu-label">Projects</span>
+        </a>
+        <a href="/posts" class="menu-item menu-nav-link">
+          <span class="menu-icon">&gt;</span>
+          <span class="menu-label">Writing</span>
+        </a>
+      </nav>
 
+      <div class="menu-items">
         <button id="menu-theme-toggle" class="menu-item" data-tooltip="Cycle Theme (Shift+T)">
           <span class="menu-icon">T</span>
           <span class="menu-label">Theme</span>
         </button>
 
-        <button id="menu-debug-toggle" class="menu-item" data-tooltip="Toggle Debug Mode">
-          <span class="menu-icon">D</span>
-          <span class="menu-label">Debug</span>
-        </button>
+        <%= if Application.get_env(:droodotfoo, :environment) == :dev do %>
+          <button id="menu-debug-toggle" class="menu-item" data-tooltip="Toggle Debug Mode">
+            <span class="menu-icon">D</span>
+            <span class="menu-label">Debug</span>
+          </button>
+        <% end %>
 
         <button id="menu-music-toggle" class="menu-item" data-tooltip="Toggle Music Player">
           <span class="menu-icon">♫</span>

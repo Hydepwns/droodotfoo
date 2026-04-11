@@ -1,9 +1,8 @@
 /* UI Components - Extracted from monospace.css */
 
-/* Theme Toggle Button */
-.theme-toggle {
+/* Fixed Toggle Button - Base class for theme, debug, music toggles */
+.fixed-toggle {
   position: fixed;
-  top: 5.5rem;
   right: max(1rem, calc(50vw - 50ch + 1rem));
   z-index: 10000;
   font-family: var(--font-family);
@@ -22,20 +21,19 @@
   transition: all 0.2s ease;
 }
 
-/* Hide theme toggle on mobile - use hamburger instead */
 @media screen and (max-width: 768px) {
-  .theme-toggle {
+  .fixed-toggle {
     display: none;
   }
 }
 
-.theme-toggle:hover {
+.fixed-toggle:hover {
   background-color: var(--text-color);
   color: var(--background-color);
   transform: scale(1.1);
 }
 
-.theme-toggle::after {
+.fixed-toggle::after {
   content: attr(data-tooltip);
   position: absolute;
   right: calc(100% + 0.5rem);
@@ -54,67 +52,13 @@
   z-index: 10001;
 }
 
-.theme-toggle:hover::after {
+.fixed-toggle:hover::after {
   opacity: 1;
 }
 
-/* Debug Toggle Button */
-.debug-toggle {
-  position: fixed;
-  top: 3rem;
-  right: max(1rem, calc(50vw - 50ch + 1rem));
-  z-index: 10000;
-  font-family: var(--font-family);
-  font-weight: var(--font-weight-bold);
-  font-size: 0.875rem;
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
-  border: var(--border-thickness) solid var(--border-color);
-  background-color: var(--background-color);
-  color: var(--text-color);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-/* Hide debug toggle on mobile - use hamburger instead */
-@media screen and (max-width: 768px) {
-  .debug-toggle {
-    display: none;
-  }
-}
-
-.debug-toggle:hover {
-  background-color: var(--text-color);
-  color: var(--background-color);
-  transform: scale(1.1);
-}
-
-.debug-toggle::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  right: calc(100% + 0.5rem);
-  top: 50%;
-  transform: translateY(-50%);
-  background-color: var(--text-color);
-  color: var(--background-color);
-  padding: 0.25rem 0.5rem;
-  border: var(--border-thickness) solid var(--border-color);
-  white-space: nowrap;
-  font-size: 0.75rem;
-  font-weight: var(--font-weight-medium);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s ease;
-  z-index: 10001;
-}
-
-.debug-toggle:hover::after {
-  opacity: 1;
-}
+/* Position variants */
+.theme-toggle { top: 5.5rem; }
+.debug-toggle { top: 3rem; }
 
 /* Debug mode active state */
 .debug-mode .debug-toggle {
@@ -168,63 +112,8 @@
   opacity: 1;
 }
 
-/* Music Toggle Button */
-.music-toggle {
-  position: fixed;
-  top: 8rem;
-  right: max(1rem, calc(50vw - 50ch + 1rem));
-  z-index: 10000;
-  font-family: var(--font-family);
-  font-weight: var(--font-weight-bold);
-  font-size: 0.875rem;
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
-  border: var(--border-thickness) solid var(--border-color);
-  background-color: var(--background-color);
-  color: var(--text-color);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-/* Hide music toggle on mobile - use hamburger instead */
-@media screen and (max-width: 768px) {
-  .music-toggle {
-    display: none;
-  }
-}
-
-.music-toggle:hover {
-  background-color: var(--text-color);
-  color: var(--background-color);
-  transform: scale(1.1);
-}
-
-.music-toggle::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  right: calc(100% + 0.5rem);
-  top: 50%;
-  transform: translateY(-50%);
-  background-color: var(--text-color);
-  color: var(--background-color);
-  padding: 0.25rem 0.5rem;
-  border: var(--border-thickness) solid var(--border-color);
-  white-space: nowrap;
-  font-size: 0.75rem;
-  font-weight: var(--font-weight-medium);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s ease;
-  z-index: 10001;
-}
-
-.music-toggle:hover::after {
-  opacity: 1;
-}
+/* Music toggle position */
+.music-toggle { top: 8rem; }
 
 /* Hide old UI elements */
 .keyboard-toggle,
@@ -312,13 +201,31 @@
   transform: scale(1.1);
 }
 
+/* Mobile menu nav links */
+.menu-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 2rem 2rem 0 2rem;
+  background-color: var(--background-color);
+  border: 2px solid var(--border-color);
+  border-bottom: none;
+  min-width: 280px;
+}
+
+.menu-nav-link {
+  text-decoration: none;
+  color: var(--text-color);
+}
+
 .menu-items {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding: 2rem;
+  padding: 1rem 2rem 2rem 2rem;
   background-color: var(--background-color);
   border: 2px solid var(--border-color);
+  border-top: 1px solid var(--border-color);
   min-width: 280px;
 }
 

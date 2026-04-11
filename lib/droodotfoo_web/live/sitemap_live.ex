@@ -22,8 +22,7 @@ defmodule DroodotfooWeb.SitemapLive do
 
     socket
     |> assign(:posts, posts)
-    |> assign(:page_title, "Sitemap")
-    |> assign(:current_path, "/sitemap")
+    |> assign_page_meta("Sitemap", "/sitemap", [])
     |> then(&{:ok, &1})
   end
 
@@ -45,7 +44,8 @@ defmodule DroodotfooWeb.SitemapLive do
             ├── <.link navigate={~p"/posts"}>Writing</.link>
             <span class="text-muted">({length(@posts)} posts)</span>
           </div>
-          <div>├── <.link navigate={~p"/pattern-gallery"}>Pattern Gallery</.link></div>
+          <div>├── <.link navigate={~p"/resume"}>Resume</.link></div>
+          <div>├── <.link navigate={~p"/contact"}>Contact</.link></div>
           <div>└── <.link navigate={~p"/sitemap"}>Sitemap</.link></div>
         </div>
 
@@ -66,6 +66,16 @@ defmodule DroodotfooWeb.SitemapLive do
             </div>
           </details>
         <% end %>
+
+        <hr />
+
+        <h3>Dev Tools</h3>
+        <div class="ascii-tree">
+          <div>
+            └── <.link navigate={~p"/dev/pattern-gallery"}>Pattern Gallery</.link>
+            <span class="text-muted">- SVG pattern browser for social images</span>
+          </div>
+        </div>
 
         <hr />
 

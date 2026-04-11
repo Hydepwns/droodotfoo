@@ -7,6 +7,7 @@ defmodule DroodotfooWeb.PostLive do
   alias Droodotfoo.Content.{PostFormatter, Posts}
   alias DroodotfooWeb.SEO.JsonLD
   alias DroodotfooWeb.Wiki.Helpers.HTML, as: HTMLHelper
+  import DroodotfooWeb.ContentComponents
 
   @impl true
   def mount(%{"slug" => slug}, _session, socket) do
@@ -90,8 +91,11 @@ defmodule DroodotfooWeb.PostLive do
     </div>
 
     <div class="monospace-container">
+      <.site_header />
+      <.site_nav current_path={@current_path} />
+
       <nav class="post-nav">
-        <.link navigate={~p"/"} class="back-link">{PostFormatter.back_link()}</.link>
+        <.link navigate={~p"/posts"} class="back-link">{PostFormatter.back_link()}</.link>
       </nav>
 
       <header class="post-header post-header-large">
@@ -120,7 +124,7 @@ defmodule DroodotfooWeb.PostLive do
       </article>
 
       <footer class="post-footer">
-        <.link navigate={~p"/"} class="back-link">{PostFormatter.back_link()}</.link>
+        <.link navigate={~p"/posts"} class="back-link">{PostFormatter.back_link()}</.link>
       </footer>
     </div>
     """

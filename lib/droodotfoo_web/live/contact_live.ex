@@ -14,20 +14,13 @@ defmodule DroodotfooWeb.ContactLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    # Generate JSON-LD schemas for contact page
-    json_ld = [
-      JsonLD.person_schema(),
-      JsonLD.breadcrumb_schema([
-        {"Home", "/"},
-        {"Contact", "/contact"}
-      ])
-    ]
-
     socket
     |> initialize_form()
-    |> assign(:page_title, "Contact")
-    |> assign(:current_path, "/contact")
-    |> assign(:json_ld, json_ld)
+    |> assign_page_meta(
+      "Contact",
+      "/contact",
+      breadcrumb_json_ld("Contact", "/contact", [JsonLD.person_schema()])
+    )
     |> then(&{:ok, &1})
   end
 

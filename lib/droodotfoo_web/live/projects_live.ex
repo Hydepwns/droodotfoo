@@ -205,20 +205,4 @@ defmodule DroodotfooWeb.ProjectsLive do
   defp status_info(:active), do: %{label: "active", class: "status-active"}
   defp status_info(:completed), do: %{label: "done", class: "status-done"}
   defp status_info(:archived), do: %{label: "archived", class: "status-archived"}
-
-  defp format_time_ago(datetime) when is_binary(datetime) do
-    case DateTime.from_iso8601(datetime) do
-      {:ok, dt, _} -> DateTime.utc_now() |> DateTime.diff(dt) |> format_duration()
-      _ -> "-"
-    end
-  end
-
-  defp format_time_ago(_), do: "-"
-
-  defp format_duration(s) when s < 60, do: "now"
-  defp format_duration(s) when s < 3600, do: "#{div(s, 60)}m"
-  defp format_duration(s) when s < 86_400, do: "#{div(s, 3600)}h"
-  defp format_duration(s) when s < 2_592_000, do: "#{div(s, 86_400)}d"
-  defp format_duration(s) when s < 31_536_000, do: "#{div(s, 2_592_000)}mo"
-  defp format_duration(s), do: "#{div(s, 31_536_000)}y"
 end

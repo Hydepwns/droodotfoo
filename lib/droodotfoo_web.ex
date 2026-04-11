@@ -88,6 +88,8 @@ defmodule DroodotfooWeb do
       import Phoenix.HTML
       # Core UI components
       import DroodotfooWeb.CoreComponents
+      # Shared view helpers (formatting, page meta, breadcrumbs)
+      import DroodotfooWeb.ViewHelpers
 
       # Common modules used in templates
       alias DroodotfooWeb.Layouts

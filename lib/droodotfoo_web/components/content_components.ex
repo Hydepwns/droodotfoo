@@ -72,6 +72,9 @@ defmodule DroodotfooWeb.ContentComponents do
       <.page_header title={@page_title} description={@page_description} />
 
       {render_slot(@inner_block)}
+
+      <hr />
+      <.connect_links />
     </div>
     """
   end
@@ -135,6 +138,30 @@ defmodule DroodotfooWeb.ContentComponents do
         </.link>
       </p>
     </nav>
+    """
+  end
+
+  @doc """
+  Compact connect/social links bar.
+  Plain text links matching the monospace aesthetic.
+  """
+  def connect_links(assigns) do
+    ~H"""
+    <footer class="connect-bar" aria-label="Connect">
+      <p>
+        <a href="https://github.com/DROOdotFOO" target="_blank" rel="noopener">github</a>
+        <span aria-hidden="true">·</span>
+        <a href="https://x.com/DROOdotFOO" target="_blank" rel="noopener">x</a>
+        <span aria-hidden="true">·</span>
+        <a href="https://www.linkedin.com/in/droodotfoo" target="_blank" rel="noopener">linkedin</a>
+        <span aria-hidden="true">·</span>
+        <a href="https://t.me/DROOdotFOO" target="_blank" rel="noopener">telegram</a>
+        <span aria-hidden="true">·</span>
+        <a href="mailto:drew@axol.io">email</a>
+        <span aria-hidden="true">·</span>
+        <a href="https://discord.com/users/droodotfoo" target="_blank" rel="noopener">discord</a>
+      </p>
+    </footer>
     """
   end
 

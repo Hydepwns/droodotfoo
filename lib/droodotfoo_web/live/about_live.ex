@@ -8,29 +8,19 @@ defmodule DroodotfooWeb.AboutLive do
   alias Droodotfoo.Resume.ResumeData
   alias DroodotfooWeb.SEO.JsonLD
   import DroodotfooWeb.ContentComponents
-  import DroodotfooWeb.ViewHelpers
-
   @impl true
   def mount(_params, _session, socket) do
     resume = ResumeData.get_resume_data()
-
-    # Generate JSON-LD schemas for about page
-    json_ld = [
-      JsonLD.person_schema(),
-      JsonLD.breadcrumb_schema([
-        {"Home", "/"},
-        {"About", "/about"}
-      ])
-    ]
-
     languages = extract_languages(resume.experience)
 
     socket
     |> assign(:resume, resume)
     |> assign(:languages, languages)
-    |> assign(:page_title, "About")
-    |> assign(:current_path, "/about")
-    |> assign(:json_ld, json_ld)
+    |> assign_page_meta(
+      "About",
+      "/about",
+      breadcrumb_json_ld("About", "/about", [JsonLD.person_schema()])
+    )
     |> then(&{:ok, &1})
   end
 
@@ -45,11 +35,10 @@ defmodule DroodotfooWeb.AboutLive do
       <section class="about-section">
         <h2 class="section-title">About</h2>
         <p>
-          I build blockchain infrastructure at <a
-            href="https://axol.io"
-            target="_blank"
-            rel="noopener"
-          >axol.io</a>.
+          Protocol Director/BDFL at
+          <a href="https://axol.io" target="_blank" rel="noopener">axol.io</a>
+          and <a href="https://xochi.fi" target="_blank" rel="noopener">xochi.fi</a>.
+          Building private execution infrastructure on Ethereum -- solvers, sequencers, ZK compliance.
           Defense systems before that, where downtime had operational consequences.
         </p>
         <p class="mt-1">
@@ -87,7 +76,9 @@ defmodule DroodotfooWeb.AboutLive do
 
             <%= if exp[:achievements] && length(exp.achievements) > 0 do %>
               <details class="experience-details">
-                <summary class="experience-summary">Details</summary>
+                <summary class="experience-summary">
+                  {length(exp.achievements)} key contributions
+                </summary>
                 <div class="mt-1">
                   <ul>
                     <%= for achievement <- exp.achievements do %>

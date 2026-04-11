@@ -5,27 +5,16 @@ defmodule DroodotfooWeb.PostsLive do
 
   use DroodotfooWeb, :live_view
   alias Droodotfoo.Content.Posts
-  alias DroodotfooWeb.SEO.JsonLD
   import DroodotfooWeb.ContentComponents
 
   @impl true
   def mount(_params, _session, socket) do
     posts = Posts.list_posts()
 
-    # Generate JSON-LD schemas for posts listing
-    json_ld = [
-      JsonLD.breadcrumb_schema([
-        {"Home", "/"},
-        {"Writing", "/posts"}
-      ])
-    ]
-
     {:ok,
      socket
      |> assign(:posts, posts)
-     |> assign(:page_title, "Writing")
-     |> assign(:current_path, "/posts")
-     |> assign(:json_ld, json_ld)}
+     |> assign_page_meta("Writing", "/posts", breadcrumb_json_ld("Writing", "/posts"))}
   end
 
   @impl true

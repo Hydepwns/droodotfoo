@@ -162,7 +162,7 @@ defmodule DroodotfooWeb.Router do
       live "/contact", ContactLive
       live "/resume", ResumeLive
       live "/sitemap", SitemapLive
-      live "/pattern-gallery", PatternGalleryLive
+      live "/dev/pattern-gallery", PatternGalleryLive
     end
 
     # RSS feed

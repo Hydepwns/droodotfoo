@@ -169,10 +169,14 @@ end
 
 **Main site (droo.foo)**:
 - `/` - Home page
+- `/about` - About/experience
+- `/now` - Current focus (/now page)
 - `/posts`, `/posts/:slug` - Blog
 - `/projects` - GitHub projects showcase
-- `/resume` - Resume page
+- `/resume` - Resume with PDF export
 - `/contact` - Contact form
+- `/sitemap` - Visual ASCII sitemap
+- `/dev/pattern-gallery` - SVG pattern browser (dev tool)
 - `/dev/dashboard` - Phoenix LiveDashboard (dev only)
 
 **Wiki subdomain (wiki.droo.foo)**:
@@ -233,6 +237,14 @@ Linked rule files are stored in `deps/*/usage-rules/`.
 - Pattern match in function heads over conditionals
 - Keep state immutable except in GenServers
 - Use `Req` for HTTP requests (already included)
+
+### ViewHelpers (auto-imported in all LiveViews)
+
+- `assign_page_meta(socket, title, path, json_ld)` - common page assigns in one call
+- `breadcrumb_json_ld(title, path, extra_schemas \\ [])` - standard breadcrumb JSON-LD
+- `format_time_ago(datetime)` - relative time display ("3d", "2h", "now")
+- `format_date_range(start, end)` - date range formatting
+- `extract_languages(experience)` - tech extraction from resume data
 
 ### Monospace Grid
 

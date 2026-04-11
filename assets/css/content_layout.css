@@ -287,6 +287,38 @@ article blockquote strong {
   font-style: normal;
 }
 
+/* Connect Bar - Social links footer on every page */
+.connect-bar {
+  margin: 1rem 0 0 0;
+  padding: 0.5rem 0;
+  text-align: left;
+}
+
+.connect-bar p {
+  margin: 0;
+  font-size: 0;
+  color: var(--text-color-alt);
+}
+
+.connect-bar p > * {
+  font-size: 0.875rem;
+}
+
+.connect-bar p > span {
+  margin: 0 0.5ch;
+}
+
+.connect-bar a {
+  color: var(--text-color-alt);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.connect-bar a:hover {
+  color: var(--text-color);
+  border-bottom-color: currentColor;
+}
+
 /* Responsive Layout */
 @media screen and (max-width: 768px) {
   .page-container,

@@ -73,4 +73,55 @@ defmodule DroodotfooWeb.ViewHelpers do
   end
 
   def extract_languages(_), do: []
+
+  @doc """
+  Assign common page metadata to socket in one call.
+  Reduces repeated assign(:page_title, ...), assign(:current_path, ...), assign(:json_ld, ...).
+  """
+  def assign_page_meta(socket, page_title, current_path, json_ld) do
+    socket
+    |> Phoenix.Component.assign(:page_title, page_title)
+    |> Phoenix.Component.assign(:current_path, current_path)
+    |> Phoenix.Component.assign(:json_ld, json_ld)
+  end
+
+  @doc """
+  Generate standard breadcrumb JSON-LD with Home as root.
+
+  ## Examples
+
+      iex> ViewHelpers.breadcrumb_json_ld("About", "/about")
+      # Returns JSON-LD breadcrumb schema: Home > About
+
+      iex> ViewHelpers.breadcrumb_json_ld("About", "/about", [JsonLD.person_schema()])
+      # Returns breadcrumb + person schemas
+  """
+  def breadcrumb_json_ld(page_title, page_path, additional_schemas \\ []) do
+    alias DroodotfooWeb.SEO.JsonLD
+    [JsonLD.breadcrumb_schema([{"Home", "/"}, {page_title, page_path}]) | additional_schemas]
+  end
+
+  @doc """
+  Format a DateTime or ISO8601 string as relative time ago.
+
+  ## Examples
+
+      iex> ViewHelpers.format_time_ago("2026-04-10T12:00:00Z")
+      "1d"
+  """
+  def format_time_ago(datetime) when is_binary(datetime) do
+    case DateTime.from_iso8601(datetime) do
+      {:ok, dt, _} -> DateTime.utc_now() |> DateTime.diff(dt) |> format_relative_duration()
+      _ -> "-"
+    end
+  end
+
+  def format_time_ago(_), do: "-"
+
+  defp format_relative_duration(s) when s < 60, do: "now"
+  defp format_relative_duration(s) when s < 3600, do: "#{div(s, 60)}m"
+  defp format_relative_duration(s) when s < 86_400, do: "#{div(s, 3600)}h"
+  defp format_relative_duration(s) when s < 2_592_000, do: "#{div(s, 86_400)}d"
+  defp format_relative_duration(s) when s < 31_536_000, do: "#{div(s, 2_592_000)}mo"
+  defp format_relative_duration(s), do: "#{div(s, 31_536_000)}y"
 end
