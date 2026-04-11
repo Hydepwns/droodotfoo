@@ -279,9 +279,12 @@ defmodule DroodotfooWeb.ContentComponents do
     """
   end
 
+  @chain_icons ~w(ethereum arbitrum optimism base polygon aztec solana bitcoin cosmos starknet zksync gnosis celo near polkadot)
+
   @doc """
   Display-only technology tags.
   Shows a list of technologies as styled tags.
+  Chain names get an inline logo icon.
   """
   attr :technologies, :list, default: []
 
@@ -290,11 +293,25 @@ defmodule DroodotfooWeb.ContentComponents do
     <%= if @technologies != [] do %>
       <div class="tech-tags">
         <%= for tech <- @technologies do %>
-          <span class="tech-tag">{tech}</span>
+          <%= if chain_icon_path(tech) do %>
+            <span class="tech-tag tech-tag-chain" title={tech}>
+              <img src={chain_icon_path(tech)} alt={tech} class="tech-tag-icon" />
+            </span>
+          <% else %>
+            <span class="tech-tag">{tech}</span>
+          <% end %>
         <% end %>
       </div>
     <% end %>
     """
+  end
+
+  defp chain_icon_path(tech) do
+    key = tech |> String.downcase() |> String.replace(" ", "")
+
+    if key in @chain_icons do
+      "/images/icons/blockchain/#{key}.svg"
+    end
   end
 
   @doc """

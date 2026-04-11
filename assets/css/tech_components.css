@@ -10,12 +10,34 @@
 }
 
 .tech-tag {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3ch;
   padding: 0.3rem 0.6rem;
   margin-right: 0.5rem;
   margin-bottom: 0.5rem;
   border: 1px solid var(--border-color);
   font-size: 0.8rem;
+}
+
+span.tech-tag.tech-tag-chain {
+  all: unset !important;
+  display: inline-block !important;
+  margin: 0 0.4rem 0.5rem 0 !important;
+  line-height: 0 !important;
+  vertical-align: middle !important;
+  cursor: default !important;
+}
+
+.tech-tag-icon {
+  display: block;
+  width: 28px !important;
+  height: 28px !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border-radius: 3px;
+  object-fit: contain;
 }
 
 /* =================================================================
