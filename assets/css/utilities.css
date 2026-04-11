@@ -261,11 +261,11 @@ ul.tree details:not([open]) > summary::before {
 }
 
 .width-40ch {
-  width: 40ch;
+  width: min(40ch, 100%);
 }
 
 .width-50ch {
-  width: 50ch;
+  width: min(50ch, 100%);
 }
 
 /* Percentage-based widths (for proportional layouts) */

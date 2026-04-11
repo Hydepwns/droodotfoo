@@ -13,7 +13,7 @@ defmodule Droodotfoo.Email.ContactEmail do
     new()
     |> to(Config.admin_email())
     |> from(Config.noreply_email())
-    |> subject("New Contact Form Submission - #{contact_data.subject}")
+    |> subject("New Contact Form Submission - #{sanitize_header(contact_data.subject)}")
     |> html_body(contact_notification_html(contact_data))
     |> text_body(contact_notification_text(contact_data))
   end
@@ -23,7 +23,7 @@ defmodule Droodotfoo.Email.ContactEmail do
   """
   def contact_confirmation_email(contact_data) do
     new()
-    |> to(contact_data.email)
+    |> to(sanitize_header(contact_data.email))
     |> from(Config.noreply_email())
     |> subject("Thank you for contacting DROO")
     |> html_body(contact_confirmation_html(contact_data))
@@ -157,6 +157,10 @@ defmodule Droodotfoo.Email.ContactEmail do
     ---
     https://droo.foo
     """
+  end
+
+  defp sanitize_header(text) when is_binary(text) do
+    String.replace(text, ~r/[\r\n]+/, " ")
   end
 
   defp escape_html(text) do

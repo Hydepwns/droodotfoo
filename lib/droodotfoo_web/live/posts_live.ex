@@ -51,7 +51,7 @@ defmodule DroodotfooWeb.PostsLive do
                   </div>
                 <% end %>
               </div>
-              <div class="post-item-image">
+              <.link navigate={~p"/posts/#{post.slug}"} class="post-item-image">
                 <object
                   data={append_query(Posts.social_image_url(post), "animate=true")}
                   type="image/svg+xml"
@@ -59,6 +59,7 @@ defmodule DroodotfooWeb.PostsLive do
                   role="img"
                   width="1200"
                   height="630"
+                  style="pointer-events: none"
                 >
                   <img
                     src={Posts.social_image_url(post)}
@@ -69,7 +70,7 @@ defmodule DroodotfooWeb.PostsLive do
                     decoding="async"
                   />
                 </object>
-              </div>
+              </.link>
             </article>
           <% end %>
         </div>

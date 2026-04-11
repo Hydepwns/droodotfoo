@@ -41,8 +41,10 @@ defmodule DroodotfooWeb.ContactLive do
 
   @impl true
   def handle_event("validate", %{"contact" => params}, socket) do
+    form_data = atomize_keys(params)
+
     socket
-    |> assign(:form_data, params)
+    |> assign(:form_data, form_data)
     |> assign(:form_errors, extract_errors(Validator.validate_contact_form(params)))
     |> assign(:submission_status, nil)
     |> then(&{:noreply, &1})
@@ -108,15 +110,13 @@ defmodule DroodotfooWeb.ContactLive do
   defp validate_and_submit(socket, params) do
     changeset = Validator.validate_contact_form(params)
 
-    case changeset.valid? do
-      true ->
-        socket
-        |> send_emails_and_record(params)
-        |> handle_email_result()
-
-      false ->
-        socket
-        |> handle_validation_errors(changeset)
+    if changeset.valid? do
+      socket
+      |> send_emails_and_record(params)
+      |> handle_email_result()
+    else
+      socket
+      |> handle_validation_errors(changeset)
     end
   end
 
@@ -175,7 +175,15 @@ defmodule DroodotfooWeb.ContactLive do
 
   defp extract_errors(changeset) do
     changeset.errors
-    |> Enum.into(%{}, fn {field, {message, _}} -> {field, message} end)
+    |> Enum.into(%{}, fn {field, {message, opts}} ->
+      interpolated =
+        Enum.reduce(opts, message, fn {key, val}, acc ->
+          String.replace(acc, "%{#{key}}", to_string(val))
+        end)
+        |> String.replace("character(s)", "characters")
+
+      {field, interpolated}
+    end)
   end
 
   defp reset_form(socket) do
@@ -185,7 +193,7 @@ defmodule DroodotfooWeb.ContactLive do
   # Template helper functions
   # render_submission_status now uses status_message component from ContentComponents
 
-  defp render_rate_limit_info(nil), do: ""
+  defp render_rate_limit_info(nil), do: nil
 
   defp render_rate_limit_info(status) do
     assigns = %{status: status}
@@ -200,6 +208,14 @@ defmodule DroodotfooWeb.ContactLive do
   end
 
   defp get_client_ip(socket), do: ClientIP.from_socket(socket)
+
+  defp atomize_keys(params) do
+    allowed = Constants.form_fields() |> Enum.map(&to_string/1)
+
+    params
+    |> Enum.filter(fn {k, _} -> k in allowed end)
+    |> Enum.into(%{}, fn {k, v} -> {String.to_existing_atom(k), v} end)
+  end
 
   @impl true
   def render(assigns) do
@@ -261,6 +277,7 @@ defmodule DroodotfooWeb.ContactLive do
             id="contact-form"
             phx-submit="submit"
             phx-change="validate"
+            phx-debounce="300"
             phx-hook="FocusHook"
             class="contact-form-inner"
           >
@@ -268,7 +285,7 @@ defmodule DroodotfooWeb.ContactLive do
             <input
               type="text"
               name="contact[honeypot]"
-              value={@form_data.honeypot}
+              value={Map.get(@form_data, :honeypot, "")}
               class="visually-hidden"
               tabindex="-1"
               autocomplete="off"

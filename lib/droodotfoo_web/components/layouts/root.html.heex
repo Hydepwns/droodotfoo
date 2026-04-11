@@ -245,46 +245,48 @@
     <div class="hamburger-menu" id="hamburger-menu">
       <button class="menu-close" id="menu-close" aria-label="Close menu">×</button>
 
-      <nav class="menu-nav" aria-label="Mobile navigation">
-        <a href="/" class="menu-item menu-nav-link">
-          <span class="menu-icon">/</span>
-          <span class="menu-label">Home</span>
-        </a>
-        <a href="/about" class="menu-item menu-nav-link">
-          <span class="menu-icon">~</span>
-          <span class="menu-label">About</span>
-        </a>
-        <a href="/now" class="menu-item menu-nav-link">
-          <span class="menu-icon">*</span>
-          <span class="menu-label">Now</span>
-        </a>
-        <a href="/projects" class="menu-item menu-nav-link">
-          <span class="menu-icon">#</span>
-          <span class="menu-label">Projects</span>
-        </a>
-        <a href="/posts" class="menu-item menu-nav-link">
-          <span class="menu-icon">&gt;</span>
-          <span class="menu-label">Writing</span>
-        </a>
-      </nav>
+      <div class="menu-panel">
+        <nav class="menu-nav" aria-label="Mobile navigation">
+          <a href="/" class="menu-item menu-nav-link">
+            <span class="menu-icon">/</span>
+            <span class="menu-label">Home</span>
+          </a>
+          <a href="/about" class="menu-item menu-nav-link">
+            <span class="menu-icon">~</span>
+            <span class="menu-label">About</span>
+          </a>
+          <a href="/now" class="menu-item menu-nav-link">
+            <span class="menu-icon">*</span>
+            <span class="menu-label">Now</span>
+          </a>
+          <a href="/projects" class="menu-item menu-nav-link">
+            <span class="menu-icon">#</span>
+            <span class="menu-label">Projects</span>
+          </a>
+          <a href="/posts" class="menu-item menu-nav-link">
+            <span class="menu-icon">&gt;</span>
+            <span class="menu-label">Writing</span>
+          </a>
+        </nav>
 
-      <div class="menu-items">
-        <button id="menu-theme-toggle" class="menu-item" data-tooltip="Cycle Theme (Shift+T)">
-          <span class="menu-icon">T</span>
-          <span class="menu-label">Theme</span>
-        </button>
-
-        <%= if Application.get_env(:droodotfoo, :environment) == :dev do %>
-          <button id="menu-debug-toggle" class="menu-item" data-tooltip="Toggle Debug Mode">
-            <span class="menu-icon">D</span>
-            <span class="menu-label">Debug</span>
+        <div class="menu-items">
+          <button id="menu-theme-toggle" class="menu-item" data-tooltip="Cycle Theme (Shift+T)">
+            <span class="menu-icon">T</span>
+            <span class="menu-label">Theme</span>
           </button>
-        <% end %>
 
-        <button id="menu-music-toggle" class="menu-item" data-tooltip="Toggle Music Player">
-          <span class="menu-icon">♫</span>
-          <span class="menu-label">Music</span>
-        </button>
+          <%= if Application.get_env(:droodotfoo, :environment) == :dev do %>
+            <button id="menu-debug-toggle" class="menu-item" data-tooltip="Toggle Debug Mode">
+              <span class="menu-icon">D</span>
+              <span class="menu-label">Debug</span>
+            </button>
+          <% end %>
+
+          <button id="menu-music-toggle" class="menu-item" data-tooltip="Toggle Music Player">
+            <span class="menu-icon">♫</span>
+            <span class="menu-label">Music</span>
+          </button>
+        </div>
       </div>
     </div>
     

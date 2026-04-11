@@ -7,8 +7,7 @@
   position: fixed;
   bottom: 100px;
   left: 20px;
-  width: 300px;
-  max-width: calc(100vw - 40px);
+  width: min(300px, calc(100vw - 40px));
   z-index: 9999;
   transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease, bottom 0.3s ease;
   pointer-events: auto;
@@ -116,8 +115,14 @@
   transition: color 0.2s ease;
 }
 
-.social-links a:hover {
+.social-links a:hover,
+.social-links a:focus-visible {
   color: var(--highlight-color, var(--text-color));
+}
+
+.social-links a:focus-visible {
+  outline: 2px solid var(--accent-color, currentColor);
+  outline-offset: 2px;
 }
 
 /* Social Links - Text-based (monospace-web style) */

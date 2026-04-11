@@ -28,11 +28,11 @@ defmodule DroodotfooWeb.Endpoint do
 
   socket "/live", Phoenix.LiveView.Socket,
     websocket: [
-      connect_info: [session: @session_options],
+      connect_info: [session: @session_options, x_headers: [:x_forwarded_for, :fly_client_ip]],
       check_origin: @websocket_origins
     ],
     longpoll: [
-      connect_info: [session: @session_options],
+      connect_info: [session: @session_options, x_headers: [:x_forwarded_for, :fly_client_ip]],
       check_origin: @websocket_origins
     ]
 

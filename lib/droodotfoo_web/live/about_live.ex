@@ -35,28 +35,40 @@ defmodule DroodotfooWeb.AboutLive do
       <section class="about-section">
         <h2 class="section-title">About</h2>
         <p>
-          I co-founded <a href="https://axol.io" target="_blank" rel="noopener">axol.io</a>
-          and <a href="https://xochi.fi" target="_blank" rel="noopener">xochi.fi</a>.
-          We build private execution infrastructure on Ethereum:
-          solvers, sequencers, ZK compliance.
-          Before crypto I worked on defense and marine systems. The kind where
-          downtime isn't a support ticket, it's an incident report.
+          Hey, I'm Drew. I started out as a merchant mariner with an
+          unlimited tonnage license, fixing things in engine rooms. From
+          there I moved to Virginia-class submarines, maintaining secondary
+          systems (everything that isn't the reactor). Got promoted to
+          test engineering, where I ran sales and test engineering for two
+          boats and did R&D work that turned into a couple of inventions.
         </p>
         <p class="mt-1">
-          <a href="https://xochi.fi" target="_blank" rel="noopener">Xochi</a>
-          is what we're focused on now. Stealth addresses (ERC-5564) for
-          settlement privacy, plus ZK circuits so users can prove compliance
-          without exposing their data. We're authoring a
+          Crypto pulled me in. I joined the largest institutional staking
+          company as a protocol specialist, then did the same at Lido DAO.
+          Both moved too slow. So I took the best people from each and we
+          started building our own thing.
+        </p>
+        <p class="mt-1">
+          That's <a href="https://xochi.fi" target="_blank" rel="noopener">xochi.fi</a>
+          and <a href="https://axol.io" target="_blank" rel="noopener">axol.io</a>.
+          We build privacy infrastructure for Ethereum. People can transact
+          privately and prove compliance with zero-knowledge proofs instead
+          of handing over their data. We're authoring a
           <a href="https://github.com/xochi-fi/erc-xochi-zkp" target="_blank" rel="noopener">new
             ERC</a>
-          for the ZK compliance oracle piece, where account abstraction
-          meets zero-knowledge proofs. Live on Ethereum, Arbitrum, Optimism,
-          Base, and Polygon. Aztec shielded execution is next.
+          for the ZK compliance oracle. Live on five chains, Aztec
+          shielded execution coming next. A protocol for the post-truth era.
         </p>
         <p class="mt-1">
-          Startups taught me to ship. Defense taught me not to break things.
-          Blockchain wants both at once. Every bug is permanent, there's no
-          rollback, and that changes how you think about "done."
+          The endgame is building my Gundam. Not a metaphor.
+          <a href="https://github.com/DROOdotFOO/raxol" target="_blank" rel="noopener">Raxol</a>
+          is the terminal framework I built for it, and it recently grew
+          into the agentic commerce layer for Xochi through x402/MPP
+          protocols and our
+          <a href="https://github.com/axol-io/riddler" target="_blank" rel="noopener">Riddler</a>
+          solver. AI agents that can pay each other, earn revenue, and
+          operate autonomously. We build the economy first, then the
+          axolotls scale and build.
         </p>
 
         <%= if @languages != [] do %>

@@ -29,10 +29,10 @@
 }
 
 .contact-form {
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--background-color-alt, rgba(0, 0, 0, 0.3));
   padding: 2rem;
   border-radius: 8px;
-  border: 1px solid #444;
+  border: var(--border-thickness) solid var(--border-color);
 }
 
 /* Form styles (form-group, form-label, form-input, form-textarea, form-actions,

@@ -147,8 +147,21 @@
   color: var(--highlight-color);
 }
 
+/* Section Spacing */
+.section-spaced {
+  margin: 2rem 0;
+}
+
 /* Section Headers */
 .section-title {
+  font-size: 1.75rem;
+  font-weight: var(--font-weight-bold);
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: var(--border-thickness) var(--border-style) var(--border-color);
+}
+
+.section-header-bordered {
   font-size: 1.75rem;
   font-weight: var(--font-weight-bold);
   margin: 0 0 1rem 0;
@@ -324,6 +337,7 @@ article blockquote strong {
   .page-container,
   .narrow-container {
     padding: 1rem;
+    overflow-x: hidden;
   }
 
   .page-header h1 {
@@ -332,6 +346,19 @@ article blockquote strong {
 
   .site-header {
     margin-bottom: 0.5rem;
+    max-width: calc(100vw - 2rem);
+  }
+
+  .header-table {
+    table-layout: auto;
+  }
+
+  .header-meta-label {
+    width: auto;
+  }
+
+  .header-meta-value-right {
+    width: auto;
   }
 
   .post-image-float-right {
