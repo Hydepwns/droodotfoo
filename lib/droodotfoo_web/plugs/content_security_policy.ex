@@ -78,12 +78,9 @@ defmodule DroodotfooWeb.Plugs.ContentSecurityPolicy do
     # - Allowed: fullscreen (YouTube/Spotify embeds), picture-in-picture
     [
       "accelerometer=()",
-      "ambient-light-sensor=()",
       "autoplay=(self)",
-      "battery=()",
       "camera=()",
       "display-capture=()",
-      "document-domain=()",
       "encrypted-media=(self)",
       "fullscreen=(self)",
       "geolocation=()",
