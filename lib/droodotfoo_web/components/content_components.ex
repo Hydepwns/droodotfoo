@@ -131,6 +131,13 @@ defmodule DroodotfooWeb.ContentComponents do
         </.link>
         <span aria-hidden="true">·</span>
         <.link
+          navigate={~p"/contact"}
+          aria-current={if @current_path == "/contact", do: "page", else: false}
+        >
+          Contact
+        </.link>
+        <span aria-hidden="true">·</span>
+        <.link
           navigate={~p"/sitemap"}
           aria-current={if @current_path == "/sitemap", do: "page", else: false}
         >

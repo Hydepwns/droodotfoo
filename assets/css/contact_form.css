@@ -54,6 +54,33 @@
   border: 1px solid #444;
 }
 
+/* Network status */
+.network-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+}
+
+.network-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5ch;
+  font-family: monospace;
+  font-size: 0.9rem;
+}
+
+.network-item img {
+  border-radius: 4px;
+}
+
+.status-live {
+  color: #4ade80;
+}
+
+.status-pending {
+  color: #facc15;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .contact-form-container {

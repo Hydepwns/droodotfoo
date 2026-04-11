@@ -35,16 +35,28 @@ defmodule DroodotfooWeb.AboutLive do
       <section class="about-section">
         <h2 class="section-title">About</h2>
         <p>
-          Protocol Director/BDFL at
-          <a href="https://axol.io" target="_blank" rel="noopener">axol.io</a>
+          I co-founded <a href="https://axol.io" target="_blank" rel="noopener">axol.io</a>
           and <a href="https://xochi.fi" target="_blank" rel="noopener">xochi.fi</a>.
-          Building private execution infrastructure on Ethereum -- solvers, sequencers, ZK compliance.
-          Defense systems before that, where downtime had operational consequences.
+          We build private execution infrastructure on Ethereum:
+          solvers, sequencers, ZK compliance.
+          Before crypto I worked on defense and marine systems. The kind where
+          downtime isn't a support ticket, it's an incident report.
         </p>
         <p class="mt-1">
-          Startups taught me to ship fast. Defense taught me to make things not break.
-          Blockchain requires both -- bugs are expensive and immutable.
-          No rollback makes you careful about what "done" means.
+          <a href="https://xochi.fi" target="_blank" rel="noopener">Xochi</a>
+          is what we're focused on now. Stealth addresses (ERC-5564) for
+          settlement privacy, plus ZK circuits so users can prove compliance
+          without exposing their data. We're authoring a
+          <a href="https://github.com/xochi-fi/erc-xochi-zkp" target="_blank" rel="noopener">new
+            ERC</a>
+          for the ZK compliance oracle piece, where account abstraction
+          meets zero-knowledge proofs. Live on Ethereum, Arbitrum, Optimism,
+          Base, and Polygon. Aztec shielded execution is next.
+        </p>
+        <p class="mt-1">
+          Startups taught me to ship. Defense taught me not to break things.
+          Blockchain wants both at once. Every bug is permanent, there's no
+          rollback, and that changes how you think about "done."
         </p>
 
         <%= if @languages != [] do %>
