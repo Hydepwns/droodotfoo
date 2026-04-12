@@ -3,14 +3,12 @@ defmodule Droodotfoo.Contact.RateLimiter do
   Rate limiting for contact form submissions.
   """
 
-  alias Droodotfoo.Forms.Constants
-
   use Droodotfoo.RateLimiter,
-    table_name: Constants.rate_limit_table_name(),
+    table_name: :contact_rate_limit,
     windows: [
-      {:hourly, 3_600, Constants.max_submissions_per_hour()},
-      {:daily, 86_400, Constants.max_submissions_per_day()}
+      {:hourly, 3_600, 3},
+      {:daily, 86_400, 10}
     ],
     log_prefix: "Contact form",
-    error_message: Constants.get_error_message(:rate_limited)
+    error_message: "Too many submissions. Please try again later."
 end
