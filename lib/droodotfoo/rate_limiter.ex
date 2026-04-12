@@ -31,8 +31,6 @@ defmodule Droodotfoo.RateLimiter do
     error_message = Keyword.get(opts, :error_message)
     log_prefix = Keyword.get(opts, :log_prefix, "Rate limiter")
 
-    max_window = windows |> Enum.map(fn {_, s, _} -> s end) |> Enum.max(fn -> 86_400 end)
-
     quote do
       @behaviour Droodotfoo.RateLimiter
       @dialyzer [:no_return, :no_match, :no_fail_call]
@@ -42,7 +40,9 @@ defmodule Droodotfoo.RateLimiter do
 
       @table unquote(table_name)
       @windows unquote(windows)
-      @max_window unquote(max_window)
+      @max_window unquote(windows)
+                  |> Enum.map(fn {_, s, _} -> s end)
+                  |> Enum.max(fn -> 86_400 end)
       @error_msg unquote(error_message)
       @log_prefix unquote(log_prefix)
 
