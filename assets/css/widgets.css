@@ -104,9 +104,10 @@
 /* Social Links - Icon-based */
 .social-links {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   margin: 1rem 0;
 }
 
