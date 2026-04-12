@@ -161,6 +161,26 @@ defmodule Droodotfoo.Resume.ResumeData do
       focus_areas: ["Cosmos SDK", "Ethereum Protocol", "Validator Infrastructure"],
       experience: [
         %{
+          company: "xochi.fi",
+          position: "BDFL / Protocol Director",
+          location: "Remote",
+          employment_type: "full-time",
+          start_date: "2026-04",
+          end_date: "Present",
+          description:
+            "Dark pool DEX solving the compliance-privacy problem on Ethereum. Intent-based trading settled into stealth accounts or Aztec shielded notes across five chains. ZKP compliance oracle proves AML/sanctions compliance without revealing transaction data.",
+          achievements: [
+            "Designed and authored ERC for the Xochi ZKP Compliance Oracle with six proof types in Noir",
+            "Built Riddler, a cross-chain intent solver with <6s latency across Ethereum, Optimism, Base, Arbitrum, and Polygon",
+            "Architected privacy tier system combining trust scores with stealth addresses (ERC-5564) and account abstraction (ERC-4337)"
+          ],
+          technologies: %{
+            languages: ["Noir", "Solidity", "TypeScript", "Rust"],
+            protocols: ["ERC-5564", "ERC-4337", "Aztec"],
+            tools: ["Foundry", "Barretenberg", "UltraHonk"]
+          }
+        },
+        %{
           company: "axol.io",
           position: "CEO",
           location: "Remote",
@@ -168,15 +188,23 @@ defmodule Droodotfoo.Resume.ResumeData do
           start_date: "2024-05",
           end_date: "Present",
           description:
-            "Lead blockchain infrastructure company building production-grade FOSS tooling for Cosmos and EVM ecosystems. Direct technical leadership across protocol design, distributed systems architecture, and open-source community development.",
+            "Open-source blockchain infrastructure company supporting xochi.fi. Building production-grade FOSS tooling for staking, Ethereum clients, and terminal frameworks.",
           achievements: [
             "Founded axol.io, developing mana Ethereum client and raxol terminal UI framework as production-grade FOSS tools",
             "Built and maintain open-source blockchain infrastructure community with active contributor base"
           ],
           technologies: %{
-            languages: ["Elixir", "TypeScript", "Rust", "C"],
-            "internal-products": ["Solvers", "Validators", "RPCs", "APIs"],
-            tools: ["Ansible", "AI"]
+            languages: ["Elixir", "Python", "Rust", "Nix"],
+            "internal-products": [
+              "Sequencer",
+              "MEV Searcher",
+              "Builder",
+              "Solvers",
+              "Validators",
+              "RPCs",
+              "APIs"
+            ],
+            tools: ["Ansible", "Terraform"]
           }
         },
         %{
@@ -212,7 +240,7 @@ defmodule Droodotfoo.Resume.ResumeData do
             "Conducted code analysis and prototype deployment to evaluate blockchain project software infrastructure requirements"
           ],
           technologies: %{
-            languages: ["JavaScript", "Rust", "Go", "Move"],
+            languages: ["JavaScript", "Rust", "Julia", "Zig"],
             frameworks: ["Cosmos SDK"],
             tools: ["Ansible", "Terraform", "Docker", "Grafana", "Prometheus"]
           }

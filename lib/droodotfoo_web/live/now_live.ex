@@ -50,32 +50,26 @@ defmodule DroodotfooWeb.NowLive do
 
         <h3 class="mt-2">Running</h3>
         <p>
-          Launching
-          <strong><a href="https://xochi.fi" target="_blank" rel="noopener">xochi.fi</a></strong>
-          -- a private execution layer on Ethereum with ZK compliance.
-          Looking for a VC to lead the round.
-          Running
-          <strong><a href="https://axol.io" target="_blank" rel="noopener">axol.io</a></strong>
-          infrastructure underneath.
+          Launching <a href="https://xochi.fi" target="_blank" rel="noopener">xochi.fi</a>
+          -- private exchange & friendly dark pool on Ethereum, ZK proofs for compliance.
+          <a href="https://axol.io" target="_blank" rel="noopener">axol.io</a>
+          runs the infrastructure underneath. Raising.
         </p>
 
         <article class="experience-item">
           <div class="experience-header">
-            <div class="experience-title">Riddler Solver</div>
-            <div class="experience-company">Live on 5 chains</div>
+            <div class="experience-title">Riddler</div>
           </div>
-
           <p class="experience-description">
-            Intent solver filling orders in ~2s across Ethereum, Optimism, Base, Arbitrum, and Polygon.
-            P95 under 6 seconds.
+            Intent solver, ~2s fills across five chains. P95 under 6s.
             <a
               href="https://github.com/lifinance/riddler-solver-client"
               target="_blank"
               rel="noopener"
             >
-              Integrated by LI.FI
+              LI.FI integrated it
             </a>
-            as a solver client. Also live on Across intents.
+            as a solver client. Also on Across, Everclear, soon Wormhole and COWswap.
           </p>
 
           <.tech_tags technologies={["Ethereum", "Optimism", "Base", "Arbitrum", "Polygon"]} />
@@ -83,128 +77,92 @@ defmodule DroodotfooWeb.NowLive do
 
         <article class="experience-item">
           <div class="experience-header">
-            <div class="experience-title">Sequencers & Nodes</div>
+            <div class="experience-title">Infra</div>
             <div class="experience-company">Production</div>
           </div>
 
           <p class="experience-description">
-            Aztec sequencer, validators on Ethereum mainnet.
-            Sphinx trading system for MEV searcher strategy deployment.
+            Aztec sequencer, Ethereum validators, MEV searcher
+            via Sphinx.
           </p>
 
-          <.tech_tags technologies={["Aztec", "Ethereum", "MEV", "Sphinx"]} />
+          <.tech_tags technologies={["Aztec", "Ethereum", "Sphinx"]} />
         </article>
 
         <article class="experience-item">
           <div class="experience-header">
-            <div class="experience-title">Raxol Agentic Commerce</div>
-            <div class="experience-company">Launched</div>
+            <div class="experience-title">Raxol</div>
+            <div class="experience-company">In progress</div>
           </div>
 
           <p class="experience-description">
-            Agent-to-agent payments via x402 and MPP.
-            OTP-native terminal framework with built-in payment rails for AI agents.
+            Terminal framework that grew payment rails. Agents can
+            hold wallets and settle trades via x402/MPP.
           </p>
 
-          <.tech_tags technologies={["x402", "MPP", "Elixir", "OTP"]} />
+          <.tech_tags technologies={["Elixir", "OTP", "x402"]} />
         </article>
 
         <p class="mt-2 text-muted">
-          Also building FOSS: <strong>mana</strong>
-          (Ethereum client), <strong>riddler</strong>
-          (Xochi's intent solver).
+          Other FOSS: mana (Ethereum client), riddler (intent solver).
           See <.link navigate={~p"/projects"}>projects</.link>.
         </p>
 
         <hr />
 
         <h3 class="mt-2">Learning</h3>
-        <p>
-          Deep in MEV, HFT, and applied math for on-chain markets:
-        </p>
 
         <details class="experience-details" open>
-          <summary class="experience-summary">What I'm studying now →</summary>
+          <summary class="experience-summary">Current reading list</summary>
           <div class="mt-1">
             <ul>
               <li>
-                <strong>MEV and HFT</strong>
-                - Searcher strategies, arbitrage, liquidations, backrunning via Sphinx, latency optimization
+                MEV/HFT: searcher strategies, arb, liquidations,
+                backrunning, latency
               </li>
               <li>
-                <strong>Quant frameworks</strong>
-                - Solver rebalancing, cross-chain inventory management, execution optimization
+                Quant: solver rebalancing, cross-chain inventory,
+                execution optimization
               </li>
               <li>
-                <strong>Prediction markets</strong>
-                - Applying quant math to Polymarket alongside the MEV searcher
+                Prediction markets: applying the quant work to
+                Polymarket
               </li>
               <li>
-                <strong>ZK compliance systems</strong>
-                - ZKSAR proof generation, sanctions screening oracles, provider weight tuning
+                ZK compliance: ZKSAR proofs, sanctions screening,
+                provider weight tuning
               </li>
               <li>
-                <strong>OTP source</strong>
-                - gen_server internals, supervisor restart strategies, distributed Erlang
+                OTP internals: gen_server, supervisor restarts,
+                distributed Erlang
               </li>
             </ul>
           </div>
         </details>
 
-        <.tech_tags technologies={[
-          "MEV",
-          "HFT",
-          "Quant",
-          "Polymarket",
-          "Elixir",
-          "ZK",
-          "Sphinx",
-          "OTP"
-        ]} />
-
         <hr />
 
-        <h3 class="mt-2">Location & Work</h3>
+        <h3 class="mt-2">Location</h3>
         <p>
-          Based in <strong>{@resume.personal_info.location}</strong>
-          (<time>{@resume.personal_info.timezone}</time>).
-          Remote.
+          {@resume.personal_info.location} ({@resume.personal_info.timezone}). Remote.
         </p>
 
-        <%= if @resume.focus_areas && length(@resume.focus_areas) > 0 do %>
-          <div class="mt-1">
-            <strong>Current focus areas:</strong>
-            <.tech_tags technologies={@resume.focus_areas} />
-          </div>
-        <% end %>
-
         <%= if @resume.availability == "open_to_consulting" do %>
-          <hr />
-
-          <h3 class="mt-2">Availability</h3>
-          <div class="experience-item">
-            <p>
-              Open to consulting on Cosmos SDK, Ethereum clients, and node operations.
-            </p>
-            <p class="text-muted mt-1">
-              <.link navigate={~p"/about"}>Experience here</.link> if you want to work together.
-            </p>
-          </div>
+          <p class="mt-1 text-muted">
+            Open to consulting -- Cosmos SDK, Ethereum clients, node ops. <.link navigate={~p"/about"}>Background</.link>.
+          </p>
         <% end %>
 
         <hr />
 
         <p class="text-muted">
-          <strong>About /now pages:</strong>
-          This page follows the
-          <a
+          This is a <a
             href="https://nownownow.com/about"
             target="_blank"
             rel="noopener"
           >
-            /now page movement
-          </a>
-          by Derek Sivers. Updated whenever my focus significantly shifts.
+            /now page
+          </a>.
         </p>
       </section>
     </.page_layout>

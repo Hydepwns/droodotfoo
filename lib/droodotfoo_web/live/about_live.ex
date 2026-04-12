@@ -35,40 +35,42 @@ defmodule DroodotfooWeb.AboutLive do
       <section class="about-section">
         <h2 class="section-title">About</h2>
         <p>
-          Hey, I'm Drew. I started out as a merchant mariner with an
-          unlimited tonnage license, fixing things in engine rooms. From
-          there I moved to Virginia-class submarines, maintaining secondary
-          systems (everything that isn't the reactor). Got promoted to
-          test engineering, where I ran sales and test engineering for two
-          boats and did R&D work that turned into a couple of inventions.
+          Hey, I'm Drew. I spent my twenties in engine rooms -- merchant
+          marine first, then submarines. I maintained secondary systems on Virginia-class boats (everything that isn't the reactor), eventually
+          moved into test engineering, and ended up doing R&D work unexpectedly.
         </p>
         <p class="mt-1">
-          Crypto pulled me in. I joined the largest institutional staking
-          company as a protocol specialist, then did the same at Lido DAO.
-          Both moved too slow. So I took the best people from each and we
-          started building our own thing.
+          I got into crypto as a protocol specialist -- first at <a
+            href="https://explorer.rated.network/o/Blockdaemon?network=mainnet&timeWindow=1d&viewBy=operator&page=1&pageSize=15&idType=nodeOperator"
+            target="_blank"
+            rel="noopener"
+          >Blockdaemon</a>,
+          then as a contributor at <a
+            href="https://defillama.com/protocol/lido"
+            target="_blank"
+            rel="noopener"
+          >Lido DAO</a>.
+          Two of the biggest staking operations, same role. I figured
+          out what I wanted to build and left to do it with people I
+          trusted.
         </p>
         <p class="mt-1">
-          That's <a href="https://xochi.fi" target="_blank" rel="noopener">xochi.fi</a>
+          Now I run <a href="https://xochi.fi" target="_blank" rel="noopener">xochi.fi</a>
           and <a href="https://axol.io" target="_blank" rel="noopener">axol.io</a>.
-          We build privacy infrastructure for Ethereum. People can transact
-          privately and prove compliance with zero-knowledge proofs instead
-          of handing over their data. We're authoring a
-          <a href="https://github.com/xochi-fi/erc-xochi-zkp" target="_blank" rel="noopener">new
-            ERC</a>
-          for the ZK compliance oracle. Live on five chains, Aztec
-          shielded execution coming next. A protocol for the post-truth era.
+          Xochi is a private exchange on Ethereum -- a more friendly dark pool experience you can use to trade without
+          exposing your orders. ZK proofs handle compliance instead of handing over your data.
+
+          I believe economic and digital privacy must be embedded as first class citizens in a product.
+          Where others find dichotomy, we combinate and openly collaborate.
+          We wrote
+          <a href="https://github.com/xochi-fi/erc-xochi-zkp" target="_blank" rel="noopener">an
+            ERC/EIP</a>
+          to formally define our approach. axol.io runs the infra underneath: staking, an ETH client, sequencers, Builder.
         </p>
         <p class="mt-1">
-          The endgame is building my Gundam. Not a metaphor.
+          I'm also building a Gundam. Not a metaphor.
           <a href="https://github.com/DROOdotFOO/raxol" target="_blank" rel="noopener">Raxol</a>
-          is the terminal framework I built for it, and it recently grew
-          into the agentic commerce layer for Xochi through x402/MPP
-          protocols and our
-          <a href="https://github.com/axol-io/riddler" target="_blank" rel="noopener">Riddler</a>
-          solver. AI agents that can pay each other, earn revenue, and
-          operate autonomously. We build the economy first, then the
-          axolotls scale and build.
+          is the terminal framework behind it. Started as a TUI project, now it's the agent commerce layer for Xochi -- wallets that can act on their own.
         </p>
 
         <%= if @languages != [] do %>

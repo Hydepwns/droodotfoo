@@ -307,12 +307,9 @@ defmodule DroodotfooWeb.ContentComponents do
     """
   end
 
-  @chain_icons ~w(ethereum arbitrum optimism base polygon aztec solana bitcoin cosmos starknet zksync gnosis celo near polkadot)
-
   @doc """
   Display-only technology tags.
-  Shows a list of technologies as styled tags.
-  Chain names get an inline logo icon.
+  Shows a list of technologies as styled tags with language-colored dots.
   """
   attr :technologies, :list, default: []
 
@@ -321,25 +318,23 @@ defmodule DroodotfooWeb.ContentComponents do
     <%= if @technologies != [] do %>
       <div class="tech-tags">
         <%= for tech <- @technologies do %>
-          <%= if chain_icon_path(tech) do %>
-            <span class="tech-tag tech-tag-chain" title={tech}>
-              <img src={chain_icon_path(tech)} alt={tech} class="tech-tag-icon" />
+          <span class="tech-tag">
+            <span :if={lang_known?(tech)} class="lang-dot" style={"background: #{lang_color(tech)}"}>
             </span>
-          <% else %>
-            <span class="tech-tag">{tech}</span>
-          <% end %>
+            {tech}
+          </span>
         <% end %>
       </div>
     <% end %>
     """
   end
 
-  defp chain_icon_path(tech) do
-    key = tech |> String.downcase() |> String.replace(" ", "")
+  defp lang_color(tech) do
+    Droodotfoo.GitHub.LanguageColors.get_color(tech)
+  end
 
-    if key in @chain_icons do
-      "/images/icons/blockchain/#{key}.svg"
-    end
+  defp lang_known?(tech) do
+    Droodotfoo.GitHub.LanguageColors.get_color(tech) != "#858585"
   end
 
   @doc """
