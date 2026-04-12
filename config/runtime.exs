@@ -224,6 +224,15 @@ if config_env() == :prod do
     etherscan_api_key: System.get_env("ETHERSCAN_API_KEY"),
     walletconnect_project_id: System.get_env("WALLETCONNECT_PROJECT_ID")
 
+  # --- Email (Resend) ---
+  if resend_api_key = System.get_env("RESEND_API_KEY") do
+    config :droodotfoo, Droodotfoo.Mailer, adapter: Swoosh.Adapters.Resend, api_key: resend_api_key
+
+    config :droodotfoo, Droodotfoo.Email.ContactMailer,
+      adapter: Swoosh.Adapters.Resend,
+      api_key: resend_api_key
+  end
+
   endpoint_config = [
     url: [host: host, port: 443, scheme: "https"],
     http: [

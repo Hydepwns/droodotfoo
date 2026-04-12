@@ -101,6 +101,7 @@ config :opentelemetry_exporter,
 
 # Configure Swoosh for email functionality
 config :droodotfoo, Droodotfoo.Mailer, adapter: Swoosh.Adapters.Local
+config :droodotfoo, Droodotfoo.Email.ContactMailer, adapter: Swoosh.Adapters.Local
 
 # Configure ChromicPDF
 config :chromic_pdf,
