@@ -122,7 +122,7 @@ defmodule DroodotfooWeb.ContactLive do
 
   defp send_emails_and_record(socket, params) do
     client_ip = get_client_ip(socket)
-    email_result = ContactMailer.send_contact_emails(params)
+    email_result = params |> atomize_keys() |> ContactMailer.send_contact_emails()
 
     case email_result do
       {:ok, :emails_sent} ->
