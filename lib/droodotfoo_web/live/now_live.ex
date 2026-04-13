@@ -50,10 +50,10 @@ defmodule DroodotfooWeb.NowLive do
 
         <h3 class="mt-2">Running</h3>
         <p>
-          Launching <a href="https://xochi.fi" target="_blank" rel="noopener">xochi.fi</a>
-          -- private exchange & friendly dark pool on Ethereum, ZK proofs for compliance.
+          <a href="https://xochi.fi" target="_blank" rel="noopener">xochi.fi</a>
+          : private exchange & friendly dark pool on Ethereum, ZK proofs for compliance.
           <a href="https://axol.io" target="_blank" rel="noopener">axol.io</a>
-          runs the infrastructure underneath. Raising.
+          runs the infra. Raising.
         </p>
 
         <article class="experience-item">
@@ -77,7 +77,7 @@ defmodule DroodotfooWeb.NowLive do
 
         <article class="experience-item">
           <div class="experience-header">
-            <div class="experience-title">Infra</div>
+            <div class="experience-title">axol.io infra</div>
             <div class="experience-company">Production</div>
           </div>
 

@@ -35,12 +35,12 @@ defmodule DroodotfooWeb.AboutLive do
       <section class="about-section">
         <h2 class="section-title">About</h2>
         <p>
-          Hey, I'm Drew. I spent my twenties in engine rooms -- merchant
-          marine first, then submarines. I maintained secondary systems on Virginia-class boats (everything that isn't the reactor), eventually
+          Hey, I'm Drew. I spent my twenties in engine rooms, first as a merchant
+          mariner, then aboard nuclear submarines. I maintained secondary systems on Virginia-class boats (everything from the toilet up to and not including the reactor), eventually
           moved into test engineering, and ended up doing R&D work unexpectedly.
         </p>
         <p class="mt-1">
-          I got into crypto as a protocol specialist -- first at <a
+          I got into crypto as a protocol specialist at <a
             href="https://explorer.rated.network/o/Blockdaemon?network=mainnet&timeWindow=1d&viewBy=operator&page=1&pageSize=15&idType=nodeOperator"
             target="_blank"
             rel="noopener"
@@ -50,18 +50,19 @@ defmodule DroodotfooWeb.AboutLive do
             target="_blank"
             rel="noopener"
           >Lido DAO</a>.
-          Two of the biggest staking operations, same role. I figured
+          Two of the biggest staking operations. I figured
           out what I wanted to build and left to do it with people I
           trusted.
         </p>
         <p class="mt-1">
           Now I run <a href="https://xochi.fi" target="_blank" rel="noopener">xochi.fi</a>
           and <a href="https://axol.io" target="_blank" rel="noopener">axol.io</a>.
-          Xochi is a private exchange on Ethereum -- a more friendly dark pool experience you can use to trade without
+          Xochi (pronounced: 'So-Chee') is a private exchange on Ethereum, it's meant to be a more friendly dark pool experience you can use to trade without
           exposing your orders. ZK proofs handle compliance instead of handing over your data.
 
           I believe economic and digital privacy must be embedded as first class citizens in a product.
-          Where others find dichotomy, we combinate and openly collaborate.
+
+          Where others find dichotomy, axolotls combinate and collaborate.
           We wrote
           <a href="https://github.com/xochi-fi/erc-xochi-zkp" target="_blank" rel="noopener">an
             ERC/EIP</a>
@@ -70,7 +71,7 @@ defmodule DroodotfooWeb.AboutLive do
         <p class="mt-1">
           I'm also building a Gundam. Not a metaphor.
           <a href="https://github.com/DROOdotFOO/raxol" target="_blank" rel="noopener">Raxol</a>
-          is the terminal framework behind it. Started as a TUI project, now it's the agent commerce layer for Xochi -- wallets that can act on their own.
+          is the terminal framework behind it. It started as a TUI project, but now it's the agent commerce layer for Xochi: wallets that can act on their own.
         </p>
 
         <%= if @languages != [] do %>

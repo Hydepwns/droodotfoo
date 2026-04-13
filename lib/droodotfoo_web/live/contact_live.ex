@@ -305,7 +305,7 @@ defmodule DroodotfooWeb.ContactLive do
                 class="clear-button"
                 disabled={@is_submitting}
               >
-                Clear Form
+                Clear
               </button>
             </div>
           </.form>
