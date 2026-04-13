@@ -50,7 +50,7 @@ Find something internal worth suffering for.
 
 <div style="text-align: center; margin: 2rem 0;">
   <img src="/images/blog/the-wrestle-of-jacob-1855.webp" alt="The Wrestle of Jacob by Gustave Doré (1855) - Jacob wrestling with the angel at dawn, representing the struggle that transforms" loading="lazy" style="max-width: 100%; height: auto;" />
-  <p style="font-size: 0.9em; color: #666; margin-top: 0.5rem;"><em>The Wrestle of Jacob (1855)</em> - Gustave Doré</p>
+  <p class="post-caption"><em>The Wrestle of Jacob (1855)</em> - Gustave Doré</p>
 </div>
 
 ## The Ancient Answer
@@ -122,7 +122,7 @@ His agalma wasn't perfection - it was prolific contribution. He understood that 
 
 <div style="text-align: center; margin: 2rem 0;">
   <img src="/images/blog/dore-creation-of-light.webp" alt="The Creation of Light by Gustave Doré (1866) - A dramatic engraving showing divine light bursting forth from darkness" loading="lazy" style="max-width: 100%; height: auto;" />
-  <p style="font-size: 0.9em; color: #666; margin-top: 0.5rem;"><em>The Creation of Light (1866)</em> - Gustave Doré</p>
+  <p class="post-caption"><em>The Creation of Light (1866)</em> - Gustave Doré</p>
 </div>
 
 ## When You Find It
@@ -139,7 +139,7 @@ Would you do this work if no one would ever know you did it? If you couldn't sig
 
 <div style="text-align: center; margin: 2rem 0;">
   <img src="/images/blog/dore-fall-of-lucifer.webp" alt="The Fall of Lucifer by Gustave Doré (1866) - Angels cast down from heaven into darkness, depicting the consequence of seeking glory outside oneself" loading="lazy" style="max-width: 100%; height: auto;" />
-  <p style="font-size: 0.9em; color: #666; margin-top: 0.5rem;"><em>The Fall of Lucifer (1866)</em> - Gustave Doré, Paradise Lost</p>
+  <p class="post-caption"><em>The Fall of Lucifer (1866)</em> - Gustave Doré, Paradise Lost</p>
 </div>
 
 ### The Impact Test
@@ -156,7 +156,7 @@ Enjoying something casually, under zero stakes, tells you nothing. Dore produced
 
 <div style="text-align: center; margin: 2rem 0;">
   <img src="/images/blog/vision-empyrean-paradiso-canto-31.webp" alt="Vision of the Empyrean by Gustave Doré (1866) - The highest heaven depicted as radiant light with souls arranged in divine order" loading="lazy" style="max-width: 100%; height: auto;" />
-  <p style="font-size: 0.9em; color: #666; margin-top: 0.5rem;"><em>Vision of the Empyrean (1866)</em> - Gustave Doré, from Dante's Paradiso</p>
+  <p class="post-caption"><em>Vision of the Empyrean (1866)</em> - Gustave Doré, from Dante's Paradiso</p>
 </div>
 
 Once you've found it and tested it, the questions become different:
@@ -221,7 +221,7 @@ Doré operated in true dissemination mode. He could have chased gallery exhibiti
 
 <div style="text-align: center; margin: 2rem 0;">
   <img src="/images/blog/purgatory_12_aracne.webp" alt="In the first circle of Purgatory, Dante and Virgil in front of Arachne, one of the figures representative of pride" loading="lazy" style="max-width: 100%; height: auto;" />
-  <p style="font-size: 0.9em; color: #666; margin-top: 0.5rem;"><em>In the first circle of Purgatory, Dante and Virgil in front of Arachne, one of the figures representative of pride (Purgatory, canto 12).</em> Dante's Divine Comedy, 1868.</p>
+  <p class="post-caption"><em>In the first circle of Purgatory, Dante and Virgil in front of Arachne, one of the figures representative of pride (Purgatory, canto 12).</em> Dante's Divine Comedy, 1868.</p>
 </div>
 
 Your agalma isn't just for you. It's a signal fire - light it and keep it burning. The dissemination isn't optional; it's the whole point.
@@ -241,7 +241,7 @@ The world has enough people keeping their lights hidden. Don't be one of them.
 
 <div style="text-align: center; margin: 2rem 0;">
   <img src="/images/blog/don-quixote-and-sancho-setting-out-1863.webp" alt="Don Quixote and Sancho Setting Out by Gustave Doré (1863) - The knight and his squire beginning their quest, embodying the courage to start despite uncertainty" loading="lazy" style="max-width: 100%; height: auto;" />
-  <p style="font-size: 0.9em; color: #666; margin-top: 0.5rem;"><em>Don Quixote and Sancho Setting Out (1863)</em> - Gustave Doré</p>
+  <p class="post-caption"><em>Don Quixote and Sancho Setting Out (1863)</em> - Gustave Doré</p>
 </div>
 
 Overtime Bonus: Slavoj Žižek discussing the Agalma, and anti-metaphysical delights.

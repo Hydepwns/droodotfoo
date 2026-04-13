@@ -226,7 +226,9 @@ if config_env() == :prod do
 
   # --- Email (Resend) ---
   if resend_api_key = System.get_env("RESEND_API_KEY") do
-    config :droodotfoo, Droodotfoo.Mailer, adapter: Swoosh.Adapters.Resend, api_key: resend_api_key
+    config :droodotfoo, Droodotfoo.Mailer,
+      adapter: Swoosh.Adapters.Resend,
+      api_key: resend_api_key
 
     config :droodotfoo, Droodotfoo.Email.ContactMailer,
       adapter: Swoosh.Adapters.Resend,

@@ -221,7 +221,6 @@ defmodule DroodotfooWeb.ContactLive do
   def render(assigns) do
     ~H"""
     <.page_layout page_title="Contact">
-
       <section class="section-spaced">
         <h2 class="section-header-bordered">MESSAGE</h2>
         <div class="contact-form">

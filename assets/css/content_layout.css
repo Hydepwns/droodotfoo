@@ -259,6 +259,41 @@
   height: auto;
 }
 
+.post-image-float-left {
+  float: left;
+  margin: 0 1.5rem 1rem 0;
+  max-width: 300px;
+  height: auto;
+}
+
+/* Full-width statement image -- sits alone, echoes the preceding text */
+.page-container .post-image-statement,
+.narrow-container .post-image-statement {
+  display: block;
+  margin: 3rem auto;
+  max-width: 90%;
+  height: auto;
+}
+
+/* Image captions */
+.post-caption {
+  font-size: 0.9em;
+  color: var(--text-color-alt);
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+/* Clear floats on section breaks and tables */
+.page-container hr,
+.narrow-container hr {
+  clear: both;
+}
+
+.page-container table,
+.narrow-container table {
+  clear: both;
+}
+
 /* Blockquote Styling */
 .page-container blockquote,
 .narrow-container blockquote,
@@ -361,9 +396,16 @@ article blockquote strong {
     width: auto;
   }
 
-  .post-image-float-right {
+  .post-image-float-right,
+  .post-image-float-left {
     float: none;
     max-width: 100%;
     margin: 1rem 0;
+  }
+
+  .page-container .post-image-statement,
+  .narrow-container .post-image-statement {
+    max-width: 100%;
+    margin: 2rem 0;
   }
 }
