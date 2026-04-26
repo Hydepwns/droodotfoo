@@ -8,6 +8,9 @@ import "phoenix_html";
 // Theme cycling, debug mode, hamburger menu, and music player
 import "./theme";
 
+// Giveth QF round announcement banner (sticky top, dismissible)
+import "./giveth_banner";
+
 // Establish Phoenix Socket and LiveView configuration.
 import { Socket } from "phoenix";
 import { LiveSocket } from "phoenix_live_view";

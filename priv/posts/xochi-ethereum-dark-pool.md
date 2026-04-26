@@ -248,4 +248,11 @@ Xochi is the commercial product. The open infrastructure underneath it (Mana, th
 
 No on-chain venue is both private and compliant. That's either a gap in the market or a sign that it can't be done. I think about both possibilities more than is probably healthy. We have the solver, the infrastructure, and a team that has spent time on both sides of the enforcement table. The bet is that regulators will accept cryptographic compliance. We think the math is on our side. We'll find out.
 
+<div class="post-cta banner-beam">
+<p class="post-cta-tag">Ethereum Security QF Round, closes May 14</p>
+<p class="post-cta-headline">$100 you give &rarr; ~$50K matched</p>
+<p class="post-cta-sub">Quadratic funding turns small donations into large grants. Back the public goods underneath Xochi.</p>
+<a class="post-cta-button" href="https://qf.giveth.io/project/axolio-xochifi" target="_blank" rel="noopener noreferrer">Donate on Giveth &rarr;</a>
+</div>
+
 _Xochi is ETH's Friendly Dark Pool, built by the axolotls at [axol.io](https://axol.io). Trade at [xochi.fi](https://xochi.fi). Back the build on [Giveth](https://qf.giveth.io/project/axolio-xochifi)._

@@ -1,0 +1,242 @@
+/* ================================
+   Giveth QF Round Announcement Banner
+   ================================
+   Time-windowed sticky banner promoting the axol.io / Xochi public-goods
+   round. Server-side render gates on the close date; client-side localStorage
+   handles per-user dismissal.
+
+   Visual: rainbow horizontal sweep along the bottom edge (.banner-beam),
+   inspired by github.com/Jakubantalik/border-beam, reimplemented in vanilla
+   CSS via a registered @property + linear-gradient.
+*/
+
+@property --beam-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.banner-beam {
+  overflow: visible;
+}
+
+.banner-beam::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    #ff0080,
+    #ff8c00,
+    #ffe600,
+    #00ff88,
+    #00d4ff,
+    #b346ff,
+    #ff0080
+  );
+  background-size: 200% 100%;
+  /* Taper to transparent at the left/right edges so the line reads as a
+     centered beam rather than a hard rainbow strip. */
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 18%,
+    #000 82%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 18%,
+    #000 82%,
+    transparent 100%
+  );
+  animation: beamSweep 6s linear infinite;
+  z-index: 1;
+}
+
+@keyframes beamSweep {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Banner height made available to anything below that wants to offset itself */
+body:has(.giveth-banner:not(.is-hidden)) {
+  --giveth-banner-h: 36px;
+}
+
+@media (max-width: 480px) {
+  body:has(.giveth-banner:not(.is-hidden)) {
+    --giveth-banner-h: 32px;
+  }
+}
+
+.giveth-banner {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 2.5rem 0.5rem 2.5rem;
+  background: var(--background-color-alt);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  font-family: var(--font-family);
+  text-align: center;
+}
+
+.giveth-banner.is-hidden {
+  display: none;
+}
+
+.giveth-banner-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-color);
+  text-decoration: none;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.giveth-banner-link:hover {
+  color: var(--accent-color);
+}
+
+.giveth-banner-link:hover .giveth-banner-text {
+  text-decoration: underline;
+}
+
+.giveth-banner-tag {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  background: var(--background-color);
+  color: var(--text-color);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.giveth-banner-multiplier {
+  font-weight: var(--font-weight-bold, 700);
+  white-space: nowrap;
+}
+
+.giveth-banner-text {
+  color: var(--text-color);
+}
+
+.giveth-banner-arrow {
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner-beam::before {
+    animation: none;
+  }
+}
+
+/* ================================
+   In-post CTA block
+   ================================
+   Echoes the sticky banner at the bottom of long-form posts. Reuses
+   .banner-beam for the rainbow underline. */
+
+.post-cta {
+  position: relative;
+  margin: 3rem 0;
+  padding: 1.5rem 1.25rem 1.75rem;
+  text-align: center;
+  border: 1px solid var(--border-color);
+  background: var(--background-color-alt);
+}
+
+.post-cta-tag {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-color-alt, var(--text-muted));
+}
+
+.post-cta-headline {
+  display: inline-block;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-bold, 700);
+  color: var(--text-color);
+}
+
+.post-cta-sub {
+  margin: 0 auto 1.25rem;
+  max-width: 60ch;
+  font-size: 0.9375rem;
+  color: var(--text-color-alt, var(--text-muted));
+}
+
+.post-cta-button {
+  display: inline-block;
+  padding: 0.625rem 1.25rem;
+  background: var(--background-color);
+  color: var(--text-color);
+  text-decoration: none;
+  font-weight: var(--font-weight-bold, 700);
+  border: 1px solid var(--border-color);
+  font-family: var(--font-family);
+  transition: transform 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.post-cta-button:hover {
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.giveth-banner-close {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text-color-alt, var(--text-muted));
+  font-size: 1.125rem;
+  line-height: 1;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  border-radius: 4px;
+  font-family: var(--font-family);
+}
+
+.giveth-banner-close:hover {
+  color: var(--text-color);
+  background: var(--background-color);
+}
+
+@media (max-width: 480px) {
+  .giveth-banner {
+    padding: 0.5rem 2rem 0.5rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .giveth-banner-tag {
+    display: none;
+  }
+}
