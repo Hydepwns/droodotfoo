@@ -53,7 +53,7 @@ Aztec Alpha Network is live (v4.x) and pxe-bridge is deployed against it. The ne
 Smart contract risk is low-probability but critical-impact. A dark pool holding solver capital in contracts that haven't been audited yet is a real exposure. That's why the Q2 audit is a hard gate, not a nice-to-have, and why the Immunefi bounty is live now, before the audit, not after.
 
 And someone will use Xochi for something they shouldn't. That will happen. When it does, the proof trail is on-chain. Which providers cleared the bad actor, where the signal broke down, what the composite score was and a clear pattern of how it was spoofed.
-Traditional compliance simply cannot provide that. When a SAR gets filed after a wire transfer clears, nobody audits which compliance officer approved it and why, then tighten the holes thier protocol. We do, programmatically.
+Traditional compliance simply cannot provide that. When a SAR gets filed after a wire transfer clears, nobody audits which compliance officer approved it and why, then tightens the holes in their protocol. We do, programmatically.
 
 Now. What we actually built.
 
