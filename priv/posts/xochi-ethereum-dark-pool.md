@@ -72,7 +72,7 @@ Now. What we actually built.
 
 Stealth smart accounts are worth explaining, because they're the thing that makes "private on Ethereum" mean something real.
 Normally, when someone sends you crypto, it goes to your public address, visible forever, linked to every other transaction you've ever made. A stealth account is a one-time address derived from your public key that only you can unlock.
-Think of these accounts as a P.O. box that nobody knows belongs to you, except it's also a full smart contract wallet. You can claim the funds without paying gas (a paymaster covers it), so even the claiming transaction doesn't link back to you.
+Think of a stealth account as the side of the glass nobody can see through. The funds sit on a one-time address derived from your public key; only you hold the math that opens it. You can claim without paying gas (a paymaster covers it), so even the claiming transaction doesn't link back to you.
 The enabling standards are [ERC-5564](https://eips.ethereum.org/EIPS/eip-5564) for the address derivation and [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337) for the smart wallet part.
 
 ```bash
@@ -85,7 +85,7 @@ Xochi hides the trade itself. This is called Private Execution-- for amounts and
 Sandwich bots extract 0.1-5%+ per trade on average ([EigenPhi via Cointelegraph Research, Dec 2025](https://cointelegraph.com/research/exclusive-data-from-eigenphi-reveals-that-sandwich-attacks-on-ethereum-have-waned)). On a $100K swap, that's $100 to $5,000 gone before LP fees ever touch the trade.
 
 On Xochi, MEV extraction is zero. The trade was never visible to extract from. You pay solver spread instead, 0.10-0.30% depending on trust tier, and that's the whole bill.
-If the protocol is able to somehow find MEV then it is split back to the users and protocol.
+If any MEV does surface, and we don't see how since the trade was never on the visible side of the glass, it gets split back to users and the protocol.
 
 ---
 
@@ -165,13 +165,13 @@ Standard is the default. Wallet and amounts hidden, open to anyone, no attestati
 
 Above Standard is where the cube gets interesting. A Worldcoin proof and a Coinbase attestation gets you to the Stealth tier in minutes. One-time receiving addresses that act as smart contract wallets, gasless claiming, lower fees, MEV rebates. You didn't fill out a form. You proved you're human and that a regulated exchange has seen your face. The protocol treats that as signal and gives you more opacity in return.
 
-Stack attestations across categories (humanity, identity, reputation, compliance) and the cube gets more opaque. Private and Sovereign settle through [pxe-bridge](https://github.com/xochi-fi/pxe-bridge), an open-source JSON-RPC sidecar that embeds Aztec's Private eXecution Environment. The PXE is the local runtime where the private half of an Aztec transaction actually runs. On your machine, generating a ZK proof that the network verifies without ever seeing the inputs. pxe-bridge wraps that in JSON-RPC so Riddler can create shielded notes without speaking Aztec natively.
+Stack attestations across categories (humanity, identity, reputation, compliance) and the cube gets more opaque. Private and Sovereign settle through [pxe-bridge](https://github.com/xochi-fi/pxe-bridge), an open-source JSON-RPC sidecar that embeds Aztec's Private eXecution Environment. The PXE is the local runtime where the private half of an Aztec transaction actually runs. On your machine, in your pond. The proof leaves; the inputs never do. pxe-bridge wraps that in JSON-RPC so Riddler can create shielded notes without speaking Aztec natively.
 
 Sovereign is zero data retention, 0.15% fee, 25% MEV rebate. Nothing is stored. The proof that you were compliant exists on-chain. The trade itself doesn't exist anywhere.
 
 Diminishing returns prevent gaming. First attestation in a category earns full points, the second a quarter, the third barely registers. Depth across categories matters more than stacking one. The incentive is to prove different things about yourself, not the same thing three times.
 
-The thing I keep coming back to: the glass cube inverts the normal relationship between trust and surveillance. In traditional finance, more trust means more access, which means more surveillance. KYC/KYB/POH gets heavier as you move up. On Xochi, more trust means more privacy. You earn opacity. The system rewards you for proving you're legitimate by giving you more room to be private. I don't know if that framing survives contact with regulators, but it feels like the right design.
+The thing I keep coming back to: the glass cube inverts the normal relationship between trust and surveillance. In traditional finance, more trust means more access, which means more surveillance. KYC/KYB/POH gets heavier as you move up. On Xochi, more trust means more privacy. You earn opacity. The system rewards you for proving you're legitimate by giving you more room to be private. I don't know if that framing survives contact with regulators. But the glass should get thicker the more you've shown you belong on the inside of it.
 
 ---
 
@@ -230,7 +230,7 @@ Raxol, our OTP-native agent runtime, ships with Xochi payment rails built in. Th
 <p class="post-caption"><em>Don Quixote and Sancho Setting Out</em> (1863) - Gustave Dore.</p>
 </div>
 
-Five of us now. Jer and I overlapped at Blockdaemon running nodes across regions. Bloo was on the other side of the table, filing SARs at DOJ, investigating AML cases at FBI. We spent two years arguing about whether ZK compliance could actually work before we started writing circuits. Bloo kept saying "a regulator won't accept this" and we kept redesigning until she stopped saying that.
+Five of us now. Jer and I overlapped at Blockdaemon running nodes across regions. Bloo was on the other side of the table, filing SARs at DOJ, investigating AML cases at FBI. The ZK compliance proofs went through a lot of iteration before they reached a shape she'd sign off on.
 
 - **Drew** (Protocol Director). R&D Engineer at General Dynamics, Protocol Specialist at Lido, Node Ops at Blockdaemon. MechE/ElecE with defense R&D patents.
 - **Jer** (Blockchain Engineer). APAC Node Ops Lead at Blockdaemon, Analyst at Deloitte, Forex Trader at Silab Luchre Capital.
