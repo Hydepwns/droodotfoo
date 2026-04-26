@@ -97,7 +97,7 @@ If the protocol is able to somehow find MEV then it is split back to the users a
 </div>
 
 Every other dark pool starts with "connect your wallet." Think deeply about what that really means for a privacy product.
-Before you've done anything, before you've expressed any intent, you've handed over a public key linked to your entire on-chain history. Many wallets specialize in selling your data as payment for orderflow to MEV operators (Otherwise [known as PFOF](https://www.investopedia.com/terms/p/paymentoforderflow.asp)-- invented noneother than [Bernie Madoff](https://en.wikipedia.org/wiki/Bernie_Madoff))
+Before you've done anything, before you've expressed any intent, you've handed over a public key linked to your entire on-chain history. Many wallets specialize in selling your data as payment for orderflow to MEV operators (Otherwise [known as PFOF](https://www.investopedia.com/terms/p/paymentoforderflow.asp); invented by none other than [Bernie Madoff](https://en.wikipedia.org/wiki/Bernie_Madoff#Career))
 
 > What _real_ privacy product could grow from the seed a privacy sin?
 
