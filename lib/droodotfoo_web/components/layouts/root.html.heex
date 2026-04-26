@@ -197,10 +197,8 @@
     <!-- Skip to main content link for screen readers -->
     <a href="#main-content" class="skip-to-content">Skip to main content</a>
 
-    <%= if Application.get_env(:droodotfoo, :environment) == :dev do %>
-      <!-- Debug Mode Indicator (dev only) -->
-      <div id="debug-indicator" aria-live="polite" aria-atomic="true"></div>
-    <% end %>
+    <!-- Debug Mode Indicator -->
+    <div id="debug-indicator" aria-live="polite" aria-atomic="true"></div>
     
 <!-- Theme Change Indicator -->
     <div id="theme-indicator" role="status" aria-live="polite" aria-atomic="true"></div>
@@ -215,17 +213,15 @@
       T
     </button>
     
-<!-- Debug Toggle Button (desktop only, dev only) -->
-    <%= if Application.get_env(:droodotfoo, :environment) == :dev do %>
-      <button
-        class="fixed-toggle debug-toggle"
-        id="debug-toggle"
-        data-tooltip="Debug Mode (Shift+D)"
-        aria-label="Toggle Debug Mode"
-      >
-        D
-      </button>
-    <% end %>
+<!-- Debug Toggle Button (desktop only) -->
+    <button
+      class="fixed-toggle debug-toggle"
+      id="debug-toggle"
+      data-tooltip="Debug Mode (Shift+D)"
+      aria-label="Toggle Debug Mode"
+    >
+      D
+    </button>
     
 <!-- Music Toggle Button (desktop only) -->
     <button
@@ -275,12 +271,10 @@
             <span class="menu-label">Theme</span>
           </button>
 
-          <%= if Application.get_env(:droodotfoo, :environment) == :dev do %>
-            <button id="menu-debug-toggle" class="menu-item" data-tooltip="Toggle Debug Mode">
-              <span class="menu-icon">D</span>
-              <span class="menu-label">Debug</span>
-            </button>
-          <% end %>
+          <button id="menu-debug-toggle" class="menu-item" data-tooltip="Toggle Debug Mode">
+            <span class="menu-icon">D</span>
+            <span class="menu-label">Debug</span>
+          </button>
 
           <button id="menu-music-toggle" class="menu-item" data-tooltip="Toggle Music Player">
             <span class="menu-icon">♫</span>
