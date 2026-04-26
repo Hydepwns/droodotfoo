@@ -408,4 +408,23 @@ article blockquote strong {
     max-width: 100%;
     margin: 2rem 0;
   }
+
+  /* Markdown tables: scroll horizontally within their own bounds rather than
+     pushing the page off-screen or getting clipped by parent overflow */
+  .page-container table,
+  .narrow-container table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .page-container th,
+  .page-container td,
+  .narrow-container th,
+  .narrow-container td {
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
 }
