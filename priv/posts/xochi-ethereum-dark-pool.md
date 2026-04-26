@@ -38,6 +38,11 @@ Xochi is what happens when you spend five years running bare-metal blockchain in
 
 ## What could go wrong
 
+<div class="post-image-float-left">
+<img src="/images/blog/the-wrestle-of-jacob-1855.webp" alt="Jacob Wrestling with the Angel by Gustave Dore (1855) - A man and an angel locked in a night-long struggle by a riverbank, the man marked by the encounter, neither letting go" loading="lazy" />
+<p class="post-caption"><em>Jacob Wrestling with the Angel</em> (1855) - Gustave Dore.</p>
+</div>
+
 I want to get this out of the way early, because most projects bury their risks at the bottom and hope you don't scroll that far.
 
 Xochi ZKP is novel. Zero-knowledge compliance proofs are untested with regulators. If VARA says no, we fall back to delegated compliance where licensed solvers handle jurisdiction-specific requirements. The privacy still works.
@@ -55,6 +60,11 @@ Now. What we actually built.
 ---
 
 ## What Xochi does
+
+<div class="post-image-float-right">
+<img src="/images/blog/Wright_of_Derby_The_Orrery.webp" alt="A Philosopher Lecturing on the Orrery by Joseph Wright of Derby (c. 1766) - A group gathered around a mechanical model of the solar system, faces lit by an unseen central lamp at its core" loading="lazy" />
+<p class="post-caption"><em>A Philosopher Lecturing on the Orrery</em> (c. 1766) - Joseph Wright of Derby. Derby Museum and Art Gallery.</p>
+</div>
 
 1. You sign an intent describing the trade you want.
 2. Solvers compete to fill it. Intents stay off-chain.
@@ -81,6 +91,11 @@ If the protocol is able to somehow find MEV then it is split back to the users a
 
 ## You don't connect a wallet
 
+<div class="post-image-float-left">
+<img src="/images/blog/Le_Tricheur_a_las_de_carreau_Georges_de_La_Tour.webp" alt="Le Tricheur a l'as de carreau by Georges de La Tour (c. 1635) - Three players around a candlelit table; the cheat on the left palms a hidden ace, the courtesan in the center cuts her eyes sideways to signal, the wealthy young dupe on the right studies his cards alone" loading="lazy" />
+<p class="post-caption"><em>Le Tricheur a l'as de carreau</em> (c. 1635) - Georges de La Tour. Musee du Louvre, Paris.</p>
+</div>
+
 Every other dark pool starts with "connect your wallet." Think deeply about what that really means for a privacy product.
 Before you've done anything, before you've expressed any intent, you've handed over a public key linked to your entire on-chain history. Many wallets specialize in selling your data as payment for orderflow to MEV operators (Otherwise [known as PFOF](https://www.investopedia.com/terms/p/paymentoforderflow.asp)-- invented noneother than [Bernie Madoff](https://en.wikipedia.org/wiki/Bernie_Madoff))
 
@@ -102,7 +117,10 @@ Identity verification is optional. Its benefits are not.
 
 ## Compliance without confession
 
-<img src="/images/blog/Johannes_Vermeer_Woman_Holding_a_Balance.webp" alt="Woman Holding a Balance by Johannes Vermeer (c. 1662) - A woman weighs empty scales in soft light, the Last Judgment painted on the wall behind her" loading="lazy" class="post-image-float-right" />
+<div class="post-image-float-right">
+<img src="/images/blog/Johannes_Vermeer_Woman_Holding_a_Balance.webp" alt="Woman Holding a Balance by Johannes Vermeer (c. 1664) - A woman weighs empty scales in soft light, the Last Judgment painted on the wall behind her" loading="lazy" />
+<p class="post-caption"><em>Woman Holding a Balance</em> (c. 1664) - Johannes Vermeer. National Gallery of Art, Washington.</p>
+</div>
 
 Privacy in crypto has always forced a bad choice. Full transparency (Uniswap, CoW Protocol) keeps you compliant but exposes everything. Full privacy (Tornado Cash) gets sanctioned. Pick a side.
 
@@ -134,7 +152,10 @@ The proofs work retroactively. If OFAC sanctions an address three months after a
 
 ## The glass cube
 
-<img src="/images/blog/holy-family-with-a-curtain-1646.webp" alt="The Holy Family with a Curtain by Rembrandt (1646) - A trompe-l'oeil curtain half-drawn, revealing a domestic scene. Privacy as partial opacity." loading="lazy" class="post-image-float-left" />
+<div class="post-image-float-left">
+<img src="/images/blog/holy-family-with-a-curtain-1646.webp" alt="The Holy Family with a Curtain by Rembrandt (1646) - A trompe-l'oeil curtain half-drawn over a domestic scene, privacy as partial opacity" loading="lazy" />
+<p class="post-caption"><em>The Holy Family with a Curtain</em> (1646) - Rembrandt van Rijn. Gemaeldegalerie Alte Meister, Kassel.</p>
+</div>
 
 Privacy is a spectrum. We think of it as a glass cube. Six levels, crystal clear to solid.
 
@@ -154,7 +175,10 @@ The thing I keep coming back to: the glass cube inverts the normal relationship 
 
 ---
 
-<img src="/images/blog/Piranesi02.webp" alt="The Pier with Chains (Plate XVI) by Giovanni Battista Piranesi (1761) - Vast prison architecture where every figure is exposed and observable" loading="lazy" class="post-image-float-right" />
+<div class="post-image-float-right">
+<img src="/images/blog/Piranesi02.webp" alt="The Pier with Chains (Plate XVI) by Giovanni Battista Piranesi (1761) - Vast prison architecture where every figure is exposed and observable" loading="lazy" />
+<p class="post-caption"><em>Le Carceri d'Invenzione, Plate XVI: The Pier with Chains</em> (1761) - Giovanni Battista Piranesi.</p>
+</div>
 
 ## The field
 
@@ -200,6 +224,11 @@ Raxol, our OTP-native agent runtime, ships with Xochi payment rails built in. Th
 ---
 
 ## The team
+
+<div class="post-image-float-right">
+<img src="/images/blog/don-quixote-and-sancho-setting-out-1863.webp" alt="Don Quixote and Sancho Setting Out by Gustave Dore (1863) - The knight in armor on a thin horse and his squire on a donkey, riding off together into a dawn landscape on a mission of uncertain outcome" loading="lazy" />
+<p class="post-caption"><em>Don Quixote and Sancho Setting Out</em> (1863) - Gustave Dore.</p>
+</div>
 
 Five of us now. Jer and I overlapped at Blockdaemon running nodes across regions. Bloo was on the other side of the table, filing SARs at DOJ, investigating AML cases at FBI. We spent two years arguing about whether ZK compliance could actually work before we started writing circuits. Bloo kept saying "a regulator won't accept this" and we kept redesigning until she stopped saying that.
 
