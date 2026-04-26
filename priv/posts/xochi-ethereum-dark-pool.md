@@ -16,7 +16,7 @@ pattern_style: "glass_cube"
 >
 > [whitepaper](https://xochi.fi/whitepaper) | [appendix](https://xochi.fi/appendix) | [EIP draft](https://github.com/xochi-fi/erc-xochi-zkp)
 
-# The fish bowl problem
+## The fish bowl problem
 
 Cortazar wrote about a man who stared at axolotls through aquarium glass until he realized he'd become one. The glass never moved. His understanding of which side he was on did.
 
