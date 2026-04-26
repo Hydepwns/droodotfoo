@@ -251,7 +251,8 @@
   outline-color: var(--accent-color);
 }
 
-/* Floating images within post content */
+/* Floating images within post content. Class works on a bare <img> or on a
+   <div> wrapper containing both an <img> and a caption. */
 .post-image-float-right {
   float: right;
   margin: 0 0 1rem 1.5rem;
@@ -264,6 +265,19 @@
   margin: 0 1.5rem 1rem 0;
   max-width: 300px;
   height: auto;
+}
+
+/* When the float class is on a <div> wrapper, inner image fills the box and
+   inherits the wrapper's max-width. Override the generic .page-container img
+   margin so the image hugs its caption. */
+.page-container div.post-image-float-right > img,
+.page-container div.post-image-float-left > img,
+.narrow-container div.post-image-float-right > img,
+.narrow-container div.post-image-float-left > img {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 0;
 }
 
 /* Full-width statement image -- sits alone, echoes the preceding text */
@@ -281,6 +295,13 @@
   color: var(--text-color-alt);
   text-align: center;
   margin-top: 0.5rem;
+  line-height: 1.4;
+}
+
+div.post-image-float-right .post-caption,
+div.post-image-float-left .post-caption {
+  font-size: 0.8em;
+  margin: 0.4rem 0 0 0;
 }
 
 /* Clear floats on section breaks and tables */
