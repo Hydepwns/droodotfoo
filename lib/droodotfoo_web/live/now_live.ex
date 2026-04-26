@@ -14,7 +14,7 @@ defmodule DroodotfooWeb.NowLive do
   @impl true
   def mount(_params, _session, socket) do
     resume = ResumeData.get_resume_data()
-    last_updated = ~D[2026-04-11]
+    last_updated = ~D[2026-04-25]
 
     if connected?(socket), do: DroodotfooWeb.ContributionHelpers.init_contributions()
 
@@ -53,7 +53,11 @@ defmodule DroodotfooWeb.NowLive do
           <a href="https://xochi.fi" target="_blank" rel="noopener">xochi.fi</a>
           : private exchange & friendly dark pool on Ethereum, ZK proofs for compliance.
           <a href="https://axol.io" target="_blank" rel="noopener">axol.io</a>
-          runs the infra. Raising.
+          runs the infra. Raising. The open infrastructure side is funded through
+          <a href="https://qf.giveth.io/project/axolio-xochifi" target="_blank" rel="noopener">
+            Giveth
+          </a>
+          (Ethereum Security QF round, closes May 14).
         </p>
 
         <article class="experience-item">
@@ -149,7 +153,7 @@ defmodule DroodotfooWeb.NowLive do
 
         <%= if @resume.availability == "open_to_consulting" do %>
           <p class="mt-1 text-muted">
-            Open to consulting -- Cosmos SDK, Ethereum clients, node ops. <.link navigate={~p"/about"}>Background</.link>.
+            Open to consulting. Cosmos SDK, Ethereum clients, node ops. <.link navigate={~p"/about"}>Background</.link>.
           </p>
         <% end %>
 

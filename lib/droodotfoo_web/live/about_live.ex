@@ -36,8 +36,34 @@ defmodule DroodotfooWeb.AboutLive do
         <h2 class="section-title">About</h2>
         <p>
           Hey, I'm Drew. I spent my twenties in engine rooms, first as a merchant
-          mariner, then aboard nuclear submarines. I maintained secondary systems on Virginia-class boats (everything from the toilet up to and not including the reactor), eventually
-          moved into test engineering, and ended up doing R&D work unexpectedly.
+          mariner, then aboard nuclear submarines. I maintained secondary systems on
+          <a
+            href="https://en.wikipedia.org/wiki/Virginia-class_submarine"
+            target="_blank"
+            rel="noopener"
+          >
+            Virginia-class
+          </a>
+          boats (everything from the toilet up to and not including the reactor), eventually
+          moved into test engineering, and ended up doing R&D inventions for submarines unexpectedly. A few of my inventions have been included in the
+          <a
+            href="https://en.wikipedia.org/wiki/Virginia-class_submarine"
+            target="_blank"
+            rel="noopener"
+          >
+            Virginia
+          </a>
+          and
+          <a
+            href="https://en.wikipedia.org/wiki/Columbia-class_submarine"
+            target="_blank"
+            rel="noopener"
+          >
+            Columbia
+          </a>
+          class block.
+
+          I love complex, distributed, and asymmetric systems.
         </p>
         <p class="mt-1">
           I got into crypto as a protocol specialist at <a
@@ -72,6 +98,13 @@ defmodule DroodotfooWeb.AboutLive do
           I'm also building a Gundam. Not a metaphor.
           <a href="https://github.com/DROOdotFOO/raxol" target="_blank" rel="noopener">Raxol</a>
           is the terminal framework behind it. It started as a TUI project, but now it's the agent commerce layer for Xochi: wallets that can act on their own.
+        </p>
+        <p class="mt-1">
+          The open infrastructure underneath Xochi (Mana, the ZK compliance standard, the stealth address primitives, the whitehat research) is <a
+            href="https://qf.giveth.io/project/axolio-xochifi"
+            target="_blank"
+            rel="noopener"
+          >funded through Giveth</a>.
         </p>
 
         <%= if @languages != [] do %>
