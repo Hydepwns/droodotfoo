@@ -7,6 +7,38 @@ defmodule DroodotfooWeb.ContentComponents do
   use DroodotfooWeb, :html
 
   @doc """
+  External link with target=_blank.
+
+  Pass link text via `text` attr, not a slot, so the HEEx formatter cannot
+  insert whitespace inside the rendered `<a>`. See `link_whitespace_test.exs`.
+  """
+  attr :href, :string, required: true
+  attr :text, :string, required: true
+  attr :rel, :string, default: "noopener noreferrer"
+  attr :rest, :global, include: ~w(class aria-label title)
+
+  def ext_link(assigns) do
+    ~H"""
+    <a href={@href} target="_blank" rel={@rel} {@rest}>{@text}</a>
+    """
+  end
+
+  @doc """
+  Internal navigation link wrapping `<.link navigate>`.
+
+  Pass link text via `text` attr, not a slot. See `ext_link/1`.
+  """
+  attr :navigate, :string, required: true
+  attr :text, :string, required: true
+  attr :rest, :global, include: ~w(class aria-current aria-label)
+
+  def nav_link(assigns) do
+    ~H"""
+    <.link navigate={@navigate} {@rest}>{@text}</.link>
+    """
+  end
+
+  @doc """
   Site-wide header with droo.foo branding.
   Appears at the top of all pages, clickable to navigate home.
   Uses table layout inspired by the-monospace-web.
@@ -21,9 +53,12 @@ defmodule DroodotfooWeb.ContentComponents do
         <caption class="sr-only">Site header with metadata</caption>
         <tr>
           <td class="header-title" colspan="2">
-            <.link navigate={~p"/"} class="site-title" aria-label="DROO.FOO - Return to homepage">
-              DROO.FOO
-            </.link>
+            <.nav_link
+              navigate={~p"/"}
+              text="DROO.FOO"
+              class="site-title"
+              aria-label="DROO.FOO - Return to homepage"
+            />
           </td>
           <td class="header-meta-label">Version</td>
           <td class="header-meta-value header-meta-value-right">v{@version}</td>
@@ -38,14 +73,11 @@ defmodule DroodotfooWeb.ContentComponents do
         <tr>
           <td class="header-meta-label header-author-label">Author</td>
           <td class="header-meta-value" colspan="3">
-            <a
+            <.ext_link
               href="https://github.com/DROOdotFOO/droodotfoo"
-              target="_blank"
-              rel="noopener noreferrer"
+              text="DROO"
               aria-label="DROO on GitHub - droodotfoo repository (opens in new tab)"
-            >
-              DROO
-            </a>
+            />
           </td>
         </tr>
       </table>
@@ -105,44 +137,41 @@ defmodule DroodotfooWeb.ContentComponents do
     ~H"""
     <nav class="site-nav-simple" aria-label="Primary navigation">
       <p>
-        <.link
+        <.nav_link
           navigate={~p"/about"}
+          text="About"
           aria-current={if @current_path == "/about", do: "page", else: false}
-        >
-          About
-        </.link>
+        />
         <span aria-hidden="true">·</span>
-        <.link navigate={~p"/now"} aria-current={if @current_path == "/now", do: "page", else: false}>
-          Now
-        </.link>
+        <.nav_link
+          navigate={~p"/now"}
+          text="Now"
+          aria-current={if @current_path == "/now", do: "page", else: false}
+        />
         <span aria-hidden="true">·</span>
-        <.link
+        <.nav_link
           navigate={~p"/projects"}
+          text="Projects"
           aria-current={if @current_path == "/projects", do: "page", else: false}
-        >
-          Projects
-        </.link>
+        />
         <span aria-hidden="true">·</span>
-        <.link
+        <.nav_link
           navigate={~p"/posts"}
+          text="Writing"
           aria-current={if String.starts_with?(@current_path, "/posts"), do: "page", else: false}
-        >
-          Writing
-        </.link>
+        />
         <span aria-hidden="true">·</span>
-        <.link
+        <.nav_link
           navigate={~p"/contact"}
+          text="Contact"
           aria-current={if @current_path == "/contact", do: "page", else: false}
-        >
-          Contact
-        </.link>
+        />
         <span aria-hidden="true">·</span>
-        <.link
+        <.nav_link
           navigate={~p"/sitemap"}
+          text="Sitemap"
           aria-current={if @current_path == "/sitemap", do: "page", else: false}
-        >
-          Sitemap
-        </.link>
+        />
       </p>
     </nav>
     """

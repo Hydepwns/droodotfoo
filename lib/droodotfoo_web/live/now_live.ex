@@ -50,13 +50,11 @@ defmodule DroodotfooWeb.NowLive do
 
         <h3 class="mt-2">Running</h3>
         <p>
-          <a href="https://xochi.fi" target="_blank" rel="noopener">xochi.fi</a>
+          <.ext_link href="https://xochi.fi" text="xochi.fi" />
           : private exchange & friendly dark pool on Ethereum, ZK proofs for compliance.
-          <a href="https://axol.io" target="_blank" rel="noopener">axol.io</a>
+          <.ext_link href="https://axol.io" text="axol.io" />
           runs the infra. Raising. The open infrastructure side is funded through
-          <a href="https://qf.giveth.io/project/axolio-xochifi" target="_blank" rel="noopener">
-            Giveth
-          </a>
+          <.ext_link href="https://qf.giveth.io/project/axolio-xochifi" text="Giveth" />
           (Ethereum Security QF round, closes May 14).
         </p>
 
@@ -66,14 +64,10 @@ defmodule DroodotfooWeb.NowLive do
           </div>
           <p class="experience-description">
             Intent solver, ~2s fills across five chains. P95 under 6s.
-            <a
+            <.ext_link
               href="https://github.com/lifinance/riddler-solver-client"
-              target="_blank"
-              rel="noopener"
-            >
-              LI.FI integrated it
-            </a>
-            as a solver client. Also on Across, Everclear, soon Wormhole and COWswap.
+              text="LI.FI integrated it"
+            /> as a solver client. Also on Across, Everclear, soon Wormhole and COWswap.
           </p>
 
           <.tech_tags technologies={["Ethereum", "Optimism", "Base", "Arbitrum", "Polygon"]} />
@@ -160,13 +154,7 @@ defmodule DroodotfooWeb.NowLive do
         <hr />
 
         <p class="text-muted">
-          This is a <a
-            href="https://nownownow.com/about"
-            target="_blank"
-            rel="noopener"
-          >
-            /now page
-          </a>.
+          This is a <.ext_link href="https://nownownow.com/about" text="/now page" />.
         </p>
       </section>
     </.page_layout>

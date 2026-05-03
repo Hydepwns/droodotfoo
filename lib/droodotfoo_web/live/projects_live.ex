@@ -96,14 +96,7 @@ defmodule DroodotfooWeb.ProjectsLive do
       <header class="project-card-header">
         <div class="project-title-row">
           <h3 class="project-name">
-            <a
-              :if={@project.github_url}
-              href={@project.github_url}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {@project.name}
-            </a>
+            <.ext_link :if={@project.github_url} href={@project.github_url} text={@project.name} />
             <span :if={!@project.github_url}>{@project.name}</span>
           </h3>
           <span class={"project-status #{@status_info.class}"}>{@status_info.label}</span>
@@ -120,16 +113,13 @@ defmodule DroodotfooWeb.ProjectsLive do
           <span :if={@updated != "-" && @updated != "..."} class="project-updated">
             updated {@updated}
           </span>
-          <a
+          <.ext_link
             :if={@project.forgejo_url}
             href={@project.forgejo_url}
-            target="_blank"
-            rel="noopener"
+            text="[mirror]"
             class="project-mirror"
             title="Mirrored on git.droo.foo"
-          >
-            [mirror]
-          </a>
+          />
         </div>
       </header>
 

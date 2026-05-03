@@ -37,74 +37,57 @@ defmodule DroodotfooWeb.AboutLive do
         <p>
           Hey, I'm Drew. I spent my twenties in engine rooms, first as a merchant
           mariner, then aboard nuclear submarines. I maintained secondary systems on
-          <a
+          <.ext_link
             href="https://en.wikipedia.org/wiki/Virginia-class_submarine"
-            target="_blank"
-            rel="noopener"
-          >
-            Virginia-class
-          </a>
-          boats (everything from the toilet up to and not including the reactor), eventually
+            text="Virginia-class"
+          /> boats (everything from the toilet up to and not including the reactor), eventually
           moved into test engineering, and ended up doing R&D inventions for submarines unexpectedly. A few of my inventions have been included in the
-          <a
+          <.ext_link
             href="https://en.wikipedia.org/wiki/Virginia-class_submarine"
-            target="_blank"
-            rel="noopener"
-          >
-            Virginia
-          </a>
-          and
-          <a
+            text="Virginia"
+          /> and
+          <.ext_link
             href="https://en.wikipedia.org/wiki/Columbia-class_submarine"
-            target="_blank"
-            rel="noopener"
-          >
-            Columbia
-          </a>
-          class block.
+            text="Columbia"
+          /> class block.
 
           I love complex, distributed, and asymmetric systems.
         </p>
         <p class="mt-1">
-          I got into crypto as a protocol specialist at <a
+          I got into crypto as a protocol specialist at
+          <.ext_link
             href="https://explorer.rated.network/o/Blockdaemon?network=mainnet&timeWindow=1d&viewBy=operator&page=1&pageSize=15&idType=nodeOperator"
-            target="_blank"
-            rel="noopener"
-          >Blockdaemon</a>,
-          then as a contributor at <a
-            href="https://defillama.com/protocol/lido"
-            target="_blank"
-            rel="noopener"
-          >Lido DAO</a>.
+            text="Blockdaemon"
+          />,
+          then as a contributor at
+          <.ext_link href="https://defillama.com/protocol/lido" text="Lido DAO" />.
           Two of the biggest staking operations. I figured
           out what I wanted to build and left to do it with people I
           trusted.
         </p>
         <p class="mt-1">
-          Now I run <a href="https://xochi.fi" target="_blank" rel="noopener">xochi.fi</a>
-          and <a href="https://axol.io" target="_blank" rel="noopener">axol.io</a>.
+          Now I run <.ext_link href="https://xochi.fi" text="xochi.fi" /> and
+          <.ext_link href="https://axol.io" text="axol.io" />.
           Xochi (pronounced: 'So-Chee') is a private exchange on Ethereum, it's meant to be a more friendly dark pool experience you can use to trade without
           exposing your orders. ZK proofs handle compliance instead of handing over your data.
 
           I believe economic and digital privacy must be embedded as first class citizens in a product.
 
           Where others find dichotomy, axolotls combinate and collaborate.
-          We wrote
-          <a href="https://github.com/xochi-fi/erc-xochi-zkp" target="_blank" rel="noopener">an
-            ERC/EIP</a>
+          We wrote <.ext_link href="https://github.com/xochi-fi/erc-xochi-zkp" text="an ERC/EIP" />
           to formally define our approach. axol.io runs the infra underneath: staking, an ETH client, sequencers, Builder.
         </p>
         <p class="mt-1">
           I'm also building a Gundam. Not a metaphor.
-          <a href="https://github.com/DROOdotFOO/raxol" target="_blank" rel="noopener">Raxol</a>
+          <.ext_link href="https://github.com/DROOdotFOO/raxol" text="Raxol" />
           is the terminal framework behind it. It started as a TUI project, but now it's the agent commerce layer for Xochi: wallets that can act on their own.
         </p>
         <p class="mt-1">
-          The open infrastructure underneath Xochi (Mana, the ZK compliance standard, the stealth address primitives, the whitehat research) is <a
+          The open infrastructure underneath Xochi (Mana, the ZK compliance standard, the stealth address primitives, the whitehat research) is
+          <.ext_link
             href="https://qf.giveth.io/project/axolio-xochifi"
-            target="_blank"
-            rel="noopener"
-          >funded through Giveth</a>.
+            text="funded through Giveth"
+          />.
         </p>
 
         <%= if @languages != [] do %>

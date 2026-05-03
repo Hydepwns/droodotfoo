@@ -58,9 +58,11 @@ defmodule DroodotfooWeb.DroodotfooLive do
             <article class="post-item-with-image">
               <div class="post-item-content">
                 <h3 class="mb-0-5">
-                  <.link navigate={~p"/posts/#{post.slug}"} class="link-reset">
-                    {post.title}
-                  </.link>
+                  <.nav_link
+                    navigate={~p"/posts/#{post.slug}"}
+                    text={post.title}
+                    class="link-reset"
+                  />
                 </h3>
                 <p class="text-muted-alt">
                   {Date.to_string(post.date)} • {post.read_time} min read
