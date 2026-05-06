@@ -34,7 +34,7 @@ defmodule DroodotfooWeb.GivethBanner do
         >
           <span class="giveth-banner-tag">QF Round</span>
           <span class="giveth-banner-text">
-            <span class="giveth-banner-multiplier">$100 you give &rarr; ~$50K matched</span>
+            <span class="giveth-banner-multiplier">$5 to get matched</span>
             <span aria-hidden="true">&middot;</span> Back axol.io on Giveth, closes May 14
           </span>
           <span class="giveth-banner-arrow" aria-hidden="true">&rarr;</span>
