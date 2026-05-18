@@ -13,6 +13,25 @@ defmodule Droodotfoo.Wiki.Ingestion.SyncWorkerHelper do
   require Logger
 
   alias Droodotfoo.Wiki.Ingestion.SyncRun
+  alias Droodotfoo.Wiki.Storage
+
+  @doc """
+  Runs `fun` only if object storage is reachable. Otherwise logs once
+  and returns `:ok` so Oban marks the job successful and does not retry.
+
+  Use in `perform/1` callbacks to gate sync work that uploads to MinIO.
+  Avoids ExAws retry storms when the backend is unreachable
+  (e.g. Tailscale off in dev).
+  """
+  @spec with_storage(String.t(), (-> any())) :: :ok | any()
+  def with_storage(label, fun) when is_function(fun, 0) do
+    if Storage.available?() do
+      fun.()
+    else
+      Logger.info("#{label} skipped: object storage unreachable")
+      :ok
+    end
+  end
 
   @doc """
   Runs a recent changes sync with standard boilerplate.

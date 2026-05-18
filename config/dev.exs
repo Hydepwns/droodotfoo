@@ -67,6 +67,14 @@ config :ex_aws,
   region: "us-east-1",
   http_client: ExAws.Request.Req
 
+# Fail fast in dev when Tailscale/MinIO is unreachable. Workers gate on
+# Storage.available?/0; this just keeps unanticipated upload failures
+# from spamming 10 retry warnings each.
+config :ex_aws, :retries,
+  max_attempts: 2,
+  base_backoff_in_ms: 100,
+  max_backoff_in_ms: 1_000
+
 config :ex_aws, :s3,
   scheme: "http://",
   host: System.get_env("MINIO_HOST", "100.117.205.87"),

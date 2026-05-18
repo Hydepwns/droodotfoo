@@ -315,6 +315,61 @@ div.post-image-float-left .post-caption {
   clear: both;
 }
 
+/* Centered media (iframes, embeds) */
+.post-media-center {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.post-media-center > iframe {
+  max-width: 100%;
+}
+
+/* Abbreviation tooltips -- progressively enhanced via AbbrPopoverHook */
+.page-container abbr[title],
+.narrow-container abbr[title],
+.box-single abbr[title],
+article abbr[title],
+.page-container abbr[data-tooltip],
+.narrow-container abbr[data-tooltip],
+.box-single abbr[data-tooltip],
+article abbr[data-tooltip] {
+  text-decoration: underline dotted var(--text-color-alt);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  cursor: help;
+  border-bottom: 0;
+  text-decoration-skip-ink: none;
+}
+
+article abbr[data-tooltip] {
+  outline-offset: 2px;
+}
+
+article abbr[data-tooltip]:focus-visible {
+  outline: 2px solid var(--accent-color);
+}
+
+.abbr-popover {
+  position: absolute;
+  z-index: 50;
+  max-width: min(320px, calc(100vw - 2rem));
+  padding: 0.625rem 0.75rem;
+  background: var(--bg-color, var(--syntax-bg, #1a1a1a));
+  color: var(--text-color);
+  border: 1px solid var(--accent-color);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  font-family: inherit;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  pointer-events: auto;
+}
+
+.abbr-popover[hidden] {
+  display: none;
+}
+
 /* Blockquote Styling */
 .page-container blockquote,
 .narrow-container blockquote,

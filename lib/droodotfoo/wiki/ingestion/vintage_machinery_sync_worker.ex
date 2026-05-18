@@ -30,21 +30,23 @@ defmodule Droodotfoo.Wiki.Ingestion.VintageMachinerySyncWorker do
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: args}) do
-    strategy = Map.get(args, "strategy", "incremental")
-    limit = Map.get(args, "limit", 50_000)
+    SyncWorkerHelper.with_storage("VintageMachinery sync", fn ->
+      strategy = Map.get(args, "strategy", "incremental")
+      limit = Map.get(args, "limit", 50_000)
 
-    run = SyncRun.start!(:vintage_machinery, strategy)
+      run = SyncRun.start!(:vintage_machinery, strategy)
 
-    case strategy do
-      "full" ->
-        Logger.info("Starting full VintageMachinery sync")
-        VintageMachineryPipeline.sync_all(limit: limit)
+      case strategy do
+        "full" ->
+          Logger.info("Starting full VintageMachinery sync")
+          VintageMachineryPipeline.sync_all(limit: limit)
 
-      _ ->
-        since = SyncRun.last_completed_at(:vintage_machinery)
-        Logger.info("Starting incremental VintageMachinery sync since #{inspect(since)}")
-        VintageMachineryPipeline.sync_recent_changes(since)
-    end
-    |> SyncWorkerHelper.handle_result(run, "VintageMachinery sync", transform: false)
+        _ ->
+          since = SyncRun.last_completed_at(:vintage_machinery)
+          Logger.info("Starting incremental VintageMachinery sync since #{inspect(since)}")
+          VintageMachineryPipeline.sync_recent_changes(since)
+      end
+      |> SyncWorkerHelper.handle_result(run, "VintageMachinery sync", transform: false)
+    end)
   end
 end

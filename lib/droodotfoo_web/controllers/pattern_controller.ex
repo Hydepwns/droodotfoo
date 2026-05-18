@@ -5,6 +5,12 @@ defmodule DroodotfooWeb.PatternController do
   alias Droodotfoo.Content.{PatternCache, PatternRateLimiter}
   alias DroodotfooWeb.Plugs.ClientIP
 
+  # Compile-time switch: long immutable cache in prod, short revalidating
+  # cache in dev so pattern code changes invalidate browser caches.
+  @cache_control (if Mix.env() == :prod,
+                    do: "public, max-age=31536000, immutable",
+                    else: "public, max-age=60, must-revalidate")
+
   @doc """
   Serves a generated SVG pattern for a post slug.
 
@@ -45,11 +51,12 @@ defmodule DroodotfooWeb.PatternController do
         # Get from cache or generate (server-side caching)
         svg = PatternCache.get_or_generate(slug, opts)
 
-        # Set aggressive caching headers (pattern is deterministic)
+        # Cache headers: long max-age in prod, content-hash ETag so changes
+        # to pattern code invalidate stale browser caches.
         conn
         |> put_resp_content_type("image/svg+xml")
-        |> put_resp_header("cache-control", "public, max-age=31536000, immutable")
-        |> put_resp_header("etag", generate_etag(slug, opts))
+        |> put_resp_header("cache-control", @cache_control)
+        |> put_resp_header("etag", generate_etag(svg))
         |> send_resp(200, svg)
 
       {:error, message} ->
@@ -80,6 +87,7 @@ defmodule DroodotfooWeb.PatternController do
   defp parse_style("aurora"), do: :aurora
   defp parse_style("composite"), do: :composite
   defp parse_style("glass_cube"), do: :glass_cube
+  defp parse_style("cockpit_hud"), do: :cockpit_hud
   defp parse_style(_), do: nil
 
   # Parse integer with fallback
@@ -100,10 +108,9 @@ defmodule DroodotfooWeb.PatternController do
   defp parse_boolean("1", _default), do: true
   defp parse_boolean(_, _default), do: false
 
-  # Generate ETag for caching
-  defp generate_etag(slug, opts) do
-    opts_string = Enum.map_join(opts, "-", fn {k, v} -> "#{k}:#{v}" end)
-    hash = :crypto.hash(:md5, "#{slug}-#{opts_string}") |> Base.encode16(case: :lower)
+  # Generate ETag from SVG content so code changes invalidate browser caches.
+  defp generate_etag(svg) when is_binary(svg) do
+    hash = :crypto.hash(:md5, svg) |> Base.encode16(case: :lower)
     ~s("#{hash}")
   end
 end

@@ -67,6 +67,7 @@ defmodule Droodotfoo.GitHub.Fetcher do
   defp fetch_all_projects do
     Projects.all()
     |> Enum.filter(&has_github_url?/1)
+    |> Enum.reject(& &1.private?)
     |> Task.async_stream(&fetch_project_data/1,
       max_concurrency: 3,
       timeout: 10_000,

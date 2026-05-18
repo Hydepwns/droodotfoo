@@ -119,9 +119,11 @@ defmodule DroodotfooWeb.PostLive do
         </div>
       </header>
 
-      <article class="box-single article-spaced" id="post-content" phx-hook="CodeCopyHook">
-        {raw(@post.html)}
-      </article>
+      <div id="post-abbr-container" phx-hook="AbbrPopoverHook">
+        <article class="box-single article-spaced" id="post-content" phx-hook="CodeCopyHook">
+          {raw(@post.html)}
+        </article>
+      </div>
 
       <footer class="post-footer">
         <.link navigate={~p"/posts"} class="back-link">{PostFormatter.back_link()}</.link>

@@ -82,6 +82,44 @@ defmodule Droodotfoo.Wiki.Storage do
     exists?(wiki_bucket(), html_key(source, slug))
   end
 
+  @availability_cache_key {__MODULE__, :availability}
+  @availability_ttl :timer.seconds(60)
+  @availability_probe_timeout 2_000
+
+  @doc """
+  Returns true if the object-storage backend (MinIO/S3) is reachable.
+
+  Result is cached for 60s so a single dev outage does not trigger
+  one probe per sync tick. Use this in sync workers to short-circuit
+  when MinIO is unreachable (e.g. Tailscale off in dev) rather than
+  letting ExAws retry-storm on every upload.
+  """
+  @spec available?() :: boolean()
+  def available? do
+    case Cachex.fetch(:wiki_cache, @availability_cache_key, fn _ ->
+           {:commit, probe_storage(), ttl: @availability_ttl}
+         end) do
+      {:ok, result} -> result
+      {:commit, result} -> result
+      _ -> false
+    end
+  end
+
+  defp probe_storage do
+    task =
+      Task.async(fn ->
+        case ExAws.S3.head_bucket(wiki_bucket()) |> ExAws.request() do
+          {:ok, _} -> true
+          _ -> false
+        end
+      end)
+
+    case Task.yield(task, @availability_probe_timeout) || Task.shutdown(task, :brutal_kill) do
+      {:ok, result} -> result
+      _ -> false
+    end
+  end
+
   # Key construction
 
   @doc "Generate storage key for rendered HTML."

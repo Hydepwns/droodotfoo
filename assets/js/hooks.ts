@@ -11,6 +11,7 @@ import { CodeCopyHook } from './hooks/code_copy.js';
 import { MediaGridAlignHook } from './hooks/media_grid_align';
 import { ContributionGraphHook } from './hooks/contribution_graph';
 import { FocusHook } from './hooks/focus';
+import { AbbrPopoverHook } from './hooks/abbr_popover';
 
 // Modal scroll lock - prevents body scroll when modal is open
 const ModalScrollLock = {
@@ -66,6 +67,7 @@ export default {
   MediaGridAlignHook,
   ContributionGraphHook,
   FocusHook,
+  AbbrPopoverHook,
   ModalScrollLock,
 
   // Lazy loaded (heavy, rarely used)

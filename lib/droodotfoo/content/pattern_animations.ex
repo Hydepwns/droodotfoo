@@ -20,7 +20,8 @@ defmodule Droodotfoo.Content.PatternAnimations do
     Isometric,
     Constellation,
     Aurora,
-    GlassCube
+    GlassCube,
+    CockpitHud
   }
 
   @spec get_animations(atom) :: String.t()
@@ -41,5 +42,6 @@ defmodule Droodotfoo.Content.PatternAnimations do
   def get_animations(:aurora), do: Aurora.css()
   def get_animations(:composite), do: ""
   def get_animations(:glass_cube), do: GlassCube.css()
+  def get_animations(:cockpit_hud), do: CockpitHud.css()
   def get_animations(_), do: ""
 end

@@ -434,6 +434,7 @@ defmodule Droodotfoo.Resume.ResumeData do
             description: "Cross-chain solver with automated rebalancing system",
             language: "Elixir",
             status: "active",
+            private: true,
             topics: ["blockchain", "cross-chain", "defi", "elixir", "solver", "web3"],
             highlights: [
               "Across Protocol integration: multi-chain liquidity optimization",

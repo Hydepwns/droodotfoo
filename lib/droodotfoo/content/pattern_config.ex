@@ -112,6 +112,74 @@ defmodule Droodotfoo.Content.PatternConfig do
   end
 
   @doc """
+  Returns configuration for cockpit HUD pattern.
+  """
+  @spec cockpit_hud_config :: pattern_config
+  def cockpit_hud_config do
+    %{
+      frame_padding: 32,
+      corner_length: 64,
+      corner_weight: 2,
+      scanline_spacing: 26,
+      scanline_opacity: 0.16,
+      # Visor bezel curves: dark cutouts at top/bottom that frame the HUD.
+      # corner_y = depth at side edges, apex_y = control point depth that
+      # determines how far the curve dips toward the visor center.
+      visor_corner_y: 60,
+      visor_apex_y: 210,
+      # ZERO SYSTEM marquee header + ruler tape strip below it.
+      marquee_offset: 32,
+      marquee_bracket_inset: 320,
+      marquee_bracket_arm: 14,
+      marquee_font_size: 24,
+      marquee_ticks: 48,
+      # Central wireframe scanner grid (holds the silhouette + reticle).
+      grid_cols: 8,
+      grid_rows: 5,
+      grid_width: 520,
+      grid_height: 260,
+      # Wing-feather backplate fanning out behind silhouette. Angles are
+      # measured from horizontal; capped under 55 deg so the upper feathers
+      # don't collide with the ZERO SYSTEM marquee.
+      feather_count: 5,
+      feather_angles: [-4, 10, 24, 38, 52],
+      feather_lengths: [150, 175, 185, 175, 158],
+      feather_half_widths: [3.5, 4.5, 5, 4.5, 3.5],
+      feather_opacity: 0.25,
+      # Left status readouts.
+      status_x: 72,
+      status_y_start: 252,
+      status_line_spacing: 22,
+      # Right indicator panel (LED-style cells).
+      indicator_count: 5,
+      indicator_width: 76,
+      indicator_height: 14,
+      indicator_gap: 8,
+      indicator_right_inset: 60,
+      indicator_top_y: 220,
+      # Twin Buster Rifle charge bars beneath the indicator panel.
+      buster_bar_width: 120,
+      buster_bar_height: 16,
+      buster_bar_top_y: 348,
+      buster_bar_gap: 28,
+      buster_segments: 10,
+      # Reticle over silhouette eyes.
+      reticle_arm: 38,
+      reticle_gap: 8,
+      reticle_rings: 2,
+      reticle_ring_step: 14,
+      # Sparkline along bottom of viewport.
+      sparkline_band_height: 56,
+      sparkline_points: 64,
+      sparkline_inset: 32,
+      # Bottom corner number readouts.
+      number_font_size: 16,
+      number_digits_long: 10,
+      number_digits_short: 7
+    }
+  end
+
+  @doc """
   Returns configuration for grid pattern.
   """
   @spec grid_config :: pattern_config
@@ -281,7 +349,8 @@ defmodule Droodotfoo.Content.PatternConfig do
       :constellation,
       :aurora,
       :composite,
-      :glass_cube
+      :glass_cube,
+      :cockpit_hud
     ]
   end
 
@@ -298,6 +367,7 @@ defmodule Droodotfoo.Content.PatternConfig do
   def get_config(:glitch), do: {:ok, glitch_config()}
   def get_config(:geometric), do: {:ok, geometric_config()}
   def get_config(:grid), do: {:ok, grid_config()}
+  def get_config(:cockpit_hud), do: {:ok, cockpit_hud_config()}
   def get_config(:flow_field), do: {:ok, flow_field_config()}
   def get_config(:interference), do: {:ok, interference_config()}
   def get_config(:topology), do: {:ok, topology_config()}

@@ -33,16 +33,18 @@ defmodule Droodotfoo.Wiki.Ingestion.OSRSSyncWorker do
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: args}) do
-    cond do
-      Map.get(args, "full_sync") ->
-        full_sync()
+    SyncWorkerHelper.with_storage("OSRS sync", fn ->
+      cond do
+        Map.get(args, "full_sync") ->
+          full_sync()
 
-      category = Map.get(args, "category") ->
-        sync_category(category)
+        category = Map.get(args, "category") ->
+          sync_category(category)
 
-      true ->
-        sync_recent_changes()
-    end
+        true ->
+          sync_recent_changes()
+      end
+    end)
   end
 
   defp sync_recent_changes do

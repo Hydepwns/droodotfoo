@@ -311,6 +311,7 @@
         "description": "Cross-chain bridge solver",
         "language": "Elixir",
         "status": "active",
+        "private": true,
         "highlights": [
           "Across Protocol integration for multi-chain liquidity",
           "Automated rebalancing and opportunity execution"

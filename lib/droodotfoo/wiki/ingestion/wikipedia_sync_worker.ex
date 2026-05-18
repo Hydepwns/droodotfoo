@@ -32,19 +32,21 @@ defmodule Droodotfoo.Wiki.Ingestion.WikipediaSyncWorker do
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: args}) do
-    cond do
-      slug = args["slug"] ->
-        import_single(slug)
+    SyncWorkerHelper.with_storage("Wikipedia sync", fn ->
+      cond do
+        slug = args["slug"] ->
+          import_single(slug)
 
-      query = args["search"] ->
-        import_search(query, args)
+        query = args["search"] ->
+          import_search(query, args)
 
-      args["strategy"] == "refresh" ->
-        refresh_all(args)
+        args["strategy"] == "refresh" ->
+          refresh_all(args)
 
-      true ->
-        refresh_all(args)
-    end
+        true ->
+          refresh_all(args)
+      end
+    end)
   end
 
   defp import_single(slug) do

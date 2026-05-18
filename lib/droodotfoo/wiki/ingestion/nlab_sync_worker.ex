@@ -29,16 +29,18 @@ defmodule Droodotfoo.Wiki.Ingestion.NLabSyncWorker do
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: args}) do
-    cond do
-      Map.get(args, "full_sync") ->
-        full_sync()
+    SyncWorkerHelper.with_storage("nLab sync", fn ->
+      cond do
+        Map.get(args, "full_sync") ->
+          full_sync()
 
-      since = Map.get(args, "since") ->
-        sync_since(parse_datetime(since))
+        since = Map.get(args, "since") ->
+          sync_since(parse_datetime(since))
 
-      true ->
-        sync_recent_changes()
-    end
+        true ->
+          sync_recent_changes()
+      end
+    end)
   end
 
   defp sync_recent_changes do

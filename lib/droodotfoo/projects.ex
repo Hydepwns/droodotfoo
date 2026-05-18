@@ -20,7 +20,8 @@ defmodule Droodotfoo.Projects do
     :status,
     :highlights,
     :year,
-    :github_data
+    :github_data,
+    private?: false
   ]
 
   @type github_data :: %{
@@ -44,7 +45,8 @@ defmodule Droodotfoo.Projects do
           status: :active | :completed | :archived,
           highlights: list(String.t()),
           year: integer(),
-          github_data: github_data() | nil
+          github_data: github_data() | nil,
+          private?: boolean()
         }
 
   @doc "Returns all projects from resume data (defense_projects + portfolio.projects)"
@@ -140,7 +142,8 @@ defmodule Droodotfoo.Projects do
       live_demo: live_demo?(type, raw_project),
       status: parse_status(raw_project[:status], default_status_for(type)),
       highlights: extract_highlights_for(type, raw_project),
-      year: extract_year_for(type, raw_project)
+      year: extract_year_for(type, raw_project),
+      private?: raw_project[:private] == true
     }
   end
 
