@@ -24,7 +24,8 @@ defmodule DroodotfooWeb.PatternGalleryLive do
     %{name: "constellation", description: "Stars with connecting lines"},
     %{name: "aurora", description: "Northern lights bands"},
     %{name: "composite", description: "Layered multi-pattern"},
-    %{name: "glass_cube", description: "Xochi 6-layer glass cube with ETH diamond"}
+    %{name: "glass_cube", description: "Xochi 6-layer glass cube with ETH diamond"},
+    %{name: "cockpit_hud", description: "Wing Zero cockpit HUD with visor frame and scanner grid"}
   ]
 
   @impl true

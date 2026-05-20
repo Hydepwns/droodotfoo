@@ -70,6 +70,16 @@
   transition: border-color 0.2s ease;
 }
 
+/* Transparent overlay so clicks land on the link, not the embedded
+   <object> SVG (which otherwise captures the first click to focus its
+   document and requires a second click to navigate). */
+.post-item-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
 .post-item-image:hover {
   border-color: var(--highlight-color, var(--accent-color));
 }

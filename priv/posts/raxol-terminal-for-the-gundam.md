@@ -146,6 +146,10 @@ I keep coming back to how right this feels as a design target. High availability
 
 Put an AI agent in that seat. It reads the same HUD. Processes sensor data through `update/2`. Issues commands: reallocate resources, flag an anomaly, adjust course. The runtime executes. Same interface, same state, same fault isolation. Carbon pilot or silicon pilot.
 
+<img src="/images/blog/gundam/Zero-system-sketch.webp" alt="Mechanical line-art schematic of the ZERO System cockpit interior, showing two seats and console arrangement" loading="lazy" class="post-image-statement" />
+
+<p class="post-caption">ZERO System cockpit schematic. Two seats by design.</p>
+
 ---
 
 ## Where it stands
@@ -155,6 +159,10 @@ The plan was six packages. There are thirteen now, which probably says something
 Last quarter I went back and unified the lifecycle code across all of them. Every package now uses the same `BaseManager` pattern for its GenServers. That kind of consolidation does not make a good headline, but it is the work that turns thirteen scattered packages into thirteen packages that behave like one runtime. Eleven of them ship on Hex. The two holdouts, `raxol_acp` and `raxol_symphony`, are still pre-alpha.
 
 The originals are stable: `raxol_core`, `raxol_terminal`, `raxol_sensor`, `raxol_mcp`, `raxol_liveview`, `raxol_plugin`. The two staged extractions shipped: `raxol_agent` and `raxol_payments` are first-class packages now. Then three surface packages I didn't plan for a year ago: `raxol_speech` (<abbr title="Text-To-Speech — model converts written text into spoken audio">TTS</abbr> announcements via Bumblebee, <abbr title="Speech-To-Text — model transcribes spoken audio into written text">STT</abbr> input via Whisper), `raxol_telegram` (TEA modules rendered as inline keyboards inside a chat), `raxol_watch` (<abbr title="Apple Push Notification service — iOS and macOS push delivery channel">APNS</abbr> and <abbr title="Firebase Cloud Messaging — Google's push delivery service for Android, web, and iOS">FCM</abbr> push for glanceable summaries, with tap actions routed back as events). Each of these started as "what if the surface was X" and turned out to share enough machinery with the existing renderers that they slotted in.
+
+<img src="/images/blog/gundam/ZEROcockpitZine.webp" alt="Wing Gundam Zero cockpit interior under the ZERO System, pilot lit by the probability overlay" loading="lazy" class="post-image-statement" />
+
+<p class="post-caption">Inside ZERO System cockpit. The pilot and the machine share state on the same tick.</p>
 
 Then two new flagship packages that genuinely caught me by surprise.
 
@@ -257,24 +265,16 @@ And then there is the ZERO System.
 
 ZERO stands for Zoning and Emotional Range Omitted. A brain-computer interface that strips the pilot's affective load and feeds them an ongoing probability map of every action and its consequences across the battlespace. It makes the human and the machine think on the same timestep. The catch is the human has to be psychologically intact enough to survive the load. Most are not. ZERO has driven pilots to breakdowns and worse. Heero is one of the few who can sustain it.
 
-<img src="/images/blog/gundam/ZEROcockpitZine.webp" alt="Wing Gundam Zero cockpit interior under the ZERO System, pilot lit by the probability overlay" loading="lazy" class="post-image-statement" />
-
-<p class="post-caption">Inside the ZERO System cockpit. The pilot and the machine share state on the same tick.</p>
-
 This is the seed of Raxol.
 
 The design target I keep circling is the same one ZERO points at. A runtime where the pilot and the machine share state on the same tick. Every subsystem reports honestly, the interface degrades gracefully when something dies, and the loop closes fast enough that human and machine are reading the same world. TEA gives me the shared state. OTP gives me the supervision. The BEAM gives me the tick. Raxol is the cockpit I can actually build right now, on a laptop, in Elixir, today.
 
 The agent is the second pilot in the seat. Carbon and silicon read the same buffer, issue commands through the same `update/2`, share a HUD. When one of them fails, the other keeps flying.
 
-<img src="/images/blog/gundam/Zero-system-sketch.webp" alt="Mechanical line-art schematic of the ZERO System cockpit interior, showing two seats and console arrangement" loading="lazy" class="post-image-statement" />
-
-<p class="post-caption">ZERO System cockpit schematic. Two seats by design.</p>
-
 My actual life goal, the one I do not usually write down in blog posts, is to build and pilot a Wing Gundam Zero, or as close to one as engineering and biology let me get in one lifetime. I do not expect to finish. I expect to learn things on the way that are worth more than the finish would have been. Raxol is the part of that project I can ship.
 
 ---
 
-_Raxol is an OTP-native multi-surface runtime for Elixir. [raxol.io](https://raxol.io) | [GitHub](https://github.com/DROOdotFOO/raxol)_
+_Raxol is an OTP-native multi-surface runtime for Elixir. [GitHub](https://github.com/DROOdotFOO/raxol)_
 
-_The payment rails run through [Xochi](https://xochi.fi). The open infrastructure runs through [axol.io](https://axol.io). Fund the lab on [Giveth](https://qf.giveth.io/project/axolio-xochifi)._
+_The payment rails run through [Xochi](https://xochi.fi). The open infrastructure runs through [axol.io](https://axol.io). Fund the lab on [Giveth](https://giveth.io/project/axolio-xochifi)._

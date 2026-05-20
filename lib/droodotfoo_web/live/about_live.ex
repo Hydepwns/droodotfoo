@@ -74,8 +74,10 @@ defmodule DroodotfooWeb.AboutLive do
           I believe economic and digital privacy must be embedded as first class citizens in a product.
 
           Where others find dichotomy, axolotls combinate and collaborate.
-          We wrote <.ext_link href="https://github.com/xochi-fi/erc-xochi-zkp" text="an ERC/EIP" />
-          to formally define our approach. axol.io runs the infra underneath: staking, an ETH client, sequencers, Builder.
+          We co-authored <.ext_link
+            href="https://ethereum-magicians.org/t/erc-8262-zero-knowledge-compliance-oracle/28543"
+            text="ERC-8262"
+          /> (Zero-Knowledge Compliance Oracle) to standardize this approach as a public spec. axol.io runs the infra underneath: staking, an ETH client, sequencers, Builder.
         </p>
         <p class="mt-1">
           I'm also building a Gundam. Not a metaphor.
@@ -85,7 +87,7 @@ defmodule DroodotfooWeb.AboutLive do
         <p class="mt-1">
           The open infrastructure underneath Xochi (Mana, the ZK compliance standard, the stealth address primitives, the whitehat research) is
           <.ext_link
-            href="https://qf.giveth.io/project/axolio-xochifi"
+            href="https://giveth.io/project/axolio-xochifi"
             text="funded through Giveth"
           />.
         </p>

@@ -198,17 +198,6 @@ function initializeControls(): void {
     });
   }
 
-  // Click minimized player pill to expand
-  if (musicPlayer) {
-    musicPlayer.addEventListener("click", (e: Event) => {
-      if (
-        musicPlayer.classList.contains("music-player-minimized") &&
-        e.target === musicPlayer
-      ) {
-        toggleMusicPlayer();
-      }
-    });
-  }
 }
 
 /**

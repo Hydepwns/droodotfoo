@@ -51,11 +51,14 @@ defmodule DroodotfooWeb.NowLive do
         <h3 class="mt-2">Running</h3>
         <p>
           <.ext_link href="https://xochi.fi" text="xochi.fi" />
-          : private exchange & friendly dark pool on Ethereum, ZK proofs for compliance.
+          : private exchange & friendly dark pool on Ethereum. ZK compliance via
+          <.ext_link
+            href="https://ethereum-magicians.org/t/erc-8262-zero-knowledge-compliance-oracle/28543"
+            text="ERC-8262"
+          />, the Zero-Knowledge Compliance Oracle standard we co-authored.
           <.ext_link href="https://axol.io" text="axol.io" />
           runs the infra. Raising. The open infrastructure side is funded through
-          <.ext_link href="https://qf.giveth.io/project/axolio-xochifi" text="Giveth" />
-          (Ethereum Security QF round, closes May 14).
+          <.ext_link href="https://giveth.io/project/axolio-xochifi" text="Giveth" />.
         </p>
 
         <article class="experience-item">

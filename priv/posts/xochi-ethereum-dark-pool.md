@@ -12,9 +12,9 @@ pattern_style: "glass_cube"
 
 <p class="post-caption"><em>Les Poissons rouges</em> (1912) - Henri Matisse. Pushkin Museum, Moscow.</p>
 
-> Private DEX on Ethereum. Zero-knowledge compliance proofs. Solver live on five chains, ~2s settlement, P95 ~<6s. Cofounded by ex-DOJ/FBI financial intelligence. Raising to capitalize a working system.
+> Private DEX on Ethereum. Zero-knowledge compliance proofs, now in Draft as [ERC-8262](https://github.com/ethereum/ERCs/pull/1747). Solver live on five chains, ~2s settlement, P95 ~<6s. Cofounded by ex-DOJ/FBI financial intelligence. Raising to capitalize a working system.
 >
-> [whitepaper](https://xochi.fi/whitepaper) | [appendix](https://xochi.fi/appendix) | [EIP draft](https://github.com/xochi-fi/erc-xochi-zkp)
+> [whitepaper](https://xochi.fi/whitepaper) | [appendix](https://xochi.fi/appendix) | [ERC-8262](https://github.com/ethereum/ERCs/pull/1747) | [discussion](https://ethereum-magicians.org/t/erc-8262-zero-knowledge-compliance-oracle/28543)
 
 ## The fish bowl problem
 
@@ -45,7 +45,7 @@ Xochi is what happens when you spend five years running bare-metal blockchain in
 
 I want to get this out of the way early, because most projects bury their risks at the bottom and hope you don't scroll that far.
 
-Xochi ZKP is novel. Zero-knowledge compliance proofs are untested with regulators. If VARA says no, we fall back to delegated compliance where licensed solvers handle jurisdiction-specific requirements. The privacy still works.
+ERC-8262 is novel. Zero-knowledge compliance proofs are untested with regulators. The spec entered Draft on the Ethereum standards track this week, which moves the legitimacy needle, but a draft ERC is a long way from a compliance officer in Dubai signing off. If VARA says no, we fall back to delegated compliance where licensed solvers handle jurisdiction-specific requirements. The privacy still works.
 The ZK compliance is a bet, and we're upfront about that.
 
 Aztec Alpha Network is live (v4.x) and pxe-bridge is deployed against it. The network is explicitly experimental: a critical proving-system bug was disclosed in March, state isn't migrated between alpha releases, and v5 with security fixes targets July 2026. Stability and fee economics at scale are unproven. Our privacy tiers degrade gracefully. L1 stealth smart accounts work today for Trusted and above, and the lower tiers don't depend on Aztec at all. Solver bootstrap is a separate risk. Riddler's infrastructure is proven but undercapitalized. The raise fixes that. Network effects are a growth story.
@@ -76,8 +76,8 @@ Think of a stealth account as the side of the glass nobody can see through. The 
 The enabling standards are [ERC-5564](https://eips.ethereum.org/EIPS/eip-5564) for the address derivation and [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337) for the smart wallet part.
 
 ```bash
-Intent Submitted -> Riddler Routes -> Xochi ZKP -> Shielded Settlement
-(private intent)    (solver network)  (compliance)    (L1 stealth | L2 Aztec via pxe-bridge)
+Intent Submitted -> Riddler Routes -> ZK Compliance -> Shielded Settlement
+(private intent)    (solver network)  (ERC-8262 proof)  (L1 stealth | L2 Aztec via pxe-bridge)
 ```
 
 Xochi hides the trade itself. This is called Private Execution-- for amounts and counterparties. Liquidity comes from solvers who hold inventory and fill peer-to-peer. Riddler maintains its own book; overflow goes through private RFQ channels with market makers who never see the original intent. The trade never touches a public pool.
@@ -124,10 +124,12 @@ Identity verification is optional. Its benefits are not.
 
 Privacy in crypto has always forced a bad choice. Full transparency (Uniswap, CoW Protocol) keeps you compliant but exposes everything. Full privacy (Tornado Cash) gets sanctioned. Pick a side.
 
-Before getting into how Xochi ZKP works, it's worth defining what compliance is actually trying to do.
+Before getting into how the compliance layer works, it's worth defining what compliance is actually trying to do.
 The task is simple: prevent sanctioned actors from using the financial system, catch structuring patterns that indicate money laundering, and verify that participants have been screened. That's it. The laws don't require that a regulator see your trade. They require that someone verified the trade wasn't dirty. Every SAR filing, every KYC check, every sanctions screen is answering the same question: "was this clean?" The answer is binary. The data underneath it doesn't need to be.
 
-Xochi ZKP (zero-knowledge compliance proofs) answers that question cryptographically. A proof that a trade is AML/sanctions-compliant without revealing the trade itself. The regulator verifies the proof. They never see the data.
+Zero-knowledge compliance proofs answer that question cryptographically. A proof attests that a trade is AML/sanctions-compliant without revealing the trade itself. The regulator verifies the proof. They never see the data.
+
+This week, [ERC-8262](https://github.com/ethereum/ERCs/pull/1747) entered Draft on the Ethereum standards track. Co-authored with our compliance lead Bloo (ex-FBI/DOJ AML) and Merkle Bonsai (V's whitehat handle), the spec is now under [open community review](https://ethereum-magicians.org/t/erc-8262-zero-knowledge-compliance-oracle/28543). Xochi is one implementation of it. Any privacy protocol can build against the same primitives, and a community-vetted standard is closer to the shape regulators are used to evaluating than one team's GitHub repo.
 
 | Regulatory Requirement | What the ZK Proof Says     | What Stays Hidden   |
 | ---------------------- | -------------------------- | ------------------- |
@@ -136,13 +138,13 @@ Xochi ZKP (zero-knowledge compliance proofs) answers that question cryptographic
 | Counterparty screening | "Not on sanctions list"    | Identity            |
 | Anti-structuring       | "Pattern NOT detected"     | Transaction history |
 
-Six proof types, formalized as an [open Ethereum standard](https://github.com/xochi-fi/erc-xochi-zkp) with Solidity interfaces and Noir circuits. The reference implementation is CC0 public domain. Pre-audit, but the math is there to inspect.
+Nine proof types in the spec: six unsigned, two single-signer (provider-attested), one M-of-N quorum up to five signers. Solidity 0.8.28 interfaces, Noir circuits, UltraHonk verifiers, CC0 reference implementation. Pre-audit, but the math is there to inspect.
 
 From the user's side: you pick identity providers a la carte. A Worldcoin proof, a Coinbase attestation, a ZKPassport credential. You're choosing from a menu. The oracle observes across all of them. One provider saying "clean" is a data point. Three independent providers across different categories (humanity, identity, compliance screening) is a conviction.
 
 On the back end, the oracle learns. When a bad actor gets through, the proof trail shows which screening providers cleared them and where the composite signal had a blind spot. Those providers get downweighted. Providers that catch what others miss get upweighted. The weights converge on the set that actually catches bad actors in practice, tuned by real enforcement data. The user just sees cheaper fees as their trust score improves.
 
-The legal grounding is where I lose sleep. GDPR's data minimization principle (Art. 5(1)(c)) says process only what's necessary, and a ZK proof is minimal disclosure by definition. The logic feels solid there. VARA's January 2026 anonymity ban defines anonymity-enhanced crypto as assets lacking "mitigating technologies" for traceability. Xochi ZKP is designed to be exactly that: traceability without exposing transaction data.
+The legal grounding is where I lose sleep. GDPR's data minimization principle (Art. 5(1)(c)) says process only what's necessary, and a ZK proof is minimal disclosure by definition. The logic feels solid there. VARA's January 2026 anonymity ban defines anonymity-enhanced crypto as assets lacking "mitigating technologies" for traceability. ERC-8262 is designed to be exactly that: traceability without exposing transaction data.
 
 But nobody has tried this argument in front of a regulator. I can't tell you whether a compliance officer in Dubai will look at a ZK proof and say "yes, this counts." The law's own language supports us. Whether that's enough is a different question.
 

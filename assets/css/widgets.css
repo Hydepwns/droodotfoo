@@ -13,36 +13,21 @@
   pointer-events: auto;
 }
 
-/* Minimized state: show as small pill/bar that stays visible to keep audio playing */
+/* Minimized state: position off-screen so the iframe stays mounted for media playback
+   but no visible pill renders in the corner. Toggle button in nav/menu opens it. */
 .music-player-persistent.music-player-minimized {
-  width: 48px;
-  height: 48px;
-  bottom: 20px;
+  width: 1px;
+  height: 1px;
+  bottom: 0;
+  left: -9999px;
   overflow: hidden;
-  border-radius: 24px;
-  background: var(--bg-color, #1a1a2e);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
+  pointer-events: none;
 }
 
-/* Hide the iframe content when minimized but keep element in DOM and "visible" */
 .music-player-persistent.music-player-minimized .music-player-content {
   transform: scale(0.01);
   transform-origin: top left;
-  /* Use clip-path instead of opacity to hide - keeps media playing */
   clip-path: inset(0 100% 100% 0);
-}
-
-/* Minimized indicator (shows music note icon) */
-.music-player-persistent.music-player-minimized::after {
-  content: "♫";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 20px;
-  color: var(--text-color, #fff);
-  pointer-events: none;
 }
 
 .music-player-persistent.music-player-expanded {
@@ -79,13 +64,6 @@
     bottom: 45px;
     z-index: 10000;
     pointer-events: auto;
-  }
-
-  .music-player-persistent.music-player-minimized {
-    width: 40px;
-    height: 40px;
-    bottom: 10px;
-    left: 10px;
   }
 
   .music-iframe {

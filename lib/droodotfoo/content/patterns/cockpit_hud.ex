@@ -4,11 +4,9 @@ defmodule Droodotfoo.Content.Patterns.CockpitHud do
 
   Visual language: a mecha pilot's POV through the visor. The frame is a
   curved dark bezel at top and bottom (the helmet/cockpit rim); inside
-  the opening, a wireframe scanning grid encloses a Gundam-head
-  silhouette under a tight reticle. Left and right HUD panels carry
-  status readouts, LED indicator cells, and numeric telemetry. A
-  horizontal scan beam sweeps the silhouette continuously; corner
-  brackets mark the chassis frame outside the visor.
+  the opening, a wireframe scanning grid sits under a tight reticle.
+  Left status readouts and right LED indicator cells flank the grid. A
+  horizontal scan beam sweeps through it continuously.
 
   Always renders pure monochrome (white on black) regardless of post
   tags -- cockpit HUDs are not where accent colors belong.
@@ -31,6 +29,8 @@ defmodule Droodotfoo.Content.Patterns.CockpitHud do
     "OP METEOR // GO"
   ]
 
+  @indicator_labels ["PWR", "GEN", "NAV", "COM", "SYS"]
+
   @spec generate(number, number, RandomGenerator.t(), map, boolean) ::
           {[SVGBuilder.element()], RandomGenerator.t()}
   def generate(width, height, rng, palette, animate \\ false) do
@@ -42,16 +42,11 @@ defmodule Droodotfoo.Content.Patterns.CockpitHud do
     marquee = build_zero_marquee(width, height, config, stroke, animate)
     {status_block, rng} = build_status_block(config, stroke, rng, animate)
     {indicator_panel, rng} = build_indicator_panel(width, config, stroke, rng, animate)
-    {buster_bars, rng} = build_buster_bars(width, config, stroke, rng, animate)
-    {bottom_numbers, rng} = build_bottom_numbers(width, height, config, stroke, rng)
     grid = build_central_grid(width, height, config, stroke, animate)
-    feathers = build_wing_feathers(width, height, config, stroke, animate)
-    silhouette = build_silhouette(width, height, stroke, animate)
+    {grid_overlay, rng} = build_grid_overlay(width, height, config, stroke, rng)
+    {telemetry, rng} = build_telemetry_strip(width, height, config, stroke, rng, animate)
     reticle = build_lock_indicator(width, height, config, stroke, animate)
-    {sparkline, rng} = build_sparkline(width, height, config, stroke, rng, animate)
-    scan_beam = build_scan_beam(width, height, config, stroke, animate)
     visor_edges = build_visor_edges(width, height, config, stroke)
-    corners = build_corners(width, height, config, stroke, animate)
 
     elements =
       scanlines ++
@@ -59,16 +54,11 @@ defmodule Droodotfoo.Content.Patterns.CockpitHud do
         marquee ++
         status_block ++
         indicator_panel ++
-        buster_bars ++
-        bottom_numbers ++
         grid ++
-        feathers ++
-        silhouette ++
+        grid_overlay ++
+        telemetry ++
         reticle ++
-        sparkline ++
-        scan_beam ++
-        visor_edges ++
-        corners
+        visor_edges
 
     {elements, rng}
   end
@@ -188,9 +178,7 @@ defmodule Droodotfoo.Content.Patterns.CockpitHud do
       )
 
     bottom_inner =
-      SVGBuilder.path(
-        "M 0 #{bot_corner - 6} Q #{cx} #{bot_apex + 8} #{width} #{bot_corner - 6}"
-      )
+      SVGBuilder.path("M 0 #{bot_corner - 6} Q #{cx} #{bot_apex + 8} #{width} #{bot_corner - 6}")
       |> SVGBuilder.with_attrs(
         Map.merge(@stroke_effect, %{
           fill: "none",
@@ -204,41 +192,15 @@ defmodule Droodotfoo.Content.Patterns.CockpitHud do
   end
 
   # ---------------------------------------------------------------------------
-  # Corner brackets at the chassis frame (outermost layer).
+  # ZERO SYSTEM marquee: bracketed header sitting in the top of the grid as
+  # a title bar, with an integrated ruler tape strip carrying tick marks
+  # below it. Positioned relative to the grid (not the visor) so it reads
+  # as part of the screen, not floating in the helmet rim.
   # ---------------------------------------------------------------------------
-  defp build_corners(width, height, config, stroke, animate) do
-    pad = config.frame_padding
-    len = config.corner_length
-    weight = config.corner_weight
-
-    attrs =
-      Map.merge(@stroke_effect, %{
-        stroke: stroke,
-        "stroke-width": weight,
-        "stroke-linecap": "square"
-      })
-
-    for {x, y, dx, dy} <- [
-          {pad, pad, 1, 1},
-          {width - pad, pad, -1, 1},
-          {pad, height - pad, 1, -1},
-          {width - pad, height - pad, -1, -1}
-        ],
-        line <- [
-          SVGBuilder.line(x, y, x + dx * len, y) |> SVGBuilder.with_attrs(attrs),
-          SVGBuilder.line(x, y, x, y + dy * len) |> SVGBuilder.with_attrs(attrs)
-        ] do
-      Base.maybe_animate(line, animate, "cockpit-corner")
-    end
-  end
-
-  # ---------------------------------------------------------------------------
-  # ZERO SYSTEM marquee: bracketed header below the visor apex, with an
-  # integrated ruler tape strip carrying tick marks.
-  # ---------------------------------------------------------------------------
-  defp build_zero_marquee(width, _height, config, stroke, animate) do
-    pad = config.frame_padding
-    y = config.visor_apex_y + config.marquee_offset
+  defp build_zero_marquee(width, height, config, stroke, animate) do
+    gh = config.grid_height
+    gy = (height - gh) / 2
+    y = gy + config.marquee_offset
     cx = width / 2
     font_size = config.marquee_font_size
 
@@ -287,8 +249,8 @@ defmodule Droodotfoo.Content.Patterns.CockpitHud do
       |> Base.maybe_animate(animate, "cockpit-marquee")
 
     tape_y = y + 20
-    tape_left = pad + 60
-    tape_right = width - pad - 60
+    tape_left = cx - bracket_inset
+    tape_right = cx + bracket_inset
     tick_count = config.marquee_ticks
     tick_spacing = (tape_right - tape_left) / tick_count
 
@@ -366,12 +328,22 @@ defmodule Droodotfoo.Content.Patterns.CockpitHud do
     cw = config.indicator_width
     ch = config.indicator_height
     gap = config.indicator_gap
+    label_gap = config.indicator_label_gap
     x = width - config.indicator_right_inset - cw
     y0 = config.indicator_top_y
 
     Enum.map_reduce(0..(count - 1), rng, fn i, acc_rng ->
       y = y0 + i * (ch + gap)
       {state, acc_rng} = RandomGenerator.uniform_int_range(acc_rng, 0, 3)
+
+      label =
+        text_node(x - label_gap, y + ch - 3, Enum.at(@indicator_labels, i, ""), %{
+          fill: stroke,
+          opacity: 0.7,
+          "font-size": 11,
+          "letter-spacing": "0.16em",
+          "text-anchor": "end"
+        })
 
       outline =
         SVGBuilder.rect(x, y, cw, ch)
@@ -436,81 +408,9 @@ defmodule Droodotfoo.Content.Patterns.CockpitHud do
             ticks
         end
 
-      {cell_parts, acc_rng}
+      {[label | cell_parts], acc_rng}
     end)
     |> then(fn {groups, final_rng} -> {List.flatten(groups), final_rng} end)
-  end
-
-  # ---------------------------------------------------------------------------
-  # Twin Buster Rifle charge bars: two horizontal meters below the indicator
-  # panel, with calibrated segment ticks, side label, and percentage readout.
-  # Charge level varies per slug via the RNG.
-  # ---------------------------------------------------------------------------
-  defp build_buster_bars(width, config, stroke, rng, animate) do
-    bar_w = config.buster_bar_width
-    bar_h = config.buster_bar_height
-    bar_x = width - config.indicator_right_inset - bar_w
-    top_y = config.buster_bar_top_y
-    gap = config.buster_bar_gap
-    segments = config.buster_segments
-
-    rows = [
-      {"L BUSTER", top_y, 0},
-      {"R BUSTER", top_y + gap, 1}
-    ]
-
-    Enum.flat_map_reduce(rows, rng, fn {label, y, idx}, acc_rng ->
-      {charge, acc_rng} = RandomGenerator.uniform_range(acc_rng, %{min: 0.55, max: 0.97})
-
-      outline =
-        SVGBuilder.rect(bar_x, y, bar_w, bar_h)
-        |> SVGBuilder.with_attrs(
-          Map.merge(@stroke_effect, %{
-            fill: "none",
-            stroke: stroke,
-            "stroke-width": 1,
-            opacity: 0.85
-          })
-        )
-
-      fill =
-        SVGBuilder.rect(bar_x + 1, y + 1, (bar_w - 2) * charge, bar_h - 2)
-        |> SVGBuilder.with_attrs(%{fill: stroke, opacity: 0.8})
-        |> Base.maybe_animate(animate, "cockpit-charge", idx, 2)
-
-      seg_spacing = bar_w / segments
-
-      seg_ticks =
-        for s <- 1..(segments - 1) do
-          tx = bar_x + s * seg_spacing
-
-          SVGBuilder.line(tx, y + 2, tx, y + bar_h - 2)
-          |> SVGBuilder.with_attrs(
-            Map.merge(@stroke_effect, %{stroke: stroke, "stroke-width": 1, opacity: 0.35})
-          )
-        end
-
-      label_node =
-        text_node(bar_x - 8, y + bar_h - 4, label, %{
-          fill: stroke,
-          opacity: 0.85,
-          "font-size": 12,
-          "letter-spacing": "0.14em",
-          "text-anchor": "end"
-        })
-
-      pct = round(charge * 100)
-
-      pct_node =
-        text_node(bar_x + bar_w + 8, y + bar_h - 4, "#{pct}%", %{
-          fill: stroke,
-          opacity: 0.85,
-          "font-size": 12,
-          "letter-spacing": "0.08em"
-        })
-
-      {[outline, fill] ++ seg_ticks ++ [label_node, pct_node], acc_rng}
-    end)
   end
 
   # ---------------------------------------------------------------------------
@@ -578,205 +478,26 @@ defmodule Droodotfoo.Content.Patterns.CockpitHud do
       end)
 
     grid = [outer | vlines ++ hlines] ++ edge_ticks
-    if animate, do: [Base.maybe_animate(outer, true, "cockpit-grid-breath") | tl(grid)], else: grid
+
+    if animate,
+      do: [Base.maybe_animate(outer, true, "cockpit-grid-breath") | tl(grid)],
+      else: grid
   end
 
   # ---------------------------------------------------------------------------
-  # Wing-feather backplate: Wing Zero's deployed feathers fanning out from
-  # the silhouette's shoulder region. Each feather is a thin diamond drawn
-  # as an outlined polygon. Sits between the grid and the silhouette so
-  # the head shape overlays the feather roots cleanly.
-  # ---------------------------------------------------------------------------
-  defp build_wing_feathers(width, height, config, stroke, animate) do
-    cx = width / 2
-    cy = height / 2
-
-    angles = config.feather_angles
-    lengths = config.feather_lengths
-    widths = config.feather_half_widths
-    opacity = config.feather_opacity
-
-    shoulder_left = {cx - 48, cy + 8}
-    shoulder_right = {cx + 48, cy + 8}
-
-    specs = Enum.zip([angles, lengths, widths])
-
-    right_wing =
-      specs
-      |> Enum.with_index()
-      |> Enum.map(fn {{deg, len, w}, i} ->
-        feather(shoulder_right, deg, len, w, :right, stroke, opacity, animate, i)
-      end)
-
-    left_wing =
-      specs
-      |> Enum.with_index()
-      |> Enum.map(fn {{deg, len, w}, i} ->
-        feather(shoulder_left, deg, len, w, :left, stroke, opacity, animate, i)
-      end)
-
-    right_wing ++ left_wing
-  end
-
-  defp feather({ax, ay}, deg, length, half_width, side, stroke, opacity, animate, idx) do
-    rad = deg * :math.pi() / 180
-    cosv = :math.cos(rad)
-    sinv = :math.sin(rad)
-    dx_dir = if side == :right, do: cosv, else: -cosv
-    dy_dir = -sinv
-
-    tx = ax + length * dx_dir
-    ty = ay + length * dy_dir
-
-    mx = ax + length / 2 * dx_dir
-    my = ay + length / 2 * dy_dir
-
-    # Perpendicular to feather direction (rotated 90°).
-    perp_x = -dy_dir
-    perp_y = dx_dir
-
-    p1 = {mx + half_width * perp_x, my + half_width * perp_y}
-    p2 = {mx - half_width * perp_x, my - half_width * perp_y}
-
-    points =
-      [{ax, ay}, p1, {tx, ty}, p2]
-      |> Enum.map_join(" ", fn {px, py} ->
-        "#{Base.round_coord(px)},#{Base.round_coord(py)}"
-      end)
-
-    SVGBuilder.polygon(points)
-    |> SVGBuilder.with_attrs(
-      Map.merge(@stroke_effect, %{
-        fill: "none",
-        stroke: stroke,
-        "stroke-width": 1,
-        opacity: opacity,
-        "stroke-linejoin": "miter"
-      })
-    )
-    |> Base.maybe_animate(animate, "cockpit-feather", idx, 5)
-  end
-
-  # ---------------------------------------------------------------------------
-  # Gundam-head silhouette. Polygon outline + faint fill + eye slits + mouth
-  # grille. Coordinates are centered at the canvas midpoint via offsets.
-  # ---------------------------------------------------------------------------
-  defp build_silhouette(width, height, stroke, animate) do
-    cx = width / 2
-    cy = height / 2
-
-    # Outline points (clockwise from V-fin tip), local to silhouette center.
-    local_points = [
-      {0, -118},
-      {7, -82},
-      {16, -76},
-      {52, -70},
-      {66, -54},
-      {70, -22},
-      {68, 8},
-      {62, 28},
-      {52, 44},
-      {38, 56},
-      {18, 66},
-      {0, 70},
-      {-18, 66},
-      {-38, 56},
-      {-52, 44},
-      {-62, 28},
-      {-68, 8},
-      {-70, -22},
-      {-66, -54},
-      {-52, -70},
-      {-16, -76},
-      {-7, -82}
-    ]
-
-    points_str =
-      local_points
-      |> Enum.map_join(" ", fn {dx, dy} ->
-        "#{Base.round_coord(cx + dx)},#{Base.round_coord(cy + dy)}"
-      end)
-
-    outline =
-      SVGBuilder.polygon(points_str)
-      |> SVGBuilder.with_attrs(
-        Map.merge(@stroke_effect, %{
-          fill: stroke,
-          "fill-opacity": 0.08,
-          stroke: stroke,
-          "stroke-width": 2,
-          "stroke-linejoin": "round",
-          opacity: 0.95
-        })
-      )
-      |> Base.maybe_animate(animate, "cockpit-pulse")
-
-    # Inner detail: forehead crest line.
-    crest =
-      SVGBuilder.path(
-        "M #{cx - 40} #{cy - 46} L #{cx - 28} #{cy - 56} " <>
-          "L #{cx + 28} #{cy - 56} L #{cx + 40} #{cy - 46}"
-      )
-      |> SVGBuilder.with_attrs(
-        Map.merge(@stroke_effect, %{
-          fill: "none",
-          stroke: stroke,
-          "stroke-width": 1.5,
-          opacity: 0.7
-        })
-      )
-
-    # Eye slits.
-    eye_left =
-      SVGBuilder.rect(cx - 36, cy - 22, 24, 8)
-      |> SVGBuilder.with_attrs(%{fill: stroke, opacity: 0.95})
-      |> Base.maybe_animate(animate, "cockpit-eye")
-
-    eye_right =
-      SVGBuilder.rect(cx + 12, cy - 22, 24, 8)
-      |> SVGBuilder.with_attrs(%{fill: stroke, opacity: 0.95})
-      |> Base.maybe_animate(animate, "cockpit-eye")
-
-    # Cheek vents (faint horizontal slashes).
-    vent_left =
-      SVGBuilder.line(cx - 56, cy + 2, cx - 40, cy + 2)
-      |> SVGBuilder.with_attrs(
-        Map.merge(@stroke_effect, %{stroke: stroke, "stroke-width": 1.5, opacity: 0.6})
-      )
-
-    vent_right =
-      SVGBuilder.line(cx + 40, cy + 2, cx + 56, cy + 2)
-      |> SVGBuilder.with_attrs(
-        Map.merge(@stroke_effect, %{stroke: stroke, "stroke-width": 1.5, opacity: 0.6})
-      )
-
-    # Mouth grille: four vertical bars centered under the eyes.
-    mouth =
-      for i <- 0..3 do
-        bx = cx - 18 + i * 12
-
-        SVGBuilder.line(bx, cy + 22, bx, cy + 38)
-        |> SVGBuilder.with_attrs(
-          Map.merge(@stroke_effect, %{stroke: stroke, "stroke-width": 1.5, opacity: 0.8})
-        )
-      end
-
-    [outline, crest, eye_left, eye_right, vent_left, vent_right | mouth]
-  end
-
-  # ---------------------------------------------------------------------------
-  # Lock-on indicator: small crosshair + concentric squares positioned below
-  # the silhouette chin, where it reads as a separate "target locked" UI
-  # element instead of fighting the eye-line. The grid itself does the
-  # broader targeting-frame job.
+  # Lock-on reticle at grid center: crosshair + concentric squares wrapped in
+  # four L-shaped corner brackets that form a target-tracking box. Sits on
+  # top of the waveform so it reads as a sensor focused on a point.
   # ---------------------------------------------------------------------------
   defp build_lock_indicator(width, height, config, stroke, animate) do
     cx = width / 2
-    cy = height / 2 + 96
+    cy = height / 2
     arm = config.reticle_arm
     gap = config.reticle_gap
     rings = config.reticle_rings
     ring_step = config.reticle_ring_step
+    box_half = config.target_box_half
+    bracket_arm = config.target_bracket_arm
 
     crosshair_attrs =
       Map.merge(@stroke_effect, %{stroke: stroke, "stroke-width": 1.5, opacity: 1.0})
@@ -804,140 +525,214 @@ defmodule Droodotfoo.Content.Patterns.CockpitHud do
         |> Base.maybe_animate(animate, "cockpit-ring", i, 3)
       end
 
-    label =
-      text_node(cx + arm + 12, cy + 4, "LOCK", %{
-        fill: stroke,
-        opacity: 0.85,
-        "font-size": 12,
-        "letter-spacing": "0.18em"
+    bracket_attrs =
+      Map.merge(@stroke_effect, %{
+        fill: "none",
+        stroke: stroke,
+        "stroke-width": 1.5,
+        opacity: 0.9
       })
 
-    crosshair ++ concentric ++ [label]
+    brackets =
+      for {sx, sy} <- [{-1, -1}, {1, -1}, {-1, 1}, {1, 1}] do
+        x0 = cx + sx * box_half
+        y0 = cy + sy * box_half
+
+        SVGBuilder.path(
+          "M #{x0 - sx * bracket_arm} #{y0} " <>
+            "L #{x0} #{y0} " <>
+            "L #{x0} #{y0 - sy * bracket_arm}"
+        )
+        |> SVGBuilder.with_attrs(bracket_attrs)
+        |> Base.maybe_animate(animate, "cockpit-track")
+      end
+
+    label =
+      text_node(cx + box_half + 8, cy + box_half - 2, "LOCK", %{
+        fill: stroke,
+        opacity: 0.8,
+        "font-size": 11,
+        "letter-spacing": "0.2em"
+      })
+
+    brackets ++ crosshair ++ concentric ++ [label]
   end
 
   # ---------------------------------------------------------------------------
-  # Scan beam: a thin horizontal line across the grid width that sweeps top
-  # to bottom via CSS transform. Drawn last so it sits over the silhouette.
+  # Grid overlay: axis labels and tactical readouts at the four grid corners,
+  # giving the scanner a working coordinate system instead of a blank frame.
+  # Numerical values are seeded by the slug so each post gets unique numbers.
   # ---------------------------------------------------------------------------
-  defp build_scan_beam(width, height, config, stroke, animate) do
+  defp build_grid_overlay(width, height, config, stroke, rng) do
     gw = config.grid_width
+    gh = config.grid_height
     gx = (width - gw) / 2
-    cy = height / 2
+    gy = (height - gh) / 2
 
-    beam =
-      SVGBuilder.line(gx, cy, gx + gw, cy)
-      |> SVGBuilder.with_attrs(
-        Map.merge(@stroke_effect, %{
-          stroke: stroke,
-          "stroke-width": 1.5,
-          opacity: 0.85
-        })
+    {azimuth, rng} = RandomGenerator.uniform_float(rng, 0.0, 359.9)
+    {elevation, rng} = RandomGenerator.uniform_float(rng, -45.0, 45.0)
+    {range_km, rng} = RandomGenerator.uniform_float(rng, 1.4, 12.8)
+    {velocity, rng} = RandomGenerator.uniform_int_range(rng, 180, 420)
+
+    # AZ/RNG sit just below the title-bar row (first inner grid line at
+    # gy + cell_h), EL/V at the bottom of the grid.
+    cell_h = gh / config.grid_rows
+    pad_x = 8
+    top_y = gy + cell_h + 16
+    bot_y = gy + gh - 8
+
+    base = %{
+      fill: stroke,
+      opacity: 0.7,
+      "font-size": 12,
+      "letter-spacing": "0.12em"
+    }
+
+    top_left =
+      text_node(gx + pad_x, top_y, "AZ #{format_decimal(azimuth, 1)}", base)
+
+    top_right =
+      text_node(
+        gx + gw - pad_x,
+        top_y,
+        "RNG #{format_decimal(range_km, 1)} KM",
+        Map.put(base, "text-anchor", "end")
       )
-      |> Base.maybe_animate(animate, "cockpit-scan")
 
-    [beam]
+    bottom_left =
+      text_node(gx + pad_x, bot_y, "EL #{format_decimal(elevation, 1)}", base)
+
+    bottom_right =
+      text_node(
+        gx + gw - pad_x,
+        bot_y,
+        "V #{velocity} M/S",
+        Map.put(base, "text-anchor", "end")
+      )
+
+    {[top_left, top_right, bottom_left, bottom_right], rng}
   end
 
   # ---------------------------------------------------------------------------
-  # Sparkline at bottom of viewport: stochastic telemetry trace that draws in.
+  # Bottom telemetry strip: sits under the grid in the bottom visor mask
+  # area. A thin sparkline above a structured text row with frame counter,
+  # range bar, and target count. Fills what used to be empty visor floor.
   # ---------------------------------------------------------------------------
-  defp build_sparkline(width, height, config, stroke, rng, animate) do
-    pad = config.frame_padding
-    band_height = config.sparkline_band_height
-    point_count = config.sparkline_points
+  defp build_telemetry_strip(width, height, config, stroke, rng, animate) do
+    gw = config.grid_width
+    gh = config.grid_height
+    gx = (width - gw) / 2
+    gy = (height - gh) / 2
+    strip_top = gy + gh + config.telemetry_y_offset
+    strip_height = config.telemetry_height
 
-    band_y = height - config.visor_corner_y - band_height - 28
-    inner_width = width - 2 * pad - config.sparkline_inset * 2
-    step = inner_width / (point_count - 1)
-    start_x = pad + config.sparkline_inset
+    {frame_num, rng} = RandomGenerator.uniform_int_range(rng, 1024, 9999)
+    {range_pct, rng} = RandomGenerator.uniform_int_range(rng, 4, 11)
+    {tgt_count, rng} = RandomGenerator.uniform_int_range(rng, 1, 12)
 
-    {points, rng} =
-      Enum.map_reduce(0..(point_count - 1), rng, fn i, acc_rng ->
-        {ratio, acc_rng} = RandomGenerator.uniform_range(acc_rng, %{min: 0.0, max: 1.0})
-        x = start_x + i * step
-        y = band_y + band_height * (1 - ratio)
-        {{x, y}, acc_rng}
-      end)
+    spark_y = strip_top + 6
+    spark_amp = 10
 
-    path_d =
-      points
-      |> Enum.with_index()
-      |> Enum.map_join(" ", fn
-        {{x, y}, 0} -> "M #{Base.round_coord(x)} #{Base.round_coord(y)}"
-        {{x, y}, _} -> "L #{Base.round_coord(x)} #{Base.round_coord(y)}"
-      end)
+    {f1, rng} = RandomGenerator.uniform_float(rng, 3.0, 5.0)
+    {f2, rng} = RandomGenerator.uniform_float(rng, 6.0, 11.0)
+    {p1, rng} = RandomGenerator.uniform_float(rng, 0.0, :math.pi() * 2)
 
-    spark =
-      SVGBuilder.path(path_d)
+    samples = 90
+
+    spark_d =
+      for i <- 0..samples do
+        t = i / samples
+        x = gx + t * gw
+
+        y =
+          spark_y +
+            spark_amp *
+              (0.5 * :math.sin(t * f1 * 2 * :math.pi() + p1) +
+                 0.5 * :math.sin(t * f2 * 2 * :math.pi()))
+
+        if i == 0,
+          do: "M #{Base.round_coord(x)} #{Base.round_coord(y)}",
+          else: "L #{Base.round_coord(x)} #{Base.round_coord(y)}"
+      end
+      |> Enum.join(" ")
+
+    sparkline =
+      SVGBuilder.path(spark_d)
       |> SVGBuilder.with_attrs(
         Map.merge(@stroke_effect, %{
           fill: "none",
           stroke: stroke,
-          "stroke-width": 1.5,
-          "stroke-linejoin": "round",
-          opacity: 1.0
+          "stroke-width": 1,
+          opacity: 0.65
         })
       )
-      |> Base.maybe_animate(animate, "cockpit-spark")
 
-    baseline =
-      SVGBuilder.line(start_x, band_y + band_height, start_x + inner_width, band_y + band_height)
+    spark_baseline =
+      SVGBuilder.line(gx, spark_y + spark_amp + 6, gx + gw, spark_y + spark_amp + 6)
       |> SVGBuilder.with_attrs(
-        Map.merge(@stroke_effect, %{stroke: stroke, "stroke-width": 1, opacity: 0.45})
+        Map.merge(@stroke_effect, %{stroke: stroke, "stroke-width": 1, opacity: 0.35})
       )
 
-    {[baseline, spark], rng}
-  end
+    text_y = strip_top + strip_height - 6
 
-  # ---------------------------------------------------------------------------
-  # Bottom corner number readouts: two digit strings at each lower corner.
-  # ---------------------------------------------------------------------------
-  defp build_bottom_numbers(width, height, config, stroke, rng) do
-    font_size = config.number_font_size
-    long_len = config.number_digits_long
-    short_len = config.number_digits_short
+    text_base = %{
+      fill: stroke,
+      opacity: 0.85,
+      "font-size": 13,
+      "letter-spacing": "0.14em"
+    }
 
-    left_x = config.status_x
-    right_x = width - config.indicator_right_inset
-    line_y_top = height - 150
-    line_y_bot = line_y_top + 22
+    frame_text =
+      text_node(gx + 4, text_y, "FRAME #{frame_num}", text_base)
 
-    {d1, rng} = random_digits(rng, long_len)
-    {d2, rng} = random_digits(rng, long_len)
-    {d3, rng} = random_digits(rng, short_len)
-    {d4, rng} = random_digits(rng, long_len)
+    # Range bar: 12 cells, filled left-to-right.
+    bar_cells = 12
+    bar_x = gx + gw / 2 - bar_cells * 5
+    bar_cell_w = 8
+    bar_cell_h = 8
+    bar_gap = 2
 
-    base_attrs = fn opacity ->
-      %{
-        fill: stroke,
-        opacity: opacity,
-        "font-size": font_size,
-        "letter-spacing": "0.08em"
-      }
-    end
+    bar_label =
+      text_node(bar_x - 10, text_y, "RNG", Map.put(text_base, "text-anchor", "end"))
 
-    right_attrs = fn opacity ->
-      Map.put(base_attrs.(opacity), :"text-anchor", "end")
-    end
+    bar_cells_elems =
+      for i <- 0..(bar_cells - 1) do
+        bx = bar_x + i * (bar_cell_w + bar_gap)
+        by = text_y - bar_cell_h
 
-    elements = [
-      text_node(left_x, line_y_top, d1, base_attrs.(0.85)),
-      text_node(left_x, line_y_bot, d2, base_attrs.(0.85)),
-      text_node(right_x, line_y_top, d3, right_attrs.(0.85)),
-      text_node(right_x, line_y_bot, d4, right_attrs.(0.7))
-    ]
+        if i < range_pct do
+          SVGBuilder.rect(bx, by, bar_cell_w, bar_cell_h)
+          |> SVGBuilder.with_attrs(%{fill: stroke, opacity: 0.85})
+          |> Base.maybe_animate(animate, "cockpit-blip", i, 4)
+        else
+          SVGBuilder.rect(bx, by, bar_cell_w, bar_cell_h)
+          |> SVGBuilder.with_attrs(
+            Map.merge(@stroke_effect, %{
+              fill: "none",
+              stroke: stroke,
+              "stroke-width": 1,
+              opacity: 0.45
+            })
+          )
+        end
+      end
+
+    tgt_text =
+      text_node(
+        gx + gw - 4,
+        text_y,
+        "TGT #{String.pad_leading(Integer.to_string(tgt_count), 2, "0")}",
+        Map.put(text_base, "text-anchor", "end")
+      )
+
+    elements =
+      [sparkline, spark_baseline, frame_text, bar_label, tgt_text] ++ bar_cells_elems
 
     {elements, rng}
   end
 
-  defp random_digits(rng, length) do
-    {digits, rng} =
-      Enum.map_reduce(1..length, rng, fn _, r ->
-        {d, r} = RandomGenerator.uniform_int_range(r, 0, 9)
-        {Integer.to_string(d), r}
-      end)
-
-    {Enum.join(digits), rng}
+  defp format_decimal(value, places) do
+    :erlang.float_to_binary(value * 1.0, decimals: places)
   end
 
   # ---------------------------------------------------------------------------

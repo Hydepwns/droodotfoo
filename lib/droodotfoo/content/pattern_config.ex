@@ -118,8 +118,6 @@ defmodule Droodotfoo.Content.PatternConfig do
   def cockpit_hud_config do
     %{
       frame_padding: 32,
-      corner_length: 64,
-      corner_weight: 2,
       scanline_spacing: 26,
       scanline_opacity: 0.16,
       # Visor bezel curves: dark cutouts at top/bottom that frame the HUD.
@@ -127,25 +125,18 @@ defmodule Droodotfoo.Content.PatternConfig do
       # determines how far the curve dips toward the visor center.
       visor_corner_y: 60,
       visor_apex_y: 210,
-      # ZERO SYSTEM marquee header + ruler tape strip below it.
-      marquee_offset: 32,
-      marquee_bracket_inset: 320,
+      # ZERO SYSTEM marquee header + ruler tape strip below it. Sits
+      # inside the top of the grid as a title bar (offset from grid top).
+      marquee_offset: 30,
+      marquee_bracket_inset: 230,
       marquee_bracket_arm: 14,
-      marquee_font_size: 24,
-      marquee_ticks: 48,
+      marquee_font_size: 22,
+      marquee_ticks: 40,
       # Central wireframe scanner grid (holds the silhouette + reticle).
       grid_cols: 8,
       grid_rows: 5,
       grid_width: 520,
       grid_height: 260,
-      # Wing-feather backplate fanning out behind silhouette. Angles are
-      # measured from horizontal; capped under 55 deg so the upper feathers
-      # don't collide with the ZERO SYSTEM marquee.
-      feather_count: 5,
-      feather_angles: [-4, 10, 24, 38, 52],
-      feather_lengths: [150, 175, 185, 175, 158],
-      feather_half_widths: [3.5, 4.5, 5, 4.5, 3.5],
-      feather_opacity: 0.25,
       # Left status readouts.
       status_x: 72,
       status_y_start: 252,
@@ -157,25 +148,17 @@ defmodule Droodotfoo.Content.PatternConfig do
       indicator_gap: 8,
       indicator_right_inset: 60,
       indicator_top_y: 220,
-      # Twin Buster Rifle charge bars beneath the indicator panel.
-      buster_bar_width: 120,
-      buster_bar_height: 16,
-      buster_bar_top_y: 348,
-      buster_bar_gap: 28,
-      buster_segments: 10,
-      # Reticle over silhouette eyes.
-      reticle_arm: 38,
-      reticle_gap: 8,
+      indicator_label_gap: 8,
+      # Center reticle: crosshair + concentric rings + corner brackets.
+      reticle_arm: 28,
+      reticle_gap: 6,
       reticle_rings: 2,
-      reticle_ring_step: 14,
-      # Sparkline along bottom of viewport.
-      sparkline_band_height: 56,
-      sparkline_points: 64,
-      sparkline_inset: 32,
-      # Bottom corner number readouts.
-      number_font_size: 16,
-      number_digits_long: 10,
-      number_digits_short: 7
+      reticle_ring_step: 10,
+      target_box_half: 44,
+      target_bracket_arm: 12,
+      # Bottom telemetry strip: sparkline + frame counter + range bar.
+      telemetry_y_offset: 38,
+      telemetry_height: 56
     }
   end
 
