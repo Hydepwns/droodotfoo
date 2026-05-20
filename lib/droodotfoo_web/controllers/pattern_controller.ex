@@ -7,9 +7,9 @@ defmodule DroodotfooWeb.PatternController do
 
   # Compile-time switch: long immutable cache in prod, short revalidating
   # cache in dev so pattern code changes invalidate browser caches.
-  @cache_control (if Mix.env() == :prod,
-                    do: "public, max-age=31536000, immutable",
-                    else: "public, max-age=60, must-revalidate")
+  @cache_control if Mix.env() == :prod,
+                   do: "public, max-age=31536000, immutable",
+                   else: "public, max-age=60, must-revalidate"
 
   @doc """
   Serves a generated SVG pattern for a post slug.

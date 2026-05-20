@@ -223,18 +223,24 @@
   border: var(--border-thickness) solid var(--border-color);
 }
 
-/* Media elements in markdown content */
-.page-container img:not(.no-grid-align),
-.narrow-container img:not(.no-grid-align) {
-  width: 100%;
+/* Media elements in markdown content. Centered by default; images smaller
+   than the column render at their natural size with auto horizontal
+   margins, larger ones cap at the column width. Float and statement
+   variants below override this. .article-spaced covers post bodies
+   (rendered inside an <article>, not .page-container). */
+.page-container img,
+.narrow-container img,
+.article-spaced img {
+  max-width: 100%;
   height: auto;
   display: block;
-  margin: 1rem 0;
+  margin: 1rem auto;
   border: var(--border-thickness) solid var(--border-color);
 }
 
 .page-container video,
-.narrow-container video {
+.narrow-container video,
+.article-spaced video {
   width: 100%;
   height: auto;
   display: block;
@@ -268,12 +274,14 @@
 }
 
 /* When the float class is on a <div> wrapper, inner image fills the box and
-   inherits the wrapper's max-width. Override the generic .page-container img
-   margin so the image hugs its caption. */
+   inherits the wrapper's max-width. Override the generic img margin so the
+   image hugs its caption. */
 .page-container div.post-image-float-right > img,
 .page-container div.post-image-float-left > img,
 .narrow-container div.post-image-float-right > img,
-.narrow-container div.post-image-float-left > img {
+.narrow-container div.post-image-float-left > img,
+.article-spaced div.post-image-float-right > img,
+.article-spaced div.post-image-float-left > img {
   width: 100%;
   height: auto;
   display: block;
@@ -282,7 +290,8 @@
 
 /* Full-width statement image -- sits alone, echoes the preceding text */
 .page-container .post-image-statement,
-.narrow-container .post-image-statement {
+.narrow-container .post-image-statement,
+.article-spaced .post-image-statement {
   display: block;
   margin: 3rem auto;
   max-width: 90%;
@@ -480,7 +489,8 @@ article blockquote strong {
   }
 
   .page-container .post-image-statement,
-  .narrow-container .post-image-statement {
+  .narrow-container .post-image-statement,
+  .article-spaced .post-image-statement {
     max-width: 100%;
     margin: 2rem 0;
   }

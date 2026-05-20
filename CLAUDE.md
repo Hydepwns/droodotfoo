@@ -117,6 +117,7 @@ lib/droodotfoo/wiki/
 ```
 
 **Oban Workers** (background jobs):
+
 - `OSRSSyncWorker` - every 15 min
 - `NLabSyncWorker` - daily 4am
 - `WikipediaSyncWorker` - weekly Saturday 2am
@@ -168,6 +169,7 @@ end
 ### Routing
 
 **Main site (droo.foo)**:
+
 - `/` - Home page
 - `/about` - About/experience
 - `/now` - Current focus (/now page)
@@ -180,6 +182,7 @@ end
 - `/dev/dashboard` - Phoenix LiveDashboard (dev only)
 
 **Wiki subdomain (wiki.droo.foo)**:
+
 - `/` - Landing page
 - `/search` - Full-text and semantic search
 - `/osrs/:slug`, `/nlab/:slug`, `/wikipedia/:slug` - Articles by source
@@ -188,11 +191,13 @@ end
 - `/osrs/api/v1/items`, `/osrs/api/v1/monsters` - REST API
 
 **Library subdomain (lib.droo.foo)** - Tailnet-only:
+
 - `/` - Document index
 - `/upload` - Upload new documents
 - `/doc/:slug` - Document reader
 
 **Git subdomain (git.droo.foo)**:
+
 - `/` - Repository list (all sources)
 - `/:source/:owner/:repo` - Repository detail
 - `/:source/:owner/:repo/tree/:branch/*path` - File browser

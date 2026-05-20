@@ -111,7 +111,16 @@ body:has(.giveth-banner:not(.is-hidden)) {
   justify-content: center;
 }
 
+/* Override the global a:hover bg inversion. The child spans set explicit
+   colors, so leaving the inverted bg would paint light text on light bg
+   and the banner copy would vanish. */
 .giveth-banner-link:hover {
+  background-color: transparent;
+  color: var(--accent-color);
+}
+
+.giveth-banner-link:hover .giveth-banner-text,
+.giveth-banner-link:hover .giveth-banner-multiplier {
   color: var(--accent-color);
 }
 

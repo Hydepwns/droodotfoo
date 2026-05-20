@@ -74,10 +74,12 @@ defmodule DroodotfooWeb.AboutLive do
           I believe economic and digital privacy must be embedded as first class citizens in a product.
 
           Where others find dichotomy, axolotls combinate and collaborate.
-          We co-authored <.ext_link
+          We co-authored
+          <.ext_link
             href="https://ethereum-magicians.org/t/erc-8262-zero-knowledge-compliance-oracle/28543"
             text="ERC-8262"
-          /> (Zero-Knowledge Compliance Oracle) to standardize this approach as a public spec. axol.io runs the infra underneath: staking, an ETH client, sequencers, Builder.
+          />
+          (Zero-Knowledge Compliance Oracle) to standardize this approach as a public spec. axol.io runs the infra underneath: staking, an ETH client, sequencers, Builder.
         </p>
         <p class="mt-1">
           I'm also building a Gundam. Not a metaphor.

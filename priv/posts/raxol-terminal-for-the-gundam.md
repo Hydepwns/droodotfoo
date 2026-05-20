@@ -64,7 +64,13 @@ Give an agent a real <abbr title="DEC VT100 — the 1978 terminal whose escape c
 
 ## TEA for everything
 
-Raxol uses the [Elm Architecture](https://guide.elm-lang.org/architecture/). `init`, `update`, `view`. Three callbacks and a supervised application falls out the other end. Whether the application is a counter, a file browser, or an AI agent streaming tokens from Claude.
+Raxol uses the [Elm Architecture](https://guide.elm-lang.org/architecture/), TEA for short: a design pattern for interactive applications built around unidirectional data flow and immutable state. It came out of the Elm language and went on to shape Redux and the modern React app model.
+
+The architecture has three pieces. Model is the immutable state of the application at a tick; updates produce a new model, they don't mutate the old one. Update is a pure function `(Model, Message) -> Model` that holds the application logic. View is a pure function `Model -> UI`. The cycle: View renders the Model. An event becomes a Message. Update returns the next Model. View re-renders.
+
+What that buys is predictability. Side effects don't hide inside event handlers. Mutations can't race each other because there is only one path that creates new state. A crash can be replayed from its message log and the bug happens the same way every time. Testing reduces to feeding `update/2` a list of messages and checking the resulting model.
+
+Every input is a message: sensor reading, keystroke, LLM token, solver bid, 402 response. The cockpit is a view over current state; the pilot is one more message source. A counter, a file browser, and an AI agent streaming tokens from Claude all have the same shape. The runtime does not care whether the messages come from a human, a sensor, or a model. Three callbacks and a supervised application falls out the other end.
 
 ```elixir
 # Human-operated counter
@@ -122,7 +128,17 @@ This is the piece most agent frameworks get wrong. They bolt a separate "agent S
 
 In most agent frameworks, a bad tool call cascades. Process crashes, state vanishes, restart from scratch if you're lucky. If you're not lucky, it corrupts a shared structure and takes other agents with it.
 
-In Raxol the agent is an [OTP](https://wiki.droo.foo/wikipedia/Open_Telecom_Platform) process. When it crashes the supervisor catches it, the cockpit stays up, the agent restarts with last known good state, and the HUD shows a blip. One gauge resets to stale-but-safe data while the fresh state loads. The pilot keeps flying.
+This is why Raxol runs on the [BEAM Virtual Machine](https://wiki.droo.foo/wikipedia/BEAM_%28Erlang_virtual_machine%29). Erlang came out of Ericsson in the 80s to keep telephone switches answering calls while pieces of the system died and restarted around them. The BEAM gives us isolated processes, supervised restart, and graceful degradation. Forty years of telco failure modes, already debugged.
+
+The same lineage runs through the wiring under the floor. [Bob Metcalfe](https://en.wikipedia.org/wiki/Robert_Metcalfe)'s Ethernet at Xerox PARC ended up speaking over the twisted-pair phone cabling already strung through every office building, once engineers pinned down the RJ45 pinout. The wire and the runtime both descend from the same obsession with not dropping a call.
+
+<img src="/images/blog/Ethernet_Cables_History.webp" alt="Diagram of Ethernet LAN cable categories from Cat3 through Cat8, showing data rate, frequency, and year of standardisation for each generation of twisted-pair cabling" loading="lazy" class="post-image-statement" />
+
+<p class="post-caption">Ethernet cable categories, Cat3 onward. The twisted-pair lineage. (<a href="https://telecom.samm.com/blog/what-is-the-ethernet">samm.com</a>)</p>
+
+[OTP](https://wiki.droo.foo/wikipedia/Open_Telecom_Platform) (Open Telecom Platform) is the standard library that ships with the BEAM: supervisors, GenServers, application lifecycle, hot code reload, distributed messaging. Most agent frameworks bolt on a queue, a retry layer, a job runner, a circuit breaker, a state store. Raxol uses what's already in the box. No Redis, no Celery, no Sidekiq in the failure path.
+
+The agent is one of those OTP processes. When it crashes the supervisor catches it, the cockpit stays up, the agent restarts from its last known good state, and the HUD shows a blip. One gauge resets to stale-but-safe data while the fresh state loads. The pilot keeps flying.
 
 <img src="/images/blog/gundam/gundam-cockpit-concept.webp" alt="Gundam cockpit HUD with independent gauges for armor, boost, radar, ammo, and battle log. Each subsystem reports independently (Bandai Namco)" loading="lazy" class="post-image-statement" />
 
@@ -204,6 +220,10 @@ Xochi itself is now built into the raxol README as a first-class example, becaus
 
 Coinbase recently launched [Agentic Wallets](https://www.coinbase.com/developer-platform/discover/launches/agentic-wallets), and on-chain volume from agents on Base and Solana is climbing steeply. The conversation around it is mostly about guardrails: spending caps, whitelisted contracts, circuit breakers. Almost nobody is talking about the harder problem. An agent broadcasting its rebalancing strategy to a public mempool is a sitting target. Every <abbr title="Maximal Extractable Value — profit a block producer can extract by ordering, including, or excluding transactions within a block; sandwich attacks are the most visible form">MEV</abbr> bot on Ethereum sees the move before it settles. $289M was extracted by sandwich attacks in 2025, and agents running 24/7 with predictable patterns are easier prey than human traders by a wide margin. Once the cockpit has a wallet, private execution is what keeps the pilot from being picked apart on every trade.
 
+<img src="/images/blog/Caravaggio_Calling_of_Saint_Matthew_1600.webp" alt="The Calling of Saint Matthew by Caravaggio (c. 1600) - Christ points at Matthew the tax collector mid-count, calling him up from a table of coins and ledgers" loading="lazy" class="post-image-statement" />
+
+<p class="post-caption">Caravaggio, <em>The Calling of Saint Matthew</em> (c. 1600). San Luigi dei Francesi, Rome. Christ points at Matthew mid-count. The instant a money-handler is called into a different kind of actor.</p>
+
 Inter-agent messaging is plain: `Command.send_agent/2`, broadcast, call. State stays inside processes; communication happens by message. On the BEAM, fault tolerance is the default. You have to work to break it.
 
 I will admit I am still not sure what happens when you put an agent into all of this and let it run unsupervised. The machinery works: the headless runtime, the payment rails, the supervision trees, the six-surface fan-out, the per-job isolation in Symphony, the spending ledger that refuses to sign past its mandate. "Works" and "is a good idea" are different questions, and I do not think anyone has a good answer to the second one yet. The next quarter is finding out. Production deployments. Agents in the wild, running headless, paying for their own compute, trading privately through Xochi, opening their own pull requests through Symphony, and crashing in ways I will not see coming.
@@ -215,6 +235,10 @@ That last part is what the BEAM is for.
 ## The Romefeller phase
 
 The thing nobody talks about in Wing is the money.
+
+<img src="/images/blog/Velazquez_Forge_of_Vulcan_1630.webp" alt="The Forge of Vulcan by Diego Velazquez (1630) - The laurel-crowned god Apollo arrives at the smithy mid-strike, where Vulcan and his blacksmiths are forging armor for Mars" loading="lazy" class="post-image-statement" />
+
+<p class="post-caption">Diego Velazquez, <em>The Forge of Vulcan</em> (1630). Museo del Prado, Madrid. Apollo arrives at the smithy as Vulcan forges armor for Mars. The patrician order pays a visit to the workshop that builds its war machine.</p>
 
 OZ does not pay for itself. The Romefeller Foundation pays for OZ. Romefeller is centuries-old European aristocratic capital, the kind of money that owns the suits, the factories, and most of the colonel-rank officers. They produce Leos by the thousand. They want a long war the way a defense contractor wants a long war. Treize Khushrenada is their golden boy until he stops being convenient, which is approximately the moment he tries to make conflict expensive again on purpose.
 
@@ -234,6 +258,10 @@ A few specifics on what that buys an agent economically:
 - The Glass Cube privacy tiers map trust score to operational privacy. You earn the right to operate in stealth by accumulating attestations, not by inheriting a rank. The OZ class structure inverted.
 
 None of this matters if agents stay billed-by-the-call rentals on a centralized API. It matters once a process has a wallet, a mandate, a private execution path, and the supervisor tree to survive the inevitable crash. Then it is a pilot, not a seat.
+
+<img src="/images/blog/Durer_Knight_Death_and_the_Devil_1513.webp" alt="Knight, Death and the Devil by Albrecht Durer (1513) - An armored knight on horseback rides through a dark valley flanked by Death with an hourglass and a horned Devil, his dog at his heel, undeterred" loading="lazy" class="post-image-statement" />
+
+<p class="post-caption">Albrecht Durer, <em>Knight, Death and the Devil</em> (1513). National Gallery of Art. The armor, the horse, the dog, the route. Death holds the hourglass, the Devil leers from behind, and the knight rides past both because he came equipped. The tools makes the pilot.</p>
 
 ---
 

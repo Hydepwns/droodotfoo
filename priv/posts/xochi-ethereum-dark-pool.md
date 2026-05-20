@@ -12,7 +12,7 @@ pattern_style: "glass_cube"
 
 <p class="post-caption"><em>Les Poissons rouges</em> (1912) - Henri Matisse. Pushkin Museum, Moscow.</p>
 
-> Private DEX on Ethereum. Zero-knowledge compliance proofs, now in Draft as [ERC-8262](https://github.com/ethereum/ERCs/pull/1747). Solver live on five chains, ~2s settlement, P95 ~<6s. Cofounded by ex-DOJ/FBI financial intelligence. Raising to capitalize a working system.
+> Private DEX on Ethereum. Zero-knowledge compliance proofs, now in Draft as [ERC-8262](https://ethereum-magicians.org/t/erc-8262-zero-knowledge-compliance-oracle/28543). Solver live on five chains, ~2s settlement, P95 ~<6s. Cofounded by ex-DOJ/FBI financial intelligence. Raising to capitalize a working system.
 >
 > [whitepaper](https://xochi.fi/whitepaper) | [appendix](https://xochi.fi/appendix) | [ERC-8262](https://github.com/ethereum/ERCs/pull/1747) | [discussion](https://ethereum-magicians.org/t/erc-8262-zero-knowledge-compliance-oracle/28543)
 
@@ -129,7 +129,7 @@ The task is simple: prevent sanctioned actors from using the financial system, c
 
 Zero-knowledge compliance proofs answer that question cryptographically. A proof attests that a trade is AML/sanctions-compliant without revealing the trade itself. The regulator verifies the proof. They never see the data.
 
-This week, [ERC-8262](https://github.com/ethereum/ERCs/pull/1747) entered Draft on the Ethereum standards track. Co-authored with our compliance lead Bloo (ex-FBI/DOJ AML) and Merkle Bonsai (V's whitehat handle), the spec is now under [open community review](https://ethereum-magicians.org/t/erc-8262-zero-knowledge-compliance-oracle/28543). Xochi is one implementation of it. Any privacy protocol can build against the same primitives, and a community-vetted standard is closer to the shape regulators are used to evaluating than one team's GitHub repo.
+This week, [ERC-8262](https://ethereum-magicians.org/t/erc-8262-zero-knowledge-compliance-oracle/28543) entered Draft on the Ethereum standards track. Co-authored with our compliance lead Bloo (ex-FBI/DOJ AML) and Merkle Bonsai (V's whitehat handle), the [draft text](https://github.com/ethereum/ERCs/pull/1747) is open for community review on Ethereum Magicians. Xochi is one implementation of it. Any privacy protocol can build against the same primitives, and a community-vetted standard is closer to the shape regulators are used to evaluating than one team's GitHub repo.
 
 | Regulatory Requirement | What the ZK Proof Says     | What Stays Hidden   |
 | ---------------------- | -------------------------- | ------------------- |
@@ -244,17 +244,17 @@ Bloo has been the reviewer on the other side of these applications. When we draf
 
 Riddler fills intents on mainnet across every advertised route. Live B2B integration, real tokens, real settlement. ~2s typical, <6s P95. Infrastructure is production on five chains. The system works. What it needs is capital to scale liquidity beyond B2B into a public product. For the full technical breakdown, fee structure, and roadmap, see the [whitepaper](https://xochi.fi/whitepaper).
 
-Xochi is the commercial product. The open infrastructure underneath it (Mana, the ZK-Compliance Oracle spec, the stealth address primitives, Raxol, the whitehat research) is axol.io. We're funding the public goods side through [Giveth](https://qf.giveth.io/project/axolio-xochifi). ETH donated gets staked via DVT on hardware we already operate. The principal stays staked. Yield funds operations permanently. We're not asking for funding to start. We're asking for funding to not stop.
+Xochi is the commercial product. The open infrastructure underneath it (Mana, the ZK-Compliance Oracle spec, the stealth address primitives, Raxol, the whitehat research) is axol.io. We're funding the public goods side through [Giveth](https://giveth.io/project/axolio-xochifi). ETH donated gets staked via DVT on hardware we already operate. The principal stays staked. Yield funds operations permanently. We're not asking for funding to start. We're asking for funding to not stop.
 
 ---
 
 No on-chain venue is both private and compliant. That's either a gap in the market or a sign that it can't be done. I think about both possibilities more than is probably healthy. We have the solver, the infrastructure, and a team that has spent time on both sides of the enforcement table. The bet is that regulators will accept cryptographic compliance. We think the math is on our side. We'll find out.
 
 <div class="post-cta banner-beam">
-<p class="post-cta-tag">Ethereum Security QF Round, closes May 14</p>
-<p class="post-cta-headline">$100 you give &rarr; ~$50K matched</p>
-<p class="post-cta-sub">Quadratic funding turns small donations into large grants. Back the public goods underneath Xochi.</p>
-<a class="post-cta-button" href="https://qf.giveth.io/project/axolio-xochifi" target="_blank" rel="noopener noreferrer">Donate on Giveth &rarr;</a>
+<p class="post-cta-tag">Public goods on Giveth</p>
+<p class="post-cta-headline">Back the open infrastructure</p>
+<p class="post-cta-sub">ETH donated gets staked via DVT on hardware we already operate. Principal stays staked. Yield funds the public-goods side permanently.</p>
+<a class="post-cta-button" href="https://giveth.io/project/axolio-xochifi" target="_blank" rel="noopener noreferrer">Donate on Giveth &rarr;</a>
 </div>
 
-_Xochi is ETH's Friendly Dark Pool, built by the axolotls at [axol.io](https://axol.io). Trade at [xochi.fi](https://xochi.fi). Back the build on [Giveth](https://qf.giveth.io/project/axolio-xochifi)._
+_Xochi is ETH's Friendly Dark Pool, built by the axolotls at [axol.io](https://axol.io). Trade at [xochi.fi](https://xochi.fi). Back the build on [Giveth](https://giveth.io/project/axolio-xochifi)._
