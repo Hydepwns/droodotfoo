@@ -30,7 +30,7 @@ The first was a terminal for AI agents. A real emulator where agents address str
 
 The second was the cockpit of a Gundam. Wing Zero specifically, because the cockpit works as a design when every subsystem fails on its own. Sensor goes dark, the HUD prints "NO DATA" in that one slot and keeps drawing the rest. Real fighter cockpits behave the same way, but mech anime makes the design philosophy visceral. You watch a pilot lose a sensor, then a comms link, then a leg, and keep flying with whatever is left.
 
-The terminal is the cockpit. The agent is just another pilot. The only runtime I trust to make either of them work is the [BEAM](https://wiki.droo.foo/wikipedia/BEAM_%28Erlang_virtual_machine%29), the virtual machine Erlang and Elixir run on.
+The terminal is the cockpit. The agent is just another pilot. The only runtime I trust to make either of them work is the [BEAM](https://en.wikipedia.org/wiki/BEAM_(Erlang_virtual_machine)), the virtual machine Erlang and Elixir run on.
 
 When the Telegram bridge drops, the dashboard keeps rendering. When one task crashes mid-job, the notification for the task next door still fires. That fault-isolation is what you get once you stop fighting the runtime.
 
@@ -128,7 +128,7 @@ This is the piece most agent frameworks get wrong. They bolt a separate "agent S
 
 In most agent frameworks, a bad tool call cascades. Process crashes, state vanishes, restart from scratch if you're lucky. If you're not lucky, it corrupts a shared structure and takes other agents with it.
 
-This is why Raxol runs on the [BEAM Virtual Machine](https://wiki.droo.foo/wikipedia/BEAM_%28Erlang_virtual_machine%29). Erlang came out of Ericsson in the 80s to keep telephone switches answering calls while pieces of the system died and restarted around them. The BEAM gives us isolated processes, supervised restart, and graceful degradation. Forty years of telco failure modes, already debugged.
+This is why Raxol runs on the [BEAM Virtual Machine](https://en.wikipedia.org/wiki/BEAM_(Erlang_virtual_machine)). Erlang came out of Ericsson in the 80s to keep telephone switches answering calls while pieces of the system died and restarted around them. The BEAM gives us isolated processes, supervised restart, and graceful degradation. Forty years of telco failure modes, already debugged.
 
 The same lineage runs through the wiring under the floor. [Bob Metcalfe](https://en.wikipedia.org/wiki/Robert_Metcalfe)'s Ethernet at Xerox PARC ended up speaking over the twisted-pair phone cabling already strung through every office building, once engineers pinned down the RJ45 pinout. The wire and the runtime both descend from the same obsession with not dropping a call.
 
@@ -136,7 +136,7 @@ The same lineage runs through the wiring under the floor. [Bob Metcalfe](https:/
 
 <p class="post-caption">Ethernet cable categories, Cat3 onward. The twisted-pair lineage. (<a href="https://telecom.samm.com/blog/what-is-the-ethernet">samm.com</a>)</p>
 
-[OTP](https://wiki.droo.foo/wikipedia/Open_Telecom_Platform) (Open Telecom Platform) is the standard library that ships with the BEAM: supervisors, GenServers, application lifecycle, hot code reload, distributed messaging. Most agent frameworks bolt on a queue, a retry layer, a job runner, a circuit breaker, a state store. Raxol uses what's already in the box. No Redis, no Celery, no Sidekiq in the failure path.
+[OTP](https://en.wikipedia.org/wiki/Open_Telecom_Platform) (Open Telecom Platform) is the standard library that ships with the BEAM: supervisors, GenServers, application lifecycle, hot code reload, distributed messaging. Most agent frameworks bolt on a queue, a retry layer, a job runner, a circuit breaker, a state store. Raxol uses what's already in the box. No Redis, no Celery, no Sidekiq in the failure path.
 
 The agent is one of those OTP processes. When it crashes the supervisor catches it, the cockpit stays up, the agent restarts from its last known good state, and the HUD shows a blip. One gauge resets to stale-but-safe data while the fresh state loads. The pilot keeps flying.
 
